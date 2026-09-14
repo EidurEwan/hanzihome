@@ -9,6 +9,9 @@ datasets, so this is a reimplementation of the idea with its own data pipeline.
 
 ## Running it
 
+**Live:** <https://eidurewan.github.io/hanzihome/> — deployed from `site/` by
+`.github/workflows/pages.yml` on every push to `main`.
+
 **Just open [`site/index.html`](site/index.html) in a browser.** No server, no install,
 no build step, no network. Data files load through `<script>` tags rather than `fetch()`,
 which is what lets it work from a plain `file://` URL.
