@@ -189,7 +189,7 @@ const Store = {
    that still has it. When both sides changed the same item, this device wins. */
 
 const Sync = {
-  cfgKey: 'hanzihome.sync',          // {url, key, rev, dirty, lastSync}
+  cfgKey: 'hanzihome.sync',          // {url, rev, dirty, lastSync}
   baseKey: 'hanzihome.sync.base',    // the store as of the last successful sync
   timer: null, busy: null, again: false, error: '', lastRun: 0,
 
@@ -199,7 +199,7 @@ const Sync = {
     catch (e) { /* storage full or blocked: sync just stops */ }
   },
   update(fields) { const c = this.cfg(); if (c) this.setCfg(Object.assign(c, fields)); },
-  on() { const c = this.cfg(); return !!(c && c.url && c.key); },
+  on() { const c = this.cfg(); return !!(c && c.url); },
   base() { try { return JSON.parse(localStorage.getItem(this.baseKey) || 'null'); } catch (e) { return null; } },
   setBase(d) {
     try { d ? localStorage.setItem(this.baseKey, JSON.stringify(d)) : localStorage.removeItem(this.baseKey); }
@@ -223,7 +223,7 @@ const Sync = {
       res = await fetch(c.url, {
         method: 'POST', redirect: 'follow',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(Object.assign({ key: c.key }, body)),
+        body: JSON.stringify(body),
       });
     } catch (e) {
       // Google's own error pages carry no CORS header, so a wrong URL, an access
@@ -238,8 +238,6 @@ const Sync = {
     catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
     if (!j.ok && !j.conflict) {
       throw new Error({
-        'bad-key': "The sync key doesn't match SYNC_KEY in the script's properties.",
-        'not-configured': 'The script has no SYNC_KEY yet. Add one under Project Settings → Script properties.',
         'busy': 'The sheet was busy. Try again in a moment.',
         'too-large': 'Your data is too large for the script to accept.',
       }[j.error] || `The script refused the request (${j.error || 'unknown error'}).`);
@@ -314,12 +312,12 @@ const Sync = {
     else markNav(currentPath());
   },
 
-  async connect(url, key) {
-    const trial = { url, key };
+  async connect(url) {
+    const trial = { url };
     this.errorCode = '';
-    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL or key
+    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL
     // rev 0 and dirty: the first cycle merges this browser's data with the sheet's
-    this.setCfg({ url, key, rev: 0, dirty: true, lastSync: 0 });
+    this.setCfg({ url, rev: 0, dirty: true, lastSync: 0 });
     this.setBase(null);
     this.error = '';
     return this.run();
@@ -1916,14 +1914,13 @@ function syncCardBody() {
         <li>Replace the editor's contents with
           <a href="https://github.com/EidurEwan/hanzihome/blob/main/sync/Code.gs" target="_blank" rel="noopener">sync/Code.gs</a>
           and save.</li>
-        <li>Open <b>Project Settings → Script properties</b> and add a property named
-          <code>SYNC_KEY</code> whose value is a long passphrase only you know.</li>
         <li><b>Deploy → New deployment</b>, type <b>Web app</b>. Execute as <b>Me</b>, who has
           access <b>Anyone</b>. Authorise it, then copy the web app URL (it ends in <code>/exec</code>).</li>
-        <li>Paste the URL and the passphrase into this card. Do the same in every browser you use.</li>
+        <li>Paste the URL into this card. Do the same in every browser you use.</li>
       </ol>
       <p class="small muted">The script can only open the one Sheet it is attached to. "Anyone" lets
-        your browsers reach it without signing in; requests without the passphrase are refused.
+        your browsers reach it without signing in, so anyone with the URL can read and change your
+        synced progress. Keep the URL to yourself.
         After editing the script later, deploy a new version of the same deployment so the URL stays the same.</p>
     </details>`;
   if (c) {
@@ -1943,7 +1940,6 @@ function syncCardBody() {
     <div class="sync-form">
       <label>Web app URL<input id="sync-url" type="url" spellcheck="false" autocomplete="off"
         placeholder="https://script.google.com/macros/s/…/exec"></label>
-      <label>Sync key<input id="sync-key" type="password" autocomplete="off" placeholder="the SYNC_KEY passphrase"></label>
       <div class="row"><button class="btn" id="sync-connect">Connect</button>
         <span class="small" id="sync-msg"></span></div>
       <div id="sync-help-box"></div>
@@ -1956,7 +1952,7 @@ function syncTroubleHtml(url) {
   return `<div class="sync-trouble">
     <p><b>Open <a href="${esc(url)}" target="_blank" rel="noopener">the web app URL</a> in a new tab</b> to see why:</p>
     <ul>
-      <li><b>{"ok":true,"app":"HanziHome sync"…}</b>: the script works. Check the passphrase, then reload this page and try again.</li>
+      <li><b>{"ok":true,"app":"HanziHome sync"…}</b>: the script works. Reload this page and try again.</li>
       <li><b>A Google sign-in page, or "You need access"</b>: in the deployment, set <i>Who has access</i> to <b>Anyone</b>
         (not "Anyone with Google account"). Change it under <b>Deploy → Manage deployments → Edit</b>.</li>
       <li><b>"Script function not found: doGet"</b>: the code wasn't saved when you deployed. Save it, then
@@ -1982,18 +1978,17 @@ function wireSyncCard() {
   const $ = id => document.getElementById(id);
   if ($('sync-connect')) {
     $('sync-connect').addEventListener('click', async () => {
-      const url = $('sync-url').value.trim(), key = $('sync-key').value;
+      const url = $('sync-url').value.trim();
       const msg = $('sync-msg');
       msg.classList.remove('sync-err');
       const help = $('sync-help-box');
       help.innerHTML = '';
       const problem = syncUrlProblem(url);
       if (problem) { msg.textContent = problem; msg.classList.add('sync-err'); return; }
-      if (!key) { msg.textContent = 'Enter the SYNC_KEY passphrase.'; msg.classList.add('sync-err'); return; }
       $('sync-connect').disabled = true;
       msg.textContent = 'Connecting…';
       try {
-        await Sync.connect(url, key);
+        await Sync.connect(url);
         if (Sync.error) throw new Error(Sync.error);
         render(true);
       } catch (e) {

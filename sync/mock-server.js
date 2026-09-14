@@ -3,7 +3,7 @@
 // and requests are answered the way a deployed web app answers them: the POST
 // gets a 302 to a second URL that serves the JSON, both with CORS open.
 //
-//   node sync/mock-server.js [port] [sync-key]
+//   node sync/mock-server.js [port]
 //   then in HanziHome: Settings -> Sync, URL http://localhost:8787/exec
 //
 // Development aid only; the real thing is the deployed Apps Script.
@@ -14,7 +14,6 @@ const path = require('path');
 const vm = require('vm');
 
 const PORT = Number(process.argv[2]) || 8787;
-const KEY = process.argv[3] || 'test-key';
 
 /* ---- a small stand-in for the Sheets / Properties / Lock / Content services ---- */
 
@@ -67,7 +66,6 @@ const context = {
       insertSheet: name => (sheets[name] = makeSheet()),
     }),
   },
-  PropertiesService: { getScriptProperties: () => ({ getProperty: k => (k === 'SYNC_KEY' ? KEY : null) }) },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
   ContentService: {
     MimeType: { JSON: 'application/json' },
@@ -111,4 +109,4 @@ http.createServer((req, res) => {
     return res.end(text || '{}');
   }
   res.writeHead(404, cors); res.end();
-}).listen(PORT, () => console.log(`HanziHome sync mock on http://localhost:${PORT}/exec (key: ${KEY})`));
+}).listen(PORT, () => console.log(`HanziHome sync mock on http://localhost:${PORT}/exec`));

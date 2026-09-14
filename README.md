@@ -26,15 +26,13 @@ your progress (statuses, known components, lists, notes, history, study schedule
 Google Sheet you own. Every browser connected to it stays in step.
 
 1. Create a Google Sheet, then **Extensions → Apps Script**. Paste in `sync/Code.gs` and save.
-2. **Project Settings → Script properties**: add `SYNC_KEY` with a long passphrase.
-3. **Deploy → New deployment → Web app**. Execute as *Me*, access *Anyone*. Copy the `/exec` URL.
-4. In HanziHome, **Settings → Sync with Google Sheets**: paste the URL and passphrase. Repeat in
-   each browser.
+2. **Deploy → New deployment → Web app**. Execute as *Me*, access *Anyone*. Copy the `/exec` URL.
+3. In HanziHome, **Settings → Sync with Google Sheets**: paste the URL. Repeat in each browser.
 
 The script is marked `@OnlyCurrentDoc`, so it can only open the Sheet it is attached to.
-"Anyone" means browsers can reach it without a Google sign-in; requests without the passphrase
-are refused. The passphrase is sent in the request body, never in the URL. After changing the
-script, use **Manage deployments → Edit → New version** so the URL stays the same.
+"Anyone" means browsers can reach it without a Google sign-in. There is no password, so anyone
+who has the `/exec` URL can read and replace your synced progress: keep the URL private. After
+changing the script, use **Manage deployments → Edit → New version** so the URL stays the same.
 
 How it behaves:
 
@@ -52,7 +50,7 @@ How it behaves:
   your data in the browser and in the Sheet.
 
 To try sync without a Google account, `node sync/mock-server.js` runs the same `Code.gs` against
-an in-memory sheet on `http://localhost:8787/exec` (key `test-key`).
+an in-memory sheet on `http://localhost:8787/exec`.
 
 ## What's in it
 

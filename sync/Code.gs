@@ -5,18 +5,19 @@
  *
  * Setup (details in the project README, "Syncing between devices"):
  *   1. Create a Google Sheet, then Extensions → Apps Script. Paste this file.
- *   2. Project Settings → Script properties → add SYNC_KEY = a long random
- *      passphrase. Only requests that send this key are answered.
- *   3. Deploy → New deployment → Web app. Execute as: Me. Who has access:
+ *   2. Deploy → New deployment → Web app. Execute as: Me. Who has access:
  *      Anyone. Copy the /exec URL.
- *   4. In HanziHome: Settings → Sync with Google Sheets → paste URL and key.
+ *   3. In HanziHome: Settings → Sync with Google Sheets → paste the URL.
+ *
+ * There is no password: anyone who has the /exec URL can read and replace
+ * the synced copy, so treat the URL as private.
  *
  * The site talks to this script with POST requests whose body is JSON sent as
  * text/plain (so browsers do not send a CORS preflight, which Apps Script
- * cannot answer). The key travels in that body, never in the URL.
+ * cannot answer).
  *
- *   {action: "pull", key}                 -> {ok, rev, updatedAt, data}
- *   {action: "push", key, baseRev, data}  -> {ok, rev, updatedAt}
+ *   {action: "pull"}                 -> {ok, rev, updatedAt, data}
+ *   {action: "push", baseRev, data}  -> {ok, rev, updatedAt}
  *                                          or {ok: false, conflict: true, rev, updatedAt, data}
  *
  * `rev` goes up by one on every accepted push. A push is only accepted when
@@ -32,7 +33,7 @@ var MAX_BYTES = 5000000;    // refuse anything absurd
 
 function doGet() {
   // Opening the /exec URL in a browser shows this, to confirm the deployment works.
-  return json_({ ok: true, app: 'HanziHome sync', hint: 'POST {action, key} to use it.' });
+  return json_({ ok: true, app: 'HanziHome sync', hint: 'POST {action} to use it.' });
 }
 
 function doPost(e) {
@@ -43,12 +44,6 @@ function doPost(e) {
     req = JSON.parse(body || '{}');
   } catch (err) {
     return json_({ ok: false, error: 'bad-json' });
-  }
-
-  var expected = PropertiesService.getScriptProperties().getProperty('SYNC_KEY');
-  if (!expected) return json_({ ok: false, error: 'not-configured' });
-  if (!req.key || !sameString_(String(req.key), expected)) {
-    return json_({ ok: false, error: 'bad-key' });
   }
 
   if (req.action === 'pull') {
@@ -118,13 +113,6 @@ function write_(data, rev) {
   var updatedAt = new Date().toISOString();
   sh.getRange('A1:B1').setValues([[rev, updatedAt]]);
   return { rev: rev, updatedAt: updatedAt };
-}
-
-function sameString_(a, b) {
-  if (a.length !== b.length) return false;
-  var diff = 0;
-  for (var i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
 }
 
 function json_(obj) {
