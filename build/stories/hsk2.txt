@@ -1,0 +1,344 @@
+# HSK 2 - Elementary
+# Adds: 过 / 着 / 正在, 得-complements (跑得很快), 比 comparisons, 已经…了,
+# 因为…所以, 虽然…但是, 如果…就, 离, 从…到, 让, 一边…一边, 越来越,
+# result complements (做好, 看完), 就 / 才, 又, 一直.
+
+=== s05
+level: 2
+tag: A rainy afternoon
+zh: 忘了带伞
+en: I Forgot My Umbrella
+text:
+今天 早上 天气 很 好 ， 太阳 很 大 。 出门 以前 ， 妈妈 问 我 ： “ 你 带 伞 了 吗 ？ 电视 上 说 下午 可能 会 下雨 。 ” 我 觉得 天气 这么 好 ， 不 会 下雨 的@sure ， 所以 没有 带 伞 。
+
+上午 我 在 公司 工作 ， 一直 很 忙 。 中午 我 和 同事 一起 去 吃饭 ， 外面 还是 晴天 。 同事 说 ： “ 你 看 ， 天 上 没有@none 云 。 ” 我 笑 着 说 ： “ 我 妈妈 太 小心 了@tai 。 ”
+
+可是 到 了 下午 四 点 ， 天 忽然 黑 了@change 。 风 越来越 大 ， 过 了 十 分钟 ， 就 开始 下 大 雨 了@change 。 雨 下 得 非常 大 ， 路 上 的 人 都 跑 得 很 快 。
+
+六 点 ， 我 该 下班 了@change ， 可是 雨 还 在@ing 下 。 我 站 在 公司 门口 ， 不 知道 怎么 办 。 我 家 离 公司 很 远 ， 走路 要 半 个 小时 。 如果 走 回家 ， 衣服 就 都 湿 了@change 。
+
+这 时候 ， 我 的 手机 响 了 。 妈妈 给 我 打 电话 了 。 她 说 ： “ 我 已经 在 你 公司 楼 下@down 了@change ， 我 给 你 带 了 伞 。 ” 我 跑 下@down 楼 ， 看见 妈妈 正在 门口 等 我 ， 手 里 拿 着 两 把 伞 。
+
+回家 的 路 上 ， 我 对 妈妈 说 ： “ 以后 你 说 的 话 ， 我 一定 听 。 ” 妈妈 笑 了 ： “ 你 从小 就@already 这么 说 。 ”
+words:
+好 | hǎo | good; nice
+太阳 | tài yáng | sun
+大 | dà | big; strong; heavy (of sun, wind, rain)
+出门 | chū mén | to go out
+带 | dài | to bring; to take along
+伞 | sǎn | umbrella
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+了@tai | le | (太…了: too …)
+上 | shang | on; in
+可能 | kě néng | possibly; might
+会 | huì | will (probably)
+下雨 | xià yǔ | to rain
+这么 | zhè me | so; this
+的 | de | (links the description before it to the noun)
+的@sure | de | (at the end: stresses that it is certain)
+没有 | méi yǒu | did not
+没有@none | méi yǒu | there is no
+在 | zài | at; in
+在@ing | zài | (in the middle of) -ing
+一直 | yī zhí | the whole time; continuously
+和 | hé | with
+同事 | tóng shì | colleague
+去 | qù | to go
+吃饭 | chī fàn | to eat (a meal)
+外面 | wài mian | outside
+还是 | hái shi | still
+晴天 | qíng tiān | sunny day
+看 | kàn | look
+天 | tiān | sky
+云 | yún | cloud(s)
+着 | zhe | (while …ing)
+小心 | xiǎo xīn | careful; cautious
+到 | dào | to reach (a time)
+点 | diǎn | o'clock
+黑 | hēi | dark
+风 | fēng | wind
+越来越 | yuè lái yuè | more and more
+过 | guò | (of time) to pass
+就 | jiù | then; right then
+就@already | jiù | (ever since) already
+下 | xià | to fall (of rain)
+下@down | xià | down; below (楼下 = downstairs)
+雨 | yǔ | rain
+得 | de | (links a verb to how it happens)
+都 | dōu | all
+快 | kuài | fast
+还 | hái | still
+怎么 | zěn me | how
+办 | bàn | to do; to handle (怎么办 = what to do)
+家 | jiā | home
+离 | lí | (distance) from
+走路 | zǒu lù | to walk
+要 | yào | to take (time)
+走 | zǒu | to walk
+湿 | shī | wet
+这 | zhè | this
+给 | gěi | to; for (someone)
+打 | dǎ | to make (a phone call)
+楼 | lóu | building (楼下 = downstairs)
+里 | li | in
+把 | bǎ | (measure word for things with handles)
+对 | duì | to (someone)
+一定 | yī dìng | definitely; certainly
+听 | tīng | to listen (to); to do as told
+从小 | cóng xiǎo | since childhood
+
+=== s06
+level: 2
+tag: Fixing a bike
+zh: 旧自行车
+en: The Old Bicycle
+text:
+我 家 有 一 辆 旧 自行车 ， 是 爷爷 以前 骑 的 。 它 已经 二十 多 岁 了@change ， 比 我 还 大 。
+
+上 个 星期 ， 我 想 骑 它 去 公园 ， 可是 刚 骑 了 五 分钟 ， 车 就 坏 了@change 。 我 只能 推 着 它 走 回家 。
+
+爸爸 说 ： “ 这 辆 车 太 旧 了@tai ， 我们 买 一 辆 新 的 吧 。 新 车 比 旧 车 快 ， 也 比 旧 车 好看 。 ” 可是 我 不 想 买 新 的 。 因为 小时候 ， 爷爷 常常 骑 着 这 辆 车 送 我 去 学校 。 我 坐 在 后面 ， 爷爷 一边 骑 一边 给 我 唱歌 。
+
+我 对 爸爸 说 ： “ 我 想 自己 修 这 辆 车 。 ” 爸爸 想@think 了 想@think ， 说 ： “ 好@ok 吧@ok ， 我 帮助 你 。 ”
+
+星期六 上午 ， 我们 在 院子 里 修 车 。 我们 先 洗 了 车 ， 然后 换 了 两 个 新 的@mod 轮子 。 爸爸 做 得 很 快 ， 我 做 得 很 慢 ， 但是 爸爸 没有 说 什么 ， 一直 在 旁边 帮助 我 。 我们 从 九 点 修 到 十二 点 ， 手 和 衣服 都 脏 了@change 。
+
+下午 ， 我 骑 着 旧 自行车 去 了 公园 。 车 跑 得 非常 好 ， 比 以前 还 快 。 我 给 爷爷 打 了 一 个 电话 ， 告诉 他 这 件 事 。 爷爷 在 电话 里 笑 得 很 开心 ， 他 说 ： “ 下次 你 回来 ， 我们 一起 去 骑 车 ！ ”
+words:
+家 | jiā | home; family
+一 | yī | one; a
+辆 | liàng | (measure word for vehicles)
+自行车 | zì xíng chē | bicycle
+骑 | qí | to ride
+的 | de | (…的: the one (that) …)
+的@mod | de | (links the description before it to the noun)
+多 | duō | more than (二十多 = twenty-odd)
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+了@tai | le | (太…了: too …)
+还 | hái | even (more)
+大 | dà | old(er) (in age)
+上 | shàng | last (上个星期 = last week)
+想 | xiǎng | to want to
+想@think | xiǎng | to think (想了想 = thought it over)
+去 | qù | to go
+公园 | gōng yuán | park
+车 | chē | bike
+就 | jiù | (after only five minutes) already
+坏 | huài | to break down
+只能 | zhǐ néng | can only
+推 | tuī | to push
+着 | zhe | (doing one thing while doing another)
+走 | zǒu | to walk
+这 | zhè | this
+吧 | ba | (suggestion: let's …)
+吧@ok | ba | (好吧 = all right then)
+快 | kuài | fast
+好看 | hǎo kàn | good-looking
+送 | sòng | to take (someone somewhere)
+坐 | zuò | to sit
+在 | zài | at; in; on
+后面 | hòu mian | at the back; behind
+一边 | yī biān | (一边…一边: while)
+给 | gěi | to; for
+对 | duì | to (someone)
+好 | hǎo | well; good
+好@ok | hǎo | OK
+星期六 | xīng qī liù | Saturday
+院子 | yuàn zi | courtyard; yard
+里 | li | in
+先 | xiān | first
+洗 | xǐ | to wash
+轮子 | lún zi | wheel(s)
+做 | zuò | to do (the work)
+得 | de | (links a verb to how it is done)
+没有 | méi yǒu | did not
+什么 | shén me | anything
+一直 | yī zhí | the whole time
+从 | cóng | from
+点 | diǎn | o'clock
+到 | dào | until
+和 | hé | and
+都 | dōu | both
+脏 | zāng | dirty
+打 | dǎ | to make (a phone call)
+下次 | xià cì | next time
+
+=== s07
+level: 2
+tag: A call from home
+zh: 奶奶的电话
+en: Grandmother's Phone Call
+text:
+我 是 一 个 大学生 ， 在 北京 上 大学 。 我 的 家 离 北京 很 远 ， 坐 火车 要 十 个 小时 。 我 已经 半 年 没有 回家 了@now 。
+
+星期三 晚上 ， 我 正在 教室 里 准备 考试 ， 手机 忽然 响 了 。 是 奶奶 。 奶奶 很 少 给 我 打 电话 ， 所以 我 马上 走 出 教室 。
+
+“ 奶奶 ， 您 好@hello ！ 家里 有 什么 事 吗 ？ ” “ 没 事 ， 没 事 。 ” 奶奶 笑 着 说 ， “ 我 就是 想 听听 你 的 声音 。 你 最近 身体 怎么样 ？ 吃 得 好 吗 ？ 睡 得 好 吗 ？ ” 我 告诉 她 ， 我 每 天 都 吃 得 很 好 ， 学习 也 很 顺利 。
+
+奶奶 说 ： “ 北京 冬天 比 我们 这儿 冷 得 多 ， 你 要@should 多@more 穿 衣服 。 ” 我 说 ： “ 知道 了@change 。 奶奶 ， 您 也 要@should 好好 休息 。 ” 奶奶 又 说 ： “ 你 爷爷 前 几 天 生病 了 ， 现在 已经 好@well 了@change 。 他 不 让 我 告诉 你 ， 怕 你 不 能 好好 学习 。 ”
+
+听 了 奶奶 的 话 ， 我 心里 很 难过 。 我 说 ： “ 奶奶 ， 考试 以后 就 放假 了@change ， 我 下 个 月 就 回家 看 你们 。 ” 奶奶 高兴 地 说 ： “ 好@ok ！ 我 给 你 做 你 最 喜欢 吃 的@mod 饺子 。 ”
+
+打 完 电话 ， 我 回到 教室 ， 又 开始 准备 考试 。 虽然 考试 很 难 ， 但是 我 不 觉得 累 了@change 。
+words:
+一 | yī | one; a
+大学生 | dà xué shēng | university student
+在 | zài | in; at
+北京 | Běi jīng | Beijing
+上 | shàng | to attend (university)
+的 | de | 's; of (belonging to)
+的@mod | de | (links the description before it to the noun)
+家 | jiā | home
+离 | lí | (distance) from
+坐 | zuò | to travel by (train)
+火车 | huǒ chē | train
+要 | yào | to take (time)
+要@should | yào | should; must
+没有 | méi yǒu | have not
+了 | le | (the action is done)
+了@now | le | (…了: and that is still true now)
+了@change | le | (a new situation: now)
+星期三 | xīng qī sān | Wednesday
+教室 | jiào shì | classroom
+里 | li | in
+准备 | zhǔn bèi | to prepare (for)
+考试 | kǎo shì | exam
+少 | shǎo | seldom (很少 = rarely)
+给 | gěi | to; for
+打 | dǎ | to make (a phone call)
+走 | zǒu | to walk
+出 | chū | out (of)
+好 | hǎo | well
+好@hello | hǎo | (您好 = hello)
+好@well | hǎo | well; recovered
+好@ok | hǎo | OK! good!
+什么 | shén me | anything
+没 | méi | nothing; no (没事 = nothing's wrong)
+着 | zhe | (while …ing)
+就是 | jiù shì | just; simply
+想 | xiǎng | to want to
+听听 | tīng ting | to have a listen
+最近 | zuì jìn | recently
+怎么样 | zěn me yàng | how (is it)
+得 | de | (links a verb to how, or how much)
+睡 | shuì | to sleep
+天 | tiān | day
+都 | dōu | (every day) without fail
+顺利 | shùn lì | going smoothly
+冷 | lěng | cold
+多 | duō | much (冷得多 = much colder)
+多@more | duō | more
+好好 | hǎo hǎo | properly; well
+休息 | xiū xi | to rest
+又 | yòu | again; then also
+前 | qián | ago (前几天 = a few days ago)
+几 | jǐ | a few
+生病 | shēng bìng | to fall ill
+让 | ràng | to let; to allow
+怕 | pà | to worry (that)
+听 | tīng | to hear
+难过 | nán guò | sad; upset
+就 | jiù | then; right after
+放假 | fàng jià | to be on holiday
+下 | xià | next (下个月 = next month)
+看 | kàn | to visit; to see
+地 | de | (links a description to the verb: …ly)
+做 | zuò | to make
+饺子 | jiǎo zi | dumplings
+完 | wán | finished (打完 = after finishing)
+难 | nán | difficult
+
+=== s08
+level: 2
+tag: The first snow
+zh: 早上的雪
+en: Morning Snow
+text:
+我 家 在 南方 ， 从小 到 大 ， 我 只 在 电视 上 看 过 雪 。 去年 我 来 北方 工作 ， 同事 告诉 我 ， 这儿 的 冬天 常常 下雪 。 我 一直 在@ing 等 第一 场 雪 。
+
+十二 月 的 一 天 早上 ， 我 起床 以后 ， 发现 房间 比 平时 亮 。 我 打开 门 一@once 看 ， 外面 白白 的@adj ， 下雪 了@change ！ 地上 、 树 上 、 车 上 都 是 雪 。
+
+我 马上 穿 好 衣服 ， 跑 到 楼 下 。 雪 还 在@ing 下@fall ， 很 多 孩子 已经 在 外面 玩 了@change 。 他们 有的 在@ing 跑 ， 有的 在@ing 笑 ， 还有 两 个 孩子 正在 做 雪人 。
+
+我 也 想 做 一 个 雪人 ， 可是 我 没 做 过 。 一 个 小 男孩 看见 了 我 ， 问 ： “ 阿姨 ， 你 想 和 我们 一起 玩 吗 ？ ” 我 说 ： “ 好@ok 啊 ！ 可是 我 不 会 做 雪人 。 ” 他 笑 着 说 ： “ 不 难 ， 我 教 你 ！ ”
+
+我们 做 了 半 个 小时 ， 雪人 做 好 了 。 它 比 那 个 小 男孩 还 高 ， 眼睛 是 两 块 黑色 的 石头 ， 非常 可爱 。 我 用 手机 给 我们 照 了 一 张 照片 。
+
+这 时候 我 才 想起来 ， 我 该 去 上班 了@change ！ 我 跑 回 房间 ， 换 了 衣服 ， 就 去 了 公司 。 虽然 那 天 上班 晚 了@change ， 但是 我 一直 很 高兴 。 我 给 妈妈 发 了 那 张 照片 ， 告诉 她 ： “ 我 看到 雪 了 ！ ”
+words:
+家 | jiā | home; (my) family
+在 | zài | to be in; at; on
+在@ing | zài | (in the middle of) -ing
+南方 | nán fāng | the south
+从小 | cóng xiǎo | since childhood
+到 | dào | to; up to
+大 | dà | grown up (从小到大 = all through growing up)
+只 | zhǐ | only
+上 | shang | on
+看 | kàn | to see; to look
+过 | guo | (have …ed before)
+雪 | xuě | snow
+来 | lái | to come
+北方 | běi fāng | the north
+同事 | tóng shì | colleague
+的 | de | (links the description before it to the noun)
+的@adj | de | (after a doubled adjective: all …)
+下雪 | xià xuě | to snow
+一直 | yī zhí | all along
+场 | cháng | (measure word for a snowfall)
+一 | yī | one; a
+一@once | yī | (一看: take one look)
+天 | tiān | day
+平时 | píng shí | usual; normally
+亮 | liàng | bright
+外面 | wài mian | outside
+白白 | bái bái | all white
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+树 | shù | tree(s)
+车 | chē | car(s)
+都 | dōu | all
+好 | hǎo | (after a verb) done; finished
+好@ok | hǎo | OK
+楼 | lóu | building (楼下 = downstairs)
+下 | xià | down; below
+下@fall | xià | to fall (of snow)
+还 | hái | still
+多 | duō | many
+玩 | wán | to play
+有的 | yǒu de | some
+做 | zuò | to make
+雪人 | xuě rén | snowman
+想 | xiǎng | to want to
+没 | méi | not (没…过 = have never)
+小 | xiǎo | little
+男孩 | nán hái | boy
+阿姨 | ā yí | auntie (polite way to address a woman)
+和 | hé | with
+会 | huì | to know how to
+着 | zhe | (while …ing)
+难 | nán | difficult
+教 | jiāo | to teach
+那 | nà | that
+高 | gāo | tall
+眼睛 | yǎn jing | eyes
+块 | kuài | (measure word for pieces, e.g. stones)
+黑色 | hēi sè | black
+石头 | shí tou | stone(s)
+可爱 | kě ài | cute
+用 | yòng | to use (用手机 = with the phone)
+给 | gěi | for; to
+照 | zhào | to take (a photo)
+张 | zhāng | (measure word for flat things, e.g. photos)
+照片 | zhào piàn | photo
+这 | zhè | this
+才 | cái | only then
+想起来 | xiǎng qi lai | to remember; to realize
+去 | qù | to go
+上班 | shàng bān | to go to work
+回 | huí | back (to)
+就 | jiù | then; right away
+晚 | wǎn | late
+发 | fā | to send

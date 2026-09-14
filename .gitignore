@@ -1,0 +1,9 @@
+# Rebuilt from the open datasets; see README "How the data is put together"
+data/raw/
+data/hanzicraft.db
+data/*.db-journal
+
+__pycache__/
+*.pyc
+.playwright-mcp/
+.impeccable/

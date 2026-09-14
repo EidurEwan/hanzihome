@@ -1,0 +1,1027 @@
+/* Styling matched to hanzicraft.com's dashboard.
+ *
+ * Palette taken from their stylesheet: #b83746 accent with #8c2a35 as the dark
+ * variant, over a Tailwind-style grey scale (#111827 / #6b7280 / #9ca3af /
+ * #e5e7eb / #f3f4f6 / #f9fafb) on a #fefefe page.
+ *
+ * Nunito is their dashboard UI font; it is bundled in fonts/ (SIL Open Font
+ * License) so the page needs no network. Chinese uses a sans CJK stack,
+ * because they serve a Noto Sans subset rather than a serif.
+ *
+ * Light theme only. */
+
+@font-face { font-family: Nunito; font-style: normal; font-weight: 400;
+  font-display: swap; src: url(fonts/nunito-400.woff2) format('woff2'); }
+@font-face { font-family: Nunito; font-style: normal; font-weight: 600;
+  font-display: swap; src: url(fonts/nunito-600.woff2) format('woff2'); }
+@font-face { font-family: Nunito; font-style: normal; font-weight: 700;
+  font-display: swap; src: url(fonts/nunito-700.woff2) format('woff2'); }
+@font-face { font-family: Nunito; font-style: normal; font-weight: 800;
+  font-display: swap; src: url(fonts/nunito-800.woff2) format('woff2'); }
+
+:root {
+  --bg: #f7f7f8;
+  --panel: #ffffff;
+  --panel-2: #f9fafb;
+  --ink: #111827;
+  --ink-2: #6b7280;
+  --ink-3: #9ca3af;
+  --line: #e5e7eb;
+  --line-2: #d1d5db;
+  --accent: #b73746;
+  --accent-dark: #9d1b32;
+  --accent-soft: #fff2f2;
+  --blue: #2563eb;
+  --blue-soft: #eef7ff;
+  --green: #22c55e;
+  --green-soft: #ebfbed;
+  --purple: #7c3aed;
+  --amber: #c89538;
+  --side: #1f2937;
+  --side-ink: #ffffff;
+  --side-muted: #8a919a;
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(17, 24, 39, .04), 0 1px 3px rgba(17, 24, 39, .06);
+  --topbar-h: 56px;
+  --sidebar-w: 220px;
+  --ui: Nunito, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --han: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB",
+         "Heiti SC", var(--ui);
+}
+
+* { box-sizing: border-box; }
+
+html { color-scheme: light; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.6 var(--ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, textarea { font: inherit; }
+.han { font-family: var(--han); }
+
+/* ---------------- top bar ---------------- */
+.topbar {
+  height: var(--topbar-h); background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 16px; padding: 0 20px;
+  position: sticky; top: 0; z-index: 60;
+}
+.topbar .brand { font-size: 23px; font-weight: 800; color: var(--accent); letter-spacing: -.01em; }
+.topbar .brand:hover { text-decoration: none; }
+.topbar .search { margin: 0 auto; width: min(440px, 46vw); position: relative; display: flex; }
+.topbar .search input {
+  width: 100%; padding: 9px 40px 9px 14px;
+  border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--panel); color: var(--ink);
+}
+.topbar .search input::placeholder { color: var(--ink-3); }
+.topbar .search input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.topbar .search .btn {
+  position: absolute; right: 0; top: 0; height: 100%;
+  background: none; border: 0; color: var(--ink-3); padding: 0 12px;
+  cursor: pointer; font-size: 0;
+}
+.topbar .search .btn::before { content: "🔍"; font-size: 14px; }
+.hamburger { display: none; background: none; border: 0; font-size: 20px; color: var(--ink-2); cursor: pointer; }
+
+/* ---------------- shell ---------------- */
+.shell { display: flex; align-items: stretch; min-height: calc(100vh - var(--topbar-h)); }
+
+.sidebar {
+  width: var(--sidebar-w); flex: none; background: var(--side); color: var(--side-ink);
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: sticky; top: var(--topbar-h); height: calc(100vh - var(--topbar-h));
+  overflow-y: auto;
+}
+.sidebar nav { display: flex; flex-direction: column; padding: 8px 0; }
+.sidebar nav a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px; color: var(--side-ink); font-size: 14.5px; font-weight: 600;
+}
+.sidebar nav a span { width: 18px; text-align: center; opacity: .85; font-size: 13px; }
+.sidebar nav a em {
+  font-style: normal; font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+  background: rgba(255, 255, 255, .22); padding: 2px 6px; border-radius: 20px; font-weight: 800;
+}
+.sidebar nav a:hover { background: rgba(255, 255, 255, .09); text-decoration: none; }
+.sidebar nav a.on { background: var(--accent); font-weight: 800; }
+.sidebar .badge {
+  font-style: normal; margin-left: auto; background: #fff; color: var(--accent);
+  border-radius: 20px; padding: 0 8px; font-size: 11px; font-weight: 800;
+}
+.side-foot { padding: 16px 20px; border-top: 1px solid rgba(255, 255, 255, .16); }
+.side-foot .who { font-weight: 700; margin: 0 0 3px; font-size: 13.5px; }
+.side-foot .muted { color: var(--side-muted); margin: 0; font-size: 12px; }
+
+/* centred content column, so the page is not hard against the sidebar */
+#app { flex: 1; min-width: 0; padding: 26px 30px 70px; }
+#app > * { max-width: var(--page-w); margin-inline: auto; }
+.page-title, #app > h1:first-child {
+  font-size: 21px; text-transform: uppercase; letter-spacing: .06em;
+  margin: 0 0 18px; font-weight: 800;
+}
+
+.dash { display: grid; grid-template-columns: var(--list-card-w) var(--rail-w); gap: 20px; align-items: start; }
+.rail { display: flex; flex-direction: column; gap: 18px; }
+
+/* ---------------- generic ---------------- */
+h1 { font-size: 26px; margin: 0 0 8px; font-weight: 800; letter-spacing: -.015em; }
+h2 { font-size: 18px; margin: 0 0 12px; font-weight: 800; }
+h3 { font-size: 12px; margin: 0 0 10px; text-transform: uppercase;
+     letter-spacing: .07em; color: var(--ink-2); font-weight: 800; }
+p { margin: 0 0 12px; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 20px var(--card-pad); margin-bottom: 18px;
+}
+.crumb { font-size: 13px; color: var(--ink-2); margin-bottom: 12px; }
+.lede { color: var(--ink-2); max-width: 68ch; }
+.muted { color: var(--ink-2); }
+.empty { color: var(--ink-3); }
+.small { font-size: 13px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spread { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.btn {
+  font-weight: 700; padding: 9px 16px; cursor: pointer;
+  border: 1px solid var(--accent); border-radius: 8px;
+  background: var(--accent); color: #fff;
+}
+.btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); text-decoration: none; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.ghost:hover { background: var(--accent-soft); color: var(--accent-dark); }
+.btn.quiet { background: var(--panel); color: var(--ink-2); border-color: var(--line-2); }
+.btn.quiet:hover { border-color: var(--accent); color: var(--accent); background: var(--panel); }
+
+.pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 9px;
+        border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
+.pill.hsk { background: var(--accent-soft); color: var(--accent); }
+
+.info-i { display: inline-grid; place-items: center; width: 15px; height: 15px;
+          border-radius: 50%; background: var(--ink-3); color: #fff;
+          font-size: 10px; font-weight: 800; font-style: normal; cursor: help; vertical-align: middle; }
+
+/* type-ahead */
+.ac {
+  position: absolute; top: 110%; left: 0; right: 0; z-index: 70;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; box-shadow: 0 6px 20px rgba(17, 24, 39, .12); overflow: hidden;
+}
+.ac a { display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; color: var(--ink); }
+.ac a:hover { background: var(--accent-soft); text-decoration: none; }
+.ac .g { font-family: var(--han); font-size: 19px; }
+.ac .m { color: var(--ink-3); font-size: 12.5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ---------------- character tiles: at most 15 to a row ---------------- */
+.tilegrid {
+  display: grid; gap: 4px;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+}
+
+.tile {
+  border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel);
+  padding: 7px 2px 4px; text-align: center; color: var(--ink);
+  display: block; min-width: 0;
+}
+.tile:hover { text-decoration: none; }
+.tile .g { font-family: var(--han); font-size: 24px; line-height: 1.2; display: block; }
+.tile .n { font-size: 10px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.tile.learned { border-color: var(--green); background: var(--green-soft); }
+.tile.learned .g { color: var(--green); }
+.tile.learning { border-color: var(--blue); background: var(--blue-soft); }
+.tile.learning .g { color: var(--blue); }
+
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.filters button {
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13.5px; font-weight: 700;
+  border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2);
+}
+.filters button:hover { border-color: var(--accent); color: var(--accent); }
+.filters button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.filters button.on.learning { background: var(--panel); border-color: var(--blue); color: var(--blue); }
+.filters button.on.learned { background: var(--panel); border-color: var(--green); color: var(--green); }
+
+/* ---------------- dashboard cards ---------------- */
+.streak { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.streak .big { display: flex; align-items: center; gap: 10px; }
+.streak .big b { font-size: 36px; font-weight: 800; line-height: 1; }
+.streak .big u { text-decoration: none; font-size: 11.5px; text-transform: uppercase;
+                 letter-spacing: .07em; color: var(--ink-2); font-weight: 800; line-height: 1.25; }
+.week { display: flex; gap: 5px; }
+.week div { text-align: center; font-size: 10px; color: var(--ink-3); font-weight: 700; }
+.week i { display: block; width: 24px; height: 28px; border-radius: 5px;
+          background: var(--line); margin-bottom: 4px; }
+.week i.on { background: var(--green); }
+.week i.today { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
+.dot.b { background: var(--blue); } .dot.g { background: var(--green); }
+
+.quad { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.quad div { border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; }
+.quad b { display: block; font-size: 27px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+.quad b.g { color: var(--green); } .quad b.bl { color: var(--blue); }
+.quad span { font-size: 12.5px; color: var(--ink-2); display: block; line-height: 1.35; }
+.quad a { font-size: 12.5px; font-weight: 700; }
+
+.donut { display: flex; align-items: center; gap: 16px; }
+.donut svg { flex: none; }
+.donut .pctlab { font: 800 15px var(--ui); fill: var(--ink); }
+.donut .sub { font: 800 7px var(--ui); fill: var(--ink-3); letter-spacing: .1em; }
+
+.bar { height: 9px; border-radius: 6px; background: var(--line); overflow: hidden; margin: 10px 0 7px; }
+.bar > i { display: block; height: 100%; background: var(--green); transition: width .35s ease; }
+.bar.accent > i { background: var(--accent); }
+
+.next-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+.next-row:first-of-type { border-top: 0; padding-top: 2px; }
+.next-row .tile { width: 48px; flex: none; }
+.next-row .info { flex: 1; min-width: 0; }
+.next-row .info b { font-family: var(--han); font-size: 15px; }
+.next-row .info .why { font-size: 12px; color: var(--ink-2); }
+.next-row .btn { padding: 6px 14px; font-size: 13px; }
+
+/* ---------------- character page ---------------- */
+.hero { display: flex; gap: 26px; align-items: flex-start; flex-wrap: wrap; }
+.hero-glyph {
+  font-family: var(--han); font-size: 96px; line-height: 1; text-align: center;
+  border: 2px solid var(--line-2); border-radius: 12px; padding: 16px 20px; min-width: 148px;
+}
+.hero-glyph.learned { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+.hero-glyph.learning { border-color: var(--blue); color: var(--blue); background: var(--blue-soft); }
+.hero-main { flex: 1 1 380px; }
+.hero-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.hero-pin { font-size: 26px; font-weight: 800; }
+.hero-gloss { color: var(--ink-2); margin-bottom: 12px; }
+.neighbours { font-size: 13px; color: var(--ink-2); margin-bottom: 14px; display: flex; gap: 16px; }
+.facts { list-style: none; margin: 0; padding: 0; font-size: 14px; color: var(--ink-2); }
+.facts li { padding: 3px 0; }
+.facts b { color: var(--ink); font-weight: 700; }
+
+.seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 8px; overflow: hidden; }
+.seg button { background: var(--panel); border: 0; color: var(--ink-2);
+              padding: 7px 15px; cursor: pointer; font-size: 13px; font-weight: 700; }
+.seg button + button { border-left: 1px solid var(--line-2); }
+.seg button:hover { background: var(--panel-2); }
+.seg button.on { background: var(--green); color: #fff; }
+.seg button.on.amber { background: var(--blue); }
+
+.decomp-row { display: flex; gap: 16px; align-items: flex-start; padding: 15px 0; border-top: 1px solid var(--line); }
+.decomp-row:first-of-type { border-top: 0; }
+.decomp-num { flex: none; width: 24px; height: 24px; border-radius: 50%;
+              background: var(--accent-soft); color: var(--accent);
+              font-size: 12px; font-weight: 800; display: grid; place-items: center; }
+.decomp-body { flex: 1; min-width: 0; }
+.glyphs { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
+.gbox { font-family: var(--han); font-size: 28px; line-height: 1;
+        min-width: 52px; padding: 10px 7px 8px; text-align: center;
+        border: 1px solid var(--line-2); border-radius: 8px;
+        background: var(--panel); color: var(--ink); cursor: pointer; }
+a.gbox:hover, button.gbox:hover { border-color: var(--accent); text-decoration: none; }
+.gbox small { display: block; font-family: var(--ui); font-size: 10.5px;
+              color: var(--ink-3); margin-top: 6px; line-height: 1.3; font-weight: 600; }
+.gbox.known { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+.gbox.known small { color: var(--green); }
+.arrow { color: var(--ink-3); font-size: 18px; }
+
+.tree { margin: 0; padding: 0; list-style: none; }
+.tree ul { list-style: none; margin: 0 0 0 14px; padding: 0 0 0 16px; border-left: 1px solid var(--line); }
+.tree li { padding: 4px 0; }
+.tree .node { display: inline-flex; align-items: baseline; gap: 9px;
+              border: 1px solid var(--line-2); border-radius: 8px; padding: 5px 11px; color: var(--ink); }
+a.tree-x { text-decoration: none; }
+.tree a.node:hover { border-color: var(--accent); text-decoration: none; }
+.tree .node .g { font-family: var(--han); font-size: 21px; }
+.tree .node .n { font-size: 12px; color: var(--ink-3); }
+.tree .node.known { border-color: var(--green); background: var(--green-soft); }
+.tree .node.known .g, .tree .node.known .n { color: var(--green); }
+
+.reading { padding: 13px 0; border-top: 1px solid var(--line); }
+.reading:first-of-type { border-top: 0; padding-top: 0; }
+.r-head { font-weight: 800; font-size: 17px; margin-bottom: 4px; color: var(--accent); }
+.r-head span { color: var(--ink-3); font-weight: 600; font-size: 13px; }
+.r-defs { color: var(--ink); }
+
+.clue { padding: 14px 0; border-top: 1px solid var(--line); }
+.clue:first-of-type { border-top: 0; padding-top: 0; }
+.rel-1 { color: var(--green); font-weight: 700; }
+.rel-2 { color: var(--amber); font-weight: 700; }
+.rel-3 { color: var(--blue); font-weight: 700; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { display: inline-flex; align-items: baseline; gap: 6px;
+        border: 1px solid var(--line-2); border-radius: 8px; padding: 5px 11px;
+        background: var(--panel); color: var(--ink); font-size: 13px; }
+a.chip:hover { border-color: var(--accent); text-decoration: none; }
+.chip .g { font-family: var(--han); font-size: 17px; }
+.chip .p { color: var(--ink-2); }
+.chip .r { color: var(--ink-3); font-size: 11px; }
+.chip.learned { border-color: var(--green); background: var(--green-soft); }
+
+.wordgroup { margin-bottom: 18px; }
+.words { display: grid; gap: 7px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.word { border: 1px solid var(--line-2); border-radius: 8px; padding: 6px 11px;
+        background: var(--panel); color: var(--accent); font-size: 13.5px; min-width: 0; }
+a.word:hover { border-color: var(--accent); text-decoration: none; }
+.word .w { font-family: var(--han); font-size: 15.5px; }
+.word .t { color: var(--ink-3); font-size: 12px; }
+.word .p { color: var(--ink-2); font-size: 11.5px; display: block; margin-top: 1px; }
+.more { font-size: 13px; font-weight: 700; cursor: pointer; background: var(--panel);
+        border: 1px solid var(--line-2); color: var(--ink-2); border-radius: 8px; padding: 7px 14px; }
+.more:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------------- study ---------------- */
+.study { max-width: 580px; margin: 0 auto; text-align: center; }
+.flash { background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+         box-shadow: var(--shadow); padding: 44px 24px; margin-bottom: 20px; }
+.flash .q { font-family: var(--han); font-size: 128px; line-height: 1.05; }
+.flash .a { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 20px; }
+.flash .a .pin { font-size: 25px; font-weight: 800; margin-bottom: 5px; color: var(--accent); }
+.flash .a .mean { color: var(--ink-2); }
+.grade { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.grade button { padding: 12px 22px; border-radius: 9px; cursor: pointer; font-weight: 700;
+                border: 1px solid var(--line-2); background: var(--panel); color: var(--ink); }
+.grade button:hover { border-color: var(--accent); }
+.grade .again { color: var(--accent); }
+.grade .good { color: var(--green); }
+
+/* ---------------- reader ---------------- */
+#reader-text, textarea {
+  width: 100%; min-height: 130px; font: inherit; padding: 12px;
+  border: 1px solid var(--line-2); border-radius: 9px;
+  background: var(--panel); color: var(--ink); resize: vertical;
+}
+.reading-pane { font-family: var(--han); font-size: 30px; line-height: 2; }
+.reading-pane b { font-weight: 400; cursor: pointer; border-radius: 4px; padding: 0 1px; }
+.reading-pane b:hover { background: var(--accent-soft); }
+.reading-pane b.known { color: var(--green); }
+.reading-pane b.learning { color: var(--blue); }
+.pop {
+  position: absolute; z-index: 80; min-width: 220px; max-width: 300px;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 10px;
+  box-shadow: 0 8px 26px rgba(17, 24, 39, .15); padding: 13px 15px;
+  font-family: var(--ui); font-size: 13px;
+}
+.pop .g { font-family: var(--han); font-size: 32px; line-height: 1.1; }
+
+/* ---------------- tables ---------------- */
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); font-weight: 800; }
+td.g { font-family: var(--han); font-size: 25px; line-height: 1.2; width: 1%; white-space: nowrap; }
+td.num { color: var(--ink-3); width: 1%; white-space: nowrap; font-variant-numeric: tabular-nums; }
+tbody tr:hover { background: var(--accent-soft); }
+
+.pager { display: flex; gap: 10px; align-items: center; margin-top: 18px; font-size: 13.5px; }
+.pager a, .pager span { padding: 7px 14px; border: 1px solid var(--line-2); border-radius: 8px; font-weight: 700; }
+.pager span { color: var(--ink-3); font-weight: 400; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.tabs a { padding: 8px 18px; border: 1px solid var(--line-2); border-radius: 8px;
+          font-size: 14px; font-weight: 700; color: var(--ink-2); background: var(--panel); }
+.tabs a.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tabs a:hover { text-decoration: none; border-color: var(--accent); }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.grid .card { margin: 0; }
+
+@media (max-width: 900px) {
+  .hamburger { display: block; }
+  .topbar { position: static; }
+  .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 90;
+             transform: translateX(-100%); transition: transform .2s ease; }
+  .sidebar.open { transform: none; }
+  #app { padding: 18px 16px 56px; }
+  .hero-glyph { font-size: 72px; min-width: 112px; }
+  .flash .q { font-size: 96px; }
+}
+
+/* ---------------- character page: matched to their layout ---------------- */
+
+/* the small tab that sits on top of the character card */
+.chartab {
+  display: inline-block; background: var(--panel);
+  border: 1px solid var(--line); border-bottom: 0;
+  border-radius: 10px 10px 0 0; padding: 7px 16px 6px;
+  font-size: 20px; color: var(--accent); margin-left: 4px; position: relative; top: 1px;
+}
+.card.chartop { border-radius: 0 12px 12px 12px; }
+
+.hero { align-items: flex-start; }
+.hero-main { position: relative; }
+.hero-actions { display: flex; gap: 10px; justify-content: flex-end;
+                flex-wrap: wrap; margin-bottom: 10px; }
+.status-btn { background: var(--green); border-color: var(--green); }
+.status-btn:hover { background: #276845; border-color: #276845; }
+.status-btn.none { background: var(--panel); border-color: var(--line-2); color: var(--ink-2); }
+.status-btn.none:hover { background: var(--panel); border-color: var(--accent); color: var(--accent); }
+.status-btn.learning { background: var(--blue); border-color: var(--blue); }
+.addlist-btn { background: var(--blue); border-color: var(--blue); }
+.addlist-btn:hover { background: #1d4ed8; border-color: #1d4ed8; }
+
+.dd { position: relative; }
+.dd-pop {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 65; min-width: 190px;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, .14); padding: 5px; text-align: left;
+}
+.dd-pop button {
+  display: block; width: 100%; text-align: left; background: none; border: 0;
+  padding: 8px 11px; border-radius: 6px; cursor: pointer; color: var(--ink);
+  font-size: 13.5px; font-weight: 600;
+}
+.dd-pop button:hover { background: var(--accent-soft); color: var(--accent); }
+
+/* fact rows with a leading icon */
+.facts li { display: flex; align-items: flex-start; gap: 10px; padding: 4px 0; }
+.facts li svg { width: 15px; height: 15px; flex: none; color: var(--ink-3); margin-top: 4px; }
+
+/* section headings that sit above a bordered panel */
+.sec-h { font-size: 20px; font-weight: 800; margin: 26px 0 8px; letter-spacing: -.01em; }
+.tip { font-size: 13px; color: var(--ink-2); margin: 0 0 10px; display: flex; gap: 8px; align-items: center; }
+
+.decomp-box { border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+              box-shadow: var(--shadow); overflow: hidden; margin-bottom: 4px; }
+.decomp-box.pad { padding: 18px 20px; }
+.decomp-box .decomp-row {
+  display: flex; gap: 20px; align-items: center; padding: 18px 20px;
+  border-top: 1px solid var(--line);
+}
+.decomp-box .decomp-row:first-child { border-top: 0; }
+.decomp-label { width: 132px; flex: none; font-weight: 700; font-size: 15px;
+                display: flex; align-items: center; gap: 9px; }
+.decomp-label .n { color: var(--ink-3); font-weight: 700; }
+.decomp-box .decomp-body { flex: 1; min-width: 0; }
+
+/* horizontal breakdown tree */
+.tnode { display: flex; align-items: center; gap: 16px; }
+.tkids { display: flex; flex-direction: column; gap: 8px; }
+.tbox {
+  font-family: var(--han); font-size: 24px; line-height: 1;
+  min-width: 46px; padding: 9px 8px; text-align: center;
+  border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--panel); color: var(--ink); display: inline-block;
+}
+a.tbox:hover { border-color: var(--accent); text-decoration: none; }
+.tbox.known { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+.tkids > .tnode { position: relative; }
+.tkids > .tnode::before {
+  content: ""; position: absolute; left: -10px; top: 50%;
+  width: 8px; border-top: 1px solid var(--line-2);
+}
+
+.reading:first-of-type { padding-top: 0; }
+.decomp-box.pad .clue:first-of-type { padding-top: 0; }
+
+@media (max-width: 760px) {
+  .decomp-box .decomp-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .decomp-label { width: auto; }
+  .hero-actions { justify-content: flex-start; }
+}
+
+/* ---------------- dashboard details ---------------- */
+.card h2.caps { text-transform: uppercase; letter-spacing: .06em; font-size: 17px; }
+
+.streak .big u em { display: block; font-style: normal; font-size: 10.5px;
+                    color: var(--ink-3); letter-spacing: .04em; margin-top: 2px; }
+
+.minitiles { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; margin-top: 7px; }
+.minitiles .tile { width: 30px; padding: 4px 2px; }
+.minitiles .tile .g { font-size: 16px; }
+.plusn { font-size: 12px; color: var(--ink-3); font-weight: 700; }
+
+.quad b.pu { color: var(--purple); }
+
+.band { font-size: 12.5px; font-weight: 700; color: var(--ink-2); margin: 16px 0 8px; }
+.filters button.multi.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+.selbar {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  background: var(--accent-soft); border: 1px solid var(--line-2);
+  border-radius: 9px; padding: 10px 13px; margin-bottom: 12px;
+}
+.selbar b { margin-right: auto; font-size: 13.5px; }
+.selbar .btn { padding: 6px 13px; font-size: 13px; }
+.tile.sel { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* a class-level display: rule beats the UA [hidden] rule, so restore it */
+[hidden] { display: none !important; }
+
+/* sidebar SVG icons (replacing the old unicode glyphs) */
+.sidebar nav a svg { width: 18px; height: 18px; flex: none; opacity: .92; }
+.sidebar nav a.on svg { opacity: 1; }
+
+/* ---------- character page: closer to the reference layout ----------
+   The hero is a single column: the glyph sits alone with the controls
+   opposite it, then the neighbour link, then the facts run full width. */
+
+.hero-row { display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 20px; flex-wrap: wrap; }
+
+.hero-glyph {
+  font-family: var(--han); font-size: 64px; line-height: 1; text-align: center;
+  border: 2px solid var(--line-2); border-radius: 8px;
+  padding: 30px 18px; min-width: 0; width: 104px; color: var(--ink);
+}
+.hero-glyph.learned { border-color: var(--green); color: var(--green); background: var(--panel); }
+.hero-glyph.learning { border-color: var(--blue); color: var(--blue); background: var(--panel); }
+
+.hero-actions { display: flex; gap: 10px; margin: 0; flex-wrap: wrap; }
+.hero-actions .btn { padding: 9px 18px; font-size: 14px; font-weight: 700; }
+
+.neighbours { margin: 12px 0 14px; font-size: 13.5px; color: var(--ink-2); gap: 16px; }
+
+.facts { font-size: 14.5px; }
+.facts li { padding: 4px 0; gap: 11px; }
+.facts li svg { width: 15px; height: 15px; margin-top: 5px; }
+
+/* decomposition boxes: components carry the accent, raw strokes stay dark */
+.tbox, .gbox { color: var(--accent); }
+.tbox { min-width: 40px; font-size: 22px; padding: 8px 7px; }
+.gbox { min-width: 42px; font-size: 24px; padding: 8px 7px 7px; }
+.gbox.stroke { color: var(--ink); }
+.gbox small { font-style: italic; font-size: 10.5px; font-weight: 600; margin-top: 5px; }
+.gbox.known { color: var(--accent); }
+.gbox.known small { color: var(--green); font-style: italic; }
+.tbox.known { color: var(--accent); }
+
+.decomp-label { font-size: 15px; }
+.sec-h { font-size: 21px; margin: 28px 0 8px; }
+.tip { font-size: 13.5px; }
+
+/* hero facts read heavier, as in the reference: the whole line carries weight,
+   the highlighted value carries more */
+.facts { color: var(--ink); font-weight: 600; }
+.facts li { color: var(--ink); }
+.facts b { font-weight: 800; color: var(--ink); }
+.facts li svg { color: var(--ink-3); }
+.neighbours { font-weight: 600; }
+.crumb { font-weight: 600; }
+.hero-glyph { font-weight: 500; }
+
+/* Characters themselves always render in ink — the border and fill carry the
+   learned/learning state, never the glyph colour. */
+.tile.learned .g,
+.tile.learning .g,
+.tree .node.known .g,
+.chip.learned .g { color: var(--ink); }
+
+.hero-glyph,
+.hero-glyph.learned,
+.hero-glyph.learning { color: var(--ink); }
+
+/* the reader has no border to lean on, so status shows as a soft fill */
+.reading-pane b.known,
+.reading-pane b.learning { color: var(--ink); }
+.reading-pane b.known { background: var(--green-soft); box-shadow: inset 0 -2px 0 var(--green); }
+.reading-pane b.learning { background: var(--blue-soft); box-shadow: inset 0 -2px 0 var(--blue); }
+
+/* ---------- character cards in lists ----------
+   They sit raised by default and press flat on hover: shadow drops away and
+   the fill goes off-white. The rim is thicker so the learned/learning state
+   reads at tile size. */
+.tile {
+  border-width: 2px;
+  box-shadow: none;
+  transition: box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+}
+/* only marked characters sit raised */
+.tile.learned,
+.tile.learning { box-shadow: 0 1px 0 rgba(17, 24, 39, .40); }
+
+/* hovering presses any card flat and fills it off-white
+   (.tile.learned:hover outranks .tile.learned, so the ledge really does clear) */
+.tile:hover,
+.tile.learned:hover,
+.tile.learning:hover {
+  box-shadow: none;
+  background: #f3f4f6;
+}
+
+/* the hero glyph carries a heavier rim to match */
+.hero-glyph { border-width: 3px; }
+
+/* tighter tiles: less vertical padding, less leading, squarer corners */
+.tile {
+  padding: 6px 2px 4px;
+  border-radius: 6px;
+}
+.tile .g { line-height: 1.15; }
+.tile .n { line-height: 1.2; display: block; }
+
+/* Grid tiles are a fixed 56px of card face; the rim sits outside that, so the
+   height is derived from --rim rather than hard-coded and stays right if the
+   rim changes. Scoped to .tilegrid so the small streak/study-next tiles keep
+   their own sizes. */
+:root {
+  --rim: 2px;
+  --card-w: 42px;                                   /* card face, rim excluded */
+  --card-h: 56px;
+  --tile-w: calc(var(--card-w) + var(--rim) * 2);   /* what the grid track needs */
+  --cols: 15;                                       /* most cards a row; fewer on smaller screens */
+  --grid-max: calc(var(--cols) * var(--tile-w) + (var(--cols) - 1) * 4px);
+  --card-pad: 30px;                                 /* clear space beside the list */
+  --list-card-w: calc(var(--grid-max) + var(--card-pad) * 2 + 2px);  /* +2 borders */
+  --rail-w: 322px;
+  --page-w: calc(var(--list-card-w) + 20px + var(--rail-w));
+}
+.tilegrid {
+  grid-template-columns: repeat(auto-fill, var(--tile-w));
+  justify-content: start;
+  gap: 4px;
+  max-width: var(--grid-max);
+  margin-inline: auto;                              /* centre the capped grid */
+}
+/* the band label rides the same column so it lines up with the grid's edge */
+.band { max-width: var(--grid-max); margin-inline: auto; }
+.tilegrid .tile {
+  border-width: var(--rim);
+  width: var(--tile-w);
+  height: calc(var(--card-h) + var(--rim) * 2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+}
+
+/* unmarked cards get their own rim colour; learned/learning keep theirs */
+.tilegrid .tile:not(.learned):not(.learning) { border-color: #f1f2f5; }
+
+
+/* The 30px card padding exists to frame the character list. Applying it to the
+   rail as well squeezed the donut row to 156px and wrapped its button onto
+   three lines, so the rail keeps a tighter gutter and the row may wrap. */
+.rail .card { padding-inline: 18px; }
+.donut { flex-wrap: wrap; }
+.donut .btn { white-space: nowrap; }
+
+/* rail card header with its 1/N pager */
+.rail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.rail-head h3 { margin: 0; }
+.rail-pager { display: flex; align-items: center; gap: 3px; font-size: 12px; color: var(--ink-3); font-weight: 700; }
+.rail-pager button { background: none; border: 0; cursor: pointer; color: var(--ink-2);
+                     font-size: 17px; line-height: 1; padding: 1px 5px; border-radius: 4px; }
+.rail-pager button:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); }
+.rail-pager button:disabled { opacity: .3; cursor: default; }
+
+/* ---------- hover menu on list cards ----------
+   Measured from the reference: two 108x24 buttons 4px apart (52px overall),
+   centred on the card and sitting 11px above it. It is appended to <body> and
+   positioned in viewport coordinates, so the card never clips or constrains it. */
+#tile-menu {
+  position: fixed; z-index: 200;
+  display: flex; flex-direction: column; gap: 4px;
+  /* the pill sits behind both buttons and carries the lift */
+  background: var(--panel);
+  padding: 6px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, .15);
+}
+#tile-menu button {
+  width: 108px; height: 24px; padding: 0;
+  border: 1px solid var(--line-2); border-radius: 4px;
+  background: var(--panel);
+  font-size: 11px; font-weight: 600; line-height: 1;
+  white-space: nowrap; cursor: pointer; text-align: center;
+}
+/* each action wears the colour it will apply, at rest - no hover state */
+#tile-menu button[data-s="learning"] { border-color: var(--blue); color: var(--blue); }
+#tile-menu button[data-s="learned"] { border-color: var(--green); color: var(--green); }
+#tile-menu button.clear {
+  border-color: var(--line-2); color: var(--ink-2);   /* neutral: it clears rather than sets */
+  text-align: center;
+}
+
+.tile.hot { box-shadow: none; background: #f3f4f6; }
+
+/* ---------- reader: story library ----------
+   Cards read off the reference: 2 columns with a 16px gutter, 20px padding,
+   a grey topic pill, the Chinese title, its English title, then the stat line. */
+.storygrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 6px; }
+@media (max-width: 900px) { .storygrid { grid-template-columns: 1fr; } }
+
+.story {
+  display: block; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 20px; color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.story:hover { border-color: var(--accent); text-decoration: none; }
+.story-tag {
+  display: inline-block; background: var(--panel-2); color: var(--ink-2);
+  border: 1px solid var(--line); border-radius: 4px;
+  padding: 3px 9px; font-size: 11px; font-weight: 600;
+}
+.story-zh { display: block; font-size: 24px; font-weight: 800; margin: 13px 0 3px; }
+.story-en { display: block; font-size: 15px; color: var(--ink-2); }
+.story-stat { display: block; font-size: 12px; color: var(--ink-3); margin-top: 15px; }
+
+/* the beta flag beside a page title */
+.page-title .beta {
+  font-style: normal; font-size: 10px; letter-spacing: .09em;
+  background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--ink-2); padding: 3px 7px; border-radius: 20px; vertical-align: middle;
+}
+.reading-pane p { margin: 0 0 6px; }
+
+/* ---------- reader: the reading view ----------
+   Side panel plus the text, and no right rail here - the story wants the width. */
+.readlayout { display: grid; grid-template-columns: 460px minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 1100px) { .readlayout { grid-template-columns: 1fr; } }
+.readside { position: sticky; top: 80px; }
+
+.bigcount { font-size: 30px; font-weight: 800; color: var(--green); margin: 2px 0 0; }
+.bigcount b { font-weight: 800; }
+.readfilters { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.readfilters label { display: flex; align-items: center; gap: 8px; font-size: 13px;
+                     color: var(--ink-2); cursor: pointer; }
+.sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line-2); display: inline-block; }
+.sw.learned { background: var(--green-soft); border-color: var(--green); }
+.sw.learning { background: var(--blue-soft); border-color: var(--blue); }
+.sw.new { background: var(--panel-2); }
+
+.tabs2 { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.tabs2 button { background: none; border: 0; border-bottom: 2px solid transparent;
+                padding: 8px 14px; font-size: 13.5px; font-weight: 700;
+                color: var(--ink-2); cursor: pointer; }
+.tabs2 button.on { color: var(--ink); border-bottom-color: var(--accent); }
+.readlist { max-height: 62vh; overflow-y: auto; }
+
+.vrow { display: grid; grid-template-columns: 88px 92px minmax(0, 1fr); gap: 8px;
+        align-items: baseline; padding: 9px 2px; border-bottom: 1px solid var(--line);
+        color: var(--ink); }
+.vrow:hover { background: var(--accent-soft); text-decoration: none; }
+.vrow .vw { font-size: 17px; font-weight: 700; }
+.vrow .vp { font-size: 12.5px; color: var(--accent); }
+.vrow .vd { font-size: 12.5px; color: var(--ink-2); }
+.vrow.learned .vw { color: var(--green); }
+.vrow.learning .vw { color: var(--blue); }
+
+.storytitle { font-family: var(--han); font-size: 34px; text-align: center; margin: 0 0 2px; }
+.storysub { text-align: center; color: var(--ink-2); font-size: 17px; margin-bottom: 22px; }
+
+/* word highlighting; the filters switch each band off */
+.reading-pane .w { padding: 1px 1px; border-radius: 3px; cursor: pointer; }
+.reading-pane .w.learned { background: var(--green-soft); }
+.reading-pane .w.learning { background: var(--blue-soft); }
+.reading-pane .w:hover { background: #fdf0c8; }
+.reading-pane.hide-learned .w.learned { background: transparent; }
+.reading-pane.hide-learning .w.learning { background: transparent; }
+.reading-pane.hide-new .w.new { background: transparent; }
+.reading-pane .w.new { background: var(--panel-2); }
+
+/* the hover popup: the word, then a control per character */
+#word-pop {
+  position: fixed; z-index: 220; min-width: 230px;
+  background: var(--panel); border: 1px solid var(--line-2); border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(17, 24, 39, .16); padding: 10px 12px;
+}
+.wp-head { display: flex; align-items: baseline; gap: 9px; margin-bottom: 8px; }
+.wp-head .han { font-size: 21px; font-weight: 700; }
+.wp-head b { color: var(--accent); font-size: 13.5px; }
+.wp-head .wp-d { color: var(--ink-2); font-size: 13px; }
+.wp-char { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
+.wp-c { font-size: 19px; width: 24px; text-align: center; color: var(--ink); }
+.seg3 { display: flex; gap: 4px; }
+.seg3 button { border: 1px solid transparent; background: none; border-radius: 4px;
+               padding: 3px 9px; font-size: 11.5px; font-weight: 600;
+               color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+.seg3 button.on.none { background: var(--panel-2); color: var(--ink); border-color: var(--line-2); }
+.seg3 button.on.learning { background: var(--blue); color: #fff; border-color: var(--blue); }
+.seg3 button.on.learned { background: var(--green); color: #fff; border-color: var(--green); }
+
+/* ---------- reader side panel: list headings, filters, character rows ---------- */
+.paneltitle { font-size: 17px; font-weight: 800; margin: 8px 0 12px; }
+
+/* the same filter buttons as the dashboard, sized for the panel */
+.filters.tight { gap: 6px; margin-bottom: 10px; }
+.filters.tight button { padding: 5px 11px; font-size: 12px; border-radius: 7px; }
+
+.crows { display: flex; flex-direction: column; }
+.crow {
+  display: grid; grid-template-columns: 34px 44px minmax(0, 1fr);
+  gap: 10px; align-items: center;
+  padding: 6px 4px; border-bottom: 1px solid var(--line); color: var(--ink);
+}
+.crow:hover { background: var(--accent-soft); text-decoration: none; }
+.crow .han { font-size: 22px; line-height: 1.1; }
+.crow .rk { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.crow .cp { font-size: 12.5px; color: var(--ink-2); }
+.crow.learned { background: var(--green-soft); }
+.crow.learning { background: var(--blue-soft); }
+.crow.learned:hover, .crow.learning:hover { background: var(--accent-soft); }
+
+/* ============================================================
+   Green has two jobs now. #22c55e stays on fills, borders, bars
+   and tints; text and numbers take the darker #15803d so they
+   are actually readable at small sizes.
+   ============================================================ */
+:root { --green-ink: #15803d; }
+
+/* green as text or as a number */
+.quad b.g,
+.bigcount,
+.rel-1,
+.grade .good,
+.gbox.known small,
+.tree .node.known .n,
+.vrow.learned .vw,
+.filters button.on.learned,
+#tile-menu button[data-s="learned"] { color: var(--green-ink); }
+
+/* white sitting on green needs the darker green behind it */
+.seg button.on,
+.status-btn,
+.seg3 button.on.learned {
+  background: var(--green-ink); border-color: var(--green-ink);
+}
+.status-btn:hover { background: #10632f; border-color: #10632f; }
+
+/* ---------- reader: give the reading view the full width ----------
+   It was being squeezed into the centred 1150px column, which left a
+   wide gap between the nav and the panel. */
+#app > .readlayout,
+#app > .crumb { max-width: none; }
+.readlayout { grid-template-columns: 430px minmax(0, 1fr); gap: 26px; }
+@media (max-width: 1100px) { .readlayout { grid-template-columns: 1fr; } }
+
+/* ---------- reader highlight colours + a smaller reading size ---------- */
+:root {
+  --hl-learned: #dcfce7;
+  --hl-learning: #dbeafe;
+  --hl-hover: #f1db84;
+}
+
+.reading-pane { font-size: 20px; line-height: 2.05; }
+.storytitle { font-size: 30px; }
+.storysub { font-size: 15.5px; margin-bottom: 18px; }
+
+.reading-pane .w { padding: 2px 1px; border-radius: 3px; }
+.reading-pane .w.learned { background: var(--hl-learned); }
+.reading-pane .w.learning { background: var(--hl-learning); }
+.reading-pane .w:hover { background: var(--hl-hover); }
+
+/* the legend swatches use the same three */
+.sw.learned { background: var(--hl-learned); border-color: var(--green); }
+.sw.learning { background: var(--hl-learning); border-color: var(--blue); }
+
+/* keep the list rows in step with the text */
+.crow.learned { background: var(--hl-learned); }
+.crow.learning { background: var(--hl-learning); }
+
+/* ---------- brand mark: the roof radical 宀 over an H ---------- */
+.topbar .brand { display: inline-flex; align-items: center; gap: 9px; }
+.topbar .brand .logo { width: 27px; height: 27px; flex: none; }
+.topbar .brand span { line-height: 1; }
+
+/* ============================================================
+   Responsive layout
+   ------------------------------------------------------------
+   The list card is sized from its tiles: its width is always a
+   whole number of cards plus the 30px gutter each side, so the
+   gutter stays exact and nothing is left hanging off a row. The
+   column snaps down one card at a time as the window narrows,
+   and --cols caps how many fit a row at each size.
+
+   Breakpoints
+     >= 1480   list + 322px rail side by side, up to 15 a row
+     1181-1479 list + 290px rail, list shrinks to fit
+     901-1180  one column, rail cards ABOVE the list, up to 12 a row
+     <= 900    nav slides in, up to 10 a row
+     <= 600    phones: tighter gutters, rail cards stacked
+   ============================================================ */
+
+/* #app is the measuring stick for the snapped column */
+#app { container-type: inline-size; }
+.dash > *, .readlayout > * { min-width: 0; }
+/* the title's own margin shorthand was pinning it left of a centred column */
+#app > h1:first-child { margin-inline: auto; }
+
+:root {
+  --gap: 20px;
+  --fit: calc(100cqi - var(--rail-w) - var(--gap));      /* room left for the list card */
+}
+
+/* fallback for browsers without round(): a fluid, centred column */
+.dash { grid-template-columns: minmax(0, var(--list-card-w)) var(--rail-w);
+        gap: var(--gap); justify-content: center; }
+
+@supports (width: round(down, 101px, 10px)) {
+  :root {
+    /* whole cards that fit, then the gutters and borders back on */
+    --list-fit: min(var(--list-card-w),
+      calc(round(down, var(--fit) - var(--card-pad) * 2 + 2px, var(--tile-w) + 4px)
+           + var(--card-pad) * 2 - 2px));
+  }
+  .dash { grid-template-columns: var(--list-fit) var(--rail-w); }
+  /* the page title and everything else on the page share the column's edges */
+  #app > * { max-width: min(var(--page-w), calc(var(--list-fit) + var(--gap) + var(--rail-w))); }
+}
+
+@media (max-width: 1479px) {
+  :root { --rail-w: 290px; }
+}
+
+/* ---- one column: the rail moves to the top ---- */
+@media (max-width: 1180px) {
+  :root { --cols: 12; --fit: 100cqi; --page-w: var(--list-card-w); }
+  .dash { grid-template-columns: minmax(0, var(--list-card-w)); }
+  @supports (width: round(down, 101px, 10px)) {
+    .dash { grid-template-columns: var(--list-fit); }
+    #app > * { max-width: var(--list-fit); }
+  }
+  .rail {
+    order: -1;                                  /* above the list, not below it */
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch;
+  }
+  .rail .card { margin: 0; }
+  .rail .card:last-child { grid-column: 1 / -1; }   /* study next runs full width */
+}
+
+/* ---- tablets and down: the nav becomes a drawer ---- */
+@media (max-width: 900px) {
+  :root { --cols: 10; --card-pad: 18px; }
+  .sidebar.open { box-shadow: 0 0 30px rgba(17, 24, 39, .25); }
+  body.nav-open::after {
+    content: ""; position: fixed; inset: 0; z-index: 85;
+    background: rgba(17, 24, 39, .38);
+  }
+  body.nav-open { overflow: hidden; }
+  .topbar { gap: 12px; padding: 0 14px; }
+  .topbar .search { flex: 1; width: auto; max-width: 440px; }
+  .hamburger { order: 3; }
+}
+
+/* ---- phones ---- */
+@media (max-width: 600px) {
+  :root { --card-pad: 14px; }
+  #app { padding: 14px 12px 48px; }
+  .card { padding-block: 16px; }
+  .rail { grid-template-columns: 1fr; gap: 12px; }
+  .rail .card { padding-inline: 16px; }
+  .page-title, #app > h1:first-child { font-size: 18px; margin-bottom: 12px; }
+  .topbar .brand { font-size: 19px; gap: 7px; }
+  .topbar .brand .logo { width: 24px; height: 24px; }
+  .filters { gap: 6px; }
+  .filters button { padding: 6px 11px; font-size: 12.5px; }
+  .streak { gap: 14px; }
+  .streak > div[style] { margin-left: 0 !important; }
+  th, td { padding: 8px 7px; }
+  td.g { font-size: 22px; }
+  .tabs a { padding: 7px 12px; font-size: 13px; }
+  .hero-glyph { font-size: 54px; width: 90px; padding: 24px 14px; }
+  .sec-h { font-size: 18px; margin-top: 22px; }
+  .decomp-box .decomp-row, .decomp-box.pad { padding: 14px; }
+  .flash { padding: 30px 16px; }
+  .flash .q { font-size: 84px; }
+  .grade button { padding: 11px 16px; }
+  .words { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
+
+/* wide tables scroll inside their card instead of pushing the page sideways */
+.card:has(table) { overflow-x: auto; }
+
+/* the breakdown tree can be wider than a phone */
+.decomp-box .decomp-body { overflow-x: auto; }
+
+/* ---- reader ---- */
+/* the text keeps a readable measure on big screens */
+.reading-pane { max-width: 860px; margin-inline: auto; }
+
+@media (max-width: 1100px) {
+  /* stacked: the side panel stays on top, stats and word list side by side */
+  .readside { position: static; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+              gap: 16px; align-items: start; }
+  .readside .card { margin: 0; }
+  .readlist { max-height: 46vh; }
+}
+@media (max-width: 700px) {
+  .readside { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .readlist { max-height: 40vh; }
+  .storytitle { font-size: 24px; }
+  .reading-pane { font-size: 18px; }
+  .vrow { grid-template-columns: 72px 80px minmax(0, 1fr); }
+  #word-pop { min-width: 0; max-width: calc(100vw - 16px); }
+}
+
+/* ---------- reader popup: each character with the meaning it has in this word ---------- */
+#word-pop { max-width: min(360px, calc(100vw - 16px)); }
+.wp-head { flex-wrap: wrap; row-gap: 2px; }
+.wp-char.multi { align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--line); }
+.wp-char.multi .wp-c { font-size: 21px; line-height: 1.2; margin-top: 1px; }
+.wp-cbody { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.wp-cm { font-size: 12.5px; color: var(--ink-2); line-height: 1.35; }
+.wp-cm b { color: var(--accent); font-weight: 700; margin-right: 3px; }
+
+/* the character list gives the reading used in the story, then its meaning */
+.crow .cp { line-height: 1.35; }
+.crow .cp b { color: var(--accent); font-weight: 700; margin-right: 4px; }

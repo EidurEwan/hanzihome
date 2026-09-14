@@ -1,0 +1,711 @@
+# HSK 6 - Proficient
+# Written register: 倘若, 以至于, 何尝, 未尝不是, 于…而言, 与其说…不如说, 亦,
+# 均, 自…至今, 待, 直至…为止, 以…为, 不禁, 所谓, 鲜有, 此番, 半晌, chengyu.
+
+=== s21
+level: 6
+tag: A dying trade
+zh: 修表的人
+en: The Watchmaker
+text:
+在 老城区 一 条 狭窄 的 巷子 深处 ， 有 一 间 不足 十 平方米 的 修表 铺 。 店主 姓 周 ， 年逾古稀 ， 自 十六 岁 拜师 学艺 至今 ， 已 与 钟表 打 了 半 个 多 世纪 的 交道 。
+
+铺子 里 陈设 极为 简陋 ： 一 张 旧 木桌 ， 一 盏 台灯 ， 一 排 大小 不一 的 镊子 和 螺丝刀 。 周 师傅 修 表 时 ， 总 要 戴上 一 只@mw 放大镜 ， 屏住 呼吸 ， 仿佛 整个 世界 都 缩小 到 了 那 方寸 之间 。 倘若 有人 在 此时 跟 他 说话 ， 他 往往 充耳不闻 。
+
+近 些 年 来@over ， 随着 智能手机 的@poss 普及 ， 戴 手表 的 人 日益 减少 ， 前来 修 表 的 顾客 更是 寥寥无几 。 附近 的 店铺 纷纷 改行 ， 有人 劝 他 不妨 也 转 做 手机 维修 ， 以 维持 生计 。 他 却 只是 笑笑 ： “ 手艺 这 东西 ， 一旦 丢 了 ， 就 再也 捡 不 回来 了@change 。 ”
+
+去年 冬天 ， 一 位 年轻人 拿 着 一 块 停摆 多年 的 怀表 找 上门 来 。 那 是 他 祖父 的@poss 遗物 ， 辗转 问 了 好 几 家 店 ， 均 被 告知 零件 早已 停产 ， 无法 修复 。 周 师傅 端详 良久 ， 未置可否 ， 只 让 他 一 个 月 后 再 来 。
+
+此后 的 一 个 月 里 ， 他 几乎 每晚 都 在 灯 下 忙 到 深夜 ， 缺 的 零件 便 亲手 一点点 打磨 出来 。 当 年轻人 再次 推开 那 扇 木门 时 ， 怀表 的@poss 秒针 正 不紧不慢 地 走 着 。 年轻人 眼眶 泛红 ， 执意 要@want 多@extra 付 钱 ， 周 师傅 却 摆摆 手 ， 说 能 听到 老 物件 重新 “ 活 ” 过来 的 声音 ， 于 他 而言 ， 便 是 最 好@good 的 酬劳 。
+words:
+在 | zài | in; at; under
+老城区 | lǎo chéng qū | old town
+一 | yī | one; a
+条 | tiáo | (measure word for lanes, streets)
+狭窄 | xiá zhǎi | narrow
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+巷子 | xiàng zi | lane; alley
+深处 | shēn chù | deep inside; far end
+间 | jiān | (measure word for rooms, small shops)
+不足 | bù zú | less than
+平方米 | píng fāng mǐ | square metres
+修表 | xiū biǎo | watch repair
+铺 | pù | shop
+店主 | diàn zhǔ | shop owner
+姓 | xìng | to be surnamed
+周 | Zhōu | Zhou (name)
+年逾古稀 | nián yú gǔ xī | past seventy years of age
+自 | zì | since; from
+拜师 | bài shī | to become an apprentice to a master
+学艺 | xué yì | to learn a craft
+至今 | zhì jīn | to this day
+已 | yǐ | already
+钟表 | zhōng biǎo | clocks and watches
+打 | dǎ | (打交道 = to deal with; to work with)
+了 | le | (the action is done)
+了@change | le | (a new situation: no longer)
+多 | duō | more than (半个多世纪 = over half a century)
+多@extra | duō | extra; more
+世纪 | shì jì | century
+交道 | jiāo dao | dealings (打交道 = to deal with)
+铺子 | pù zi | shop
+里 | li | in; within
+陈设 | chén shè | furnishings
+极为 | jí wéi | extremely
+简陋 | jiǎn lòu | bare; simple
+张 | zhāng | (measure word for tables)
+木桌 | mù zhuō | wooden table
+盏 | zhǎn | (measure word for lamps)
+台灯 | tái dēng | desk lamp
+排 | pái | row
+大小 | dà xiǎo | size
+不一 | bù yī | differing
+镊子 | niè zi | tweezers
+和 | hé | and
+螺丝刀 | luó sī dāo | screwdriver(s)
+师傅 | shī fu | master (craftsman)
+表 | biǎo | watch
+总 | zǒng | always
+要 | yào | would (always)
+要@want | yào | to want to
+戴上 | dài shang | to put on
+只@mw | zhī | (measure word: a single)
+只 | zhǐ | only
+放大镜 | fàng dà jìng | magnifying glass; loupe
+屏住 | bǐng zhù | to hold (one's breath)
+呼吸 | hū xī | breath
+仿佛 | fǎng fú | as if
+整个 | zhěng gè | whole
+世界 | shì jiè | world
+都 | dōu | all; every
+缩小 | suō xiǎo | to shrink
+到 | dào | to; until
+那 | nà | that
+方寸 | fāng cùn | a tiny space
+之间 | zhī jiān | within; between
+倘若 | tǎng ruò | if
+有人 | yǒu rén | someone
+此时 | cǐ shí | at this time
+跟 | gēn | to; with
+往往 | wǎng wǎng | usually; often
+充耳不闻 | chōng ěr bù wén | to hear nothing at all
+近 | jìn | recent (近些年来 = in recent years)
+些 | xiē | some (近些年 = recent years)
+来@over | lái | (…年来 = over the past … years)
+来 | lái | to come
+智能手机 | zhì néng shǒu jī | smartphone
+普及 | pǔ jí | becoming common everywhere
+戴 | dài | to wear
+手表 | shǒu biǎo | wristwatch
+日益 | rì yì | day by day; increasingly
+减少 | jiǎn shǎo | to decrease
+前来 | qián lái | to come (to)
+顾客 | gù kè | customers
+更是 | gèng shì | even more so
+寥寥无几 | liáo liáo wú jǐ | very few
+店铺 | diàn pù | shops
+纷纷 | fēn fēn | one after another
+改行 | gǎi háng | to change trade
+劝 | quàn | to urge; to advise
+不妨 | bù fáng | might as well
+转 | zhuǎn | to switch (to)
+做 | zuò | to do
+维修 | wéi xiū | repair (work)
+以 | yǐ | in order to
+维持 | wéi chí | to keep up
+生计 | shēng jì | livelihood
+却 | què | but; yet
+笑笑 | xiào xiao | to smile
+手艺 | shǒu yì | craft; skill
+这 | zhè | this (手艺这东西 = a craft, this thing)
+一旦 | yī dàn | once
+丢 | diū | to lose
+就 | jiù | then
+捡 | jiǎn | to pick up
+回来 | huí lai | (after a verb) back (捡不回来 = can't get back)
+年轻人 | nián qīng rén | young man
+着 | zhe | (ongoing: …ing)
+块 | kuài | (measure word for watches)
+停摆 | tíng bǎi | to stop (of a clock or watch)
+怀表 | huái biǎo | pocket watch
+找 | zhǎo | to look for
+上门 | shàng mén | to come to the door
+祖父 | zǔ fù | grandfather
+遗物 | yí wù | thing left by someone who has died
+辗转 | zhǎn zhuǎn | going from place to place
+好 | hǎo | quite (好几 = quite a few)
+几 | jǐ | several
+家 | jiā | (measure word for shops)
+均 | jūn | all; each
+被 | bèi | (passive: to be …ed)
+告知 | gào zhī | to inform
+零件 | líng jiàn | parts
+停产 | tíng chǎn | out of production
+无法 | wú fǎ | unable to
+修复 | xiū fù | to restore; to repair
+端详 | duān xiang | to look over carefully
+良久 | liáng jiǔ | for a long while
+未置可否 | wèi zhì kě fǒu | to say neither yes nor no
+让 | ràng | to tell (someone to)
+后 | hòu | after; later
+再 | zài | again (再来 = come back)
+此后 | cǐ hòu | after that
+每晚 | měi wǎn | every night
+灯 | dēng | lamp
+下 | xià | under
+深夜 | shēn yè | late at night
+缺 | quē | to be missing
+便 | biàn | (literary 就) then; simply
+亲手 | qīn shǒu | by hand; personally
+一点点 | yī diǎn diǎn | bit by bit
+打磨 | dǎ mó | to grind; to file down
+出来 | chu lai | (after a verb) out; into being
+当 | dāng | (当…时: when)
+再次 | zài cì | once again
+推开 | tuī kāi | to push open
+扇 | shàn | (measure word for doors)
+木门 | mù mén | wooden door
+秒针 | miǎo zhēn | second hand
+正 | zhèng | (right then) …ing
+不紧不慢 | bù jǐn bù màn | unhurried; steady
+地 | de | (links a description to the verb: …ly)
+走 | zǒu | to tick; to run (of a watch)
+眼眶 | yǎn kuàng | eyes (the rims of the eyes)
+泛红 | fàn hóng | to redden
+执意 | zhí yì | to insist on
+付 | fù | to pay
+摆摆 | bǎi bai | to wave (摆摆手 = wave it away)
+听到 | tīng dào | to hear
+老 | lǎo | old
+物件 | wù jiàn | object; thing
+重新 | chóng xīn | again; anew
+活 | huó | to be alive
+过来 | guò lai | (活过来 = to come back to life)
+于 | yú | (于…而言 = for …)
+而言 | ér yán | (于…而言 = as far as … is concerned)
+好@good | hǎo | good
+酬劳 | chóu láo | reward; payment
+
+=== s22
+level: 6
+tag: A morning walk
+zh: 雾里的城市
+en: The City in Fog
+text:
+清晨 六 点 ， 我 照例 出门 散步 。 推开 楼道 的@poss 门 ， 却 发现 整 座 城市 已 被 浓雾 吞没 。 平日 里 触手可及 的 高楼 ， 此刻 只 剩下 模糊 的 轮廓 ， 仿佛 一 幅 尚未 完成 的 水墨画 。
+
+街道 上 行人 寥寥 ， 车辆 亦 放慢 了 速度 ， 车灯 在 雾 中 晕 开 一 团团 昏黄 的 光 。 我 沿着 熟悉 的 路线 往 河边 走 ， 往常 一眼 便 能 望见 的 大桥 ， 今天 直到 走 近 了 才 依稀可辨 。 声音 似乎 也 被 雾气 过滤 了 ， 远处 的 喇叭 声 听 上去 格外 遥远 。
+
+河边 的 长椅 上 坐 着 一 位 老人 ， 正 对 着 茫茫 的 河面 拉 二胡 。 琴声 低沉 而 悠长 ， 与 这 灰蒙蒙 的 清晨 竟 出奇 地 契合 。 我 不由得 放慢 脚步 ， 在 不远 处 驻足 聆听 。 一 曲 终了 ， 老人 抬 起 头 ， 冲 我 笑 了 笑 ， 仿佛 早已 察觉 我 的@poss 存在 。
+
+“ 雾天 好 啊 ， ” 他 说 ， “ 看 不 清 远处 ， 人 才 肯 留意 眼前 。 ” 我 一时 语塞 。 细细 想来 ， 平日 行色匆匆 ， 我 何尝 真正 看 过 这 条 每 天 经过 的 河 ？ 我们 总 惦记 着 远方 的 目标 ， 以至于 对@to 身边 的 风景 视而不见 。
+
+待 我 散步 归来 ， 太阳 已 渐渐 驱散 了 雾气 ， 城市 恢复 了 往日 的 喧嚣 与 清晰 。 然而 那 天 早晨 的 琴声 ， 连同 老人 那 句 话 ， 却 久久 萦绕 在 我 心头 。 或许 ， 偶尔 迷失 于 雾 中 ， 未尝 不 是 一 件 好事 。
+words:
+清晨 | qīng chén | early morning
+点 | diǎn | o'clock
+照例 | zhào lì | as usual
+出门 | chū mén | to go out
+散步 | sàn bù | to go for a walk
+推开 | tuī kāi | to push open
+楼道 | lóu dào | stairwell
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+却 | què | but; only to (find)
+整 | zhěng | whole
+已 | yǐ | already
+被 | bèi | (passive: to be …ed)
+浓雾 | nóng wù | thick fog
+吞没 | tūn mò | to swallow up
+平日 | píng rì | ordinary days; usually
+里 | li | (平日里 = on ordinary days)
+触手可及 | chù shǒu kě jí | within reach
+高楼 | gāo lóu | tall buildings
+此刻 | cǐ kè | at this moment
+只 | zhǐ | only
+剩下 | shèng xià | to be left
+模糊 | mó hu | blurred
+轮廓 | lún kuò | outline(s)
+仿佛 | fǎng fú | as if; like
+一 | yī | one; a
+幅 | fú | (measure word for paintings)
+尚未 | shàng wèi | not yet
+完成 | wán chéng | to finish
+水墨画 | shuǐ mò huà | ink-wash painting
+街道 | jiē dào | street(s)
+上 | shang | on
+行人 | xíng rén | pedestrians
+寥寥 | liáo liáo | very few
+车辆 | chē liàng | vehicles; traffic
+亦 | yì | (literary) also
+放慢 | fàng màn | to slow down
+了 | le | (the action is done)
+速度 | sù dù | speed
+车灯 | chē dēng | headlights
+在 | zài | in; at
+雾 | wù | fog
+中 | zhōng | in; in the middle of
+晕 | yùn | to blur; to smudge
+开 | kāi | (晕开 = spread out in a blur)
+团团 | tuán tuán | patches (一团团 = patch after patch)
+昏黄 | hūn huáng | dim yellow
+光 | guāng | light
+沿着 | yán zhe | along
+熟悉 | shú xī | familiar
+路线 | lù xiàn | route
+往 | wǎng | towards
+河边 | hé biān | riverside
+走 | zǒu | to walk
+往常 | wǎng cháng | usually
+一眼 | yī yǎn | at a glance
+便 | biàn | (literary 就) easily; then
+望见 | wàng jiàn | to see (in the distance)
+大桥 | dà qiáo | (big) bridge
+直到 | zhí dào | until
+才 | cái | only then
+依稀可辨 | yī xī kě biàn | faintly visible
+似乎 | sì hū | to seem
+雾气 | wù qì | fog; mist
+过滤 | guò lǜ | to filter
+远处 | yuǎn chù | in the distance
+喇叭 | lǎ ba | horn
+声 | shēng | sound
+听 | tīng | to sound; to hear
+上去 | shang qu | (听上去 = to sound)
+格外 | gé wài | especially
+遥远 | yáo yuǎn | distant; far away
+长椅 | cháng yǐ | bench
+坐 | zuò | to sit
+着 | zhe | (ongoing: …ing)
+老人 | lǎo rén | old man
+正 | zhèng | (right then) …ing
+对 | duì | to face
+对@to | duì | towards
+茫茫 | máng máng | vast and hazy
+河面 | hé miàn | surface of the river
+拉 | lā | to play (a bowed instrument)
+二胡 | èr hú | erhu (two-stringed fiddle)
+琴声 | qín shēng | the sound of the instrument
+低沉 | dī chén | low; deep
+而 | ér | and (at the same time)
+悠长 | yōu cháng | long and lingering
+这 | zhè | this
+灰蒙蒙 | huī méng méng | grey and misty
+竟 | jìng | unexpectedly
+出奇 | chū qí | remarkably
+地 | de | (links a description to the verb: …ly)
+契合 | qì hé | to fit perfectly
+不由得 | bù yóu de | can't help (doing)
+脚步 | jiǎo bù | pace; steps
+不远 | bù yuǎn | not far
+处 | chù | place (不远处 = not far off)
+驻足 | zhù zú | to stop (walking)
+聆听 | líng tīng | to listen closely
+曲 | qǔ | piece (of music)
+终了 | zhōng liǎo | to come to an end
+抬 | tái | to raise
+起 | qǐ | up
+头 | tóu | head
+冲 | chòng | at; towards
+笑 | xiào | to smile
+早已 | zǎo yǐ | long since
+察觉 | chá jué | to be aware of
+存在 | cún zài | presence
+雾天 | wù tiān | foggy day(s)
+好 | hǎo | good
+啊 | a | (particle: warm tone)
+看 | kàn | to see; to look at
+清 | qīng | clearly
+肯 | kěn | to be willing to
+留意 | liú yì | to pay attention to
+眼前 | yǎn qián | what is right in front of you
+一时 | yī shí | for a moment
+语塞 | yǔ sè | lost for words
+细细 | xì xì | carefully
+想来 | xiǎng lái | (细细想来 = thinking it over)
+行色匆匆 | xíng sè cōng cōng | in a hurry
+何尝 | hé cháng | (when have I ever …?)
+过 | guo | (have …ed)
+条 | tiáo | (measure word for rivers)
+天 | tiān | day
+经过 | jīng guò | to pass by
+河 | hé | river
+总 | zǒng | always
+惦记 | diàn jì | to keep thinking about
+远方 | yuǎn fāng | faraway
+目标 | mù biāo | goal(s)
+以至于 | yǐ zhì yú | so much so that
+身边 | shēn biān | around (us)
+风景 | fēng jǐng | scenery
+视而不见 | shì ér bù jiàn | to look but not see
+待 | dài | by the time
+归来 | guī lái | to come back
+太阳 | tài yáng | sun
+渐渐 | jiàn jiàn | gradually
+驱散 | qū sàn | to drive away
+恢复 | huī fù | to regain
+往日 | wǎng rì | usual; of other days
+喧嚣 | xuān xiāo | noise and bustle
+清晰 | qīng xī | clarity
+然而 | rán ér | however
+那 | nà | that
+早晨 | zǎo chen | morning
+连同 | lián tóng | together with
+久久 | jiǔ jiǔ | for a long time
+萦绕 | yíng rào | to linger
+心头 | xīn tóu | mind; heart
+偶尔 | ǒu ěr | occasionally
+迷失 | mí shī | to get lost
+于 | yú | in (literary)
+未尝 | wèi cháng | (未尝不是 = may well be)
+好事 | hǎo shì | good thing
+
+=== s23
+level: 6
+tag: Going home
+zh: 年底的列车
+en: The Last Train of the Year
+text:
+腊月 二十八 ， 距离 除夕 只 剩 两 天 。 北京 西站 的@poss 候车 大厅 里 人山人海 ， 行李箱 、 编织袋 和 大包小包 的 年货 几乎 堆满 了 每 一 个 角落 。 广播 里 不时 传来 列车 晚点 的 通知 ， 焦急 的 旅客 们 却 鲜有 抱怨 —— 毕竟 ， 只要 能 登 上 回家 的 车 ， 等 多 久 都 值得 。
+
+我 的@poss 座位 靠 窗 ， 对面 是 一 对 在 工地 打工 的 中年 夫妇 。 他们 一年到头 难得 回 一 次 家 ， 此番 回去 ， 是 为了 陪 年迈 的 母亲 过年 ， 顺便 看看 在 老家 上@attend 初中 的 儿子 。 妻子 从 包 里 小心翼翼 地 掏出 一 件 崭新 的 羽绒服 ， 说 是 给 儿子 买 的@shi ， 已经 在 柜子 里 藏 了 大半年 。
+
+列车 驶 出 城市 ， 窗外 的 高楼 逐渐 被 田野 和 村庄 取代 。 丈夫 望 着 窗外 ， 半晌 才 开口 ： “ 去年 回去 ， 儿子 跟 我 都 生分 了@change ， 喊 了 一 声 ‘ 叔叔 ’ 。 ” 说罢 ， 他 苦笑 了 一下 ， 眼神 里 却 满 是 愧疚 。 妻子 在 一旁 默默 地 握住 了 他 的@poss 手 。
+
+夜 深 了@change ， 车厢 里 渐渐 安静 下来 。 我 却 迟迟 难以 入睡 ， 脑海 里 反复 浮现 着 那 声 “ 叔叔 ” 。 在 这 座 城市 里 ， 有 无数 像 他们 一样 的 人 ， 用 汗水 撑 起 了 高楼 与 道路 ， 却 不得不 与 至亲 聚少离多 。 所谓 “ 回家 ” ， 于 他们 而言 ， 或许 是 一 年 中 最 奢侈 的 愿望 。
+
+次日 清晨 ， 列车 抵达 终点站 。 下 车 时 ， 那 位 丈夫 特意 把 羽绒服 从 妻子 手 里 接 了 过去 ， 说 ： “ 这 次 我 亲手 给@give 他 。 ” 望 着 他们 消失 在 人群 中 的 背影 ， 我 默默 祝愿 ， 那 个 孩子 能 在 新年 的@poss 第一 天 ， 响亮 地 喊 出 一 声 “ 爸爸 ” 。
+words:
+腊月 | là yuè | the twelfth month of the lunar year
+距离 | jù lí | until (in time)
+除夕 | chú xī | New Year's Eve
+只 | zhǐ | only
+剩 | shèng | to be left
+天 | tiān | day
+北京 | Běi jīng | Beijing
+西站 | xī zhàn | West (Railway) Station
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+的@shi | de | (是…的: stresses who it is for)
+候车 | hòu chē | waiting (for trains)
+大厅 | dà tīng | hall
+里 | li | in
+人山人海 | rén shān rén hǎi | packed with people
+行李箱 | xíng li xiāng | suitcase(s)
+编织袋 | biān zhī dài | woven plastic bags
+和 | hé | and
+大包小包 | dà bāo xiǎo bāo | bags big and small
+年货 | nián huò | New Year shopping
+堆满 | duī mǎn | to pile up in
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+一 | yī | one; a
+角落 | jiǎo luò | corner
+广播 | guǎng bō | loudspeaker announcements
+不时 | bù shí | from time to time
+传来 | chuán lái | to come through
+列车 | liè chē | train
+晚点 | wǎn diǎn | delayed
+通知 | tōng zhī | announcement
+焦急 | jiāo jí | anxious
+旅客 | lǚ kè | passengers
+却 | què | but; yet
+鲜有 | xiǎn yǒu | rarely (is there)
+抱怨 | bào yuàn | to complain
+毕竟 | bì jìng | after all
+登 | dēng | to board
+上 | shang | on (to)
+上@attend | shàng | to attend (school)
+车 | chē | train
+多 | duō | how (多久 = however long)
+都 | dōu | (however long … it is still)
+值得 | zhí de | worth it
+座位 | zuò wèi | seat
+靠 | kào | by; next to
+窗 | chuāng | window
+对面 | duì miàn | opposite
+对 | duì | pair; couple
+在 | zài | at; in; on
+工地 | gōng dì | building site
+中年 | zhōng nián | middle-aged
+夫妇 | fū fù | (married) couple
+一年到头 | yī nián dào tóu | all year round
+难得 | nán dé | rarely
+回 | huí | to return (home)
+家 | jiā | home
+此番 | cǐ fān | this time
+陪 | péi | to spend time with
+年迈 | nián mài | elderly
+母亲 | mǔ qīn | mother
+过年 | guò nián | to celebrate New Year
+顺便 | shùn biàn | while there
+看看 | kàn kan | to see; to visit
+老家 | lǎo jiā | hometown
+初中 | chū zhōng | junior high school
+儿子 | ér zi | son
+妻子 | qī zi | wife
+从 | cóng | from; out of
+包 | bāo | bag
+小心翼翼 | xiǎo xīn yì yì | very carefully
+地 | de | (links a description to the verb: …ly)
+掏出 | tāo chū | to take out
+崭新 | zhǎn xīn | brand new
+羽绒服 | yǔ róng fú | down jacket
+给 | gěi | for (someone)
+给@give | gěi | to give
+柜子 | guì zi | cupboard
+大半年 | dà bàn nián | most of a year
+驶 | shǐ | to travel (of a train)
+出 | chū | out (of)
+窗外 | chuāng wài | outside the window
+高楼 | gāo lóu | tall buildings
+逐渐 | zhú jiàn | gradually
+被 | bèi | (passive: to be …ed)
+田野 | tián yě | fields
+村庄 | cūn zhuāng | villages
+取代 | qǔ dài | to replace
+丈夫 | zhàng fu | husband
+望 | wàng | to gaze (at)
+着 | zhe | (ongoing: …ing)
+半晌 | bàn shǎng | a long while
+才 | cái | only then
+开口 | kāi kǒu | to speak
+跟 | gēn | with; towards
+生分 | shēng fen | distant; like strangers
+喊 | hǎn | to call (out)
+声 | shēng | (measure word for a call or word)
+叔叔 | shū shu | uncle
+说罢 | shuō bà | having said this
+苦笑 | kǔ xiào | to smile bitterly
+一下 | yī xià | (after a verb) briefly
+眼神 | yǎn shén | the look in his eyes
+满 | mǎn | full (满是 = full of)
+愧疚 | kuì jiù | guilt
+一旁 | yī páng | beside (him)
+默默 | mò mò | silently
+握住 | wò zhù | to take hold of
+夜 | yè | night
+深 | shēn | late; deep
+车厢 | chē xiāng | carriage
+渐渐 | jiàn jiàn | gradually
+安静 | ān jìng | quiet
+下来 | xia lai | (安静下来 = to settle into quiet)
+迟迟 | chí chí | for a long time
+难以 | nán yǐ | hard to
+入睡 | rù shuì | to fall asleep
+脑海 | nǎo hǎi | mind
+反复 | fǎn fù | over and over
+浮现 | fú xiàn | to come to mind
+那 | nà | that
+这 | zhè | this
+无数 | wú shù | countless
+像 | xiàng | like
+一样 | yī yàng | the same (像…一样 = like …)
+用 | yòng | with
+汗水 | hàn shuǐ | sweat
+撑 | chēng | to hold up; to prop up
+起 | qǐ | up
+道路 | dào lù | roads
+不得不 | bù dé bù | to have to
+至亲 | zhì qīn | closest family
+聚少离多 | jù shǎo lí duō | together little, apart much
+所谓 | suǒ wèi | what is called; so-called
+于 | yú | (于…而言 = for …)
+而言 | ér yán | (于…而言 = as far as … is concerned)
+中 | zhōng | in
+奢侈 | shē chǐ | luxurious
+愿望 | yuàn wàng | wish
+次日 | cì rì | the next day
+清晨 | qīng chén | early morning
+抵达 | dǐ dá | to arrive at
+终点站 | zhōng diǎn zhàn | terminus
+下 | xià | to get off
+特意 | tè yì | especially; on purpose
+把 | bǎ | (把 moves the object before the verb)
+接 | jiē | to take (from someone)
+过去 | guo qu | (after a verb) over (接过去 = take it over)
+亲手 | qīn shǒu | with his own hands
+消失 | xiāo shī | to disappear
+人群 | rén qún | crowd
+背影 | bèi yǐng | figures seen from behind
+祝愿 | zhù yuàn | to wish
+新年 | xīn nián | New Year
+响亮 | xiǎng liàng | loud and clear
+
+=== s24
+level: 6
+tag: Words unsaid
+zh: 没写完的信
+en: The Unfinished Letter
+text:
+父亲 是 个 寡言 的 人 。 在 我 的@poss 记忆 里 ， 他 几乎 从未 说 过 “ 我 爱 你 ” 之类 的 话 ， 就@even 连 夸奖 也@even 极为 吝啬 。 我 考 上 重点 大学 那 年 ， 亲戚 们 纷纷 登门 道贺 ， 他 也@just 不过 淡淡 地 说 了 一 句 ： “ 别 骄傲 。 ”
+
+青春期 的 我 对 他 的@poss 冷淡 耿耿于怀 ， 父子 之间 的 隔阂 也 随之 与日俱增 。 工作 以后 ， 我 远 赴 南方 ， 一 年 只 在 春节 回 一 趟 家 ， 与其 说 是 团聚 ， 不如 说 是 例行公事 。 每 次 通话 ， 我们 聊 的@nom 无非 是 天气 和 身体 ， 三言两语 便 匆匆 挂断 。
+
+前年 秋天 ， 父亲 突发 脑溢血 ， 抢救 无效 离世 。 料理 后事 时 ， 我 在 他 书桌 的@poss 抽屉 里 发现 了 一 叠 信纸 。 那 是 一 封 没 写 完 的 信 ， 开头 写 着 我 的@poss 小名 ， 字迹 一笔一画 ， 看 得@can 出 写 得 极 慢 ， 有 几 处 还 被 反复 涂改 过 。
+
+信 中 ， 他 为 当年 没 能 去 参加 我 的@poss 毕业 典礼 而 道歉 ， 说 那 天 他 其实 已经 买 好 了 车票 ， 却 因 厂 里 临时 加班 未能 成行 。 他 还 写道 ， 每 次 我 离家 ， 他 都 会 站 在 阳台 上@on ， 目送 我 走 到 巷子 口 ， 直至 再也 看 不 见 为止 。 信 的@poss 最后 一 行 只 写 了 半 句 ： “ 其实 爸爸 一直 以 你 为@wei2 …… ”
+
+我 捧 着 那 几 页 纸 ， 在 书房 里 坐 了 整整 一 夜 。 原来 那些 我 以为 不 存在 的 关心 ， 始终 都 在@exist ， 只是 被 他 笨拙 地 藏 了 起来 。 倘若 当初 我 能 多 一些 耐心 ， 多 问 一 句 ， 或许 就 不 至于 留下 这般 遗憾 。 如今 ， 我 每 周 都 会 给 母亲 打 电话 ， 挂断 之前 ， 总 不 忘 说 一 句 ： “ 妈 ， 我 爱 您 。 ”
+words:
+父亲 | fù qīn | father
+个 | ge | (measure word: 是个…的人 = is a … person)
+寡言 | guǎ yán | of few words
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+的@nom | de | (…的: what (we talked about))
+在 | zài | in; at; on
+在@exist | zài | to be there
+里 | li | in
+从未 | cóng wèi | never
+过 | guo | (have …ed)
+之类 | zhī lèi | and the like
+就@even | jiù | (就连…也 = even)
+就 | jiù | then
+连 | lián | (连…也: even)
+夸奖 | kuā jiǎng | praise
+也@even | yě | (连…也: even)
+也@just | yě | (也不过 = merely; no more than)
+极为 | jí wéi | extremely
+吝啬 | lìn sè | stingy
+考 | kǎo | to sit an exam (考上 = to get into)
+上 | shàng | (考上 = to get into)
+上@on | shang | on
+重点 | zhòng diǎn | key; top (重点大学 = top university)
+那 | nà | that
+亲戚 | qīn qi | relatives
+纷纷 | fēn fēn | one after another
+登门 | dēng mén | to call at the house
+道贺 | dào hè | to congratulate
+不过 | bù guò | only; merely
+淡淡 | dàn dàn | flatly; coolly
+地 | de | (links a description to the verb: …ly)
+了 | le | (the action is done)
+一 | yī | one; a
+别 | bié | don't
+骄傲 | jiāo ào | to get big-headed
+青春期 | qīng chūn qī | adolescence
+对 | duì | about; towards
+冷淡 | lěng dàn | coldness
+耿耿于怀 | gěng gěng yú huái | to be unable to get over
+父子 | fù zǐ | father and son
+之间 | zhī jiān | between
+隔阂 | gé hé | distance; gulf
+随之 | suí zhī | along with it
+与日俱增 | yǔ rì jù zēng | to grow day by day
+远 | yuǎn | far away
+赴 | fù | to go to
+南方 | nán fāng | the south
+只 | zhǐ | only
+春节 | Chūn jié | Spring Festival (Chinese New Year)
+回 | huí | to return (home)
+趟 | tàng | (measure word for trips)
+家 | jiā | home
+与其 | yǔ qí | (与其说…不如说 = it was less … than …)
+团聚 | tuán jù | reunion
+不如 | bù rú | (…不如说 = rather)
+例行公事 | lì xíng gōng shì | routine formality
+通话 | tōng huà | phone call
+聊 | liáo | to chat
+无非 | wú fēi | nothing but
+和 | hé | and
+三言两语 | sān yán liǎng yǔ | a few words
+便 | biàn | (literary 就) then
+匆匆 | cōng cōng | hurriedly
+挂断 | guà duàn | to hang up
+前年 | qián nián | the year before last
+秋天 | qiū tiān | autumn
+突发 | tū fā | to suffer suddenly
+脑溢血 | nǎo yì xuè | brain haemorrhage
+抢救 | qiǎng jiù | emergency treatment
+无效 | wú xiào | unsuccessful
+离世 | lí shì | to pass away
+料理 | liào lǐ | to take care of
+后事 | hòu shì | funeral arrangements
+书桌 | shū zhuō | desk
+抽屉 | chōu ti | drawer
+叠 | dié | pile; stack
+信纸 | xìn zhǐ | letter paper
+封 | fēng | (measure word for letters)
+没 | méi | not; did not
+完 | wán | finished
+信 | xìn | letter
+开头 | kāi tóu | beginning
+着 | zhe | (ongoing: …ing / is …ed)
+小名 | xiǎo míng | childhood name
+字迹 | zì jì | handwriting
+一笔一画 | yī bǐ yī huà | stroke by stroke
+看 | kàn | to see
+得 | de | (links a verb to how it was done)
+得@can | de | (看得出 = can tell)
+出 | chū | out (看得出 = can tell)
+极 | jí | extremely
+几 | jǐ | a few
+处 | chù | place(s)
+还 | hái | also; even
+被 | bèi | (passive: to be …ed)
+反复 | fǎn fù | over and over
+涂改 | tú gǎi | to cross out and rewrite
+中 | zhōng | in
+为 | wèi | for (为…而道歉 = to apologize for)
+为@wei2 | wéi | (以…为 = to regard … as)
+去 | qù | to go
+参加 | cān jiā | to attend
+典礼 | diǎn lǐ | ceremony
+而 | ér | (为…而道歉: to apologize for)
+道歉 | dào qiàn | to apologize
+天 | tiān | day
+好 | hǎo | (after a verb) done; already
+车票 | chē piào | (train) ticket
+却 | què | but
+因 | yīn | because of
+厂 | chǎng | factory
+临时 | lín shí | at short notice
+加班 | jiā bān | to work overtime
+未能 | wèi néng | to be unable to
+成行 | chéng xíng | to make the trip
+写道 | xiě dào | to write (that)
+离家 | lí jiā | to leave home
+都 | dōu | always; all along
+会 | huì | would (always); will
+阳台 | yáng tái | balcony
+目送 | mù sòng | to watch (someone) go
+走 | zǒu | to walk
+到 | dào | to
+巷子 | xiàng zi | lane
+口 | kǒu | entrance (巷子口 = end of the lane)
+直至 | zhí zhì | until
+见 | jiàn | (看不见 = can't see)
+为止 | wéi zhǐ | (直至…为止 = until)
+最后 | zuì hòu | last
+行 | háng | line (of writing)
+一直 | yī zhí | always; all along
+以 | yǐ | (以…为 = to regard … as)
+捧 | pěng | to hold (in both hands)
+纸 | zhǐ | sheets (of paper)
+书房 | shū fáng | study
+坐 | zuò | to sit
+整整 | zhěng zhěng | a whole
+夜 | yè | night
+那些 | nà xiē | those
+存在 | cún zài | to exist
+关心 | guān xīn | care; concern
+笨拙 | bèn zhuō | clumsy
+起来 | qi lai | (after a verb) away (藏起来 = hidden away)
+倘若 | tǎng ruò | if
+当初 | dāng chū | back then
+多 | duō | more
+耐心 | nài xīn | patience
+至于 | zhì yú | (不至于 = wouldn't have come to)
+留下 | liú xià | to be left with
+这般 | zhè bān | such
+遗憾 | yí hàn | regret
+周 | zhōu | week
+给 | gěi | to (someone)
+母亲 | mǔ qīn | mother
+打 | dǎ | to make (a phone call)
+之前 | zhī qián | before
+总 | zǒng | always
+忘 | wàng | to forget
+妈 | mā | mum

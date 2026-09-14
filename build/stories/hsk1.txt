@@ -1,0 +1,274 @@
+# HSK 1 - Beginner
+# Grammar kept to: 是 / 有 / 在, 很 + adjective, 吗 呢 吧, question words,
+# 的, 了 (done / change), 不 and 没, 想 要 会 能, 太…了, 在 + verb, 也 都 还 就,
+# measure words. No 把, 被, 得-complements, 过 or linked clauses.
+
+=== s01
+level: 1
+tag: A cat at home
+zh: 我的小猫
+en: My Little Cat
+text:
+我 家 有 一 只 小 猫 ， 名字 叫 米米 。 米米 今年 两 岁 了 ， 是 一 只 白 猫 ， 很 漂亮 。 我 很 喜欢 米米 ， 米米 也 很 喜欢 我 。
+
+早上 七 点 ， 米米 就 来 我 的 房间 。 它 在 我 的 床 上 叫@meow ： “ 喵 ， 喵 ！ ” 我 知道 ， 它 饿 了 ， 想 吃 东西 。 我 起床 ， 给 它 一些 吃 的@thing ， 再 给 它 一些 水 。 米米 吃 东西 的@mod 时候 ， 我 去 洗 手 ， 吃 早饭 。
+
+上午 我 去 学校 ， 爸爸 妈妈 去 工作 ， 家里 没有 人 。 米米 在 家里 做 什么 呢 ？ 我 不 知道 。 我 在 学校 的@mod 时候 ， 常常 想@miss 米米 。 妈妈 说 ： “ 它 在@ing 睡觉 。 猫 很 喜欢 睡觉 ， 一 天 能 睡 十 几 个 小时 。 ”
+
+下午 四 点 ， 我 回家 了@done 。 我 打开 门 ， 看见 米米 在 门口 等 我 。 我 说 ： “ 米米 ， 我 回来 了@done ！ ” 米米 不 会 说话 ， 可是 我 知道 它 很 高兴 。
+
+晚上 ， 我 在 桌子 上 写 汉字 ， 米米 也 坐 在 桌子 上 ， 看 我 写 字 。 我 问 它 ： “ 米米 ， 你 想 学习 汉语 吗 ？ ” 米米 没有@not 说话 ， 在 我 的 书 上 睡觉 了 。 我 笑 了@done 。 我 很 爱 我 的 小 猫 。
+words:
+家 | jiā | home; family
+一 | yī | one; a
+只 | zhī | (measure word for animals)
+小 | xiǎo | little; small
+猫 | māo | cat
+叫 | jiào | to be called
+叫@meow | jiào | to cry out; to meow
+米米 | Mǐ mi | Mimi (name)
+了 | le | (a new situation: now …)
+了@done | le | (the action is done)
+白 | bái | white
+漂亮 | piào liang | pretty
+点 | diǎn | o'clock
+就 | jiù | (as early as) right then
+来 | lái | to come
+的 | de | 's; of (belonging to)
+的@thing | de | (吃的: something to eat)
+的@mod | de | (links what comes before to the noun: 的时候 = when …)
+在 | zài | at; in; on
+在@ing | zài | (in the middle of) -ing
+床 | chuáng | bed
+上 | shang | on (top of)
+喵 | miāo | meow
+饿 | è | hungry
+想 | xiǎng | to want to
+想@miss | xiǎng | to miss; to think about
+给 | gěi | to give
+再 | zài | then (as the next thing)
+水 | shuǐ | water
+去 | qù | to go
+洗 | xǐ | to wash
+没有 | méi yǒu | there isn't; not have
+没有@not | méi yǒu | did not
+做 | zuò | to do
+什么 | shén me | what
+呢 | ne | (softens a question: I wonder …)
+睡觉 | shuì jiào | to sleep
+天 | tiān | day
+睡 | shuì | to sleep
+几 | jǐ | a few (十几 = ten-odd, over ten)
+会 | huì | can; to know how to
+桌子 | zhuō zi | table; desk
+汉字 | Hàn zì | Chinese characters
+坐 | zuò | to sit
+看 | kàn | to watch; to look at
+字 | zì | (written) characters
+汉语 | Hàn yǔ | Chinese (language)
+
+=== s02
+level: 1
+tag: At the market
+zh: 买水果
+en: Buying Fruit
+text:
+今天 是 星期六 ， 天气 很 好 ， 不 冷 也 不 热 。 妈妈 说 ： “ 家里 没有 水果 了@change ， 你 和 我 一起 去 商店 买 水果 吧 。 ” 我 说 ： “ 好@ok ！ ”
+
+商店 在 我 家 前面 ， 我们 走路 去 ， 十 分钟 就 到 了 。 商店 里 人 很 多 。 有 苹果 ， 有 西瓜 ， 还有 很 多 我 不 认识 的 水果 。
+
+我 问 妈妈 ： “ 这 是 什么 水果 ？ ” 妈妈 说 ： “ 这 是 中国 南边 的 水果 ， 很 好吃 。 ” 我 问 ： “ 多少 钱 ？ ” 商店 里 的 人 说 ： “ 二十 块 钱 一 个 。 ” 我 说 ： “ 太 贵 了@tai ！ ” 妈妈 笑 了 ， 说 ： “ 不 贵 ， 我们 买 两 个 吧 。 ” 妈妈 给 了 他 四十 块 钱 。
+
+爸爸 很 喜欢 吃 苹果 ， 我们 就@so 买 了 八 个 苹果 。 妈妈 想 买 一些 茶 ， 我 想 买 牛奶 。 东西 太 多 了@tai ， 我 帮 妈妈 拿 。
+
+回到 家 ， 爸爸 在@ing 看 电视 。 我 说 ： “ 爸爸 ， 我们 买 了 你 喜欢 的 苹果 ， 还 买 了 一 个 新 水果 ！ ” 爸爸 问 ： “ 什么 水果 ？ 好吃 吗 ？ ” 我 说 ： “ 我 也 不 知道 它 叫 什么 名字 ， 我们 一起 吃 吧 ！ ” 那 个 水果 真 好吃 ， 我 很 喜欢 。 明天 我 还@again 想 去 商店 。
+words:
+星期六 | xīng qī liù | Saturday
+好 | hǎo | good; nice
+好@ok | hǎo | OK! all right!
+冷 | lěng | cold
+热 | rè | hot
+没有 | méi yǒu | there isn't; not have
+水果 | shuǐ guǒ | fruit
+了 | le | (the action is done)
+了@change | le | (a new situation: no longer / now)
+了@tai | le | (太…了: too …!)
+和 | hé | and; with
+去 | qù | to go
+商店 | shāng diàn | shop; store
+吧 | ba | (suggestion: let's …)
+在 | zài | to be (located) at
+在@ing | zài | (in the middle of) -ing
+家 | jiā | home
+走路 | zǒu lù | to walk; on foot
+就 | jiù | (after only ten minutes) already
+就@so | jiù | so; then
+到 | dào | to arrive
+里 | li | in; inside
+多 | duō | many; a lot
+苹果 | píng guǒ | apple
+西瓜 | xī guā | watermelon
+的 | de | (links the description before it to the noun)
+这 | zhè | this
+什么 | shén me | what (kind of)
+中国 | Zhōng guó | China
+南边 | nán bian | the south
+好吃 | hǎo chī | tasty; delicious
+多少 | duō shao | how much; how many
+块 | kuài | yuan (measure word for money)
+一 | yī | one; a
+贵 | guì | expensive
+给 | gěi | to give
+想 | xiǎng | to want to
+茶 | chá | tea
+牛奶 | niú nǎi | milk
+看 | kàn | to watch
+还 | hái | also; as well
+还@again | hái | (want to) again; still
+叫 | jiào | to be called
+那 | nà | that
+真 | zhēn | really; truly
+明天 | míng tiān | tomorrow
+
+=== s03
+level: 1
+tag: Starting school
+zh: 第一天
+en: The First Day
+text:
+今天 是 九 月 一 号 ， 是 我 上 小学 的 第一 天 。 早上 六 点 ， 妈妈 叫@wake 我 起床 。 我 穿 上@on 新 衣服 ， 吃 了 早饭 ， 和 妈妈 一起 去 学校 。
+
+学校 很 大 ， 也 很 漂亮 。 学校 门口 有 很 多 学生 和 爸爸 妈妈 。 有的 孩子 很 高兴 ， 有的 孩子 不 想 进去 。
+
+妈妈 说 ： “ 进去 吧 ， 下午 我 来 学校 找 你 。 ” 我 走进 学校 。 一 个 女 老师 在 门口 等 我们 。 她 说 ： “ 你们 好 ！ 我 是 你们 的@poss 汉语 老师 ， 你们 叫@call 我 王 老师 吧 。 ”
+
+我们 班 有 三十 个 学生 。 我 前面 是 一 个 男 同学 ， 他 叫 大明 。 他 问 我 ： “ 你 叫 什么 名字 ？ ” 我 说 ： “ 我 叫 小月 。 ” 他 说 ： “ 我们 做 朋友 吧 ！ ” 我 很 高兴 。
+
+上午 我们 学习 了 汉字 。 老师 写 了 三 个 字 ： 人 、 大 、 天@char 。 我们 都 会 读 ， 也 会 写 。 中午 我们 在 学校 吃 午饭 ， 有 米饭 ， 有 菜 ， 还有 鸡蛋 。 下午 我们 唱歌 ， 还 看 了 一 个 电影 。
+
+四 点 ， 妈妈 来 学校 了 。 她 问 我 ： “ 今天 怎么样 ？ ” 我 说 ： “ 很 好 ！ 我 认识 了 新 老师 ， 还 有 了 一 个 新 朋友 。 明天 我 还@again 想 来 ！ ”
+words:
+一 | yī | one; a
+号 | hào | (day of the month: 一号 = the 1st)
+上 | shàng | to attend; to go to (school)
+上@on | shang | (after 穿) on
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+天 | tiān | day
+天@char | tiān | sky; day (the character 天)
+点 | diǎn | o'clock
+叫 | jiào | to be called
+叫@wake | jiào | to call (someone to do something): 叫我起床 = wake me up
+叫@call | jiào | to call (someone something)
+了 | le | (the action is done)
+和 | hé | and; with
+去 | qù | to go
+大 | dà | big
+漂亮 | piào liang | beautiful
+多 | duō | many
+学生 | xué sheng | student
+有的 | yǒu de | some
+想 | xiǎng | to want to
+吧 | ba | (urging or suggesting: go on; let's)
+来 | lái | to come
+找 | zhǎo | to look for; to come for (someone)
+走进 | zǒu jìn | to walk into
+女 | nǚ | female; woman
+在 | zài | at; in
+好 | hǎo | good; well (你们好 = hello, everyone)
+汉语 | Hàn yǔ | Chinese (language)
+王 | Wáng | Wang (name)
+班 | bān | class
+男 | nán | male; boy
+大明 | Dà míng | Daming (name)
+什么 | shén me | what
+小月 | Xiǎo yuè | Xiaoyue (name)
+做 | zuò | to be; to become (做朋友 = be friends)
+汉字 | Hàn zì | Chinese characters
+字 | zì | (Chinese) character
+都 | dōu | all
+会 | huì | can; to know how to
+读 | dú | to read (aloud)
+午饭 | wǔ fàn | lunch
+米饭 | mǐ fàn | (cooked) rice
+菜 | cài | dishes (of food)
+鸡蛋 | jī dàn | egg(s)
+还 | hái | also
+还@again | hái | again; still
+看 | kàn | to watch
+电影 | diàn yǐng | film; movie
+怎么样 | zěn me yàng | how was it?
+明天 | míng tiān | tomorrow
+
+=== s04
+level: 1
+tag: Cooking at home
+zh: 学做饭
+en: Learning to Cook
+text:
+我 叫 李冬 ， 今年 十二 岁 。 我 爸爸 是 医生 ， 妈妈 是 老师 ， 他们 工作 都 很 忙 。
+
+星期天 ， 妈妈 在 家 。 我 说 ： “ 妈妈 ， 我 想 学 做饭 。 ” 妈妈 很 高兴 ， 说 ： “ 好@ok 啊 ！ 今天 我 教 你 做 鸡蛋 米饭 。 ”
+
+我们 先 去 商店 买 东西 。 我们 买 了 鸡蛋 、 肉 和 一些 菜 。 回到 家 ， 妈妈 说 ： “ 做饭 前 ， 要 先 洗 手 。 ” 我 洗 了 手 ， 妈妈 给 我 看 怎么 洗 菜 。
+
+妈妈 说 ： “ 你 来 打 鸡蛋 。 ” 我 打 了 三 个 鸡蛋 ， 可是 我 太 慢 了@tai ， 有 一 个 鸡蛋 在 桌子 上 ， 不 在 碗 里 。 妈妈 没有 生气 ， 她 笑 了 ， 说 ： “ 没关系 ， 我 第一 次 做饭 的 时候 ， 也 不 会 打 鸡蛋 。 ”
+
+我们 先 做 米饭 ， 再 做 菜@dish 。 米饭 好@ready 了@change ， 妈妈 说 ： “ 现在 你 来 做 。 ” 我 很 认真 ， 做 了 二十 分钟 。
+
+中午 十二 点 ， 爸爸 回家 了 。 他 问 ： “ 今天 谁 做饭 了 ？ 真 好吃 ！ ” 妈妈 说 ： “ 李冬 做 了 鸡蛋 米饭 。 ” 爸爸 吃 了 两 碗@mw ， 说 ： “ 我 的@poss 儿子 真 好 ！ 下 星期 你 还 做 吗 ？ ” 我 说 ： “ 做 ！ 我 想 学 做 很 多 菜@dish 。 ”
+words:
+叫 | jiào | to be called
+李冬 | Lǐ Dōng | Li Dong (name)
+医生 | yī shēng | doctor
+都 | dōu | both
+星期天 | xīng qī tiān | Sunday
+在 | zài | to be at; at; in
+家 | jiā | home
+想 | xiǎng | to want to
+好 | hǎo | good
+好@ok | hǎo | OK; great
+好@ready | hǎo | ready; done (of cooking)
+教 | jiāo | to teach
+做 | zuò | to make; to cook
+鸡蛋 | jī dàn | egg(s)
+米饭 | mǐ fàn | (cooked) rice
+先 | xiān | first
+去 | qù | to go
+商店 | shāng diàn | shop
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+了@tai | le | (太…了: too …!)
+肉 | ròu | meat
+和 | hé | and
+菜 | cài | vegetables
+菜@dish | cài | dish(es) (of food)
+前 | qián | before
+要 | yào | must; need to
+洗 | xǐ | to wash
+给 | gěi | for; to (给我看 = show me)
+看 | kàn | to look; to see
+怎么 | zěn me | how
+来 | lái | (before a verb) to take a turn doing: 你来做 = you do it
+打 | dǎ | to crack (eggs)
+一 | yī | one; a
+桌子 | zhuō zi | table
+上 | shang | on
+碗 | wǎn | bowl
+碗@mw | wǎn | bowl(s) (of food)
+里 | li | in
+没有 | méi yǒu | did not
+生气 | shēng qì | to get angry
+没关系 | méi guān xi | it doesn't matter
+的 | de | (links the description before it to the noun: 的时候 = when)
+的@poss | de | 's; of (belonging to)
+会 | huì | to know how to
+再 | zài | then (as the next thing)
+点 | diǎn | o'clock
+谁 | shéi | who
+真 | zhēn | really
+好吃 | hǎo chī | delicious
+儿子 | ér zi | son
+下 | xià | next (下星期 = next week)
+还 | hái | again (still)
+多 | duō | many

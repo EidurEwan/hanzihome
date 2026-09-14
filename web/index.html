@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HanziHome — Chinese character decomposition</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>字</text></svg>">
+</head>
+<body>
+<header class="site">
+  <div class="wrap hdr">
+    <a class="brand" href="/">字 <span>HanziHome</span><em>local</em></a>
+    <nav class="nav">
+      <div class="menu">
+        <button type="button" class="menu-btn" aria-expanded="false">Character lists ▾</button>
+        <div class="menu-pop" hidden>
+          <a href="/lists/frequency">Most common characters</a>
+          <a href="/lists/radicals">Chinese radicals</a>
+          <a href="/lists/phonetic-sets">Phonetic sets</a>
+          <a href="/lists/productive-components">Productive components</a>
+          <a href="/lists/productive-characters">Productive characters</a>
+          <a href="/lists/hsk-1">HSK lists</a>
+        </div>
+      </div>
+      <a href="/progress">My progress</a>
+    </nav>
+    <form class="search" id="search-form" role="search">
+      <input id="q" type="search" placeholder="Character, pinyin or meaning…"
+             autocomplete="off" spellcheck="false" aria-label="Search">
+      <button type="submit">Look up</button>
+    </form>
+  </div>
+</header>
+
+<main id="app" class="wrap"></main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p><strong>HanziHome</strong> — a personal, offline rebuild.</p>
+    <p class="src">Built from open data: CC-CEDICT (CC BY-SA 4.0) · cjk-decomp ·
+       Jun Da's Modern Chinese Character Frequency List · jieba word counts ·
+       HSK 2.0/3.0 vocabulary lists.</p>
+  </div>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

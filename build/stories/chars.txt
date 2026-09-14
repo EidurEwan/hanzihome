@@ -1,0 +1,426 @@
+# What a character means inside the words of these stories.
+#   字 syllable | syllable | meaning   this character in this reading, any word
+#   字@word     | syllable | meaning   this character inside this one word
+# Anything not listed falls back to the dictionary's first sense for the
+# reading; `python build/build_stories.py --report file` lists those.
+
+名@名校 | míng | famous
+字 zi | zi | name; character
+字 zì | zì | character; writing
+米@米米 | mi | (sound of the cat's name; literally "rice")
+年@年轻 | nián | age; years (年轻 = young)
+年@年轻人 | nián | age; years (年轻人 = young people)
+漂 piào | piào | (part of 漂亮 pretty)
+上 shang | shang | on; up
+上@早上 | shang | (time word suffix: 早上 = morning)
+上@晚上 | shang | (time word suffix: 晚上 = evening)
+上@上午 | shàng | upper; first (上午 = before noon)
+上@马上 | shàng | on (马上: on horseback → at once)
+上@上班 | shàng | to go to (work)
+上@赶上 | shàng | (after a verb) in time; up to
+上@上门 | shàng | to go to (someone's door)
+上@上网 | shàng | to go on (the internet)
+上@上面 | shàng | top; above
+上@上课 | shàng | to give (a class)
+房 fáng | fáng | house; room
+间@房间 | jiān | room; space
+间@时间 | jiān | period; span (of time)
+道 dào | dào | path; road
+道@知道 | dào | to say; to know (知道 = to know)
+道@道歉 | dào | to say (道歉 = to say sorry)
+道@道贺 | dào | to express (道贺 = to congratulate)
+道@写道 | dào | to say (写道 = to write that)
+道 dao | dao | dealings (打交道 = to deal with)
+东@东西 | dōng | east (东西 = things)
+西@东西 | xi | west (东西 = things)
+起@一起 | qǐ | (一起 = together)
+起@想起 | qǐ | (after a verb) up (想起 = to recall)
+起@提起 | qǐ | up (提起 = to bring up)
+起 qi | qi | (after a verb) up
+床 chuáng | chuáng | bed
+些 xiē | xiē | some; a few
+时 shí | shí | time; hour
+候 hou | hou | time; season (时候 = time)
+饭 fàn | fàn | meal; (cooked) rice
+午 wǔ | wǔ | noon
+妈 mā | mā | mum
+妈 ma | ma | mum
+作@作文 | zuò | to write (作文 = essay)
+家@大家 | jiā | family; people (大家 = everyone)
+里 li | li | in; inside
+里@那里 | li | place (那里 = there)
+里@这里 | li | place (这里 = here)
+里 lǐ | lǐ | inside
+没 méi | méi | not; not have
+么 me | me | (question-word suffix)
+常 cháng | cháng | often; usual
+常@非常 | cháng | usual (非常 = unusually → very)
+觉 jiào | jiào | sleep; nap
+下@下午 | xià | lower; later (下午 = afternoon)
+下@下雨 | xià | to fall (of rain)
+下@下雪 | xià | to fall (of snow)
+下@下班 | xià | to get off (work)
+下@下次 | xià | next
+下@留下 | xià | (after a verb) behind; down
+下@剩下 | xià | (after a verb) behind
+下@下棋 | xià | to play (chess)
+下 xia | xia | (after a verb) down
+回@回答 | huí | back (回答 = to answer)
+打 dǎ | dǎ | to hit; to do (a general action verb)
+打@打扫 | dǎ | to do (打扫 = to clean)
+打@打算 | dǎ | (打算 = to plan)
+开@开始 | kāi | to start
+开@开车 | kāi | to drive
+开@离开 | kāi | away (离开 = to leave)
+开@开心 | kāi | open (开心 = happy)
+开@开口 | kāi | to open (one's mouth)
+开@开头 | kāi | to begin
+见@意见 | jiàn | view; opinion
+门 mén | mén | door
+口 kǒu | kǒu | mouth; opening
+口@门口 | kǒu | opening (门口 = doorway)
+口@村口 | kǒu | entrance
+来 lai | lai | (after a verb) towards here
+话 huà | huà | words; speech
+可 kě | kě | can; may
+可@可是 | kě | but
+可@可爱 | kě | worth (可爱 = lovable)
+兴 xìng | xìng | interest; good mood
+兴 xīng | xīng | to rise; to be excited
+晚@早晚 | wǎn | late (早晚 = sooner or later)
+晚@晚点 | wǎn | late
+子 zi | zi | (noun suffix)
+子 zǐ | zǐ | son
+汉 Hàn | Hàn | Han (Chinese)
+语 yǔ | yǔ | language; words
+气 qì | qì | air; vapour
+气@生气 | qì | anger (生气 = to get angry)
+果@如果 | guǒ | result (如果 = if)
+店 diàn | diàn | shop
+面 mian | mian | side; face (direction suffix)
+们 men | men | (plural suffix)
+路 lù | lù | road; way
+分@分钟 | fēn | minute
+钟@分钟 | zhōng | clock; time
+钟@钟表 | zhōng | clock
+苹 píng | píng | (part of 苹果 apple)
+西@西瓜 | xī | west (西瓜 = watermelon)
+中@中国 | Zhōng | middle (中国 = the Middle Kingdom, China)
+边 bian | bian | side
+吃@吃惊 | chī | to suffer (吃惊 = to get a fright)
+牛 niú | niú | cow
+奶@牛奶 | nǎi | milk
+奶@奶奶 | nǎi | grandma
+奶 nai | nai | grandma
+电 diàn | diàn | electric(ity)
+视 shì | shì | to look at
+明@明天 | míng | next (明天 = tomorrow)
+明@大明 | míng | bright (part of the name)
+第 dì | dì | (ordinal prefix: 第一 = first)
+生 sheng | sheng | person (学生 = student; 先生 = sir)
+生 shēng | shēng | life; to be born
+生@医生 | shēng | person (医生 = doctor)
+生@大学生 | shēng | student
+生@研究生 | shēng | student
+生@生气 | shēng | to produce (生气 = to get angry)
+生@生病 | shēng | to get (ill)
+生@人生 | shēng | life
+的 de | de | (…的: … ones)
+进 jìn | jìn | to enter
+老@老师 | lǎo | (respectful prefix: 老师 = teacher)
+老@老板 | lǎo | (老板 = boss)
+你 nǐ | nǐ | you
+同 tóng | tóng | same; together
+月@腊月 | yuè | month
+米@平方米 | mǐ | metre
+鸡 jī | jī | chicken
+歌 gē | gē | song
+影 yǐng | yǐng | image; shadow
+李@李冬 | Lǐ | Li (surname)
+李 li | li | luggage (行李)
+他@其他 | tā | other
+关 guān | guān | to concern; to close
+关@关门 | guān | to close
+关@关键 | guān | pass (关键 = key point)
+系 xi | xi | connection
+太@太阳 | tài | great (太阳 = sun)
+阳@太阳 | yáng | sun
+阳@阳台 | yáng | sun (阳台 = balcony)
+以 yǐ | yǐ | by; with; (以前 / 以后) from
+得 de | de | (verb suffix)
+所 suǒ | suǒ | that which (所以 = so)
+司@公司 | sī | to manage (公司 = company)
+忽 hū | hū | suddenly
+然 rán | rán | (adverb suffix: -ly)
+班 bān | bān | shift; work
+机@机会 | jī | chance
+经 jīng | jīng | to pass through
+经@经济 | jīng | to manage (经济 = economy)
+经@经费 | jīng | to manage (经费 = funds)
+正 zhèng | zhèng | just; right
+车 chē | chē | vehicle
+园 yuán | yuán | garden; park
+院@医院 | yuàn | hospital
+院@出院 | yuàn | hospital
+诉 su | su | to tell
+次 cì | cì | time; next
+考 kǎo | kǎo | to test
+就 jiù | jiù | just
+最 zuì | zuì | most
+顺 shùn | shùn | smooth; along
+利@顺利 | lì | favourable (顺利 = smooth)
+利@利用 | lì | benefit (利用 = to make use of)
+息 xi | xi | to rest
+方 fāng | fāng | direction; side
+方@方便 | fāng | way; method (方便 = convenient)
+方@平方米 | fāng | square
+方@方寸 | fāng | square (方寸 = a tiny space)
+方 fang | fang | place
+去@去年 | qù | gone; past (去年 = last year)
+去@去世 | qù | to leave (去世 = to pass away)
+去@失去 | qù | away
+发@发现 | fā | to reveal
+发@出发 | fā | to set out
+发@发黄 | fā | to turn (a colour)
+发@发白 | fā | to turn (a colour)
+发@突发 | fā | to break out
+发 fa | fa | hair
+阿 ā | ā | (prefix for relatives)
+姨 yí | yí | aunt
+眼 yǎn | yǎn | eye
+头 tou | tou | (noun suffix)
+头@一年到头 | tóu | end
+头@开头 | tóu | beginning
+照@照片 | zhào | to shine; to photograph
+照@照顾 | zhào | to look after
+照@照例 | zhào | according to
+片 piàn | piàn | flat piece
+会@会议 | huì | to meet (会议 = meeting)
+会@学会 | huì | to master
+会@机会 | huì | occasion (机会 = chance)
+议 yì | yì | to discuss
+麻 má | má | (麻烦 = trouble)
+着@着急 | zháo | to feel (着急 = anxious)
+着@睡着 | zháo | (after a verb) to succeed in (睡着 = to fall asleep)
+着 zhe | zhe | (verb suffix)
+留 liú | liú | to stay; to keep
+留@留意 | liú | to keep (留意 = to pay attention)
+哪 nǎ | nǎ | which; where
+聊 liáo | liáo | to chat
+别 bié | bié | other
+别@特别 | bié | special
+游 yóu | yóu | to swim
+游@旅游 | yóu | to travel
+其 qí | qí | its; that
+呼@呼吸 | hū | to breathe out
+吸@吸引 | xī | to draw in
+周@周末 | zhōu | week
+末 mò | mò | end
+信@相信 | xìn | to believe
+户 hu | hu | (part of 窗户 window)
+封 fēng | fēng | envelope; to seal
+出 chu | chu | (after a verb) out
+城 chéng | chéng | city
+了 le | le | (verb suffix)
+了@了解 | liǎo | to understand
+故 gù | gù | past (故事 = story)
+那 nà | nà | that
+池@电池 | chí | cell (电池 = battery)
+法 fǎ | fǎ | method; way
+纸 zhǐ | zhǐ | paper
+白 bai | bai | clear (明白 = to understand)
+毕 bì | bì | to finish
+由 yóu | yóu | from; due to
+几 jī | jī | almost (几乎)
+乎 hū | hū | (suffix: 几乎 = almost, 似乎 = seemingly)
+任 rèn | rèn | any
+切 qiè | qiè | all (一切 = everything)
+面@面包 | miàn | flour (面包 = bread)
+面@面包店 | miàn | flour (面包 = bread)
+面@面试 | miàn | face to face
+面@面试官 | miàn | face to face
+面@背面 | miàn | side
+面@面临 | miàn | to face
+包@面包 | bāo | bun (面包 = bread)
+包@面包店 | bāo | bun (面包 = bread)
+包@大包小包 | bāo | bag
+板@老板 | bǎn | (老板 = boss)
+热 rè | rè | hot; warm
+住 zhu | zhu | (after a verb) firmly
+住 zhù | zhù | (after a verb) firmly
+既 jì | jì | since (既然)
+差@差点 | chà | short of (差点 = nearly)
+点 diǎn | diǎn | a little; point
+点@晚点 | diǎn | time (晚点 = behind schedule)
+论 lùn | lùn | to discuss (无论 = no matter)
+居 jū | jū | to live
+历 lì | lì | history; record
+张@紧张 | zhāng | tense
+建 jiàn | jiàn | to propose
+提 tí | tí | to lift; to bring up
+提@提前 | tí | to move (提前 = ahead of time)
+咖 kā | kā | (咖啡 = coffee)
+啡 fēi | fēi | (咖啡 = coffee)
+录 lù | lù | to record; to admit
+才 cái | cái | just (刚才 = just now)
+解 jiě | jiě | to explain; to understand
+确 què | què | true; certain
+态 tài | tài | attitude; manner
+度 dù | dù | degree; manner
+花@花白 | huā | mixed (花白 = grey)
+便 biàn | biàn | convenient
+节 jié | jié | festival
+娘 niang | niang | girl; young woman
+纪 jì | jì | age; era
+之 zhī | zhī | (literary 的: of)
+突 tū | tū | sudden
+即 jí | jí | even (即使 = even if)
+使 shǐ | shǐ | if (即使 = even if)
+云@云南 | Yún | cloud (云南 = south of the clouds)
+划 huà | huà | to plan
+犹 yóu | yóu | (犹豫 = to hesitate)
+豫 yù | yù | (犹豫 = to hesitate)
+望 wàng | wàng | to hope; to gaze
+况 kuàng | kuàng | situation
+况@何况 | kuàng | moreover
+理 lǐ | lǐ | to put in order
+相@相册 | xiàng | photo
+部 bù | bù | part
+分@大部分 | fen | part
+分@生分 | fen | (生分 = distant)
+合 hé | hé | together
+装 zhuāng | zhuāng | clothing
+笔 bǐ | bǐ | pen; stroke
+迹 jì | jì | trace
+模 mó | mó | (模糊 = blurred)
+糊 hu | hu | (模糊 = blurred)
+联 lián | lián | to link
+亲@亲手 | qīn | personally
+案@答案 | àn | (答案 = answer)
+程 chéng | chéng | process
+象 xiàng | xiàng | image (想象 = to imagine)
+许@许多 | xǔ | (许多 = many)
+等@三等奖 | děng | grade; class
+待@待遇 | dài | to treat
+固 gù | gù | admittedly (固然)
+梦 mèng | mèng | dream
+旦 dàn | dàn | day (一旦 = once)
+及 jí | jí | to reach
+阔 kuò | kuò | wide
+代 dài | dài | to replace
+落@角落 | luò | place (角落 = corner)
+文 wén | wén | writing
+应 yīng | yīng | should (应该)
+企 qǐ | qǐ | enterprise
+遇 yù | yù | treatment (待遇)
+与 yǔ | yǔ | and; with
+研 yán | yán | to study
+究 jiū | jiū | to investigate
+意 yì | yì | idea; wish
+济 jì | jì | to help (经济 = economy)
+条 tiáo | tiáo | item; condition
+专 zhuān | zhuān | special
+个 gè | gè | (measure word)
+个@个子 | gè | (个子 = height)
+导 dǎo | dǎo | to guide
+对@对此 | duì | towards
+对@对面 | duì | opposite
+费 fèi | fèi | fee
+情 qing | qing | (事情 = matter)
+博 bó | bó | extensive (博物馆 = museum)
+格 gé | gé | (格外 = especially)
+者 zhě | zhě | (或者 = or)
+英 Yīng | Yīng | English (英语)
+毫 háo | háo | (毫无 = not at all)
+琴 qín | qín | (string) instrument; piano
+凡 fán | fán | all; every
+统 tǒng | tǒng | unified
+奖 jiǎng | jiǎng | prize
+奖@夸奖 | jiǎng | to praise
+逐 zhú | zhú | gradually (逐渐)
+快@快乐 | kuài | happy
+带 dài | dài | to bring
+往@往常 | wǎng | past
+往@往日 | wǎng | past
+足@不足 | zú | enough
+修 xiū | xiū | to repair
+表 biǎo | biǎo | watch
+铺 pù | pù | shop
+陋 lòu | lòu | crude
+木 mù | mù | wood(en)
+丝 sī | sī | thread (螺丝 = screw)
+刀 dāo | dāo | knife; blade
+戴 dài | dài | to wear
+镜 jìng | jìng | lens; glass
+屏 bǐng | bǐng | to hold (one's breath)
+仿 fǎng | fǎng | as if
+佛 fú | fú | as if (仿佛)
+缩 suō | suō | to shrink
+寸 cùn | cùn | inch
+若 ruò | ruò | if
+日 rì | rì | day
+益 yì | yì | increasingly
+行 háng | háng | trade
+妨 fáng | fáng | (不妨 = might as well)
+摆 bǎi | bǎi | to swing (停摆 = to stop ticking)
+辗 zhǎn | zhǎn | (辗转 = going from place to place)
+零 líng | líng | small (parts)
+产 chǎn | chǎn | to produce
+复 fù | fù | to restore; again
+端 duān | duān | (端详 = to look at carefully)
+置 zhì | zhì | to express (未置可否)
+泛 fàn | fàn | to turn (a colour)
+执 zhí | zhí | to insist
+摆 bai | bai | to wave
+酬 chóu | chóu | payment
+刻 kè | kè | moment
+廓 kuò | kuò | outline
+画@一笔一画 | huà | stroke
+辆 liàng | liàng | vehicle
+团@团聚 | tuán | to unite
+昏 hūn | hūn | dim
+熟 shú | shú | familiar
+悉 xī | xī | to know
+线 xiàn | xiàn | line; route
+河 hé | hé | river
+喇 lǎ | lǎ | (喇叭 = horn)
+叭 ba | ba | (喇叭 = horn)
+胡 hú | hú | (二胡: fiddle from the northern peoples)
+蒙 méng | méng | misty
+契 qì | qì | to agree; to fit
+尝 cháng | cháng | ever (何尝 / 未尝)
+恢 huī | huī | (恢复 = to recover)
+偶 ǒu | ǒu | occasional
+尔 ěr | ěr | (偶尔 = occasionally)
+腊 là | là | twelfth lunar month
+距 jù | jù | distance
+山 shān | shān | mountain
+播 bō | bō | to broadcast
+列 liè | liè | row (列车 = train)
+焦 jiāo | jiāo | anxious
+番 fān | fān | time; occasion (此番 = this time)
+迈 mài | mài | old (年迈 = aged)
+崭 zhǎn | zhǎn | brand-new (崭新)
+绒 róng | róng | fluff; down
+丈 zhàng | zhàng | husband (丈夫)
+晌 shǎng | shǎng | (半晌 = a long while)
+神 shén | shén | look; spirit (眼神)
+疚 jiù | jiù | guilt
+厢 xiāng | xiāng | carriage; compartment
+谓 wèi | wèi | to call (所谓 = so-called)
+抵 dǐ | dǐ | to arrive
+过 guo | guo | (after a verb) over
+响 xiǎng | xiǎng | loud
+青 qīng | qīng | young (青春 = youth)
+耿 gěng | gěng | (耿耿于怀 = to brood over)
+抢 qiǎng | qiǎng | to rush
+典 diǎn | diǎn | ceremony
+礼 lǐ | lǐ | ceremony
+送@目送 | sòng | to see off
+后 hòu | hòu | after; behind
+业 yè | yè | course of study; trade
+是 shì | shì | to be
+是 shi | shi | to be
+不 bù | bù | not
+轰 hōng | hōng | boom; rumble
+烈 liè | liè | fierce; blazing

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HanziHome — Chinese character dictionary</title>
+<link rel="stylesheet" href="style.css?v=59">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><g fill='none' stroke='%23b73746' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M16 2.8v2.8'/><path d='M5 14.6C8.8 10.2 12.4 8.4 16 8.4s7.2 1.8 11 6.2'/><path d='M5 14.6v2.6'/><path d='M27 14.6v2.6'/><path d='M10.5 19.5v9.5M21.5 19.5v9.5M10.5 24.2h11'/></g></svg>">
+<script>
+/* Globals the data files assign into. Everything is loaded with <script>
+   tags rather than fetch(), so the site works straight off the filesystem. */
+var HZ = { index: {}, chunk: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#/"><svg class="logo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 2.8v2.8"/><path d="M5 14.6C8.8 10.2 12.4 8.4 16 8.4s7.2 1.8 11 6.2"/><path d="M5 14.6v2.6"/><path d="M27 14.6v2.6"/><path d="M10.5 19.5v9.5M21.5 19.5v9.5M10.5 24.2h11"/></svg><span>HanziHome</span></a>
+  <form class="search" id="search-form" role="search" autocomplete="off">
+    <input id="q" type="search" placeholder="Look up a Chinese character…"
+           spellcheck="false" aria-label="Look up a Chinese character">
+    <button class="btn" type="submit" aria-label="Search">Search</button>
+    <div id="ac" class="ac" hidden></div>
+  </form>
+  <button id="sidebar-toggle" class="hamburger" aria-label="Menu">☰</button>
+</header>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <nav>
+      <a href="#/dashboard" data-nav="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.4 12 3l9 7.4V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg> Dashboard</a>
+      <a href="#/study" data-nav="/study"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5 12 4l10 4.5-10 4.5zM6 11v4.6c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6V11"/></svg> Study <i id="due-badge" class="badge" hidden></i></a>
+      <a href="#/reader" data-nav="/reader"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg> Reader <em>beta</em></a>
+      <a href="#/hsk-1" data-nav="/hsk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 8l-9 5-9-5zM3 12.5 12 17.5l9-5M3 17 12 22l9-5"/></svg> HSK</a>
+      <a href="#/phonetic-sets" data-nav="/phonetic-sets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12L7.5 14.5H4zM16.5 9.5a4 4 0 0 1 0 5M19 7a7.5 7.5 0 0 1 0 10"/></svg> Phonetic Sets</a>
+      <a href="#/productive-components" data-nav="/productive-components"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h4.2a1.8 1.8 0 1 1 3.6 0H17v4.2a1.8 1.8 0 1 0 0 3.6V17h-4.2a1.8 1.8 0 1 0-3.6 0H5z"/></svg> Productive Components</a>
+      <a href="#/productive-characters" data-nav="/productive-characters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20 12 4l7 16M8.2 14.5h7.6"/></svg> Productive Characters</a>
+      <a href="#/radicals" data-nav="/radicals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 12h16M12 5v14"/></svg> Radicals</a>
+      <a href="#/frequency" data-nav="/frequency"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20v-7M9.3 20V4M14.7 20v-11M20 20V8"/></svg> Most Common</a>
+      <a href="#/lists" data-nav="/lists"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg> Your Lists</a>
+      <a href="#/notes" data-nav="/notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h8l6 6v12H5zM13 3v6h6M8.5 13h7M8.5 17h4"/></svg> Notes</a>
+      <a href="#/history" data-nav="/history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.2 9A9 9 0 1 1 3 12.6M3 4v5h5M12 7.5V12l3.2 2"/></svg> History</a>
+      <a href="#/settings" data-nav="/settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM12 2.5v2.6M12 18.9v2.6M4.3 4.3l1.9 1.9M17.8 17.8l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.3 19.7l1.9-1.9M17.8 6.2l1.9-1.9"/></svg> Settings</a>
+    </nav>
+    <div class="side-foot">
+      <p class="who" id="side-who">Local profile</p>
+      <p class="small muted">Everything is stored in this browser.</p>
+    </div>
+  </aside>
+
+  <main id="app"></main>
+</div>
+
+<div id="pop-host"></div>
+
+<script src="data/meta.js?v=3"></script>
+<script src="data/index.js?v=3"></script>
+<script src="data/radicalmap.js?v=3"></script>
+<script src="app.js?v=59"></script>
+</body>
+</html>

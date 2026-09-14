@@ -1,0 +1,260 @@
+# Words that mean the same thing in every story here.
+# word | pinyin (dictionary tones, one syllable per character) | meaning
+# Anything whose sense depends on the sentence belongs in the story instead;
+# build_stories.py refuses those here.
+
+# people and pronouns
+我 | wǒ | I; me
+你 | nǐ | you
+他 | tā | he; him
+她 | tā | she; her
+它 | tā | it
+我们 | wǒ men | we; us
+你们 | nǐ men | you (plural)
+他们 | tā men | they; them
+它们 | tā men | they; them (things)
+们 | men | (plural suffix for people)
+您 | nín | you (polite)
+自己 | zì jǐ | oneself; (one's) own
+人 | rén | person; people
+爸爸 | bà ba | dad
+妈妈 | mā ma | mum
+爷爷 | yé ye | grandpa
+奶奶 | nǎi nai | grandma
+孩子 | hái zi | child
+朋友 | péng you | friend
+同学 | tóng xué | classmate
+老师 | lǎo shī | teacher
+
+# common verbs
+是 | shì | to be (is, am, are)
+有 | yǒu | to have; there is / there are
+说 | shuō | to say; to speak
+问 | wèn | to ask
+笑 | xiào | to smile; to laugh
+能 | néng | can; to be able to
+买 | mǎi | to buy
+等 | děng | to wait (for)
+写 | xiě | to write
+拿 | ná | to hold; to take
+吃 | chī | to eat
+跑 | pǎo | to run
+穿 | chuān | to wear; to put on (clothes)
+站 | zhàn | to stand
+换 | huàn | to change; to replace
+帮 | bāng | to help
+学 | xué | to learn; to study
+修 | xiū | to repair; to fix
+查 | chá | to look up; to look into
+藏 | cáng | to hide; to keep hidden
+响 | xiǎng | to ring; to make a sound
+该 | gāi | should; ought to
+告诉 | gào su | to tell
+知道 | zhī dào | to know
+喜欢 | xǐ huan | to like
+发现 | fā xiàn | to discover; to find (out)
+回家 | huí jiā | to go home
+回来 | huí lai | to come back
+回去 | huí qu | to go back
+回到 | huí dào | to get back to; to return to
+进去 | jìn qu | to go in
+开始 | kāi shǐ | to begin; to start
+学习 | xué xí | to study
+起床 | qǐ chuáng | to get up (out of bed)
+说话 | shuō huà | to talk; to speak
+看见 | kàn jiàn | to see
+看到 | kàn dào | to see
+找到 | zhǎo dào | to find
+打开 | dǎ kāi | to open
+觉得 | jué de | to feel; to think
+记得 | jì de | to remember
+明白 | míng bai | to understand; to realize
+需要 | xū yào | to need
+决定 | jué dìng | to decide
+以为 | yǐ wéi | to think (mistakenly)
+离开 | lí kāi | to leave
+放弃 | fàng qì | to give up
+毕业 | bì yè | to graduate
+下班 | xià bān | to finish work
+做饭 | zuò fàn | to cook (a meal)
+唱歌 | chàng gē | to sing
+打工 | dǎ gōng | to work (for a wage, often far from home)
+帮助 | bāng zhù | to help; help
+认识 | rèn shi | to know (someone); to get to know
+爱 | ài | to love
+掉 | diào | (after a verb) away; off
+相比 | xiāng bǐ | to compare (与…相比: compared with …)
+
+# describing words
+很 | hěn | very
+太 | tài | too (much)
+最 | zuì | most; -est
+更 | gèng | even more
+非常 | fēi cháng | very; extremely
+新 | xīn | new
+旧 | jiù | old (not new)
+远 | yuǎn | far
+近 | jìn | near; close
+慢 | màn | slow
+忙 | máng | busy
+累 | lèi | tired
+久 | jiǔ | (a) long (time)
+年轻 | nián qīng | young
+开心 | kāi xīn | happy
+高兴 | gāo xìng | happy; glad
+重要 | zhòng yào | important
+认真 | rèn zhēn | earnest; conscientious(ly)
+真正 | zhēn zhèng | real; truly
+
+# adverbs and linking words
+不 | bù | not; no
+也 | yě | also; too
+已经 | yǐ jīng | already
+每 | měi | every; each
+常常 | cháng cháng | often
+一起 | yī qǐ | together
+几乎 | jī hū | almost
+只是 | zhǐ shì | only; just; it's just that
+总是 | zǒng shì | always
+马上 | mǎ shàng | at once; right away
+忽然 | hū rán | suddenly
+终于 | zhōng yú | finally; at last
+刚 | gāng | just (a moment ago)
+其实 | qí shí | actually; in fact
+原来 | yuán lái | it turns out (that)
+竟然 | jìng rán | to (one's) surprise; unexpectedly
+始终 | shǐ zhōng | all along; throughout
+甚至 | shèn zhì | even; so much as
+早已 | zǎo yǐ | long ago; long since
+从来 | cóng lái | always; (with a negative) never
+或许 | huò xǔ | perhaps; maybe
+恐怕 | kǒng pà | I'm afraid (that); probably
+固然 | gù rán | admittedly; it is true that
+再也 | zài yě | (with a negative) never again; (not) any more
+并 | bìng | (before a negative, for emphasis) not at all; actually not
+可是 | kě shì | but
+但是 | dàn shì | but
+但 | dàn | but
+虽然 | suī rán | although
+因为 | yīn wèi | because
+所以 | suǒ yǐ | so; therefore
+如果 | rú guǒ | if
+只要 | zhǐ yào | as long as
+既然 | jì rán | since; now that
+而且 | ér qiě | and also; moreover
+不仅 | bù jǐn | not only
+由于 | yóu yú | because of; due to
+随着 | suí zhe | along with; as
+为了 | wèi le | in order to
+而是 | ér shì | but rather
+然后 | rán hòu | then; after that
+与 | yǔ | and; with
+比 | bǐ | than; compared with
+还有 | hái yǒu | and also; there is also
+
+# time
+时候 | shí hou | time; (…的时候) when …
+时 | shí | (…时) when …; time
+时间 | shí jiān | time
+以后 | yǐ hòu | after; later; from now on
+以前 | yǐ qián | before; in the past
+后来 | hòu lái | later; afterwards
+当年 | dāng nián | back then; in those years
+如今 | rú jīn | nowadays; now
+现在 | xiàn zài | now
+小时候 | xiǎo shí hou | as a child; in childhood
+一辈子 | yī bèi zi | (one's) whole life
+多年 | duō nián | many years
+年 | nián | year
+月 | yuè | month
+星期 | xīng qī | week
+周末 | zhōu mò | weekend
+今天 | jīn tiān | today
+去年 | qù nián | last year
+今年 | jīn nián | this year
+早上 | zǎo shang | (early) morning
+上午 | shàng wǔ | morning (before noon)
+中午 | zhōng wǔ | noon; midday
+下午 | xià wǔ | afternoon
+晚上 | wǎn shang | evening; night
+冬天 | dōng tiān | winter
+小时 | xiǎo shí | hour
+分钟 | fēn zhōng | minute
+正在 | zhèng zài | (in the middle of) -ing
+岁 | suì | years (of age)
+
+# things and places
+手 | shǒu | hand
+身体 | shēn tǐ | body; health
+心里 | xīn li | in (one's) heart; inside
+声音 | shēng yīn | sound; voice
+话 | huà | words; what someone says
+名字 | míng zi | name
+东西 | dōng xi | thing(s); stuff
+钱 | qián | money
+衣服 | yī fu | clothes
+书 | shū | book
+门 | mén | door
+门口 | mén kǒu | doorway; entrance
+窗户 | chuāng hu | window
+房间 | fáng jiān | room
+家里 | jiā li | (at) home
+学校 | xué xiào | school
+小学 | xiǎo xué | primary school
+大学 | dà xué | university
+公司 | gōng sī | company; office
+城市 | chéng shì | city
+地方 | dì fang | place
+路 | lù | road; way
+地上 | dì shang | on the ground; on the floor
+附近 | fù jìn | nearby
+旁边 | páng biān | beside; next to
+前面 | qián mian | in front; ahead
+这儿 | zhèr | here
+店 | diàn | shop
+手机 | shǒu jī | mobile phone
+电话 | diàn huà | telephone; phone call
+电视 | diàn shì | TV
+网上 | wǎng shang | online
+天气 | tiān qì | weather
+早饭 | zǎo fàn | breakfast
+工作 | gōng zuò | job; work; to work
+事 | shì | matter; thing
+记忆 | jì yì | memory
+页 | yè | page
+
+# grammar words and measure words
+吗 | ma | (question particle)
+啊 | a | (particle: warm or emphatic tone)
+个 | gè | (general measure word)
+件 | jiàn | (measure word for clothes, matters)
+句 | jù | (measure word for sentences)
+位 | wèi | (polite measure word for people)
+座 | zuò | (measure word for cities, buildings)
+次 | cì | time(s); occurrence
+第一 | dì yī | first
+一些 | yī xiē | some; a few
+半 | bàn | half
+两 | liǎng | two
+为什么 | wèi shén me | why
+许多 | xǔ duō | many; a great deal of
+
+# numbers
+三 | sān | three
+四 | sì | four
+五 | wǔ | five
+六 | liù | six
+七 | qī | seven
+八 | bā | eight
+九 | jiǔ | nine
+十 | shí | ten
+十一 | shí yī | eleven
+十二 | shí èr | twelve
+十五 | shí wǔ | fifteen
+十六 | shí liù | sixteen
+二十 | èr shí | twenty
+二十八 | èr shí bā | twenty-eight
+三十 | sān shí | thirty
+四十 | sì shí | forty
+五十 | wǔ shí | fifty
+七十 | qī shí | seventy

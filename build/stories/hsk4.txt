@@ -1,0 +1,472 @@
+# HSK 4 - Upper Intermediate
+# Adds: 由于, 尽管…却, 既然…就, 即使…也, 无论…都, 不仅…而且, 甚至, 竟然,
+# 于是, 随着, 通过, 按照, 恐怕, 本来, 并不是…而是, 值得.
+
+=== s13
+level: 4
+tag: A new start
+zh: 搬到城市
+en: Moving to the City
+text:
+大学 毕业 以后 ， 我 一 个 人 搬 到 了 这 座 城市 。 由于 刚 开始 工作 ， 收入 不 高 ， 我 只能 租 一 间 很 小 的 房子 。 房子 虽然 小 ， 但 离 公司 很 近 ， 窗户 对 着 一 个 小 公园 。
+
+最初 的 几 个 月 ， 我 几乎 不 认识 任何 人 。 每 天 下班 以后 ， 我 只能 自己 做饭 、 自己 看书 。 周末 的 时候 ， 我 甚至 一 整 天 都 不 说 一 句 话 。 尽管 妈妈 经常 打 电话 来 ， 我 却 总是 告诉 她 一切 都@all 好 ， 因为 我 不 想 让 她 担心 。
+
+后来 ， 我 开始 每 天 早上 在 楼 下 的 面包店 买 早餐 。 面包店 的@poss 老板 是 一 位 五十 多 岁 的 大叔 ， 他 对@to 每 个 客人 都@all 很 热情 。 一@start 开始 我 只是 买 了 面包 就 走 ， 但 随着 时间 一 天 天 过去 ， 他 慢慢 记住 了 我 喜欢 吃 什么 。
+
+有 一 天 ， 他 多@extra 给 了 我 一 个 面包 。 我 以为 他 拿 错 了 ， 于是 准备 把 面包 还@huan 给 他 。 他 却 笑 着@while 说 ： “ 这 是 送 给 你 的@shi 。 你 最近 好像 瘦 了@change ， 既然 一 个 人 在 外面 ， 就 更 要 好好 吃饭 。 ”
+
+听 了 这 句 话 ， 我 竟然 差点 哭 了 出来 。 那 一 刻 我 忽然 觉得 ， 无论 这 座 城市 有 多@how 大 ， 只要 有 人 关心 你 ， 它 就 会 慢慢 变成 你 的@poss 家 。 从 那 以后 ， 我 不仅 每 天 去 面包店 ， 而且 还 认识 了 很 多@many 住 在 附近 的 邻居 。
+words:
+一 | yī | one; a (一个人 = on one's own)
+一@start | yī | (一开始 = at first)
+搬 | bān | to move (house)
+到 | dào | to
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+这 | zhè | this
+收入 | shōu rù | income
+高 | gāo | high
+只能 | zhǐ néng | can only
+租 | zū | to rent
+间 | jiān | (measure word for rooms)
+小 | xiǎo | small
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+的@shi | de | (是…的: stresses it — 是送给你的 = it's for you)
+房子 | fáng zi | flat; place to live
+离 | lí | (distance) from
+对 | duì | to face
+对@to | duì | towards
+着 | zhe | (ongoing state)
+着@while | zhe | (while …ing)
+公园 | gōng yuán | park
+最初 | zuì chū | first; at the beginning
+几 | jǐ | a few
+任何 | rèn hé | any
+天 | tiān | day
+看书 | kàn shū | to read
+整 | zhěng | whole
+都 | dōu | (the whole day) at all
+都@all | dōu | all; every
+尽管 | jǐn guǎn | although; even though
+经常 | jīng cháng | often
+打 | dǎ | to make (a phone call)
+来 | lái | (打电话来 = to call me)
+却 | què | but; yet
+一切 | yī qiè | everything
+好 | hǎo | fine; good
+想 | xiǎng | to want to
+让 | ràng | to make; to let
+担心 | dān xīn | to worry
+在 | zài | at; in
+楼 | lóu | building (楼下 = downstairs)
+下 | xià | below (楼下 = downstairs)
+面包店 | miàn bāo diàn | bakery
+早餐 | zǎo cān | breakfast
+老板 | lǎo bǎn | owner; boss
+多 | duō | more than (五十多 = fifty-odd)
+多@extra | duō | extra; one more
+多@how | duō | how (有多大 = however big)
+多@many | duō | many
+大叔 | dà shū | (friendly word for a middle-aged man)
+客人 | kè rén | customer
+热情 | rè qíng | warm; friendly
+面包 | miàn bāo | bread
+就 | jiù | then
+走 | zǒu | to leave
+过去 | guò qu | to pass (of time)
+慢慢 | màn màn | slowly; gradually
+记住 | jì zhu | to remember
+什么 | shén me | what
+给 | gěi | to give; to (someone)
+错 | cuò | wrong (拿错 = take by mistake)
+于是 | yú shì | so; and so
+准备 | zhǔn bèi | to be about to
+把 | bǎ | (把 moves the object before the verb)
+还@huan | huán | to give back
+送 | sòng | to give (as a present)
+最近 | zuì jìn | recently
+好像 | hǎo xiàng | to seem
+瘦 | shòu | thin
+外面 | wài mian | away (from home)
+要 | yào | should; must
+好好 | hǎo hǎo | properly
+吃饭 | chī fàn | to eat (proper meals)
+听 | tīng | to hear
+差点 | chà diǎn | almost; nearly
+哭 | kū | to cry
+出来 | chu lai | (after a verb) out (哭出来 = burst into tears)
+那 | nà | that
+刻 | kè | moment
+无论 | wú lùn | no matter
+大 | dà | big
+关心 | guān xīn | to care about
+会 | huì | will
+变成 | biàn chéng | to become
+家 | jiā | home
+从 | cóng | from (从那以后 = from then on)
+去 | qù | to go
+还 | hái | also
+住 | zhù | to live
+邻居 | lín jū | neighbour(s)
+
+=== s14
+level: 4
+tag: A job interview
+zh: 面试
+en: The Interview
+text:
+上 个 月 ， 我 通过 网上 投 了 很 多 简历 ， 终于 收到 了 一 家 大 公司 的@poss 面试 通知 。 这 家 公司 是 我 一直 很 想 去 的 地方 ， 所以 接到 电话 的 时候 ， 我 既 兴奋 又 紧张 。
+
+为了 准备 这 次 面试 ， 我 上网 查 了 很 多 关于 这 家 公司 的 材料 ， 还 按照 朋友 的@poss 建议 ， 把 可能 会 被 问 到@res 的 问题 都 写 了 下来 ， 一 个 一 个 地 练习 回答 。 面试 前 一 天 晚上 ， 我 紧张 得 几乎 没 睡着 。
+
+第二 天 早上 ， 我 提前 半 个 小时 到 了 公司 。 没想到 ， 在 电梯 里 我 竟然 不 小心 把 咖啡 洒 在 了 一 位 先生 的@poss 衬衫 上 。 我 连忙 向 他 道歉 ， 他 却 只是 摆 了 摆 手 说 ： “ 没关系 ， 别 紧张 。 ”
+
+面试 开始 了@change ， 我 走进 办公室 ， 发现 坐 在 中间 的 面试官 正是 电梯 里 的 那 位 先生 ！ 我 心里 想@think ： “ 这 下@now 完 了@change ， 恐怕 我 不 可能 被 录取 了@change 。 ” 既然 已经 这样 了@change ， 我 也 就 不 紧张 了@change ， 认真 地 回答 了 每 一 个 问题 。
+
+面试 结束 的 时候 ， 他 问 我 ： “ 刚才 在 电梯 里 ， 你 为什么 没有 解释 ， 而是 马上 道歉 ？ ” 我 说 ： “ 因为 确实 是 我 的@poss 错 。 ” 他 点 了 点 头 ， 没有 再 说 什么 。
+
+一 个 星期 以后 ， 我 收到 了 公司 的@poss 电话 ， 通知@verb 我 下 个 月 去 上班 。 后来 我 才 知道 ， 那 天 的 面试 中 ， 他 最 看重 的@nom 并 不 是 我 的@poss 回答 ， 而是 我 在 电梯 里 的 态度 。
+words:
+上 | shàng | last (上个月 = last month)
+通过 | tōng guò | through; via
+投 | tóu | to send in (a CV)
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+多 | duō | many
+简历 | jiǎn lì | CV; résumé
+收到 | shōu dào | to receive
+一 | yī | one; a
+家 | jiā | (measure word for companies)
+大 | dà | big
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+的@nom | de | (…的: the thing that …)
+面试 | miàn shì | (job) interview
+通知 | tōng zhī | notice (面试通知 = invitation to interview)
+通知@verb | tōng zhī | to notify; to tell
+这 | zhè | this
+一直 | yī zhí | for a long time; all along
+想 | xiǎng | to want to
+想@think | xiǎng | to think
+去 | qù | to go
+接到 | jiē dào | to receive (a call)
+既 | jì | (既…又: both … and)
+兴奋 | xīng fèn | excited
+又 | yòu | (既…又: both … and)
+紧张 | jǐn zhāng | nervous
+准备 | zhǔn bèi | to prepare for
+上网 | shàng wǎng | to go online
+关于 | guān yú | about
+材料 | cái liào | material; information
+还 | hái | also
+按照 | àn zhào | following; according to
+建议 | jiàn yì | advice; suggestion
+把 | bǎ | (把 moves the object before the verb)
+可能 | kě néng | possible; might
+会 | huì | would; will
+被 | bèi | (passive: to be …ed)
+到 | dào | to arrive (at)
+到@res | dào | (问到 = be asked about)
+问题 | wèn tí | question(s)
+都 | dōu | all
+下来 | xia lai | (after a verb) down (写下来 = write down)
+地 | de | (links a description to the verb)
+练习 | liàn xí | to practise
+回答 | huí dá | to answer; answer
+前 | qián | before
+天 | tiān | day
+得 | de | (links to the result: so … that)
+没 | méi | did not
+睡着 | shuì zháo | to fall asleep
+第二 | dì èr | second (第二天 = the next day)
+提前 | tí qián | early; in advance
+没想到 | méi xiǎng dào | unexpectedly
+在 | zài | in; on; at
+电梯 | diàn tī | lift; elevator
+里 | li | in
+小心 | xiǎo xīn | careful (不小心 = by accident)
+咖啡 | kā fēi | coffee
+洒 | sǎ | to spill
+先生 | xiān sheng | gentleman; man
+衬衫 | chèn shān | shirt
+连忙 | lián máng | hurriedly; at once
+向 | xiàng | to; towards
+道歉 | dào qiàn | to apologize
+却 | què | but; yet
+摆 | bǎi | to wave (摆手 = wave one's hand)
+没关系 | méi guān xi | it's all right
+别 | bié | don't
+走进 | zǒu jìn | to walk into
+办公室 | bàn gōng shì | office
+坐 | zuò | to sit
+中间 | zhōng jiān | middle
+面试官 | miàn shì guān | interviewer
+正是 | zhèng shì | was none other than
+那 | nà | that
+下 | xià | next (下个月 = next month)
+下@now | xià | (这下 = now; at this point)
+完 | wán | over; finished (这下完了 = it's all over)
+录取 | lù qǔ | to take on; to accept
+这样 | zhè yàng | like this; this way
+就 | jiù | then; so
+结束 | jié shù | to end
+刚才 | gāng cái | just now
+没有 | méi yǒu | did not
+解释 | jiě shì | to explain
+确实 | què shí | really; indeed
+错 | cuò | fault
+点 | diǎn | to nod (点头)
+头 | tóu | head
+再 | zài | (not) … any more
+什么 | shén me | anything
+上班 | shàng bān | to start work
+才 | cái | only then
+中 | zhōng | in; during
+看重 | kàn zhòng | to value
+态度 | tài dù | attitude
+
+=== s15
+level: 4
+tag: Books and time
+zh: 旧书店
+en: The Old Bookshop
+text:
+我 家 附近 有 一 家@mw 旧 书店 ， 已经 开 了 四十 多 年 了@now 。 书店 不 大 ， 却 放 满 了 书 ， 从 地上 一直@way 堆 到 天花板 。 老板 是 一 位 七十 多 岁 的 老 爷爷 ， 大家 都 叫 他 陈 爷爷 。
+
+上 中学 的 时候 ， 我 几乎 每 个 周末 都 去 那里 看书 。 由于 没有 钱 买 书 ， 我 常常 在 店 里 一@asap 坐 就@asap 是 一 个 下午 。 陈 爷爷 从来 不 赶 我 走 ， 有时候 甚至 会@would 给 我 倒 一 杯 热 茶 。
+
+后来 我 去 了 外地 上 大学 ， 又 在 别的 城市 工作 了 很 多@many 年 。 随着 网上 买 书 越来越 方便 ， 我 已经 很 久 没有@not 走进 过 书店 了@now 。 今年 春节 回家 ， 我 顺便 去 看 了 看 那 家@mw 书店 ， 发现 门口 贴 着 一 张 纸 ： “ 本@this 店 下 月 关门 。 ”
+
+我 走@walk 进去 ， 陈 爷爷 正 坐 在 老@usual 地方 看书 。 他 抬 起 头 看 了 我 很 久 ， 竟然 还 记得 我 ： “ 你 是 那 个 总是 坐 在 窗户 旁边 的 小 姑娘 吧 ？ ” 我 问 他 为什么 要 关门 ， 他 叹 了 口 气 说 ： “ 来 买 书 的 人 越来越 少 ， 而且 我 年纪 也 大@old 了@change 。 ”
+
+离开 之前 ， 我 买 了 十 本 书 。 陈 爷爷 坚持 只 收 我 一半 的 钱 ： “ 这些 书 放 在 这里 ， 早晚 会 被 卖 掉 。 既然 它们 能 找到 真正 喜欢 它们 的 人 ， 就 值得 了@change 。 ” 回家 的 路 上@on ， 书 很 重 ， 我 的@poss 心 却 比 书 更 重 。 我 突然 明白 ， 有些 地方 即使 不 在@exist 了@change ， 也 会 一直 留 在 我们 的@poss 记忆 里 。
+words:
+家 | jiā | home
+家@mw | jiā | (measure word for shops)
+一 | yī | one; a
+一@asap | yī | (一…就是: once … it would be)
+书店 | shū diàn | bookshop
+开 | kāi | to be open (for business)
+了 | le | (the action is done)
+了@now | le | (…了: and still so now)
+了@change | le | (a new situation: now / no longer)
+多 | duō | more than (四十多 = forty-odd)
+多@many | duō | many
+大 | dà | big
+大@old | dà | old (年纪大 = getting on in years)
+却 | què | but; yet
+放 | fàng | to put; to keep
+满 | mǎn | full
+从 | cóng | from
+一直 | yī zhí | always; forever
+一直@way | yī zhí | all the way
+堆 | duī | to pile up
+到 | dào | to; up to
+天花板 | tiān huā bǎn | ceiling
+老板 | lǎo bǎn | owner
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+老 | lǎo | old
+老@usual | lǎo | usual (老地方 = the usual place)
+大家 | dà jiā | everyone
+都 | dōu | all; every (time)
+叫 | jiào | to call (someone something)
+陈 | Chén | Chen (name)
+上 | shàng | to attend (school)
+中学 | zhōng xué | secondary school
+去 | qù | to go
+那里 | nà li | there
+看书 | kàn shū | to read
+没有 | méi yǒu | not have
+没有@not | méi yǒu | have not
+在 | zài | in; at
+在@exist | zài | to be there; to exist
+里 | li | in
+坐 | zuò | to sit
+就@asap | jiù | (一…就是: once … it would be)
+就 | jiù | then
+赶 | gǎn | to drive away (赶…走 = chase off)
+走 | zǒu | away; to leave
+走@walk | zǒu | to walk
+有时候 | yǒu shí hou | sometimes
+会 | huì | will
+会@would | huì | would (sometimes)
+给 | gěi | for (someone)
+倒 | dào | to pour
+杯 | bēi | cup (of)
+热 | rè | hot
+茶 | chá | tea
+外地 | wài dì | somewhere else in the country
+又 | yòu | then also
+别的 | bié de | other
+越来越 | yuè lái yuè | more and more
+走进 | zǒu jìn | to walk into
+方便 | fāng biàn | convenient
+过 | guo | (have …ed)
+春节 | Chūn jié | Spring Festival (Chinese New Year)
+顺便 | shùn biàn | while there; on the way
+看 | kàn | to look (at)
+那 | nà | that
+贴 | tiē | to stick up; to post
+着 | zhe | (ongoing state: is posted)
+张 | zhāng | (measure word for sheets)
+纸 | zhǐ | sheet of paper; notice
+本 | běn | (measure word for books)
+本@this | běn | this (formal: 本店 = this shop)
+下 | xià | next (下月 = next month)
+关门 | guān mén | to close down
+正 | zhèng | (right then) in the middle of …ing
+抬 | tái | to raise
+起 | qǐ | up
+头 | tóu | head
+还 | hái | still
+小 | xiǎo | little; young
+姑娘 | gū niang | girl
+吧 | ba | (…, right? checking a guess)
+要 | yào | to be going to
+叹 | tàn | to sigh
+口 | kǒu | (叹了口气 = heaved a sigh)
+气 | qì | breath
+来 | lái | to come
+少 | shǎo | few
+年纪 | nián jì | age
+之前 | zhī qián | before
+坚持 | jiān chí | to insist
+只 | zhǐ | only
+收 | shōu | to take; to charge (money)
+一半 | yī bàn | half
+这些 | zhè xiē | these
+这里 | zhè li | here
+早晚 | zǎo wǎn | sooner or later
+被 | bèi | (passive: to be …ed)
+卖 | mài | to sell
+值得 | zhí de | to be worth it
+上@on | shang | on (路上 = on the way)
+重 | zhòng | heavy
+心 | xīn | heart
+突然 | tū rán | suddenly
+有些 | yǒu xiē | some
+即使 | jí shǐ | even if
+留 | liú | to stay; to remain
+
+=== s16
+level: 4
+tag: Plans and family
+zh: 改变计划
+en: A Change of Plans
+text:
+今年 夏天 ， 我 本来 打算 和 朋友 一起 去 云南 旅游 。 我们 提前 两 个 月 就 订 好 了 机票 和 酒店 ， 还 按照 网上 的 建议 ， 做 了 一 份 详细 的 计划 ， 连 每 天 吃 什么 都 安排 好 了 。
+
+可是 出发 前 一 个 星期 ， 妈妈 打 电话 告诉 我 ， 爸爸 在 工作 的 时候 不 小心 摔 伤 了 腿 ， 需要 在 医院 住 一 段 时间 。 妈妈 在 电话 里 一直 说 “ 没 什么 大 问题 ” ， 但 我 听 得@can 出来 ， 她 其实 很 累 。
+
+我 犹豫 了 很 久 。 如果 取消 旅行 ， 不仅 机票 的@poss 钱 退 不 回来 ， 而且 朋友 也 会 失望 。 可是 如果 我 去 旅游 ， 恐怕 在 路 上 也 玩 得 不 开心 。 最后 ， 我 还是 决定 回家 。
+
+我 给 朋友 打 电话 说明 了 情况 。 本来 以为 她 会 生气 ， 没想到 她 竟然 说 ： “ 家人 当然 比 旅行 重要 。 既然 你 不 去 了@change ， 那 我们 就@then 等 你 爸爸 好@well 了 以后 再 去 吧 ， 云南 又 不 会 跑 掉 。 ” 听 了 她 的@poss 话 ， 我 感动 得 说 不 出 话 来 。
+
+回到 家 以后 ， 我 每 天 去 医院 照顾 爸爸 ， 陪 他 聊天 、 下棋 。 爸爸 以前 工作 很 忙 ， 我们 很 少 有 机会 这样 坐 在 一起 。 通过 这 段 时间 ， 我 对 他 的 了解 甚至 比 过去 二十 年 还 多 。
+
+一 个 月 以后 ， 爸爸 出院 了 。 虽然 这 个 夏天 我 没有 去 成 云南 ， 但 我 并 不 后悔 。 有时候 计划 被 打@mess 乱 ， 反而 能 让 我们 发现 更 重要 的 东西 。
+words:
+夏天 | xià tiān | summer
+本来 | běn lái | originally
+打算 | dǎ suàn | to plan
+和 | hé | with; and
+去 | qù | to go
+云南 | Yún nán | Yunnan (province in the southwest)
+旅游 | lǚ yóu | to travel; to go on a trip
+提前 | tí qián | in advance
+就 | jiù | (as early as that) already
+就@then | jiù | then
+订 | dìng | to book
+好 | hǎo | (after a verb) done; all set
+好@well | hǎo | well again; recovered
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+机票 | jī piào | plane ticket(s)
+酒店 | jiǔ diàn | hotel
+还 | hái | also
+按照 | àn zhào | following
+的 | de | (links the description before it to the noun)
+的@poss | de | 's; of (belonging to)
+建议 | jiàn yì | suggestion(s)
+做 | zuò | to make
+一 | yī | one; a
+份 | fèn | (measure word for plans, documents)
+详细 | xiáng xì | detailed
+计划 | jì huà | plan
+连 | lián | (连…都: even)
+天 | tiān | day
+什么 | shén me | what
+都 | dōu | (连…都: even)
+安排 | ān pái | to arrange; to plan
+出发 | chū fā | to set off
+前 | qián | before
+打 | dǎ | to make (a phone call)
+打@mess | dǎ | (打乱 = to throw into disorder)
+在 | zài | at; in; on
+小心 | xiǎo xīn | careful (不小心 = by accident)
+摔 | shuāi | to fall
+伤 | shāng | to hurt; to injure
+腿 | tuǐ | leg
+医院 | yī yuàn | hospital
+住 | zhù | to stay
+段 | duàn | (一段时间 = a while)
+里 | li | on (电话里 = on the phone)
+一直 | yī zhí | kept (on doing)
+没 | méi | (没什么 = nothing much)
+大 | dà | big; serious
+问题 | wèn tí | problem
+听 | tīng | to hear
+得 | de | (links a verb to how it goes)
+得@can | de | (听得出来 = can tell by listening)
+出来 | chu lai | (after a verb) out (听得出来 = can tell)
+犹豫 | yóu yù | to hesitate
+取消 | qǔ xiāo | to cancel
+旅行 | lǚ xíng | trip; travel
+退 | tuì | to refund (退不回来 = can't get back)
+会 | huì | will; would
+失望 | shī wàng | disappointed
+上 | shang | on (路上 = on the way)
+玩 | wán | to have fun
+最后 | zuì hòu | in the end
+还是 | hái shi | still; after all
+给 | gěi | to (someone)
+说明 | shuō míng | to explain
+情况 | qíng kuàng | situation
+生气 | shēng qì | angry
+没想到 | méi xiǎng dào | unexpectedly
+家人 | jiā rén | family
+当然 | dāng rán | of course
+那 | nà | then; in that case
+再 | zài | then (and not before)
+吧 | ba | (suggestion: let's …)
+又 | yòu | (for emphasis: after all, it's not as if …)
+感动 | gǎn dòng | moved; touched
+出 | chū | out (说不出话来 = can't get the words out)
+来 | lái | (说不出…来: can't get … out)
+家 | jiā | home
+照顾 | zhào gù | to look after
+陪 | péi | to keep (someone) company
+聊天 | liáo tiān | to chat
+下棋 | xià qí | to play chess
+少 | shǎo | seldom (很少 = rarely)
+机会 | jī huì | chance
+这样 | zhè yàng | like this
+坐 | zuò | to sit
+通过 | tōng guò | through; over (the course of)
+这 | zhè | this
+对 | duì | towards; of (对他的了解 = my understanding of him)
+了解 | liǎo jiě | understanding
+过去 | guò qù | the past
+多 | duō | more
+出院 | chū yuàn | to leave hospital
+没有 | méi yǒu | did not
+成 | chéng | (after a verb) successfully (没去成 = didn't manage to go)
+后悔 | hòu huǐ | to regret
+有时候 | yǒu shí hou | sometimes
+被 | bèi | (passive: to be …ed)
+乱 | luàn | in a mess; in disorder
+反而 | fǎn ér | instead; on the contrary
+让 | ràng | to let; to allow

@@ -1,0 +1,404 @@
+# HSK 3 - Intermediate
+# Adds: 把 and 被, directional complements (走出来, 拿下来), potential
+# complements (看不清楚, 修不好), 是…的, 越…越, 一…就, 只要…就, 除了…以外,
+# 连…都, 为了, 终于, 其实, 原来, 不是…而是.
+
+=== s09
+level: 3
+tag: Getting home late
+zh: 最后一班车
+en: The Last Bus
+text:
+上 个 星期五 ， 公司 有 一 个 很 重要 的 会议 ， 我 一直 忙 到 晚上 十一 点 才 下班 。 走 出 公司 大楼 的 时候 ， 街 上 已经 没有 什么 人 了@change 。
+
+我 家 离 公司 比较 远 ， 坐 公共汽车 要 四十 分钟 。 我 知道 最后 一 班 车 是 十一 点 二十 分 ， 所以 我 一@asap 出 门 就@asap 向 车站 跑 去 。 可是 我 跑 到@reach 车站 的 时候 ， 正好 看见 那 班 车 开 走 了 。
+
+我 站 在 车站 ， 不 知道 该 怎么 办 。 打 出租车 太 贵 了@tai ， 走 回家 又 太 远 。 更 麻烦 的@nom 是 ， 我 的@poss 手机 快 没 电 了@soon 。 我 越 想 越 着急 。
+
+这 时候 ， 一 辆 车@car 在 我 旁边 停 了 下来 。 开车 的@nom 是 一 位 阿姨 ， 她 问 我 ： “ 你 是不是 没@not 赶上 最后 一 班 车 ？ ” 我 点 了 点 头 。 她 说 ： “ 我 以前 也 被 这 班 车 留下 过 。 你 住 在 哪儿 ？ 如果 顺路 ， 我 可以 送 你 回去 。 ”
+
+我 告诉 她 我 住 在 哪儿 ， 没想到 我们 住 在 同 一 个 小区 。 在 车@car 上 ， 我们 一边 聊天 一边 听 音乐 ， 四十 分钟 的 路 很 快 就 过去 了 。 我 这 才 知道 ， 她 是 一 位 医生 ， 每 天 都 下班 得 很 晚 。
+
+下 车@car 的 时候 ， 我 想 给 她 钱 ， 但是 她 怎么 也 不 要 。 她 笑 着 说 ： “ 以后 你 看到 别人 需要 帮助 ， 也 帮 一下 吧 。 ” 从 那 天 起 ， 我 一直@always 记得 这 句 话 。
+words:
+上 | shàng | last (上个星期五 = last Friday)
+星期五 | xīng qī wǔ | Friday
+一 | yī | one; a
+一@asap | yī | (一…就: as soon as)
+的 | de | (links the description before it to the noun)
+的@nom | de | (…的: the one / the thing that …)
+的@poss | de | 's; of (belonging to)
+会议 | huì yì | meeting
+一直 | yī zhí | continuously; all the way
+一直@always | yī zhí | (ever since) always
+到 | dào | until
+到@reach | dào | to (get to)
+点 | diǎn | o'clock
+才 | cái | not until; only then
+走 | zǒu | to walk
+出 | chū | out (of)
+大楼 | dà lóu | (office) building
+街 | jiē | street
+没有 | méi yǒu | there is no
+什么 | shén me | much of (没有什么人 = hardly anyone)
+了 | le | (the action is done)
+了@change | le | (a new situation: no longer / now)
+了@tai | le | (太…了: too …)
+了@soon | le | (快…了: about to …)
+家 | jiā | home
+离 | lí | (distance) from
+比较 | bǐ jiào | fairly; rather
+坐 | zuò | to take (a bus)
+公共汽车 | gōng gòng qì chē | bus
+要 | yào | to take (time)
+最后 | zuì hòu | last
+班 | bān | (measure word for a scheduled bus run)
+车 | chē | bus
+车@car | chē | car
+分 | fēn | minutes (past the hour)
+就 | jiù | (quickly) already; right away
+就@asap | jiù | (一…就: as soon as … then)
+向 | xiàng | towards
+车站 | chē zhàn | bus stop
+去 | qù | (after a verb) off; towards
+正好 | zhèng hǎo | just at that moment
+那 | nà | that
+开 | kāi | to drive (开走 = drive off)
+在 | zài | at; in
+怎么 | zěn me | how
+办 | bàn | to do (怎么办 = what to do)
+打 | dǎ | to take (a taxi)
+出租车 | chū zū chē | taxi
+贵 | guì | expensive
+又 | yòu | and on top of that
+麻烦 | má fan | troublesome
+快 | kuài | about to; soon
+没 | méi | not have (没电 = out of battery)
+没@not | méi | did not
+电 | diàn | electricity; battery charge
+越 | yuè | (越…越: the more … the more)
+想 | xiǎng | to think
+着急 | zháo jí | worried; anxious
+这 | zhè | this
+辆 | liàng | (measure word for vehicles)
+停 | tíng | to stop
+下来 | xia lai | (after a verb) down; to a stop
+开车 | kāi chē | to drive
+阿姨 | ā yí | auntie (polite way to address a woman)
+是不是 | shì bu shì | is it that …? (didn't you …?)
+赶上 | gǎn shàng | to catch (in time)
+头 | tóu | head (点头 = to nod)
+被 | bèi | (passive: by)
+留下 | liú xià | to leave behind
+过 | guo | (have …ed before)
+住 | zhù | to live
+哪儿 | nǎr | where
+顺路 | shùn lù | on the way
+可以 | kě yǐ | can
+送 | sòng | to drive (someone) home; to give a lift
+没想到 | méi xiǎng dào | unexpectedly; (I) never expected
+同 | tóng | same
+小区 | xiǎo qū | housing estate
+一边 | yī biān | (一边…一边: while)
+聊天 | liáo tiān | to chat
+听 | tīng | to listen (to)
+音乐 | yīn yuè | music
+过去 | guò qu | to pass (of time)
+医生 | yī shēng | doctor
+天 | tiān | day
+都 | dōu | (every day) without fail
+得 | de | (links a verb to how it happens)
+晚 | wǎn | late
+下 | xià | to get out of (a car)
+给 | gěi | to give
+着 | zhe | (while …ing)
+别人 | bié ren | other people
+一下 | yī xià | (after a verb) a bit; briefly
+吧 | ba | (suggestion: why not …)
+从 | cóng | from
+起 | qǐ | (从…起 = from … on)
+
+=== s10
+level: 3
+tag: At the pool
+zh: 学游泳
+en: Learning to Swim
+text:
+我 小时候 住 在 山 里 ， 附近 没有 河 ， 也 没有 游泳馆 ， 所以 我 一直 不 会 游泳 。 上 大学 以后 ， 同学 们 常常 叫 我 去 游泳 ， 我 每 次 都 说 自己 很 忙 。
+
+其实 我 不 是 忙 ， 是 害怕 。 我 一@asap 站 在 水 边 ， 心 就@asap 跳 得 很 快 。
+
+今年 夏天 ， 我 终于 决定 去 学 游泳 。 我 在 学校 附近 的 游泳馆 报 了 一 个 班 ， 教练 是 一 个 很 年轻 的 女孩 。 第一 节 课 ， 她 没有@not 让 我 马上 下 水 ， 先 让 我 坐 在 水 边 ， 把 脚 放 进 水 里 。
+
+她 说 ： “ 游泳 最 重要 的@nom 不 是 动作 ， 是 不 怕 水 。 只要 你 不 害怕 ， 就 一定 能 学会 。 ”
+
+在@under 她 的@poss 帮助 下@under ， 我 先 学会 了 在 水 里 呼吸 ， 然后 学会 了 让 身体 浮 在 水 上 。 刚 开始 的 时候 ， 我 喝 了 好 几 口 水 ， 难受 得 想 回家 。 可是 我 一@asap 想到 同学 们 游泳 时 开心 的 样子 ， 就@asap 又 回到 了 水 里 。
+
+一 个 月 以后 ， 我 已经 能 游 二十 米 了@change 。 虽然 游 得 不 快 ， 动作 也 不 太 好看 ， 但是 我 再也 不 怕 水 了@change 。 上@last 个 周末 ， 我 给 同学 们 打 电话 ， 请 他们 一起 去 游泳 。 他们 都@all 不 相信 ： “ 你 不 是 很 忙 吗 ？ ” 我 笑 着 说 ： “ 现在 不 忙 了@change ！ ”
+words:
+住 | zhù | to live
+在 | zài | in; at; on
+在@under | zài | (在…下: with; under)
+山 | shān | mountain(s)
+里 | li | in
+没有 | méi yǒu | there is no
+没有@not | méi yǒu | did not
+河 | hé | river
+游泳馆 | yóu yǒng guǎn | (indoor) swimming pool
+一直 | yī zhí | all along
+会 | huì | can; to know how to
+游泳 | yóu yǒng | to swim; swimming
+上 | shàng | to attend (university)
+上@last | shàng | last (上个周末 = last weekend)
+叫 | jiào | to ask (someone to do something)
+去 | qù | to go
+都 | dōu | (every time) always
+都@all | dōu | all
+害怕 | hài pà | to be afraid
+一 | yī | one; a
+一@asap | yī | (一…就: as soon as)
+水 | shuǐ | water
+边 | biān | edge; side
+心 | xīn | heart
+就 | jiù | (只要…就: then)
+就@asap | jiù | (一…就: as soon as … then)
+跳 | tiào | to beat (of the heart)
+得 | de | (links a verb to how, or how much)
+快 | kuài | fast
+夏天 | xià tiān | summer
+的 | de | (links the description before it to the noun)
+的@nom | de | (…的: the thing that …)
+的@poss | de | 's; of (belonging to)
+报 | bào | to sign up for (报班 = enrol in a class)
+了 | le | (the action is done)
+了@change | le | (a new situation: now / no longer)
+班 | bān | class; course
+教练 | jiào liàn | coach; instructor
+女孩 | nǚ hái | girl; young woman
+节 | jié | (measure word for lessons)
+课 | kè | lesson; class
+让 | ràng | to let; to have (someone do)
+下 | xià | to go into (the water)
+下@under | xià | (在…下: with; under)
+先 | xiān | first
+坐 | zuò | to sit
+把 | bǎ | (把 moves the object before the verb)
+脚 | jiǎo | foot; feet
+放 | fàng | to put
+进 | jìn | into
+动作 | dòng zuò | movement(s); technique
+怕 | pà | to be afraid of
+一定 | yī dìng | definitely
+学会 | xué huì | to learn (how to)
+呼吸 | hū xī | to breathe
+浮 | fú | to float
+喝 | hē | to drink (喝水 here = swallow water)
+好 | hǎo | quite (好几 = quite a few)
+几 | jǐ | several
+口 | kǒu | mouthful
+难受 | nán shòu | to feel awful
+想 | xiǎng | to want to
+想到 | xiǎng dào | to think of
+样子 | yàng zi | look; appearance
+又 | yòu | again
+游 | yóu | to swim
+米 | mǐ | metre(s)
+好看 | hǎo kàn | good-looking
+给 | gěi | to (someone)
+打 | dǎ | to make (a phone call)
+请 | qǐng | to invite
+相信 | xiāng xìn | to believe
+着 | zhe | (while …ing)
+
+=== s11
+level: 3
+tag: Cleaning the attic
+zh: 一封旧信
+en: An Old Letter
+text:
+周末 ， 妈妈 让 我 帮 她 打扫 楼 上 的 小 房间 。 那 个 房间 很 久 没有 人 进去 过 了@now ， 里面 放 满 了 旧 书 、 旧 衣服 和 很 多 箱子 。
+
+我们 先 把 窗户 打开 ， 再 把 不 要 的 东西 搬 到 楼 下 去 。 打扫 了 两 个 小时 ， 我 累 得 坐 在 地上 ， 连 话 都 不 想 说 了@change 。
+
+就 在 这 时候 ， 我 发现 一 个 箱子 下面 有 一 个 信封 ， 上面 的 字 已经 看 不 太 清楚 了@change 。 我 小心 地 把 信 拿 出来 ， 原来 是 爸爸 三十 年 前 写 给 妈妈 的@shi 。
+
+信 不 长 ， 只 有 一 页 。 爸爸 在 信 里 说 ， 他 在 很 远 的 城市 工作 ， 每 天 下班 以后 都@always 会 想起 妈妈 。 除了 工作 以外 ， 他 还 在@ing 学习 做饭 ， 因为 他 想 以后 每 天 给 妈妈 做 早饭 。 信 的@poss 最后 写 着 ： “ 等 我 回来 ， 我们 就@then 结婚 吧 。 ”
+
+我 拿 着 信 跑 下 楼 ， 把 它 交给 了 妈妈 。 妈妈 看 了 很 久 ， 脸 一下子 红 了@change 。 她 说 ： “ 我 还@even 以为 这 封 信 早 就@already 丢 了 呢 ！ ”
+
+这 时候 爸爸 从 厨房 走 出来 ， 问 我们 在@ing 笑 什么 。 妈妈 把 信 给 他 看 ， 爸爸 也 笑 了 ： “ 你 看 ， 我 说 到@achieve 做@do 到@achieve 了 吧@right ？ 三十 年 了@now ， 早饭 都@always 是 我 做 的@shi 。 ” 那 天 下午 ， 我们 没有@not 再 打扫 房间 ， 一@whole 家 人 坐 在 一起 ， 听 爸爸 妈妈 讲 他们 年轻 时候 的 故事 。
+words:
+让 | ràng | to ask; to have (someone do)
+打扫 | dǎ sǎo | to clean
+楼 | lóu | floor; storey (楼上 = upstairs)
+上 | shàng | up; above (楼上 = upstairs)
+的 | de | (links the description before it to the noun)
+的@shi | de | (是…的: stresses who / when / how)
+的@poss | de | 's; of (belonging to)
+小 | xiǎo | small
+那 | nà | that
+没有 | méi yǒu | there is no (没有人 = no one)
+没有@not | méi yǒu | did not
+过 | guo | (have …ed before)
+了 | le | (the action is done)
+了@now | le | (…了: and still so now)
+了@change | le | (a new situation: now / no longer)
+里面 | lǐ mian | inside
+放 | fàng | to put; to keep (放满 = crammed full)
+满 | mǎn | full
+和 | hé | and
+多 | duō | many
+箱子 | xiāng zi | box(es)
+先 | xiān | first
+把 | bǎ | (把 moves the object before the verb)
+再 | zài | then (先…再 = first … then)
+要 | yào | to want (不要的 = unwanted)
+搬 | bān | to move; to carry
+到 | dào | to
+到@achieve | dào | (说到做到: to do what one says)
+下 | xià | down (楼下 = downstairs)
+去 | qù | (after a verb) away; there
+得 | de | (links to the result: so … that)
+坐 | zuò | to sit
+在 | zài | on; in; at
+在@ing | zài | (in the middle of) -ing
+连 | lián | (连…都: even)
+都 | dōu | (连…都: even)
+都@always | dōu | always; all
+想 | xiǎng | to want to
+就 | jiù | just; right (at that moment)
+就@then | jiù | then
+就@already | jiù | already
+这 | zhè | this
+一 | yī | one; a
+一@whole | yī | the whole (一家人 = the whole family)
+下面 | xià mian | under; underneath
+信封 | xìn fēng | envelope
+上面 | shàng mian | on it; on the top
+字 | zì | writing
+看 | kàn | to see; to read; to look at
+清楚 | qīng chu | clear(ly)
+小心 | xiǎo xīn | careful(ly)
+地 | de | (links a description to the verb: …ly)
+信 | xìn | letter
+出来 | chu lai | (after a verb) out
+前 | qián | ago
+给 | gěi | to; for
+长 | cháng | long
+只 | zhǐ | only
+里 | li | in
+天 | tiān | day
+会 | huì | would (every time)
+想起 | xiǎng qǐ | to think of
+除了 | chú le | apart from
+以外 | yǐ wài | (除了…以外 = apart from …)
+还 | hái | also
+还@even | hái | (all this time) actually
+做 | zuò | to make
+做@do | zuò | to do
+最后 | zuì hòu | the end; the last part
+着 | zhe | (ongoing state: is …ed / …ing)
+结婚 | jié hūn | to get married
+吧 | ba | (suggestion: let's …)
+吧@right | ba | (…, didn't I? asking for agreement)
+交给 | jiāo gěi | to hand to
+脸 | liǎn | face
+一下子 | yī xià zi | all of a sudden
+红 | hóng | red
+封 | fēng | (measure word for letters)
+早 | zǎo | long ago
+丢 | diū | to lose
+呢 | ne | (particle: stresses surprise)
+从 | cóng | from; out of
+厨房 | chú fáng | kitchen
+走 | zǒu | to walk
+什么 | shén me | what
+家 | jiā | family
+听 | tīng | to listen to
+讲 | jiǎng | to tell
+故事 | gù shi | story; stories
+
+=== s12
+level: 3
+tag: A stopped clock
+zh: 不走的钟
+en: The Clock That Stopped
+text:
+我 家 客厅 的 墙 上 有 一 个 老 钟 ， 是 爷爷 结婚 的 时候 买 的@shi 。 从 我 很 小 的 时候 起 ， 它 就@already 一直 挂 在 那里 ， 每 过 一 个 小时 就 响 一 次 。
+
+可是 上 个 月 的 一 天 早上 ， 我 发现 钟 不 走 了@change ， 一直 停 在 三 点 十五 分 。 我 以为 它 只是 需要 换 电池 ， 就 把 它 拿 下来 看 了 看 。 可是 换 了 新 电池 以后 ， 它 还是 不 走 。
+
+爸爸 说 ： “ 这 个 钟 太 老 了 ， 修 不 好 了@change ， 我们 买 一 个 新 的 吧 。 ” 爷爷 听 了 以后 ， 半天 没 说话 。 他 把 钟 放 在 自己 的 房间 里 ， 每 天 都 拿 起来 看 很 久 。
+
+我 决定 帮 爷爷 把 钟 修 好 。 我 在 网上 查 了 很 多 办法 ， 还 找到 了 一 家 修 老 钟 的 小 店 。 店 里 的 老 先生 看 了 看 ， 说 ： “ 能 修 ， 但是 要 等 一 个 星期 。 ”
+
+一 个 星期 以后 ， 我 把 修 好 的 钟 带 回 了 家 ， 又 把 它 挂 在 了 客厅 的 墙 上 。 下午 三 点 整 ， 钟 “ 当 ” 地 响 了 起来@start 。 爷爷 正在 房间 里 看@read 报纸 ， 一@asap 听到 钟 声 ， 马上 从 房间 里 走@walk 了 出来 。
+
+他 站 在 钟 前面 看 了 很 久 ， 然后 告诉 我 ： “ 这 个 钟 是 我 和 你 奶奶 一起 买 的@shi 。 她 走@died 了 以后 ， 我 每 次 听到 它 响 ， 就 觉得 她 还@still 在 家里 。 ” 我 这 才 明白 ， 为什么 爷爷 那么 喜欢 这 个 钟 。
+words:
+家 | jiā | home; (our) house
+客厅 | kè tīng | living room
+的 | de | (links the description before it to the noun)
+的@shi | de | (是…的: stresses when / who)
+墙 | qiáng | wall
+上 | shang | on
+一 | yī | one; a
+一@asap | yī | (一…马上: as soon as)
+老 | lǎo | old
+钟 | zhōng | clock
+结婚 | jié hūn | to get married
+从 | cóng | from
+小 | xiǎo | little; young
+起 | qǐ | (从…起 = from … on)
+就 | jiù | then
+就@already | jiù | (from then on) already
+一直 | yī zhí | all along; ever since
+挂 | guà | to hang
+在 | zài | at; in; on
+那里 | nà li | there
+过 | guò | to pass (of time)
+天 | tiān | day
+走 | zǒu | to run; to tick (of a clock)
+走@died | zǒu | to pass away (a gentle way to say died)
+走@walk | zǒu | to walk
+了 | le | (the action is done)
+了@change | le | (a new situation: no longer)
+停 | tíng | to stop
+点 | diǎn | o'clock
+分 | fēn | minutes (past the hour)
+电池 | diàn chí | battery
+把 | bǎ | (把 moves the object before the verb)
+下来 | xia lai | (after a verb) down
+看 | kàn | to look (at)
+看@read | kàn | to read
+还是 | hái shi | still
+这 | zhè | this
+好 | hǎo | (after a verb) properly (修好 = fixed)
+吧 | ba | (suggestion: let's …)
+听 | tīng | to hear
+半天 | bàn tiān | a long time
+没 | méi | did not
+放 | fàng | to put
+里 | li | in
+都 | dōu | (every day) without fail
+起来 | qi lai | (after a verb) up
+起来@start | qi lai | (after a verb) to start …ing
+多 | duō | many
+办法 | bàn fǎ | way; method
+还 | hái | also
+还@still | hái | still
+先生 | xiān sheng | gentleman
+要 | yào | will have to
+带 | dài | to bring; to take
+回 | huí | back (to)
+又 | yòu | then also; again
+整 | zhěng | exactly (三点整 = three o'clock sharp)
+当 | dāng | dong (the sound of a clock)
+地 | de | (links a description to the verb)
+报纸 | bào zhǐ | newspaper
+听到 | tīng dào | to hear
+声 | shēng | sound (钟声 = chime)
+出来 | chu lai | (after a verb) out
+和 | hé | and
+才 | cái | only then
+那么 | nà me | so (much)
