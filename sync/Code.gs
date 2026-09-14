@@ -30,14 +30,35 @@
 var SHEET_NAME = 'HanziHome sync';
 var CHUNK = 45000;          // a cell holds at most 50,000 characters
 var MAX_BYTES = 5000000;    // refuse anything absurd
-var VERSION = 2;            // shown by doGet, so you can tell which code a deployment runs
+var VERSION = 3;            // shown by doGet, so you can tell which code a deployment runs
 
 function doGet() {
-  // Opening the /exec URL in a browser shows this, to confirm the deployment works.
-  return json_({ ok: true, app: 'HanziHome sync', version: VERSION });
+  // Opening the /exec URL in a browser shows this. It also checks the Sheet can
+  // be opened, because that is what fails when the script isn't attached to one
+  // or hasn't been authorised, while this page itself still loads.
+  var info = { ok: true, app: 'HanziHome sync', version: VERSION };
+  try {
+    sheet_();
+    info.sheet = 'ok';
+  } catch (err) {
+    info.ok = false;
+    info.sheet = 'error';
+    info.problem = messageOf_(err);
+  }
+  return json_(info);
 }
 
 function doPost(e) {
+  // An uncaught exception makes Google answer with an HTML page the browser is
+  // not allowed to read, so every failure is turned into a JSON reply instead.
+  try {
+    return handle_(e);
+  } catch (err) {
+    return json_({ ok: false, error: 'script-error', message: messageOf_(err) });
+  }
+}
+
+function handle_(e) {
   var req;
   try {
     var body = e && e.postData ? e.postData.contents : '';
@@ -75,6 +96,10 @@ function doPost(e) {
 
 function sheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error('This script is not attached to a Google Sheet. Open the Sheet, choose '
+      + 'Extensions → Apps Script, paste the code there and deploy that project instead.');
+  }
   var sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
@@ -114,6 +139,10 @@ function write_(data, rev) {
   var updatedAt = new Date().toISOString();
   sh.getRange('A1:B1').setValues([[rev, updatedAt]]);
   return { rev: rev, updatedAt: updatedAt };
+}
+
+function messageOf_(err) {
+  return String((err && err.message) || err);
 }
 
 function json_(obj) {

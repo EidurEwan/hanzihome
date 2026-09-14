@@ -3,8 +3,12 @@
 // and requests are answered the way a deployed web app answers them: the POST
 // gets a 302 to a second URL that serves the JSON, both with CORS open.
 //
-//   node sync/mock-server.js [port]
+//   node sync/mock-server.js [port] [mode]
 //   then in HanziHome: Settings -> Sync, URL http://localhost:8787/exec
+//
+// mode reproduces a broken deployment:
+//   signin      every request is sent to a Google sign-in page (access not "Anyone")
+//   standalone  the script isn't attached to a Sheet
 //
 // Development aid only; the real thing is the deployed Apps Script.
 
@@ -14,6 +18,7 @@ const path = require('path');
 const vm = require('vm');
 
 const PORT = Number(process.argv[2]) || 8787;
+const MODE = process.argv[3] || 'ok';
 
 /* ---- a small stand-in for the Sheets / Properties / Lock / Content services ---- */
 
@@ -61,7 +66,7 @@ function makeSheet() {
 const sheets = {};
 const context = {
   SpreadsheetApp: {
-    getActiveSpreadsheet: () => ({
+    getActiveSpreadsheet: () => (MODE === 'standalone' ? null : {
       getSheetByName: name => sheets[name] || null,
       insertSheet: name => (sheets[name] = makeSheet()),
     }),
@@ -86,6 +91,11 @@ http.createServer((req, res) => {
   if (req.method === 'OPTIONS') {           // Apps Script cannot answer a preflight either
     res.writeHead(405, cors); return res.end();
   }
+  if (MODE === 'signin' && url.pathname === '/exec') {
+    // Google's sign-in redirect carries no CORS header, so the browser can't read it
+    res.writeHead(302, { Location: 'https://accounts.google.com/ServiceLogin' });
+    return res.end();
+  }
   if (url.pathname === '/exec' && req.method === 'GET') {
     res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
     return res.end(context.doGet().text);
@@ -109,4 +119,4 @@ http.createServer((req, res) => {
     return res.end(text || '{}');
   }
   res.writeHead(404, cors); res.end();
-}).listen(PORT, () => console.log(`HanziHome sync mock on http://localhost:${PORT}/exec`));
+}).listen(PORT, () => console.log(`HanziHome sync mock on http://localhost:${PORT}/exec (${MODE})`));

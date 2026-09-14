@@ -34,6 +34,11 @@ The script is marked `@OnlyCurrentDoc`, so it can only open the Sheet it is atta
 who has the `/exec` URL can read and replace your synced progress: keep the URL private. After
 changing the script, use **Manage deployments → Edit → New version** so the URL stays the same.
 
+To check a deployment, open the `/exec` URL in a **private window** (the site is not signed in to
+Google, so that is what it sees). A working one shows `"version":3` and `"sheet":"ok"`. A
+sign-in page means *Execute as* is not *Me* or access is not *Anyone*. A `"problem"` names what
+stops the script opening its Sheet.
+
 How it behaves:
 
 * Changes are sent about 2.5 seconds after you make them. The site also syncs when it opens,
