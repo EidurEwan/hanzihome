@@ -226,7 +226,11 @@ const Sync = {
         body: JSON.stringify(Object.assign({ key: c.key }, body)),
       });
     } catch (e) {
-      throw new Error("Couldn't reach the script. Check the URL, your connection, and that the deployment's access is set to Anyone.");
+      // Google's own error pages carry no CORS header, so a wrong URL, an access
+      // setting other than Anyone, and a script that crashes all end up here
+      const err = new Error("Couldn't get an answer from the script.");
+      err.code = 'unreachable';
+      throw err;
     }
     if (!res.ok) throw new Error(`The script answered with an error (HTTP ${res.status}).`);
     let j;
@@ -249,8 +253,8 @@ const Sync = {
     clearTimeout(this.timer);
     this.lastRun = Date.now();
     this.busy = this.cycle()
-      .then(() => { this.error = ''; })
-      .catch(e => { this.error = e.message; })
+      .then(() => { this.error = ''; this.errorCode = ''; })
+      .catch(e => { this.error = e.message; this.errorCode = e.code || ''; })
       .finally(() => {
         this.busy = null;
         this.paint();
@@ -312,6 +316,7 @@ const Sync = {
 
   async connect(url, key) {
     const trial = { url, key };
+    this.errorCode = '';
     await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL or key
     // rev 0 and dirty: the first cycle merges this browser's data with the sheet's
     this.setCfg({ url, key, rev: 0, dirty: true, lastSync: 0 });
@@ -351,6 +356,8 @@ const Sync = {
       box.textContent = !c ? '' : this.busy ? 'Syncing…' : this.error ? this.error
         : `${c.dirty ? 'Changes waiting to sync' : 'Up to date'} · last synced ${c.lastSync ? ago(c.lastSync) : 'never'} · version ${c.rev || 0}`;
       box.classList.toggle('sync-err', !!this.error);
+      const help = document.getElementById('sync-help-box');
+      if (help) help.innerHTML = c && this.errorCode === 'unreachable' ? syncTroubleHtml(c.url) : '';
     }
   },
 };
@@ -1923,6 +1930,7 @@ function syncCardBody() {
     return `<p class="muted small">This browser keeps its progress in step with your Google Sheet.
         Changes are sent a few seconds after you make them and picked up when you come back to the tab.</p>
       <p class="small sync-line" id="sync-status"></p>
+      <div id="sync-help-box"></div>
       <div class="row">
         <button class="btn" id="sync-now">Sync now</button>
         <button class="btn quiet" id="sync-off">Disconnect</button>
@@ -1938,8 +1946,36 @@ function syncCardBody() {
       <label>Sync key<input id="sync-key" type="password" autocomplete="off" placeholder="the SYNC_KEY passphrase"></label>
       <div class="row"><button class="btn" id="sync-connect">Connect</button>
         <span class="small" id="sync-msg"></span></div>
+      <div id="sync-help-box"></div>
     </div>
     ${steps}`;
+}
+
+/* shown under the form or status line when the script can't be reached */
+function syncTroubleHtml(url) {
+  return `<div class="sync-trouble">
+    <p><b>Open <a href="${esc(url)}" target="_blank" rel="noopener">the web app URL</a> in a new tab</b> to see why:</p>
+    <ul>
+      <li><b>{"ok":true,"app":"HanziHome sync"…}</b>: the script works. Check the passphrase, then reload this page and try again.</li>
+      <li><b>A Google sign-in page, or "You need access"</b>: in the deployment, set <i>Who has access</i> to <b>Anyone</b>
+        (not "Anyone with Google account"). Change it under <b>Deploy → Manage deployments → Edit</b>.</li>
+      <li><b>"Script function not found: doGet"</b>: the code wasn't saved when you deployed. Save it, then
+        <b>Manage deployments → Edit → Version: New version → Deploy</b>.</li>
+      <li><b>"Sorry, unable to open the file"</b>: the URL is incomplete. Copy it again from <b>Deploy → Manage deployments</b>.</li>
+      <li><b>"Authorization is required"</b>: open the script, run <code>doGet</code> once from the editor and allow access.</li>
+    </ul>
+    <p class="muted">School or work Google accounts sometimes don't allow <i>Anyone</i>. If the option is missing, use a personal Google account.</p>
+  </div>`;
+}
+
+/* catch the links people most often paste instead of the /exec URL */
+function syncUrlProblem(url) {
+  if (/docs\.google\.com\/spreadsheets/.test(url)) return "That's the Sheet's link. Use the web app URL from Deploy → Manage deployments.";
+  if (/script\.google\.com\/(home|d\/|u\/\d+\/home)/.test(url)) return "That's the script editor's link. Use the web app URL from Deploy → Manage deployments.";
+  if (/\/dev(\?|$)/.test(url)) return "That's the test deployment URL (ending in /dev), which only works while you're signed in to the editor. Use the URL ending in /exec.";
+  if (/script\.google(usercontent)?\.com/.test(url) && !/\/exec(\?|$)/.test(url)) return 'The web app URL ends in /exec. Copy it again from Deploy → Manage deployments.';
+  if (!/^https:\/\/\S+$|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url)) return 'Paste the web app URL from the deployment (https://script.google.com/…/exec).';
+  return '';
 }
 
 function wireSyncCard() {
@@ -1949,10 +1985,10 @@ function wireSyncCard() {
       const url = $('sync-url').value.trim(), key = $('sync-key').value;
       const msg = $('sync-msg');
       msg.classList.remove('sync-err');
-      if (!/^https:\/\/\S+$|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url)) {
-        msg.textContent = 'Paste the web app URL from the deployment (https://script.google.com/…/exec).';
-        msg.classList.add('sync-err'); return;
-      }
+      const help = $('sync-help-box');
+      help.innerHTML = '';
+      const problem = syncUrlProblem(url);
+      if (problem) { msg.textContent = problem; msg.classList.add('sync-err'); return; }
       if (!key) { msg.textContent = 'Enter the SYNC_KEY passphrase.'; msg.classList.add('sync-err'); return; }
       $('sync-connect').disabled = true;
       msg.textContent = 'Connecting…';
@@ -1962,6 +1998,7 @@ function wireSyncCard() {
         render(true);
       } catch (e) {
         msg.textContent = e.message; msg.classList.add('sync-err');
+        if (e.code === 'unreachable' || Sync.errorCode === 'unreachable') help.innerHTML = syncTroubleHtml(url);
         $('sync-connect').disabled = false;
       }
     });
