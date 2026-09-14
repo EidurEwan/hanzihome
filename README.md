@@ -17,7 +17,42 @@ no build step, no network. Data files load through `<script>` tags rather than `
 which is what lets it work from a plain `file://` URL.
 
 Everything you mark is kept in that browser's `localStorage`. Settings → Export JSON gives
-you a copy to back up or move to another machine.
+you a copy to back up or move to another machine, or turn on sync (below).
+
+## Syncing between devices
+
+Optional. [`sync/Code.gs`](sync/Code.gs) is a Google Apps Script web app that keeps one copy of
+your progress (statuses, known components, lists, notes, history, study schedule, goal) in a
+Google Sheet you own. Every browser connected to it stays in step.
+
+1. Create a Google Sheet, then **Extensions → Apps Script**. Paste in `sync/Code.gs` and save.
+2. **Project Settings → Script properties**: add `SYNC_KEY` with a long passphrase.
+3. **Deploy → New deployment → Web app**. Execute as *Me*, access *Anyone*. Copy the `/exec` URL.
+4. In HanziHome, **Settings → Sync with Google Sheets**: paste the URL and passphrase. Repeat in
+   each browser.
+
+The script is marked `@OnlyCurrentDoc`, so it can only open the Sheet it is attached to.
+"Anyone" means browsers can reach it without a Google sign-in; requests without the passphrase
+are refused. The passphrase is sent in the request body, never in the URL. After changing the
+script, use **Manage deployments → Edit → New version** so the URL stays the same.
+
+How it behaves:
+
+* Changes are sent about 2.5 seconds after you make them. The site also syncs when it opens,
+  when you return to the tab, and every 5 minutes while it is open. Changes made offline wait
+  and go out on the next sync.
+* The script keeps a version number and refuses a save based on an out-of-date copy. The
+  browser then merges and tries again, so two devices can't silently overwrite each other.
+* The merge compares both copies with the last synced one. Edits to different items on different
+  devices all survive, and deleting something on one device (a status, a note, a list entry)
+  stays deleted. If both devices changed *the same* item, the device that syncs second wins.
+* On a browser's first connection its data is combined with the Sheet's. Characters and lists
+  from both are kept, and the Sheet's goal setting wins over the new browser's.
+* **Reset everything** empties the synced copy too. **Disconnect** stops syncing but leaves
+  your data in the browser and in the Sheet.
+
+To try sync without a Google account, `node sync/mock-server.js` runs the same `Code.gs` against
+an in-memory sheet on `http://localhost:8787/exec` (key `test-key`).
 
 ## What's in it
 
@@ -70,6 +105,8 @@ build/radicaldata.py    the 214 Kangxi radicals and their glosses
 build/readingorder.py   orders each character's readings and meanings most-used first
 build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded reader)
 site/                   index.html, app.js, style.css — the app itself
+sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet
+sync/mock-server.js     runs Code.gs locally for testing, no Google account needed
 server.py               optional: serves the same database over HTTP instead
 ```
 

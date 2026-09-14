@@ -1025,3 +1025,20 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 /* the character list gives the reading used in the story, then its meaning */
 .crow .cp { line-height: 1.35; }
 .crow .cp b { color: var(--accent); font-weight: 700; margin-right: 4px; }
+
+/* ---------- settings: sync with Google Sheets ---------- */
+.sync-form { display: grid; gap: 10px; max-width: 520px; margin-top: 4px; }
+.sync-form label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.sync-form input {
+  font: inherit; font-weight: 400; color: var(--ink); padding: 8px 12px;
+  border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); min-width: 0;
+}
+.sync-form input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.sync-line { margin: 4px 0 12px; color: var(--ink-2); }
+.sync-err { color: var(--accent) !important; }
+.sync-help { margin-top: 14px; font-size: 13.5px; }
+.sync-help summary { cursor: pointer; font-weight: 700; color: var(--ink-2); }
+.sync-help ol { margin: 10px 0 8px; padding-left: 20px; }
+.sync-help li { margin-bottom: 6px; }
+.sync-help code { font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.side-foot .sync-err { color: #fca5a5 !important; }

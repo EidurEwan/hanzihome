@@ -114,6 +114,7 @@ const Store = {
   save() {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); }
     catch (e) { console.warn('could not save', e); }
+    Sync.markDirty();
   },
   touch() { const d = this.load(); d.days[today()] = (d.days[today()] || 0) + 1; this.save(); },
 
@@ -173,6 +174,277 @@ const Store = {
     this.touch();
   },
 };
+
+/* ============================ sync ============================
+   Optional: keep the store in step across browsers through a Google Apps
+   Script web app the user deploys to their own account (sync/Code.gs), which
+   saves one copy in a Google Sheet.
+
+   The script keeps a revision number. A push names the revision it was based
+   on and is refused if someone else pushed first; the refusal carries the
+   newer copy, which is merged in and pushed again. Merging is three-way
+   against the copy from the last successful sync (the "base"), so a change
+   made on one device and a different change made on another both survive,
+   and removing something (a status, a list entry) is not undone by a device
+   that still has it. When both sides changed the same item, this device wins. */
+
+const Sync = {
+  cfgKey: 'hanzihome.sync',          // {url, key, rev, dirty, lastSync}
+  baseKey: 'hanzihome.sync.base',    // the store as of the last successful sync
+  timer: null, busy: null, again: false, error: '', lastRun: 0,
+
+  cfg() { try { return JSON.parse(localStorage.getItem(this.cfgKey) || 'null'); } catch (e) { return null; } },
+  setCfg(c) {
+    try { c ? localStorage.setItem(this.cfgKey, JSON.stringify(c)) : localStorage.removeItem(this.cfgKey); }
+    catch (e) { /* storage full or blocked: sync just stops */ }
+  },
+  update(fields) { const c = this.cfg(); if (c) this.setCfg(Object.assign(c, fields)); },
+  on() { const c = this.cfg(); return !!(c && c.url && c.key); },
+  base() { try { return JSON.parse(localStorage.getItem(this.baseKey) || 'null'); } catch (e) { return null; } },
+  setBase(d) {
+    try { d ? localStorage.setItem(this.baseKey, JSON.stringify(d)) : localStorage.removeItem(this.baseKey); }
+    catch (e) { /* without a base the next merge is a plain union */ }
+  },
+
+  /* a local change: push a moment later, so a burst of clicks is one request */
+  markDirty() {
+    if (!this.on()) return;
+    this.update({ dirty: true });
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => this.run(), 2500);
+    this.paint();
+  },
+
+  async post(body, cfg) {
+    const c = cfg || this.cfg();
+    let res;
+    try {
+      // text/plain keeps this a "simple" request: Apps Script can't answer a CORS preflight
+      res = await fetch(c.url, {
+        method: 'POST', redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ key: c.key }, body)),
+      });
+    } catch (e) {
+      throw new Error("Couldn't reach the script. Check the URL, your connection, and that the deployment's access is set to Anyone.");
+    }
+    if (!res.ok) throw new Error(`The script answered with an error (HTTP ${res.status}).`);
+    let j;
+    try { j = await res.json(); }
+    catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
+    if (!j.ok && !j.conflict) {
+      throw new Error({
+        'bad-key': "The sync key doesn't match SYNC_KEY in the script's properties.",
+        'not-configured': 'The script has no SYNC_KEY yet. Add one under Project Settings → Script properties.',
+        'busy': 'The sheet was busy. Try again in a moment.',
+        'too-large': 'Your data is too large for the script to accept.',
+      }[j.error] || `The script refused the request (${j.error || 'unknown error'}).`);
+    }
+    return j;
+  },
+
+  run() {
+    if (!this.on()) return Promise.resolve();
+    if (this.busy) { this.again = true; return this.busy; }
+    clearTimeout(this.timer);
+    this.lastRun = Date.now();
+    this.busy = this.cycle()
+      .then(() => { this.error = ''; })
+      .catch(e => { this.error = e.message; })
+      .finally(() => {
+        this.busy = null;
+        this.paint();
+        if (this.again) { this.again = false; this.run(); }
+      });
+    this.paint();
+    return this.busy;
+  },
+
+  async cycle() {
+    let remote = await this.post({ action: 'pull' });
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const c = this.cfg();
+      if (!c) return;                              // disconnected mid-flight
+      const local = Store.load();
+      const remoteData = remote.data || null;
+
+      if (remote.rev === (c.rev || 0)) {
+        if (!c.dirty) { this.update({ lastSync: Date.now() }); return; }
+      } else if (!c.dirty) {
+        // only the other side changed: take its copy as it is
+        this.adopt(remoteData || {}, remote.rev);
+        return;
+      } else {
+        const merged = merge3(this.base(), local, remoteData || {});
+        if (!same(merged, local)) this.apply(merged);
+        if (remoteData && same(merged, remoteData)) { this.adopt(remoteData, remote.rev); return; }
+      }
+
+      const pushed = JSON.parse(JSON.stringify(Store.load()));
+      const r = await this.post({ action: 'push', baseRev: remote.rev, data: pushed });
+      if (r.ok) {
+        // only clear the flag if nothing changed while the request was out
+        this.update({ rev: r.rev, lastSync: Date.now(), dirty: !same(Store.load(), pushed) });
+        this.setBase(pushed);
+        if (this.cfg() && this.cfg().dirty) this.markDirty();
+        return;
+      }
+      remote = r;                                  // someone pushed first: merge with theirs
+    }
+    throw new Error('Other devices kept changing the data at the same moment. Try Sync now again.');
+  },
+
+  adopt(data, rev) {
+    if (!same(data, Store.load())) this.apply(data);
+    this.setBase(data);
+    this.update({ rev, dirty: false, lastSync: Date.now() });
+  },
+
+  /* write data from the sheet into the local store without queueing a push */
+  apply(data) {
+    try { localStorage.setItem(Store.key, JSON.stringify(data)); } catch (e) { /* keep going in memory */ }
+    Store.data = null;
+    Store.load();
+    const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (!typing) rerenderKeepingScroll();
+    else markNav(currentPath());
+  },
+
+  async connect(url, key) {
+    const trial = { url, key };
+    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL or key
+    // rev 0 and dirty: the first cycle merges this browser's data with the sheet's
+    this.setCfg({ url, key, rev: 0, dirty: true, lastSync: 0 });
+    this.setBase(null);
+    this.error = '';
+    return this.run();
+  },
+
+  disconnect() {
+    clearTimeout(this.timer);
+    this.setCfg(null);
+    this.setBase(null);
+    this.error = '';
+    this.paint();
+  },
+
+  /* status line in the sidebar and on the settings page */
+  paint() {
+    const c = this.cfg();
+    const who = document.getElementById('side-who');
+    const sub = document.getElementById('side-sub');
+    let line = '', detail = '';
+    if (!c) {
+      line = 'Local profile'; detail = 'Everything is stored in this browser.';
+    } else if (this.busy) {
+      line = 'Syncing…'; detail = 'Google Sheets';
+    } else if (this.error) {
+      line = 'Sync problem'; detail = this.error;
+    } else {
+      line = 'Synced with Google Sheets';
+      detail = c.dirty ? 'Changes waiting to sync' : c.lastSync ? 'Last synced ' + ago(c.lastSync) : 'Not synced yet';
+    }
+    if (who) who.textContent = line;
+    if (sub) { sub.textContent = detail; sub.classList.toggle('sync-err', !!(c && this.error)); }
+    const box = document.getElementById('sync-status');
+    if (box) {
+      box.textContent = !c ? '' : this.busy ? 'Syncing…' : this.error ? this.error
+        : `${c.dirty ? 'Changes waiting to sync' : 'Up to date'} · last synced ${c.lastSync ? ago(c.lastSync) : 'never'} · version ${c.rev || 0}`;
+      box.classList.toggle('sync-err', !!this.error);
+    }
+  },
+};
+
+function ago(t) {
+  const s = Math.round((Date.now() - t) / 1000);
+  if (s < 45) return 'just now';
+  if (s < 3600) return Math.round(s / 60) + ' min ago';
+  if (s < 86400) return Math.round(s / 3600) + ' h ago';
+  return new Date(t).toLocaleDateString();
+}
+
+/* key order differs between devices, so compare by a sorted serialization */
+function stable(v) {
+  if (Array.isArray(v)) return '[' + v.map(stable).join(',') + ']';
+  if (v && typeof v === 'object') {
+    return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stable(v[k])).join(',') + '}';
+  }
+  return JSON.stringify(v);
+}
+const same = (a, b) => stable(a) === stable(b);
+
+/* three-way merge of the whole store; base may be null (first sync) */
+function merge3(base, local, remote) {
+  const b = base || {};
+  // settings such as the goal: without a base, the sheet's value wins over this device's default
+  const pick = (bv, lv, rv) => (base ? (same(lv, bv) ? rv : lv) : (rv === undefined ? lv : rv));
+
+  // maps where each entry stands alone: keep whichever side changed it
+  const map = (bm = {}, lm = {}, rm = {}) => {
+    const out = {};
+    new Set([...Object.keys(bm), ...Object.keys(lm), ...Object.keys(rm)]).forEach(k => {
+      const v = base ? (same(lm[k], bm[k]) ? rm[k] : lm[k]) : (lm[k] !== undefined ? lm[k] : rm[k]);
+      if (v !== undefined) out[k] = v;
+    });
+    return out;
+  };
+
+  // a list's characters: additions and removals on this device, applied to theirs
+  const set = (bs = [], ls = [], rs = []) => {
+    const removed = new Set(bs.filter(x => !ls.includes(x)));
+    const out = rs.filter(x => !removed.has(x));
+    ls.forEach(x => { if (!out.includes(x)) out.push(x); });
+    return out;
+  };
+
+  const lists = () => {
+    const byId = arr => new Map((arr || []).map(l => [l.id, l]));
+    const bl = byId(b.lists), ll = byId(local.lists), rl = byId(remote.lists);
+    const out = [];
+    const ids = [...rl.keys(), ...[...ll.keys()].filter(id => !rl.has(id))];
+    ids.forEach(id => {
+      const x = bl.get(id), l = ll.get(id), r = rl.get(id);
+      if (l && r) {
+        out.push({ id, name: x && same(l.name, x.name) ? r.name : l.name,
+                   chars: set(x ? x.chars : [], l.chars, r.chars) });
+      } else if (l) {
+        if (!(x && same(l, x))) out.push(l);       // unchanged here and deleted there: gone
+      } else if (r) {
+        if (!(x && same(r, x))) out.push(r);       // deleted here and unchanged there: gone
+      }
+    });
+    return out;
+  };
+
+  // history: this device's list, plus anything visited elsewhere since the base
+  const history = () => {
+    const since = Math.max(0, ...(b.history || []).map(h => h.t || 0));
+    const seen = new Map();
+    [...(local.history || []), ...(remote.history || []).filter(h => (h.t || 0) > since)]
+      .forEach(h => { if (!seen.has(h.c) || seen.get(h.c).t < h.t) seen.set(h.c, h); });
+    return [...seen.values()].sort((x, y) => y.t - x.t).slice(0, 500);
+  };
+
+  // study days only ever count up
+  const days = () => {
+    const out = Object.assign({}, remote.days || {});
+    Object.entries(local.days || {}).forEach(([k, v]) => { out[k] = Math.max(v, out[k] || 0); });
+    return out;
+  };
+
+  const out = {};
+  new Set([...Object.keys(b), ...Object.keys(local), ...Object.keys(remote)]).forEach(k => {
+    if (k === 'status' || k === 'comps' || k === 'notes' || k === 'srs') out[k] = map(b[k], local[k], remote[k]);
+    else if (k === 'lists') out[k] = lists();
+    else if (k === 'history') out[k] = history();
+    else if (k === 'days') out[k] = days();
+    else {
+      const v = pick(b[k], local[k], remote[k]);
+      if (v !== undefined) out[k] = v;
+    }
+  });
+  return out;
+}
 
 function coverage(chars) {
   let pct = 0, n = 0;
@@ -1577,10 +1849,14 @@ function pageSettings() {
         border-radius:8px;background:var(--bg);color:var(--ink)">
         <button class="btn" id="savegoal">Save</button></div>
     </section>
+    <section class="card" id="sync-card">
+      <h2>Sync with Google Sheets</h2>
+      ${syncCardBody()}
+    </section>
     <section class="card">
       <h2>Your data</h2>
-      <p class="muted small">Everything lives in this browser's localStorage — no account,
-         nothing leaves the machine. Export keeps a copy you can re-import later.</p>
+      <p class="muted small">Progress lives in this browser's localStorage. Unless you turn on
+         sync above, nothing leaves the machine. Export keeps a copy you can re-import later.</p>
       <div class="row">
         <button class="btn quiet" id="export">Export JSON</button>
         <button class="btn quiet" id="import">Import JSON</button>
@@ -1610,15 +1886,95 @@ function pageSettings() {
     if (io.style.display === 'none') { io.style.display = 'block'; io.value = ''; io.focus(); return; }
     try {
       localStorage.setItem(Store.key, JSON.stringify(JSON.parse(io.value)));
-      Store.data = null; render();
+      Store.data = null; Store.load(); Store.save(); render();
     } catch (e) { alert('That is not valid JSON.'); }
   });
   document.getElementById('reset').addEventListener('click', () => {
-    if (confirm('Erase all progress, lists and notes?')) {
-      localStorage.removeItem(Store.key); Store.data = null; render();
+    const msg = Sync.on() ? 'Erase all progress, lists and notes? This also empties the synced copy in your Google Sheet.'
+                          : 'Erase all progress, lists and notes?';
+    if (confirm(msg)) {
+      localStorage.removeItem(Store.key); Store.data = null; Store.load(); Store.save(); render();
     }
   });
+  wireSyncCard();
   paintRail();
+}
+
+function syncCardBody() {
+  const c = Sync.cfg();
+  const steps = `<details class="sync-help">
+      <summary>How to set it up (about 5 minutes)</summary>
+      <ol>
+        <li>Create a new Google Sheet, then choose <b>Extensions → Apps Script</b>.</li>
+        <li>Replace the editor's contents with
+          <a href="https://github.com/EidurEwan/hanzihome/blob/main/sync/Code.gs" target="_blank" rel="noopener">sync/Code.gs</a>
+          and save.</li>
+        <li>Open <b>Project Settings → Script properties</b> and add a property named
+          <code>SYNC_KEY</code> whose value is a long passphrase only you know.</li>
+        <li><b>Deploy → New deployment</b>, type <b>Web app</b>. Execute as <b>Me</b>, who has
+          access <b>Anyone</b>. Authorise it, then copy the web app URL (it ends in <code>/exec</code>).</li>
+        <li>Paste the URL and the passphrase into this card. Do the same in every browser you use.</li>
+      </ol>
+      <p class="small muted">The script can only open the one Sheet it is attached to. "Anyone" lets
+        your browsers reach it without signing in; requests without the passphrase are refused.
+        After editing the script later, deploy a new version of the same deployment so the URL stays the same.</p>
+    </details>`;
+  if (c) {
+    return `<p class="muted small">This browser keeps its progress in step with your Google Sheet.
+        Changes are sent a few seconds after you make them and picked up when you come back to the tab.</p>
+      <p class="small sync-line" id="sync-status"></p>
+      <div class="row">
+        <button class="btn" id="sync-now">Sync now</button>
+        <button class="btn quiet" id="sync-off">Disconnect</button>
+      </div>
+      ${steps}`;
+  }
+  return `<p class="muted small">Keep your statuses, lists, notes and study schedule in step across
+      browsers and devices. It uses a small Google Apps Script in your own Google account, and your
+      data is stored in a Google Sheet you own.</p>
+    <div class="sync-form">
+      <label>Web app URL<input id="sync-url" type="url" spellcheck="false" autocomplete="off"
+        placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <label>Sync key<input id="sync-key" type="password" autocomplete="off" placeholder="the SYNC_KEY passphrase"></label>
+      <div class="row"><button class="btn" id="sync-connect">Connect</button>
+        <span class="small" id="sync-msg"></span></div>
+    </div>
+    ${steps}`;
+}
+
+function wireSyncCard() {
+  const $ = id => document.getElementById(id);
+  if ($('sync-connect')) {
+    $('sync-connect').addEventListener('click', async () => {
+      const url = $('sync-url').value.trim(), key = $('sync-key').value;
+      const msg = $('sync-msg');
+      msg.classList.remove('sync-err');
+      if (!/^https:\/\/\S+$|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url)) {
+        msg.textContent = 'Paste the web app URL from the deployment (https://script.google.com/…/exec).';
+        msg.classList.add('sync-err'); return;
+      }
+      if (!key) { msg.textContent = 'Enter the SYNC_KEY passphrase.'; msg.classList.add('sync-err'); return; }
+      $('sync-connect').disabled = true;
+      msg.textContent = 'Connecting…';
+      try {
+        await Sync.connect(url, key);
+        if (Sync.error) throw new Error(Sync.error);
+        render(true);
+      } catch (e) {
+        msg.textContent = e.message; msg.classList.add('sync-err');
+        $('sync-connect').disabled = false;
+      }
+    });
+  }
+  if ($('sync-now')) $('sync-now').addEventListener('click', () => Sync.run());
+  if ($('sync-off')) {
+    $('sync-off').addEventListener('click', () => {
+      if (confirm('Stop syncing this browser? Your progress stays here, and the Google Sheet keeps its copy.')) {
+        Sync.disconnect(); render(true);
+      }
+    });
+  }
+  Sync.paint();
 }
 
 /* ============================ dispatch ============================ */
@@ -1689,3 +2045,15 @@ document.addEventListener('keydown', e => {
 initSearch();
 if (!location.hash) location.hash = '#/dashboard';
 render();
+
+/* sync: on load, when the tab comes back, every few minutes while open, and a
+   last push when the tab is hidden with changes still waiting */
+Sync.paint();
+Sync.run();
+document.addEventListener('visibilitychange', () => {
+  if (!Sync.on()) return;
+  if (document.visibilityState === 'hidden') { if ((Sync.cfg() || {}).dirty) Sync.run(); }
+  else if (Date.now() - Sync.lastRun > 30000) Sync.run();
+});
+setInterval(() => { if (document.visibilityState === 'visible' && Sync.on()) Sync.run(); }, 5 * 60 * 1000);
+setInterval(() => Sync.paint(), 60 * 1000);
