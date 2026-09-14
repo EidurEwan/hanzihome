@@ -188,6 +188,10 @@ const Store = {
    and removing something (a status, a list entry) is not undone by a device
    that still has it. When both sides changed the same item, this device wins. */
 
+const OLD_SCRIPT = 'Your deployment is still running the old script, which asks for a sync key. Paste the '
+  + 'current sync/Code.gs into the Apps Script editor, save, then Deploy → Manage deployments → Edit (pencil) '
+  + '→ Version: New version → Deploy. Opening the /exec URL should then show "version":2.';
+
 const Sync = {
   cfgKey: 'hanzihome.sync',          // {url, rev, dirty, lastSync}
   baseKey: 'hanzihome.sync.base',    // the store as of the last successful sync
@@ -238,6 +242,8 @@ const Sync = {
     catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
     if (!j.ok && !j.conflict) {
       throw new Error({
+        // only the first version of Code.gs asked for a key
+        'bad-key': OLD_SCRIPT, 'not-configured': OLD_SCRIPT,
         'busy': 'The sheet was busy. Try again in a moment.',
         'too-large': 'Your data is too large for the script to accept.',
       }[j.error] || `The script refused the request (${j.error || 'unknown error'}).`);
@@ -1952,7 +1958,9 @@ function syncTroubleHtml(url) {
   return `<div class="sync-trouble">
     <p><b>Open <a href="${esc(url)}" target="_blank" rel="noopener">the web app URL</a> in a new tab</b> to see why:</p>
     <ul>
-      <li><b>{"ok":true,"app":"HanziHome sync"…}</b>: the script works. Reload this page and try again.</li>
+      <li><b>{"ok":true,"app":"HanziHome sync","version":2}</b>: the script works. Reload this page and try again.
+        If it says <b>"hint"</b> instead of <b>"version"</b>, the deployment is still on the old code: paste the current
+        Code.gs, save, then <b>Manage deployments → Edit → Version: New version → Deploy</b>.</li>
       <li><b>A Google sign-in page, or "You need access"</b>: in the deployment, set <i>Who has access</i> to <b>Anyone</b>
         (not "Anyone with Google account"). Change it under <b>Deploy → Manage deployments → Edit</b>.</li>
       <li><b>"Script function not found: doGet"</b>: the code wasn't saved when you deployed. Save it, then

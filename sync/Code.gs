@@ -30,10 +30,11 @@
 var SHEET_NAME = 'HanziHome sync';
 var CHUNK = 45000;          // a cell holds at most 50,000 characters
 var MAX_BYTES = 5000000;    // refuse anything absurd
+var VERSION = 2;            // shown by doGet, so you can tell which code a deployment runs
 
 function doGet() {
   // Opening the /exec URL in a browser shows this, to confirm the deployment works.
-  return json_({ ok: true, app: 'HanziHome sync', hint: 'POST {action} to use it.' });
+  return json_({ ok: true, app: 'HanziHome sync', version: VERSION });
 }
 
 function doPost(e) {
