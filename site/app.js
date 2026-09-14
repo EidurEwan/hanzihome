@@ -26,7 +26,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 3;
+const DATA_VERSION = 4;
 
 const _loading = {};
 function loadScript(src) {
@@ -1127,6 +1127,7 @@ function paintStory() {
   const st = _story, pane = document.getElementById('pane');
   if (!st || !pane) return;
   pane.innerHTML = st.seg.map(par => '<p>' + par.map(tk => {
+    if (tk.br) return '<br>';               // a new speaker starts a new line
     if (typeof tk !== 'string') return esc(tk.s);
     const w = st.g[tk][0];
     return `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${esc(w)}</span>`;

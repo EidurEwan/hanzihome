@@ -75,6 +75,73 @@ class SourceError(Exception):
 
 
 # --------------------------------------------------------------------------
+# dialogue: each speaker's turn starts a new line
+# --------------------------------------------------------------------------
+
+END = {"。", "！", "？", "……", "…"}
+
+
+def sentences(tokens):
+    """Split a paragraph into sentences (lists of token indexes). Punctuation
+    inside quotation marks does not end a sentence; a closing quote right after
+    。！？ does."""
+    out, cur, depth = [], [], 0
+    for i, t in enumerate(tokens):
+        cur.append(i)
+        if t == "“":
+            depth += 1
+        elif t == "”":
+            depth = max(0, depth - 1)
+            if depth == 0 and i and tokens[i - 1] in END:
+                out.append(cur)
+                cur = []
+        elif t in END and depth == 0:
+            out.append(cur)
+            cur = []
+    if cur:
+        out.append(cur)
+    return out
+
+
+def is_speech(tokens, sent):
+    """Does the sentence contain someone speaking? A quote counts when it is
+    introduced by ： or opens the sentence, or follows 说， and reads as a whole
+    utterance. Short embedded quotes - a sound (“当”), a word (“借”走) - do not."""
+    for n, i in enumerate(sent):
+        if tokens[i] != "“":
+            continue
+        prev = tokens[i - 1] if i else ""
+        close = next((j for j in sent[n + 1:] if tokens[j] == "”"), None)
+        last = tokens[close - 1] if close else ""
+        if n == 0 or prev == "：" or (prev == "，" and last in END | {"，"}):
+            return True
+    return False
+
+
+def dialogue_lines(tokens):
+    """-> indexes where a new line should start. Every sentence with speech gets
+    a line of its own; narration between speeches is kept together. The
+    “…” 她说，“…” pattern is one speaker and stays on one line."""
+    starts, prev_speech, prev_quote_first = [], None, False
+    for sent in sentences(tokens):
+        speech = is_speech(tokens, sent)
+        first = tokens[sent[0]]
+        if prev_speech is None:
+            pass
+        elif speech:
+            lead = [tokens[i] for i in sent[:next((k for k, i in enumerate(sent)
+                                                    if tokens[i] == "“"), 0)]]
+            same_speaker = (prev_speech and prev_quote_first and first != "“"
+                            and 0 < len(lead) <= 6 and lead[-1] == "，")
+            if not same_speaker:
+                starts.append(sent[0])
+        elif prev_speech:
+            starts.append(sent[0])
+        prev_speech, prev_quote_first = speech, first == "“"
+    return set(starts)
+
+
+# --------------------------------------------------------------------------
 # parsing
 # --------------------------------------------------------------------------
 
@@ -257,10 +324,13 @@ def build(report_path=None):
         han_count = 0
         for para in st["paras"]:
             row = []
-            for tok in para:
+            breaks = dialogue_lines([t.split("@")[0] for t in para])
+            for ti, tok in enumerate(para):
+                if ti in breaks:
+                    row.append({"br": 1})        # a new speaker: start a new line
                 word = tok.split("@")[0]
                 if not any(is_han(c) for c in word):
-                    if row and isinstance(row[-1], dict):
+                    if row and isinstance(row[-1], dict) and "s" in row[-1]:
                         row[-1]["s"] += tok      # keep runs of punctuation together
                     else:
                         row.append({"s": tok})
