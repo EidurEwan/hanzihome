@@ -5,11 +5,13 @@ character on screen by what you know, and shows the reader's word popup when you
 one. It uses HanziHome's dictionary and your HanziHome progress. Everything runs offline
 apart from progress sync.
 
-Status (2026-09-28): **steps 1–2 done.** Step 1: `site/textstory.js`, `site/data/readings.js`
+Status (2026-09-28): **steps 1–3 done.** Step 1: `site/textstory.js`, `site/data/readings.js`
 and `site/data/readerwords.js` (from `build/export_reader.py`, which needs
 `data/raw/cedict.txt` and `jieba_dict.txt`), and `test/accuracy.js`; the scores are in README →
 "Reading any text". Step 2: pasted text on the site opens at `#/reader/text` in the story
-reader. Next: step 3, the OCR helper (needs the .NET 8 SDK; ask before installing).
+reader. Step 3: the OCR helper `desktop/ocr/` (`node desktop/ocr/build.js`), its Node client
+`desktop/src/ocr.js`, the repair `desktop/src/ocrfix.js`, and `desktop/test/ocr.js`. Next:
+step 4, the Electron shell (needs `npm install electron`).
 
 ## Decisions made
 
@@ -52,24 +54,31 @@ reusing `vocabList()` / `charList()`.
                        (bars, hover popup)
 ```
 
-1. **Capture and OCR: a small C# helper** (`desktop/ocr/`) that stays running and talks
-   JSON over stdin/stdout. Windows.Media.Ocr with `zh-Hans-CN`, which is **already
-   installed on this PC**. It captures the foreground window's monitor, compares it with the
-   last frame in cheap tiles, and OCRs only the tiles that changed, at 2× scale.
-   * Tested 2026-09-28: 3 lines rendered in Microsoft YaHei took 250 ms, and 2 of 3 lines
-     were perfect. The failure split 他 into 亻也; 2× scale plus the repair step below
-     should fix it.
-   * Needs the .NET 8 SDK to build (free, one-time install). The installed app only needs
-     the runtime.
-2. **OCR repair.** Merge adjacent pieces that form a real character (亻也 → 他), using
-   `comps.js`/decomposition data and word context. Drop isolated fragments that are not Han.
+1. **Capture and OCR: a small C# helper** (`desktop/ocr/HanziOcr.cs`) that stays running
+   and talks JSON over stdin/stdout. Windows.Media.Ocr with `zh-Hans-CN`, which Windows
+   installs with Chinese language support. It captures a monitor (by default the foreground
+   window's), compares it with the last capture in 16-pixel strips, and OCRs again only the
+   bands that changed, widened to whole lines, at ×1.5.
+   * **Built with the C# compiler that ships with Windows** (.NET Framework 4.x): no SDK to
+     install, and the exe runs on any Windows 10/11 with nothing added. The price is C# 5
+     and awaiting WinRT calls by hand (see the file's header).
+   * Measured 2026-09-28 (`desktop/test/ocr.js`): Chinese characters read correctly at ×1.5
+     — 94% (YaHei 16px), 99% (YaHei 24px), 92% (13px), 99.4–99.8% (DengXian, SimSun,
+     KaiTi 20–24px), 98% (dark mode), 99% (subtitles; big text reads best at ×1). A whole
+     1920×1080 screen: 0.28 s at ×1, 0.56 s at ×2; an unchanged screen: ~40 ms. One
+     paragraph changed on a page: 21% of it re-read, in 60 ms instead of 270.
+2. **OCR repair** (`desktop/src/ocrfix.js`). Merges a character read as its two halves
+   (亻尔 → 你: a narrow part plus a neighbour about one character wide, looked up in
+   `desktop/data/ocrpairs.json` from the character breakdowns), turns 丿+b back into 儿,
+   and swaps look-alikes (学/字, 已/己) only when the text becomes far likelier Chinese.
+   Raises ×1.5 accuracy by 0.3–0.9 points and changed none of 8,379 correct characters.
+   What remains is mostly dropped characters, which no repair can bring back.
 3. **`textToStory(text)`** in a shared file used by the website and the desktop app.
    Output has the same shape as a `stories.js` entry (`seg`, `g`, `v`, `c`), so the reader's
    existing drawing code works unchanged.
    * **Segmentation:** jieba-style. Build every way to split the text into dictionary
-     words (`words.js`, 78,782 words, ordered by frequency), then take the most probable
-     path. A word's rank stands in for its frequency (Zipf); a real frequency column can be
-     added to `export_static.py` later.
+     words (`readerwords.js`: CC-CEDICT words with jieba's frequencies), then take the most
+     probable path.
    * **Pinyin** comes from the word entry, so the word settles polyphones (银行 háng,
      进行 xíng).
    * **Each character's contribution:** the character's own reading that matches its
@@ -104,8 +113,9 @@ reusing `vocabList()` / `charList()`.
    24 stories.
 2. **The website's paste reader uses it.** Pasted text on the site gets the full story
    reader. It ships on its own and tests the engine on real text.
-3. **OCR helper.** C# console app: capture, change detection, OCR, repair, JSON out. Test
-   on screenshots of browsers, PDFs, video subtitles and games.
+3. **OCR helper.** C# console app: capture, change detection, OCR, JSON out; repair in
+   Node. Tested on rendered pictures in several fonts, sizes and styles, and on this PC's
+   screen (timings and counts only).
 4. **Electron shell.** Tray, main window with `site/`, shared store, sync.
 5. **Colour overlay.** Bars over recognised words, per-colour toggles, recolour on mark.
 6. **Hover lookup.** Hold key, word popup, mark buttons, open character page.
@@ -115,7 +125,8 @@ reusing `vocabList()` / `charList()`.
 ## Known risks
 
 * **OCR errors** on small, stylised or low-contrast text (game fonts, subtitles over video).
-  Mitigated by 2× scale, repair, and not colouring low-confidence characters.
+  Mitigated by ×1.5 scale and the repair; 13px text still loses ~8% of characters. Could
+  improve: re-read small lines at ×2–3 and big ones at ×1.
 * **Lag after scrolling.** Bars vanish while the region is re-read (about 0.3–1 s).
 * **CPU.** Kept low by OCRing only changed tiles, and pausing when idle or in listed apps.
 * **Offline senses** will sometimes be wrong for 了/还/会-type words. The accuracy test

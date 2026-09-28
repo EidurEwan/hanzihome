@@ -7,3 +7,8 @@ __pycache__/
 *.pyc
 .playwright-mcp/
 .impeccable/
+
+# desktop app: build output and test pictures
+desktop/ocr/bin/
+desktop/test/bin/
+desktop/test/out/

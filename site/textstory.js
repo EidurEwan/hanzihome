@@ -86,7 +86,7 @@
   /* ------------------------------------------------------------ segmenting */
 
   /* the most probable way to cut one run of Chinese characters into words */
-  function cutRun(D, cs) {
+  function bestPath(D, cs) {
     const n = cs.length, best = new Array(n + 1);
     best[n] = [0, n];
     for (let i = n - 1; i >= 0; i--) {
@@ -98,9 +98,23 @@
         if (s > best[i][0]) best[i] = [s, i + L];
       }
     }
-    const out = [];
-    for (let i = 0; i < n; i = best[i][1]) out.push(cs.slice(i, best[i][1]).join(''));
+    return best;
+  }
+  function cutRun(D, cs) {
+    const best = bestPath(D, cs), out = [];
+    for (let i = 0; i < cs.length; i = best[i][1]) out.push(cs.slice(i, best[i][1]).join(''));
     return out;
+  }
+
+  /* How much a text looks like real Chinese: the log probability of its likeliest
+     split into words, over its runs of characters. The desktop app's OCR repair
+     (desktop/src/ocrfix.js) compares candidate readings with it. */
+  function logProb(D, text) {
+    let total = 0, run = [];
+    const flush = () => { if (run.length) { total += bestPath(D, run)[0][0]; run = []; } };
+    for (const c of text) { if (isHan(c)) run.push(c); else flush(); }
+    flush();
+    return total;
   }
 
   const isNumeral = w => w.length > 0 && [...w].every(c => NUMERAL.includes(c));
@@ -632,5 +646,10 @@
     return { id: 'text', l: 0, tag: '', zh: '', en: '', n, g, seg, v, c };
   }
 
-  return { textToStory, segment: (text, HZ) => segment(prepare(HZ), text), params: P };
+  return {
+    textToStory,
+    segment: (text, HZ) => segment(prepare(HZ), text),
+    logProb: (text, HZ) => logProb(prepare(HZ), text),
+    params: P,
+  };
 });
