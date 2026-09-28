@@ -263,6 +263,104 @@
     return PERSON.test(gloss.split(';')[0]);
   }
 
+  /* ---- which reading, from the neighbours ----
+     A character with several readings standing alone as a word (了 le or liǎo,
+     着 zhe or zháo, 空 kōng or kòng): the dictionary shows how it is read beside
+     other characters inside its words. 受不了, 免不了, 大不了: after 不, 了 is liǎo.
+     睡着, 睡不着, 用不着: 着 is zháo. 有空, 没空: 空 is kòng. Counting, over every
+     dictionary word, which reading each such character has next to each
+     neighbour (weighted by the word's log frequency) gives evidence for text no
+     dictionary lists: 走不了 is no word, but 了 after 不 still reads liǎo.
+     "Starts a word" (^) and "ends a word" ($) count as neighbours too. */
+  const NB = {
+    EDGE: 0.3,        // ^ / $ evidence, against a real neighbour's 1
+    OTHER_WORD: 0.6,  // a neighbour that belongs to a longer word of its own
+    SATURATE: 4,      // a side with this much evidence has half its full say
+    MIN: 1,           // real-neighbour evidence needed to decide (^ / $ alone never do) ...
+    SHARE: 0.6,       // ... and this share of the vote for one reading. Tuned by test/polyphones.js --tune
+  };
+
+  function polyReadings(D, c) {
+    if (!D.poly) D.poly = new Map();
+    if (!D.poly.has(c)) {
+      const rs = readingsOf(D, c).filter(r => r[1].length);
+      D.poly.set(c, rs.length > 1 ? rs : null);
+    }
+    return D.poly.get(c);
+  }
+
+  /* the reading of a character that its syllable in some word stands for, if clear */
+  function readingFor(rs, syl) {
+    const exact = rs.find(r => r[0].toLowerCase() === syl.toLowerCase());
+    if (exact) return exact[0];
+    const loose = rs.filter(r => toneless(r[0]) === toneless(syl));
+    return loose.length === 1 ? loose[0][0] : null;     // 好 hao in 好好: hǎo or hào? leave it
+  }
+
+  /* what one dictionary word says: [character + neighbour, side, reading, weight] */
+  function wordEvidence(D, w, e) {
+    const out = [];
+    if (!e || !e[2]) return out;
+    const cs = [...w];
+    if (cs.length < 2) return out;
+    const sy = syllables(e[2][0][0], cs.length);
+    const weight = Math.log2(2 + e[0]);
+    cs.forEach((c, i) => {
+      const rs = polyReadings(D, c);
+      const r = rs && readingFor(rs, sy[i]);
+      if (!r) return;
+      out.push([c + (cs[i - 1] || '^'), 'left', r, weight], [c + (cs[i + 1] || '$'), 'right', r, weight]);
+    });
+    return out;
+  }
+
+  function neighbourModel(D) {
+    if (D.nb) return D.nb;
+    const nb = { left: new Map(), right: new Map() };
+    for (const w in D.lex) {
+      for (const [key, side, r, weight] of wordEvidence(D, w, D.lex[w])) {
+        let o = nb[side].get(key);
+        if (!o) nb[side].set(key, o = {});
+        o[r] = (o[r] || 0) + weight;
+      }
+    }
+    return (D.nb = nb);
+  }
+
+  /* the reading c's neighbours point to: {reading, share, weight}, or null. Each side
+     votes with its own share of readings, its say growing with its evidence (so the
+     many words ending in 着 zhe don't drown the few with 不着 zháo); weight is the
+     evidence from real neighbours, not word edges. lw / rw scale each side;
+     `without` leaves one word's own evidence out (for testing) */
+  function neighbourReading(D, c, left, right, lw = 1, rw = 1, without = null) {
+    if (!polyReadings(D, c)) return null;
+    const nb = neighbourModel(D), score = {};
+    const minus = without ? wordEvidence(D, without, entry(D, without)) : [];
+    let total = 0, real = 0;
+    const side = (name, key, k, edge) => {
+      const o = nb[name].get(key);
+      if (!o) return;
+      const d = {};
+      let sum = 0;
+      for (const r in o) {
+        let v = o[r];
+        for (const m of minus) if (m[0] === key && m[1] === name && m[2] === r) v -= m[3];
+        if (v > 0) { d[r] = v; sum += v; }
+      }
+      if (!sum) return;
+      const say = k * sum / (sum + NB.SATURATE);
+      for (const r in d) score[r] = (score[r] || 0) + say * d[r] / sum;
+      total += say;
+      if (!edge) real += sum;
+    };
+    side('left', c + left, left === '^' ? NB.EDGE * lw : lw, left === '^');
+    side('right', c + right, right === '$' ? NB.EDGE * rw : rw, right === '$');
+    if (!total) return null;
+    const best = Object.keys(score).sort((a, b) => score[b] - score[a])[0];
+    return { reading: best, share: score[best] / total, weight: real };
+  }
+  const decides = r => !!r && r.weight >= NB.MIN && r.share >= NB.SHARE;
+
   /* jieba's part-of-speech tag, or failing that, a meaning that starts "to …" */
   function looksVerb(D, w) {
     if (!w) return false;
@@ -280,7 +378,9 @@
      Meanings are written for a learner, in the stories' style. */
   const SINGLE = {
     '了': x => {
-      if ((x.prev === '得' || x.prev === '不') && x.end) return ['liǎo', '(can / can\'t manage it)'];
+      // V不了 / V得了: "can't / can manage to" (走不了多远, 吃得了吗). Not 他得了第一名,
+      // where 得 is the verb "to get" and 了 marks it done.
+      if (x.prev === '不' || x.prev === '得' && x.verb(x.prev2)) return ['liǎo', '(can / can\'t manage it)'];
       if (x.end && x.before.includes('太')) return ['le', '(太…了: too …!)'];
       if (x.end && x.before.some(w => w === '不' || w === '没' || w === '没有' || w === '再')) return ['le', '(a new situation: no longer)'];
       if (x.end && !x.verb(x.prev)) return ['le', '(a new situation: now)'];
@@ -296,16 +396,24 @@
     '地': x => (x.next && x.verb(x.next) && x.prev && !PRONOUN.has(x.prev))
       ? ['de', '(links a description to the verb: …ly)'] : ['dì', 'ground; floor; land'],
     '得': x => {
-      // 我明天得去: before a verb, after a subject or time word. After a verb or a
-      // one-character adjective it links to how (跑得快, 大得让人吃惊)
-      if (x.next && x.verb(x.next) && !x.verb(x.prev)
-          && (!x.prev || PRONOUN.has(x.prev) || [...x.prev].length > 1 || '就还也都总可'.includes(x.prev)))
-        return ['děi', 'to have to; must'];
-      if (x.prev && !PRONOUN.has(x.prev)) return ['de', '(links a verb to how, or how much)'];
+      // after a verb or adjective it links to how (跑得快, 大得让人吃惊, 高兴得跳起来)
+      const after = x.prev && (x.verb(x.prev) || x.tag(x.prev)[0] === 'a'
+        || ([...x.prev].length === 1 && !PRONOUN.has(x.prev) && !'就还也都总可又才'.includes(x.prev)));
+      if (after) return ['de', '(links a verb to how, or how much)'];
+      // otherwise it is a verb: dé "to get" when something is got (得了第一名, 得奖),
+      // děi "must" when a verb soon follows (我明天得早点起床, 我们得走了)
+      if (x.next === '了') return ['dé', 'to get; to obtain'];
+      if (x.verb(x.next) || x.verb(x.next2)) return ['děi', 'to have to; must'];
       return ['dé', 'to get; to obtain'];
     },
     '着': x => {
-      if ((x.prev === '睡' || x.prev === '找' || x.prev === '猜') && (x.end || x.next === '了')) return ['zháo', '(succeed in: 睡着 = fall asleep)'];
+      // V不着 / V得着 "can't / can manage to" (睡不着, 找不着, 用不着), and the words
+      // the dictionary reads zháo (睡着了: the neighbours say so)
+      const heard = x.heard();
+      if ((x.prev === '不' || x.prev === '得') && x.verb(x.prev2)
+          || (x.prev === '睡' || x.prev === '找' || x.prev === '猜') && (x.end || x.next === '了')
+          || decides(heard) && heard.reading === 'zháo')
+        return ['zháo', '(succeed in: 睡着 = fall asleep; 找不着 = can\'t find)'];
       return ['zhe', '(ongoing: …ing / is …ed)'];
     },
     '过': x => x.verb(x.prev) ? ['guo', '(have …ed before)'] : ['guò', 'to pass; to cross'],
@@ -319,7 +427,11 @@
     '呀': () => ['ya', '(adds feeling: ah; oh)'],
     '嘛': () => ['ma', '(it\'s obvious: …, you know)'],
     '还': x => {
-      if (x.next === '给' || x.before.includes('把') && x.end || x.prev === '不'
+      const heard = x.heard();
+      // hái ("still, also") always leads into something, so a clause ending in 还 gives
+      // back (还没还, 要按时还); so does 还 after 不 / 没, or where the neighbours say so
+      if (x.next === '给' || x.end || x.prev === '不' || x.prev === '没'
+          || decides(heard) && heard.reading === 'huán'
           || /^(钱|书|债|账|东西)$/.test(x.next || '')
           || PRONOUN.has(x.next) && x.next2 && !x.verb(x.next2) && !/^(还|也|都|就|不|没|在)/.test(x.next2))
         return ['huán', 'to give back'];
@@ -327,7 +439,8 @@
       return ['hái', 'also; still', [['huán', 'to give back']]];
     },
     '只': x => isCounter(x.prev) ? ['zhī', '(measure word for animals)'] : ['zhǐ', 'only'],
-    '长': x => (x.next === '大' || x.next === '高' || x.next === '出') ? ['zhǎng', 'to grow'] : ['cháng', 'long'],
+    '长': x => /^(大|高|出|成|得)$/.test(x.next || '')
+      ? ['zhǎng', x.next === '得' ? 'to grow; to look (长得像 = looks like)' : 'to grow'] : ['cháng', 'long'],
     '上': x => {
       if (/^(个|次|周|星期|月|半年|回)$/.test(x.next || '')) return ['shàng', 'last (上个月 = last month)'];
       if (/^(大学|中学|小学|学|班|课|网)$/.test(x.next || '')) return ['shàng', 'to attend; to go to (school, work)'];
@@ -355,7 +468,7 @@
       return ['gěi', 'to give'];
     },
     '对': x => (x.end || /^(不|很|都|也|就)$/.test(x.prev || '')) ? ['duì', 'right; correct'] : ['duì', 'to; towards'],
-    '和': () => ['hé', 'and; with'],
+    '和': x => x.next === '面' ? ['huó', 'to knead (dough)'] : ['hé', 'and; with'],
     '跟': x => x.verb(x.prev) ? ['gēn', 'to follow'] : ['gēn', 'with; and'],
     '没': x => x.verb(x.next) ? ['méi', 'not (did not)'] : ['méi', 'to not have; there is no'],
     '个': () => ['gè', '(general measure word)'],
@@ -396,9 +509,39 @@
     '数': x => isCounter(x.prev) ? ['shù', 'number'] : ['shǔ', 'to count'],
     '分': x => isNumeral(x.prev || '') ? ['fēn', 'minute; cent; point'] : undefined,
     '干': x => x.end || /^(什么|活|吗|嘛)$/.test(x.next || '') ? ['gàn', 'to do'] : undefined,
-    '背': x => /包$/.test(x.next || '') ? ['bēi', 'to carry on one\'s back'] : undefined,
+    '背': x => {
+      if (/^(着|起|上|包|书包|背包|孩子)$/.test(x.next || '') || /包$/.test(x.next || ''))
+        return ['bēi', 'to carry on one\'s back'];
+      if (x.prev === '的' || x.prev === '后') return ['bèi', 'back (of the body)'];
+      return ['bèi', 'to learn by heart; back', [['bēi', 'to carry on one\'s back']]];
+    },
     '为': x => x.verb(x.prev) ? ['wéi', 'as; to be'] : ['wèi', 'for; because of'],
-    '中': x => x.prev && !x.verb(x.prev) ? ['zhōng', 'in; among; during'] : undefined,
+    // 考中, 猜中, 射中: after a one-character verb it means hitting the mark
+    '中': x => x.prev && [...x.prev].length === 1 && x.verb(x.prev)
+      ? ['zhòng', '(after a verb) to hit; to get it (猜中 = guess right)']
+      : x.prev ? ['zhōng', 'in; among; during'] : undefined,
+    // 重 before a verb does it again (重写, 重做); otherwise heavy
+    '重': x => x.verb(x.next) ? ['chóng', 'again; anew'] : ['zhòng', 'heavy; serious'],
+    // 觉 ending a clause is a sleep (睡一觉, 睡个好觉); jué "to feel" goes on to something
+    '觉': x => x.end || isCounter(x.prev) || x.prev === '个' ? ['jiào', 'a sleep; a nap'] : ['jué', 'to feel; to find that'],
+    '教': () => ['jiāo', 'to teach'],
+    '倒': x => {
+      if (x.verb(x.prev)) return ['dǎo', 'to fall; to topple (吹倒 = blow over)'];
+      if (x.next && COUNTER.includes([...x.next][0]) || /^(水|茶|酒|咖啡|垃圾)$/.test(x.next || ''))
+        return ['dào', 'to pour'];
+      if (x.next && (x.verb(x.next) || x.tag(x.next)[0] === 'a')) return ['dào', 'but; actually (not what you\'d expect)'];
+      return ['dǎo', 'to fall; to topple'];
+    },
+    '转': x => /^(了|着|过|圈|一圈)$/.test(x.next || '') || x.before.some(w => /^(绕|围|绕着|围着)$/.test(w))
+      ? ['zhuàn', 'to turn round; to go around'] : ['zhuǎn', 'to turn; to change'],
+    '看': x => [x.next, x.next2].some(w => /^(孩子|门|家|病人|小孩|店)$/.test(w || ''))
+      ? ['kān', 'to look after; to mind'] : ['kàn', 'to look (at); to see'],
+    '量': x => x.next && (x.next === '一下' || x.verb(x.prev) === false && !x.end && (PRONOUN.has(x.prev) || x.prev === '请'))
+      ? ['liáng', 'to measure'] : ['liàng', 'amount; capacity'],
+    // 待 "to stay" (待了一天, 待在家里); dài "to treat; to wait"
+    '待': x => x.end || /^(了|着|在|过|一)$/.test(x.next || '') ? ['dāi', 'to stay'] : ['dài', 'to treat; to wait for'],
+    '脏': () => ['zāng', 'dirty'],
+    '薄': () => ['báo', 'thin'],
     '次': () => ['cì', 'time(s); occurrence'],
     '年': () => ['nián', 'year'],
     '是': () => ['shì', 'to be (is, am, are)'],
@@ -486,14 +629,19 @@
       if (lex) return { pin: lex[0], gloss: lex[1], alt: null, parts: [[lex[0], lex[1]]] };
       const rs = readingsOf(D, c);
       let row = rs[0];
+      // the neighbours, when they clearly point to one reading, choose it
+      const heard = x.heard && x.heard();
+      const chosen = decides(heard) && rs.find(r => r[0] === heard.reading);
+      if (chosen) row = chosen;
       // jieba's tag says how the character is used on its own. A verb wants a
       // "to …" sense, a noun or adjective one that is not (累: lèi "tired", not
       // lěi "to accumulate"); when the first reading opens with the wrong kind,
-      // take the reading that opens with the right one, then its fitting senses first
+      // take the reading that opens with the right one (unless the neighbours chose),
+      // then its fitting senses first
       const t = tagOf(D, c)[0];
       if (row && (t === 'v' || t === 'a' || t === 'n')) {
         const fits = m => /^to /.test(m) === (t === 'v');
-        if (row[1][0] && !fits(row[1][0])) row = rs.find(r => r[1][0] && fits(r[1][0])) || row;
+        if (!chosen && row[1][0] && !fits(row[1][0])) row = rs.find(r => r[1][0] && fits(r[1][0])) || row;
         row = [row[0], row[1].filter(fits).concat(row[1].filter(m => !fits(m)))];
       }
       const pin = row ? row[0] : ((D.HZ.index[c] || [])[2] || '');
@@ -604,11 +752,17 @@
         let a = i;
         while (a > 0 && words[a - 1]) a--;
         const nextTok = toks[i + 1];
+        const prev = words[i - 1] || null, next = words[i + 1] || null;
+        let heard;
         const x = {
-          prev: words[i - 1] || null, next: words[i + 1] || null, next2: words[i + 1] && words[i + 2] || null,
+          prev, next, next2: next && words[i + 2] || null, prev2: prev && words[i - 2] || null,
           nextText: nextTok && typeof nextTok === 'object' ? nextTok.s : '',
-          end: !words[i + 1], before: words.slice(a, i),
-          verb: w => looksVerb(D, w), person: w => isPerson(D, w),
+          end: !next, before: words.slice(a, i),
+          verb: w => looksVerb(D, w), person: w => isPerson(D, w), tag: w => tagOf(D, w),
+          // what the neighbouring characters say about this one's reading (single characters)
+          heard: () => heard !== undefined ? heard : (heard = neighbourReading(D, simp(D, tk),
+            prev ? simp(D, [...prev].pop()) : '^', next ? simp(D, [...next][0]) : '$',
+            prev && [...prev].length > 1 ? NB.OTHER_WORD : 1, next && [...next].length > 1 ? NB.OTHER_WORD : 1)),
         };
         const w = tk, han = [...w].filter(isHan);
         n += han.length;
@@ -650,6 +804,9 @@
     textToStory,
     segment: (text, HZ) => segment(prepare(HZ), text),
     logProb: (text, HZ) => logProb(prepare(HZ), text),
+    // for tests: what a character's neighbours say about its reading
+    neighbours: (HZ, c, left, right, without) => neighbourReading(prepare(HZ), c, left, right, 1, 1, without),
+    neighbourParams: NB,
     params: P,
   };
 });

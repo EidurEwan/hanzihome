@@ -1,0 +1,207 @@
+# Characters with more than one reading, in sentences. test/polyphones.js runs each
+# sentence through site/textstory.js and checks the reading of the character in brackets.
+#
+#   sentence with one [character] | the reading it has there
+#
+# A neutral tone matches any tone of the same syllable (头发 tóu fa for fà): that is a
+# question of style, not of which reading. Written by hand, not taken from the stories,
+# so the engine has never been tuned on these.
+
+# 了 le / liǎo
+我吃[了]三碗饭。 | le
+下雨[了]。 | le
+这件事我受不[了]。 | liǎo
+他走不[了]多远就累了。 | liǎo
+这么多菜我们吃得[了]吗？ | liǎo
+我[了]解他的想法。 | liǎo
+他太累[了]。 | le
+为[了]学中文，他去了北京。 | le
+这点小事算得[了]什么？ | liǎo
+我们明天去不[了]公园了。 | liǎo
+
+# 着 zhe / zháo
+他笑[着]说：“你好。” | zhe
+我昨天晚上睡不[着]。 | zháo
+孩子已经睡[着]了。 | zháo
+门开[着]，灯也亮着。 | zhe
+我找不[着]我的钥匙。 | zháo
+你别[着]急。 | zháo
+他穿[着]一件红衣服。 | zhe
+这件事用不[着]你操心。 | zháo
+
+# 得 de / dé / děi
+他跑[得]很快。 | de
+我明天[得]早点起床。 | děi
+他[得]了第一名。 | dé
+你说[得]对。 | de
+我们[得]走了。 | děi
+这次考试他[得]了满分。 | dé
+
+# 地 de / dì, 的 de / dí / dì
+他慢慢[地]走进教室。 | de
+书掉在[地]上了。 | dì
+她高兴[地]笑了。 | de
+这块[地]很大。 | dì
+这是我[的]书。 | de
+他[的]确很聪明。 | dí
+我们的目[的]是学好中文。 | dì
+
+# 还 hái / huán
+我[还]没吃饭。 | hái
+请你明天[还]我书。 | huán
+他借了我的钱，到现在还没[还]。 | huán
+你要茶[还]是咖啡？ | hái
+我[还]想再去一次。 | hái
+图书馆的书要按时[还]。 | huán
+他把钱[还]给了我。 | huán
+
+# 长 cháng / zhǎng
+这条河很[长]。 | cháng
+孩子[长]大了。 | zhǎng
+他[长]得很像他爸爸。 | zhǎng
+我们的校[长]姓王。 | zhǎng
+这件衣服太[长]了。 | cháng
+
+# 只 zhī / zhǐ
+我家有两[只]猫。 | zhī
+我[只]有十块钱。 | zhǐ
+他用一[只]手拿着书。 | zhī
+
+# 行 xíng / háng
+这样做不[行]。 | xíng
+他在银[行]工作。 | háng
+这本书第三[行]有个错字。 | háng
+我们步[行]去学校。 | xíng
+[行]，我们明天见。 | xíng
+
+# 重 zhòng / chóng
+这个箱子很[重]。 | zhòng
+老师让我[重]写一遍。 | chóng
+请你[重]新说一遍。 | chóng
+这个问题很[重]要。 | zhòng
+我们得[重]做这道题。 | chóng
+
+# 中 zhōng / zhòng
+他在教室[中]间坐着。 | zhōng
+他一箭射[中]了目标。 | zhòng
+我猜[中]了答案。 | zhòng
+他去年考[中]了大学。 | zhòng
+
+# 为 wèi / wéi
+我[为]你高兴。 | wèi
+他被选[为]班长。 | wéi
+我认[为]他说得对。 | wéi
+[为]什么你不来？ | wèi
+
+# 好 hǎo / hào, 少 shǎo / shào
+这本书很[好]看。 | hǎo
+他很[好]学。 | hào
+我的爱[好]是看书。 | hào
+他[好]奇地看着我。 | hào
+今天来的人很[少]。 | shǎo
+他是一个[少]年。 | shào
+
+# 觉 jué / jiào, 空 kōng / kòng
+我[觉]得很累。 | jué
+我想睡一[觉]。 | jiào
+他睡了一个好[觉]。 | jiào
+你明天有[空]吗？ | kòng
+天[空]很蓝。 | kōng
+这个房间是[空]的。 | kōng
+我没[空]去看电影。 | kòng
+
+# 数 shǔ / shù, 种 zhǒng / zhòng, 教 jiāo / jiào
+请你[数]一下有多少人。 | shǔ
+这个[数]字很大。 | shù
+他在[数]钱。 | shǔ
+这[种]水果很好吃。 | zhǒng
+爷爷在院子里[种]花。 | zhòng
+我们[种]了很多树。 | zhòng
+她[教]我们中文。 | jiāo
+我们的[教]室很大。 | jiào
+你能[教]我游泳吗？ | jiāo
+
+# 倒 dǎo / dào, 差 chà / chā / chāi, 当 dāng / dàng
+他摔[倒]了。 | dǎo
+请给我[倒]一杯水。 | dào
+这个办法[倒]是不错。 | dào
+大树被风吹[倒]了。 | dǎo
+他的中文很[差]。 | chà
+我下周要出[差]。 | chāi
+现在[差]五分八点。 | chà
+我[当]老师已经十年了。 | dāng
+他把我[当]成朋友。 | dàng
+[当]时我还很小。 | dāng
+我上[当]了。 | dàng
+
+# 转 zhuǎn / zhuàn, 背 bēi / bèi, 分 fēn / fèn
+前面路口向左[转]。 | zhuǎn
+我们在公园里[转]了一圈。 | zhuàn
+地球绕着太阳[转]。 | zhuàn
+他[背]着书包去上学。 | bēi
+他的[背]很疼。 | bèi
+我在[背]课文。 | bèi
+现在是八点十[分]。 | fēn
+我们把蛋糕[分]成四块。 | fēn
+
+# 乐 lè / yuè, 发 fā / fà, 便 biàn / pián, 干 gān / gàn, 处 chù / chǔ
+他听着音[乐]写作业。 | yuè
+我们都很快[乐]。 | lè
+她的头[发]很长。 | fà
+我给你[发]了一封邮件。 | fā
+这件衣服很[便]宜。 | pián
+我住在这里很方[便]。 | biàn
+你在[干]什么？ | gàn
+衣服已经[干]了。 | gān
+他[干]活很认真。 | gàn
+我们到[处]找你。 | chù
+他很难相[处]。 | chǔ
+这个问题怎么[处]理？ | chǔ
+
+# 看 kàn / kān, 难 nán / nàn, 要 yào / yāo, 和 hé / huó, 都 dōu / dū, 几 jǐ / jī
+请你帮我[看]一下孩子。 | kān
+我在[看]书。 | kàn
+这道题很[难]。 | nán
+他们是[难]民。 | nàn
+我[要]一杯咖啡。 | yào
+老师[要]求我们每天写作业。 | yāo
+我[和]你一起去。 | hé
+他在[和]面做饺子。 | huó
+我们[都]是学生。 | dōu
+北京是中国的首[都]。 | dū
+你有[几]本书？ | jǐ
+他[几]乎每天都来。 | jī
+
+# 相 xiāng / xiàng, 应 yīng / yìng, 累 lèi / lěi, 脏 zāng / zàng, 量 liáng / liàng
+我们[相]信你。 | xiāng
+这是我的照[相]机。 | xiàng
+你[应]该早点睡。 | yīng
+我今天很[累]。 | lèi
+他积[累]了很多经验。 | lěi
+你的衣服[脏]了。 | zāng
+心[脏]病很危险。 | zàng
+请你[量]一下体温。 | liáng
+这里的雨[量]很大。 | liàng
+
+# 待 dāi / dài, 藏 cáng / zàng, 弹 tán / dàn, 假 jiǎ / jià, 传 chuán / zhuàn
+我在家里[待]了一天。 | dāi
+他[待]人很好。 | dài
+他把钱[藏]起来了。 | cáng
+我想去西[藏]旅游。 | zàng
+她会[弹]钢琴。 | tán
+子[弹]打中了墙。 | dàn
+这是[假]的。 | jiǎ
+我们放[假]了。 | jià
+请[传]给后面的同学。 | chuán
+我在读他的[传]记。 | zhuàn
+
+# 结 jié / jiē, 尽 jìn / jǐn, 薄 báo, 朝 cháo, 省 shěng, 更 gèng
+这张桌子很[结]实。 | jiē
+他们[结]婚了。 | jié
+我会[尽]力的。 | jìn
+请[尽]快回复。 | jǐn
+这本书很[薄]。 | báo
+窗户[朝]南。 | cháo
+他住在广东[省]。 | shěng
+这样可以[省]很多钱。 | shěng
+今天比昨天[更]冷。 | gèng
