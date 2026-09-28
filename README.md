@@ -225,6 +225,22 @@ lists cover 1–2.
 in. *Characters* score `1 / word-frequency-rank` summed over the multi-character words
 they form — which is why the two lists rank very differently.
 
+## Desktop app
+
+[`desktop/`](desktop/) is HanziHome for Windows, reading Chinese anywhere on screen with the
+OCR built into Windows. It runs the whole site in a window, with the same progress and sync,
+and from the tray it:
+
+* puts a coloured bar under every Chinese word on screen: green learned, blue learning,
+  red new;
+* shows the reader's word popup for the word under the pointer while you hold Ctrl, with
+  the buttons to mark its characters;
+* opens whatever is on screen in the reader ("On screen now").
+
+Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from
+here; `npm run dist` builds the installer. How it works, what was measured and what each
+part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
+
 ## Known differences from the original
 
 * **Word counts are lower.** Only words attested in a corpus are kept, which drops

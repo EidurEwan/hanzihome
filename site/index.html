@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HanziHome — Chinese character dictionary</title>
-<link rel="stylesheet" href="style.css?v=61">
+<link rel="stylesheet" href="style.css?v=62">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>
 /* Globals the data files assign into. Everything is loaded with <script>
@@ -31,6 +31,7 @@ var HZ = { index: {}, chunk: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
       <a href="#/dashboard" data-nav="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.4 12 3l9 7.4V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg> Dashboard</a>
       <a href="#/study" data-nav="/study"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5 12 4l10 4.5-10 4.5zM6 11v4.6c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6V11"/></svg> Study <i id="due-badge" class="badge" hidden></i></a>
       <a href="#/reader" data-nav="/reader"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg> Reader <em>beta</em></a>
+      <a href="#/screen" data-nav="/screen" id="nav-screen" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 9.5h3M13 9.5h3M8 12.5h5"/></svg> On screen now</a>
       <a href="#/hsk-1" data-nav="/hsk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 8l-9 5-9-5zM3 12.5 12 17.5l9-5M3 17 12 22l9-5"/></svg> HSK</a>
       <a href="#/phonetic-sets" data-nav="/phonetic-sets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12L7.5 14.5H4zM16.5 9.5a4 4 0 0 1 0 5M19 7a7.5 7.5 0 0 1 0 10"/></svg> Phonetic Sets</a>
       <a href="#/productive-components" data-nav="/productive-components"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h4.2a1.8 1.8 0 1 1 3.6 0H17v4.2a1.8 1.8 0 1 0 0 3.6V17h-4.2a1.8 1.8 0 1 0-3.6 0H5z"/></svg> Productive Components</a>
@@ -54,6 +55,6 @@ var HZ = { index: {}, chunk: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
 <script src="data/meta.js?v=5"></script>
 <script src="data/index.js?v=5"></script>
 <script src="data/radicalmap.js?v=5"></script>
-<script src="app.js?v=68"></script>
+<script src="app.js?v=69"></script>
 </body>
 </html>

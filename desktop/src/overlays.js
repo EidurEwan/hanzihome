@@ -28,8 +28,9 @@ const DISPLAY_EVENTS = ['display-added', 'display-removed', 'display-metrics-cha
 
 class Overlays {
   /* opts: ocr() -> OcrHelper; HZ() -> the site's data; status() -> {char: 'learned'|…};
-     settings() -> {show: {learned, learning, new}, interval}; exclude() -> a DIP rect
-     to leave bare (HanziHome's own window) or null; log(msg); picture, offscreen (tests) */
+     settings() -> {show: {learned, learning, new}, interval, pause: [program names]};
+     exclude() -> a DIP rect to leave bare (HanziHome's own window) or null;
+     self: HanziHome's own program name; log(msg); picture, offscreen (tests) */
   constructor(opts) {
     this.o = opts;
     this.panes = [];
@@ -108,7 +109,20 @@ class Overlays {
     try {
       // a locked screen shows nothing worth reading
       const locked = !this.o.picture && powerMonitor.getSystemIdleState(60) === 'locked';
-      if (!locked) {
+      // nor does a program on the pause list (a game, say): no bars, no reading
+      const front = this.o.picture ? '' : (await this.o.ocr().request('foreground')).process;
+      this.note(front);
+      if (front && this.o.settings().pause.includes(front)) {
+        if (!this.paused) {
+          this.paused = true;
+          for (const p of this.panes) { p.words = []; this.paint(p); }
+          this.log(`paused for ${front}`);
+        }
+      } else if (!locked) {
+        if (this.paused) {
+          this.paused = false;
+          await this.o.ocr().request('forget');      // the words were dropped: read it all again
+        }
         for (const p of this.panes.slice()) {
           const r = await this.o.ocr().request('screen', Object.assign({ incremental: true }, p.request));
           if (!r.changed || !this.running) continue;
@@ -125,6 +139,13 @@ class Overlays {
   }
 
   words(lines, toGlobal) { return wordsFromLines(lines, this.o.HZ(), toGlobal); }
+
+  /* the programs seen in front lately, newest first, for the pause list's suggestions
+     (not HanziHome itself) */
+  note(name) {
+    if (!name || name === this.o.self) return;
+    this.recent = [name].concat((this.recent || []).filter(n => n !== name)).slice(0, 8);
+  }
 
   /* the word under a point (global DIP), from what was last read */
   wordAt(pt) {

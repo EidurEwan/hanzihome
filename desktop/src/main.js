@@ -23,6 +23,9 @@
  *   npm start -- --snapshot=out.png              save the window as a picture once
  *                                                it has drawn, then quit (for tests)
  *   npm start -- --check-store                   check the store bridge, then quit
+ *   npm start -- --open=/settings                start on that page of the site
+ *   npm start -- --exec=check.js                 run a script in the page, print its result
+ *                                                (tests; with --snapshot to quit after)
  */
 
 'use strict';
@@ -43,6 +46,9 @@ const SITE = path.join(__dirname, '..', '..', 'site');
 const ASSETS = path.join(__dirname, '..', 'assets');
 const ORIGIN = 'app://hanzihome';
 const SYNC_EVERY = 5 * 60 * 1000;
+// this app's own program name ("electron" running from desktop/, "hanzihome" installed),
+// left out of the pause list's suggestions
+const SELF = path.basename(process.execPath, '.exe').toLowerCase();
 
 const arg = name => {
   const hit = process.argv.find(a => a === '--' + name || a.startsWith('--' + name + '='));
@@ -181,7 +187,7 @@ async function readScreen() {
       return;
     }
     await win.webContents.executeJavaScript(`(() => {
-      setReaderText(${JSON.stringify(text)});
+      setReaderText(${JSON.stringify(text)}, 'On screen now');
       if (location.hash === '#/reader/text') render(); else go('/reader/text');
     })()`, true);
     if (!arg('snapshot')) showWindow();
@@ -225,7 +231,7 @@ async function checkStore() {
 function startOverlay() {
   if (!overlays) {
     overlays = new Overlays({
-      ocr: helper, HZ: data, settings: () => settings, exclude: ownWindow,
+      ocr: helper, HZ: data, settings: () => settings, exclude: ownWindow, self: SELF,
       status: () => (store && store.status) || {}, log: debug,
     });
   }
@@ -260,6 +266,7 @@ function startHover() {
     hover = new Hover({
       key: () => settings.hoverKey, overlays: () => overlays, ocr: helper, HZ: data,
       status: () => (store && store.status) || {}, mark: markChar, open: openChar, log: debug,
+      paused: async () => settings.pause.includes((await helper().request('foreground')).process),
     });
   }
   try { hover.start(); } catch (e) { console.error('hover:', e.message); }
@@ -276,7 +283,45 @@ function setSetting(change) {
   if (settings.hoverKey === 'off') stopHover(); else startHover();
   if (overlays) overlays.repaint();
   buildTrayMenu();
+  if (win) win.webContents.send('desktop-settings-changed', desktopState());   // the Settings page redraws
 }
+
+// ------------------------------------------------ settings, from the site
+
+/* Starting with Windows registers this exe to run at sign-in; a development copy
+   (electron.exe running desktop/) can't sensibly do that, so only the installed app offers it. */
+const canAutostart = () => app.isPackaged;
+const autostart = () => canAutostart() && app.getLoginItemSettings().openAtLogin;
+function setAutostart(on) {
+  if (canAutostart()) app.setLoginItemSettings({ openAtLogin: !!on, args: ['--hidden'] });
+}
+
+/* what the site's Settings page shows in its "Desktop app" card */
+function desktopState() {
+  return {
+    settings, autostart: autostart(), canAutostart: canAutostart(),
+    recent: (overlays && overlays.recent) || [],
+  };
+}
+
+const fromPage = e => win && e.sender === win.webContents;
+ipcMain.handle('desktop-settings', e => fromPage(e) ? desktopState() : null);
+ipcMain.handle('desktop-set', (e, patch) => {
+  if (!fromPage(e) || !patch || typeof patch !== 'object') return null;
+  if ('autostart' in patch) setAutostart(patch.autostart);
+  setSetting(s => {
+    if (typeof patch.overlay === 'boolean') s.overlay = patch.overlay;
+    if (patch.show) for (const k of ['learned', 'learning', 'new']) {
+      if (typeof patch.show[k] === 'boolean') s.show[k] = patch.show[k];
+    }
+    if (['ctrl', 'alt', 'shift', 'off'].includes(patch.hoverKey)) s.hoverKey = patch.hoverKey;
+    if (Array.isArray(patch.pause)) {
+      s.pause = [...new Set(patch.pause.map(p => String(p).trim().toLowerCase().replace(/\.exe$/, '')).filter(Boolean))];
+    }
+  });
+  return desktopState();
+});
+ipcMain.on('read-screen', e => { if (fromPage(e)) readScreen(); });
 
 // ------------------------------------------------------------------- tray
 
@@ -311,7 +356,10 @@ function buildTrayMenu() {
       label, type: 'radio', checked: settings.hoverKey === key,
       click: () => setSetting(s => { s.hoverKey = key; }),
     })) },
+    { label: 'More settings…', click: () => { showWindow(); win.webContents.executeJavaScript("go('/settings')", true).catch(() => {}); } },
     { type: 'separator' },
+    { label: 'Start with Windows', type: 'checkbox', checked: autostart(), enabled: canAutostart(),
+      click: item => { setAutostart(item.checked); buildTrayMenu(); } },
     { label: 'Quit HanziHome', click: () => { quitting = true; app.quit(); } },
   ]));
 }
@@ -335,6 +383,13 @@ if (!app.requestSingleInstanceLock()) {
     if (settings.hoverKey !== 'off' && !testRun()) startHover();
 
     win.webContents.once('did-finish-load', async () => {
+      const open = arg('open');
+      if (typeof open === 'string') await win.webContents.executeJavaScript(`go(${JSON.stringify(open)})`, true);
+      const exec = arg('exec');
+      if (typeof exec === 'string') {
+        const code = fs.readFileSync(path.resolve(exec), 'utf8');
+        console.log('exec:', JSON.stringify(await win.webContents.executeJavaScript(code, true)));
+      }
       if (arg('check-store')) await checkStore();
       if (arg('read-now')) await readScreen();
       const out = arg('snapshot');

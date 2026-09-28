@@ -1034,3 +1034,24 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .sync-trouble ul { margin: 0 0 8px; padding-left: 18px; }
 .sync-trouble li { margin-bottom: 5px; }
 .sync-trouble code { font-size: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+
+/* ---------------- desktop app only (window.hanzihomeDesktop) ---------------- */
+.sidebar nav a[hidden] { display: none; }
+#desktop-card .dk-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 14px; }
+#desktop-card .dk-indent { margin-left: 24px; display: flex; flex-wrap: wrap; gap: 0 18px; }
+#desktop-card .dk-indent .dk-row { margin: 3px 0; }
+#desktop-card .sw.new { background: var(--accent-soft); border-color: var(--accent); }  /* the overlay's red */
+#desktop-card select, #desktop-card .dk-input {
+  font: inherit; padding: 6px 10px; border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--panel); color: var(--ink);
+}
+#desktop-card .dk-input { flex: 1; min-width: 0; }
+#desktop-card .dk-note { margin: -4px 0 8px; }
+#desktop-card .dk-h { margin: 18px 0 4px; font-size: 15px; }
+.dk-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.dk-chip {
+  display: inline-flex; align-items: center; gap: 2px; padding: 3px 4px 3px 10px;
+  border: 1px solid var(--line-2); border-radius: 999px; background: var(--panel-2); font-size: 13px;
+}
+.dk-chip button { border: 0; background: none; cursor: pointer; color: var(--ink-2); font-size: 15px; line-height: 1; padding: 0 5px; }
+.dk-recent .btn { padding: 3px 9px; font-size: 12.5px; }

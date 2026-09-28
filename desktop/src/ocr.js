@@ -15,7 +15,10 @@ const path = require('path');
 const readline = require('readline');
 const { spawn } = require('child_process');
 
-const HELPER = path.join(__dirname, '..', 'ocr', 'bin', 'hanzi-ocr.exe');
+// In the installed app this file is inside resources/app.asar, which Windows can't run
+// programs from; electron-builder unpacks the helper to app.asar.unpacked instead.
+const HELPER = path.join(__dirname, '..', 'ocr', 'bin', 'hanzi-ocr.exe')
+  .replace(`${path.sep}app.asar${path.sep}`, `${path.sep}app.asar.unpacked${path.sep}`);
 
 class OcrHelper {
   constructor(exe = HELPER) {

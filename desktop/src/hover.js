@@ -37,7 +37,8 @@ const inside = (r, p, pad = 0) => p.x >= r.x - pad && p.x < r.x + (r.w || r.widt
 class Hover {
   /* opts: key() -> 'ctrl'|'alt'|'shift'|'off'; overlays() -> Overlays or null; ocr(); HZ();
      status() -> {char: state}; mark(char, state) -> Promise of the new statuses;
-     open(char); log(msg); pointer() -> the pointer in global DIP (tests; default: the
+     open(char); paused() -> Promise: is the program in front on the pause list;
+     log(msg); pointer() -> the pointer in global DIP (tests; default: the
      real one); offscreen (tests) */
   constructor(opts) {
     this.o = opts;
@@ -140,6 +141,8 @@ class Hover {
     if (this.busy) return;
     this.busy = true;
     try {
+      // a program on the pause list gets no popups either
+      if (this.o.paused && await this.o.paused()) { this.hide(); return; }
       const w = await this.find(pt);
       if (w) await this.show(w); else this.hide();
     } finally {

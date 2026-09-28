@@ -21,6 +21,7 @@
 //        "picture":"a.png" reads that file as if it were the screen (for tests)
 //   {"id":5,"cmd":"forget"}                      drop remembered frames
 //   {"id":7,"cmd":"color","x":0,"y":0,"w":40,"h":40}   average colour there (tests)
+//   {"id":8,"cmd":"foreground"}                  {"process":"notepad"}: the program in front
 //   {"id":6,"cmd":"quit"}
 //
 // A reply is {"id":…,"ok":true,…} or {"id":…,"ok":false,"error":"…"}. Text comes
@@ -159,6 +160,7 @@ namespace HanziOcr
                     }
                 case "screen": return ReadScreen(req);
                 case "color": return AverageColor(req);
+                case "foreground": return Foreground();
                 case "forget": Frames.Clear(); return new Dictionary<string, object>();
                 case "quit": return null;
                 default: throw new Exception("unknown command: " + cmd);
@@ -217,6 +219,23 @@ namespace HanziOcr
                 f["monitor"] = MonitorIndex(mons, Native.MonitorFromWindow(fg, 2));
                 r["foreground"] = f;
             }
+            return r;
+        }
+
+        // The program in front, by name ("notepad", "eldenring"), for the desktop app's
+        // pause list. Only the name: nothing about the window's contents.
+        static Dictionary<string, object> Foreground()
+        {
+            var r = new Dictionary<string, object>();
+            string name = "";
+            var fg = Native.GetForegroundWindow();
+            uint pid;
+            if (fg != IntPtr.Zero && Native.GetWindowThreadProcessId(fg, out pid) != 0)
+            {
+                try { name = Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant(); }
+                catch (Exception) { /* gone, or not ours to ask about */ }
+            }
+            r["process"] = name;
             return r;
         }
 
@@ -584,6 +603,7 @@ namespace HanziOcr
         [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr window, out RECT rect);
         [DllImport("user32.dll")] public static extern IntPtr MonitorFromWindow(IntPtr window, uint flags);
+        [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
         [DllImport("shcore.dll")] static extern int GetDpiForMonitor(IntPtr monitor, int type, out uint dpiX, out uint dpiY);
 
         public static MonitorInfo Describe(IntPtr handle)

@@ -5,7 +5,7 @@ character on screen by what you know, and shows the reader's word popup when you
 one. It uses HanziHome's dictionary and your HanziHome progress. Everything runs offline
 apart from progress sync.
 
-Status (2026-09-28): **steps 1–3 done.** Step 1: `site/textstory.js`, `site/data/readings.js`
+Status (2026-09-28): **all seven steps done.** Step 1: `site/textstory.js`, `site/data/readings.js`
 and `site/data/readerwords.js` (from `build/export_reader.py`, which needs
 `data/raw/cedict.txt` and `jieba_dict.txt`), and `test/accuracy.js`; the scores are in README →
 "Reading any text". Step 2: pasted text on the site opens at `#/reader/text` in the story
@@ -18,12 +18,19 @@ ocrfix → `layout.js` paragraphs → the site's reader). New logo: `site/logo.s
 drawn from it by `desktop/tools/make-icons.js`). Step 5: the colour overlay,
 `desktop/src/overlays.js` + `overlay/` + `words.js` + `settings.js`, with tray toggles for it
 and each colour. Step 6: hover lookup, `desktop/src/hover.js` + `popup/` (keyboard hook
-`uiohook-napi`); the look-up key is Ctrl by default (tray: Ctrl, Alt, Shift or off). Next:
-step 7, the "On screen now" page, settings and the installer.
+`uiohook-napi`); the look-up key is Ctrl by default (tray: Ctrl, Alt, Shift or off). Step 7:
+"On screen now" in the site's sidebar and a "Desktop app" card in its Settings page (both
+only inside the app), a pause list of programs, start with Windows, and the installer.
 
-Running it: `cd desktop && npm install && node ocr/build.js && npm start`. The app has
-its own browser storage, so it starts with no progress: connect the same Google Sheet
-in Settings → Sync (or Settings → import an exported JSON).
+Running it from the repo: `cd desktop && npm install && node ocr/build.js && npm start`.
+Building the installer: `cd desktop && npm run dist` → `desktop/dist/HanziHome Setup
+0.1.0.exe` (~120 MB; per-user install, choosable folder, Start menu and desktop shortcuts).
+It is not code-signed, so Windows SmartScreen warns "unknown publisher" on first run
+(More info → Run anyway). The app has its own browser storage, so it starts with no
+progress: connect the same Google Sheet in Settings → Sync (or import an exported JSON).
+
+Not done: choosing which monitors get the overlay (every display does); re-reading small
+text at a higher enlargement.
 
 ## Decisions made
 
@@ -143,6 +150,12 @@ reusing `vocabList()` / `charList()`.
    never focus; `npm run test:hover` checks pointing, glossing and marking off screen.
 7. **"On screen now" page, settings** (hotkey, colours, which monitors, pause list for
    apps like games), **installer** (electron-builder, NSIS `.exe`), start with Windows.
+   Settings live in the site's Settings page, drawn only when `window.hanzihomeDesktop`
+   exists, and in the tray; `test/settings-check.js` drives that card. The pause list
+   matches the program in front by name (the helper's `foreground` command) and stops both
+   reading and look-ups. The installer puts `site/` beside `app.asar` and unpacks the OCR
+   helper, which Windows can't run from inside the archive; the packaged app was checked
+   end to end on a test picture. Which monitors: not done, every display gets the overlay.
 
 ## Known risks
 

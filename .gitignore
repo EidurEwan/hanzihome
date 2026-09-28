@@ -13,3 +13,4 @@ desktop/ocr/bin/
 desktop/test/bin/
 desktop/test/out/
 desktop/node_modules/
+desktop/dist/

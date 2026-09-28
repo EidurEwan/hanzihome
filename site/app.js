@@ -1349,15 +1349,24 @@ const uniqueHan = lines => {
 const trackedIn = chars => chars.filter(c => Store.status(c)).length;
 
 /* The text pasted into the reader. Kept in this browser so #/reader/text
-   survives a reload; not synced, since it is a scratch pad rather than progress. */
-const READER_TEXT_KEY = 'hanzihome.readerText';
-let _readerText = '';
+   survives a reload; not synced, since it is a scratch pad rather than progress.
+   A title is optional: the desktop app gives text read off the screen "On screen
+   now"; pasted text is titled by its first line. */
+const READER_TEXT_KEY = 'hanzihome.readerText', READER_TITLE_KEY = 'hanzihome.readerTitle';
+let _readerText = '', _readerTitle = '';
 function readerText() {
   try { return localStorage.getItem(READER_TEXT_KEY) || _readerText; } catch (e) { return _readerText; }
 }
-function setReaderText(t) {
+function readerTitle() {
+  try { return localStorage.getItem(READER_TITLE_KEY) || ''; } catch (e) { return _readerTitle; }
+}
+function setReaderText(t, title) {
   _readerText = t;
-  try { localStorage.setItem(READER_TEXT_KEY, t); } catch (e) { /* kept in memory for this visit */ }
+  _readerTitle = title || '';
+  try {
+    localStorage.setItem(READER_TEXT_KEY, t);
+    if (title) localStorage.setItem(READER_TITLE_KEY, title); else localStorage.removeItem(READER_TITLE_KEY);
+  } catch (e) { /* kept in memory for this visit */ }
 }
 
 async function pageReader() {
@@ -1434,11 +1443,29 @@ async function pageText() {
   app.innerHTML = '<p class="muted">Loading the dictionary…</p>';
   await need.textStory();
   const st = TextStory.textToStory(text, HZ);
-  // the first line stands in for a title
-  const first = text.trim().split(/\r?\n/)[0];
-  st.zh = [...first].length > 18 ? [...first].slice(0, 18).join('') + '…' : first;
-  st.en = `Your text · ${num(st.n)} characters`;
+  const title = readerTitle();
+  if (title) {
+    st.zh = title;
+    st.en = `${num(st.n)} characters`;
+  } else {
+    // the first line stands in for a title
+    const first = text.trim().split(/\r?\n/)[0];
+    st.zh = [...first].length > 18 ? [...first].slice(0, 18).join('') + '…' : first;
+    st.en = `Your text · ${num(st.n)} characters`;
+  }
   showStory(st, 'Back to the reader to edit or paste new text');
+}
+
+/* Desktop app only: read the screen, which opens the result at #/reader/text.
+   The app hides this window first, so it reads what is underneath. */
+function pageScreen() {
+  if (!window.hanzihomeDesktop) {
+    app.innerHTML = '<div class="card"><p class="empty">This page is part of the HanziHome desktop app, '
+      + 'which reads Chinese off your screen.</p></div>';
+    return;
+  }
+  app.innerHTML = '<p class="muted">Reading the screen…</p>';
+  window.hanzihomeDesktop.readScreen();
 }
 
 function showStory(st, back) {
@@ -1860,6 +1887,7 @@ function pageHistory() {
 function pageSettings() {
   const d = Store.load();
   app.innerHTML = '<h1 class="page-title">Settings</h1>' + withRail(`
+    ${window.hanzihomeDesktop ? '<section class="card" id="desktop-card"><h2>Desktop app</h2></section>' : ''}
     <section class="card">
       <h2>Learning goal</h2>
       <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
@@ -1917,6 +1945,61 @@ function pageSettings() {
   });
   wireSyncCard();
   paintRail();
+  if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
+}
+
+/* Desktop app only: its switches for the rest of the screen, the same ones the
+   tray menu has, plus start with Windows and the programs to pause in. */
+function paintDesktopCard(state) {
+  const box = document.getElementById('desktop-card');
+  if (!box || !state) return;
+  const s = state.settings, D = window.hanzihomeDesktop;
+  const set = patch => D.set(patch).then(paintDesktopCard);
+  const check = (id, on, label, off) =>
+    `<label class="dk-row"><input type="checkbox" id="${id}"${on ? ' checked' : ''}${off ? ' disabled' : ''}> ${label}</label>`;
+  const suggest = state.recent.filter(n => !s.pause.includes(n));
+  box.innerHTML = `
+    <h2>Desktop app</h2>
+    <p class="muted small">How HanziHome works on the rest of your screen. The tray icon has the same switches.</p>
+    ${check('dk-overlay', s.overlay, 'Colour words on screen')}
+    <div class="dk-indent">
+      ${check('dk-learned', s.show.learned, '<i class="sw learned"></i> Learned', !s.overlay)}
+      ${check('dk-learning', s.show.learning, '<i class="sw learning"></i> Learning', !s.overlay)}
+      ${check('dk-new', s.show.new, '<i class="sw new"></i> New', !s.overlay)}
+    </div>
+    <label class="dk-row">Look-up key
+      <select id="dk-key">${[['ctrl', 'Ctrl'], ['alt', 'Alt'], ['shift', 'Shift'], ['off', 'Off']]
+        .map(([k, l]) => `<option value="${k}"${s.hoverKey === k ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
+    <p class="small muted dk-note">Hold it and point at a word for its meaning. Alt makes some programs open their menus when you let go.</p>
+    ${check('dk-auto', state.autostart, 'Start with Windows', !state.canAutostart)}
+    ${state.canAutostart ? '' : '<p class="small muted dk-note">Only the installed app can start with Windows.</p>'}
+    <h3 class="dk-h">Pause in these programs</h3>
+    <p class="small muted">While one of them is in front, the colours and look-ups stay out of the way: for games, say.</p>
+    <div class="dk-chips">${s.pause.map(n => `<span class="dk-chip">${esc(n)}
+      <button type="button" data-unpause="${esc(n)}" aria-label="Stop pausing in ${esc(n)}">×</button></span>`).join('')
+      || '<span class="small muted">None yet.</span>'}</div>
+    ${suggest.length ? `<p class="small muted dk-recent">In front lately: ${suggest.map(n =>
+      `<button type="button" class="btn quiet" data-pause="${esc(n)}">+ ${esc(n)}</button>`).join(' ')}</p>` : ''}
+    <div class="row"><input id="dk-add" class="dk-input" placeholder="Program name, like eldenring" spellcheck="false">
+      <button type="button" class="btn quiet" id="dk-addbtn">Add</button></div>`;
+
+  const on = id => document.getElementById(id).checked;
+  document.getElementById('dk-overlay').addEventListener('change', () => set({ overlay: on('dk-overlay') }));
+  for (const k of ['learned', 'learning', 'new']) {
+    document.getElementById('dk-' + k).addEventListener('change', () => set({ show: { [k]: on('dk-' + k) } }));
+  }
+  document.getElementById('dk-key').addEventListener('change', e => set({ hoverKey: e.target.value }));
+  document.getElementById('dk-auto').addEventListener('change', () => set({ autostart: on('dk-auto') }));
+  box.querySelectorAll('[data-unpause]').forEach(b => b.addEventListener('click', () =>
+    set({ pause: s.pause.filter(n => n !== b.dataset.unpause) })));
+  box.querySelectorAll('[data-pause]').forEach(b => b.addEventListener('click', () =>
+    set({ pause: s.pause.concat(b.dataset.pause) })));
+  const add = () => {
+    const v = document.getElementById('dk-add').value.trim();
+    if (v) set({ pause: s.pause.concat(v) });
+  };
+  document.getElementById('dk-addbtn').addEventListener('click', add);
+  document.getElementById('dk-add').addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
 }
 
 function syncCardBody() {
@@ -2045,6 +2128,7 @@ function render(keepScroll) {
   if (seg[0] === 'search') return pageSearch(seg.slice(1).join('/'));
   if (seg[0] === 'study') return pageStudy();
   if (seg[0] === 'reader') return seg[1] ? pageStory(seg[1]) : pageReader();
+  if (seg[0] === 'screen') return pageScreen();
   if (seg[0] === 'frequency') return pageFrequency();
   if (seg[0] === 'radicals') return pageRadicals();
   if (seg[0] === 'phonetic-sets') return pagePhonetic(n(1), n(2));
@@ -2096,6 +2180,10 @@ initSearch();
 if (!location.hash) location.hash = '#/dashboard';
 render();
 tellDesktop();
+if (window.hanzihomeDesktop) {
+  document.getElementById('nav-screen').hidden = false;
+  window.hanzihomeDesktop.onSettings(paintDesktopCard);   // the tray changed something
+}
 
 /* sync: on load, when the tab comes back, every few minutes while open, and a
    last push when the tab is hidden with changes still waiting */

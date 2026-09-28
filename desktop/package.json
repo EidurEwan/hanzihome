@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "HanziHome on the desktop: reads Chinese off the screen with Windows OCR",
+  "author": "Eidur Ewan",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -10,12 +11,50 @@
     "test:ocr": "node ocr/build.js render && node test/ocr.js",
     "test:protect": "electron test/protect.js",
     "test:overlay": "electron test/overlay.js",
-    "test:hover": "electron test/hover.js"
+    "test:hover": "electron test/hover.js",
+    "dist": "node ocr/build.js && electron-builder --win"
   },
   "devDependencies": {
-    "electron": "^44.4.5"
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
   },
   "dependencies": {
     "uiohook-napi": "^1.5.5"
+  },
+  "build": {
+    "appId": "app.hanzihome.desktop",
+    "productName": "HanziHome",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "package.json",
+      "src/**",
+      "assets/**",
+      "data/**",
+      "ocr/bin/hanzi-ocr.exe"
+    ],
+    "asarUnpack": [
+      "ocr/bin/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../site",
+        "to": "site"
+      }
+    ],
+    "npmRebuild": false,
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon-256.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    }
   }
 }
