@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HanziHome — Chinese character dictionary</title>
 <link rel="stylesheet" href="style.css?v=61">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><g fill='none' stroke='%23b73746' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'><path d='M16 2.8v2.8'/><path d='M5 14.6C8.8 10.2 12.4 8.4 16 8.4s7.2 1.8 11 6.2'/><path d='M5 14.6v2.6'/><path d='M27 14.6v2.6'/><path d='M10.5 19.5v9.5M21.5 19.5v9.5M10.5 24.2h11'/></g></svg>">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>
 /* Globals the data files assign into. Everything is loaded with <script>
    tags rather than fetch(), so the site works straight off the filesystem. */
@@ -15,7 +15,7 @@ var HZ = { index: {}, chunk: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
 <body>
 
 <header class="topbar">
-  <a class="brand" href="#/"><svg class="logo" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 2.8v2.8"/><path d="M5 14.6C8.8 10.2 12.4 8.4 16 8.4s7.2 1.8 11 6.2"/><path d="M5 14.6v2.6"/><path d="M27 14.6v2.6"/><path d="M10.5 19.5v9.5M21.5 19.5v9.5M10.5 24.2h11"/></svg><span>HanziHome</span></a>
+  <a class="brand" href="#/"><img class="logo" src="logo.svg" alt=""><span>HanziHome</span></a>
   <form class="search" id="search-form" role="search" autocomplete="off">
     <input id="q" type="search" placeholder="Look up a Chinese character…"
            spellcheck="false" aria-label="Look up a Chinese character">
@@ -54,6 +54,6 @@ var HZ = { index: {}, chunk: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
 <script src="data/meta.js?v=5"></script>
 <script src="data/index.js?v=5"></script>
 <script src="data/radicalmap.js?v=5"></script>
-<script src="app.js?v=67"></script>
+<script src="app.js?v=68"></script>
 </body>
 </html>

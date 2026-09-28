@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- logo.svg without the dashed guides, which blur at browser-tab size -->
+  <rect x="1.5" y="1.5" width="29" height="29" rx="6" fill="#fffaf5" stroke="#b83746" stroke-width="2.2"/>
+  <g transform="translate(4 3.6) scale(.75)" fill="none" stroke="#111827" stroke-width="3.3"
+     stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 3.8V6.2"/>
+    <path d="M6.5 11V8.2H25.5V11"/>
+    <path d="M10.5 13.5H21.5L17 17.5"/>
+    <path d="M16.8 17.5V26.5Q16.8 28.8 14.2 28"/>
+    <path d="M6.5 21.2H25.5"/>
+  </g>
+</svg>
