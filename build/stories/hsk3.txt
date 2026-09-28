@@ -9,7 +9,7 @@ tag: Getting home late
 zh: 最后一班车
 en: The Last Bus
 text:
-上 个 星期五 ， 公司 有 一 个 很 重要 的 会议 ， 我 一直 忙 到 晚上 十一 点 才 下班 。 走 出 公司 大楼 的 时候 ， 街 上 已经 没有 什么 人 了@change 。
+上@last 个 星期五 ， 公司 有 一 个 很 重要 的 会议 ， 我 一直 忙 到 晚上 十一 点 才 下班 。 走 出 公司 大楼 的 时候 ， 街 上 已经 没有 什么 人 了@change 。
 
 我 家 离 公司 比较 远 ， 坐 公共汽车 要 四十 分钟 。 我 知道 最后 一 班 车 是 十一 点 二十 分 ， 所以 我 一@asap 出 门 就@asap 向 车站 跑 去 。 可是 我 跑 到@reach 车站 的 时候 ， 正好 看见 那 班 车 开 走 了 。
 
@@ -21,7 +21,8 @@ text:
 
 下 车@car 的 时候 ， 我 想 给 她 钱 ， 但是 她 怎么 也 不 要 。 她 笑 着 说 ： “ 以后 你 看到 别人 需要 帮助 ， 也 帮 一下 吧 。 ” 从 那 天 起 ， 我 一直@always 记得 这 句 话 。
 words:
-上 | shàng | last (上个星期五 = last Friday)
+上@last | shàng | last (上个星期五 = last Friday)
+上 | shang | on; in (街上 = in the street)
 星期五 | xīng qī wǔ | Friday
 一 | yī | one; a
 一@asap | yī | (一…就: as soon as)
