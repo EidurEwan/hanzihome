@@ -35,7 +35,7 @@ const TextStory = require('../site/textstory.js');
 const DATA = path.join(__dirname, '..', 'site', 'data');
 const ctx = { HZ: { chunk: {}, phoneticSets: {} } };
 vm.createContext(ctx);
-for (const f of ['index', 'words', 'readings', 'stories']) {
+for (const f of ['index', 'readerwords', 'readings', 'stories']) {
   vm.runInContext(fs.readFileSync(path.join(DATA, f + '.js'), 'utf8'), ctx);
 }
 const HZ = ctx.HZ;
@@ -183,11 +183,11 @@ const hold = HZ.stories.filter(s => held.has(s.id));
 if (process.argv.includes('--tune')) {
   const P = TextStory.params;
   let best = null;
-  for (const A of [-6, -5, -4, -3, -2]) for (const B of [0, 2, 5, 10, 20]) for (const C of [0.5, 1, 2, 4, 8]) {
-    Object.assign(P, { WORD_A: A, WORD_B: B, CHAR_ALONE: C });
+  for (const C of [0.25, 0.5, 1, 2, 4, 8, 16]) for (const M of [1, 3, 10, 30]) {
+    Object.assign(P, { CHAR_ALONE: C, MIN_FREQ: M });
     const t = score(dev);
     const f = t.exact / t.gold - 2 * t.crossed / t.gold;   // a cut through a word costs more than a coarser split
-    if (!best || f > best.f) best = { f, A, B, C, exact: pct(t.exact, t.gold), crossed: pct(t.crossed, t.gold) };
+    if (!best || f > best.f) best = { f, CHAR_ALONE: C, MIN_FREQ: M, exact: pct(t.exact, t.gold), crossed: pct(t.crossed, t.gold) };
   }
   console.log('best on dev:', best);
   process.exit(0);

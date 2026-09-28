@@ -18,7 +18,8 @@
  * a fifth element {alt, s}: other likely senses, and the simplified form of a
  * word written in traditional characters.
  *
- * Needs HZ.index, HZ.words and HZ.readings (data/readings.js). Works in the
+ * Needs HZ.index, HZ.readings (data/readings.js) and HZ.rwords
+ * (data/readerwords.js), both written by build/export_reader.py. Works in the
  * browser (window.TextStory) and in Node (require), which is how
  * test/accuracy.js scores it against the hand-glossed stories. */
 
@@ -31,12 +32,12 @@
 
   const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 
-  /* Scoring. A dictionary word at frequency rank r (words.js is in rank order)
-     gets log P = WORD_A - ln(r + WORD_B): Zipf's law standing in for the corpus
-     counts, which the static data does not carry. A character on its own gets
-     its share of running text scaled down by CHAR_ALONE, since most of a
-     character's uses are inside longer words. Tuned with test/accuracy.js --tune. */
-  const P = { WORD_A: -4, WORD_B: 2, CHAR_ALONE: 1, UNKNOWN: -22 };
+  /* Scoring, as jieba does it: a word's log probability is its log frequency in
+     jieba's corpus. A character on its own counts its uses as a word by itself
+     (jieba counts 的 alone, not inside 目的), scaled by CHAR_ALONE. A dictionary
+     word jieba never saw counts MIN_FREQ; a character jieba never saw on its own
+     scores UNKNOWN. Tuned with test/accuracy.js --tune. */
+  const P = { CHAR_ALONE: 2, MIN_FREQ: 1, UNKNOWN: -22 };
   const MAX_WORD = 8;
 
   const NUMERAL = '零〇一二三四五六七八九十百千万亿两';
@@ -54,13 +55,9 @@
 
   function prepare(HZ) {
     let D = _prepared.get(HZ);
-    if (D && D.words === HZ.words) return D;
-    const rank = new Map();
-    HZ.words.forEach((w, i) => {
-      if (!rank.has(w[0])) rank.set(w[0], i);
-      if (w[1] && !rank.has(w[1])) rank.set(w[1], i);
-    });
-    D = { HZ, words: HZ.words, rank, readings: HZ.readings || {}, t2s: HZ.t2s || {},
+    if (D && D.lex === HZ.rwords) return D;
+    D = { HZ, lex: HZ.rwords, logTotal: Math.log(HZ.rwordsTotal), wt2s: HZ.rwordsT2S || {},
+          readings: HZ.readings || {}, t2s: HZ.t2s || {},
           lexicon: HZ.lexicon || {}, charGloss: HZ.charGloss || {} };
     _prepared.set(HZ, D);
     return D;
@@ -69,12 +66,22 @@
   const simp = (D, c) => D.t2s[c] || c;
   const readingsOf = (D, c) => D.readings[c] || D.readings[simp(D, c)] || [];
 
-  function charLogP(D, c) {
-    const e = D.HZ.index[c] || D.HZ.index[simp(D, c)];
-    if (!e || !e[1]) return P.UNKNOWN;
-    return Math.log(e[1] / 100 * P.CHAR_ALONE);
+  /* a word written in either script -> [frequency, tag, readings]; a single
+     character has no readings here (those are in HZ.readings) */
+  function entry(D, w) {
+    const e = D.lex[w];
+    if (e) return e;
+    const s = D.wt2s[w] || [...w].map(c => simp(D, c)).join('');
+    return s !== w ? D.lex[s] : undefined;
   }
-  const wordLogP = r => P.WORD_A - Math.log(r + P.WORD_B);
+  const isWord = (D, w) => { const e = entry(D, w); return !!(e && e[2]); };
+  const tagOf = (D, w) => { const e = w && entry(D, w); return e ? e[1] : ''; };
+
+  function charLogP(D, c) {
+    const e = entry(D, c);
+    return e && e[0] ? Math.log(e[0] * P.CHAR_ALONE) - D.logTotal : P.UNKNOWN;
+  }
+  const wordLogP = (D, e) => Math.log(Math.max(e[0], P.MIN_FREQ)) - D.logTotal;
 
   /* ------------------------------------------------------------ segmenting */
 
@@ -85,9 +92,9 @@
     for (let i = n - 1; i >= 0; i--) {
       best[i] = [charLogP(D, cs[i]) + best[i + 1][0], i + 1];
       for (let L = 2; L <= MAX_WORD && i + L <= n; L++) {
-        const r = D.rank.get(cs.slice(i, i + L).join(''));
-        if (r === undefined) continue;
-        const s = wordLogP(r) + best[i + L][0];
+        const e = entry(D, cs.slice(i, i + L).join(''));
+        if (!e || !e[2]) continue;
+        const s = wordLogP(D, e) + best[i + L][0];
         if (s > best[i][0]) best[i] = [s, i + L];
       }
     }
@@ -126,7 +133,7 @@
       const last = merged[merged.length - 1];
       if (last && isNumeral(last) && isNumeral(w) && !(last === '一' && w === '一')) merged[merged.length - 1] = last + w;
       else if (last && w.length === 1 && last === w && !isNumeral(w) && isHan(w)) merged[merged.length - 1] = last + w;
-      else if (last && w === '儿' && D.rank.has(last + w)) merged[merged.length - 1] = last + w;
+      else if (last && w === '儿' && isWord(D, last + w)) merged[merged.length - 1] = last + w;
       else merged.push(w);
     }
     return merged;
@@ -230,12 +237,25 @@
 
   /* ---- context: what is around a single character ---- */
 
+  /* a name, or a noun that means a person (奶奶, 朋友, 老师) */
+  const PERSON = /\b(person|people|man|men|woman|women|mother|mum|mom|father|dad|grand\w*|friend|teacher|wife|husband|son|daughter|brother|sister|family|parents?|student|classmate|colleague|boss|doctor|child|children|kid|uncle|aunt|Mr|Mrs|Miss|master|tutor|supervisor|neighbou?r|guest|customer)\b/i;
+  function isPerson(D, w) {
+    if (!w) return false;
+    const t = tagOf(D, w);
+    if (t === 'nr') return true;
+    if (t && t[0] !== 'n') return false;
+    const lex = D.lexicon[w], e = entry(D, w);
+    const gloss = lex ? lex[1] : e && e[2] ? e[2][0][1] : '';
+    return PERSON.test(gloss.split(';')[0]);
+  }
+
+  /* jieba's part-of-speech tag, or failing that, a meaning that starts "to …" */
   function looksVerb(D, w) {
     if (!w) return false;
-    if ([...w].length > 1) {
-      const r = D.rank.get(w);
-      return r !== undefined && /^to /.test(D.words[r][3]);
-    }
+    const t = tagOf(D, w);
+    if (t) return t[0] === 'v';
+    const e = entry(D, w);
+    if (e && e[2]) return /^to /.test(e[2][0][1]);
     const rs = readingsOf(D, w);
     return !!(rs[0] && rs[0][1][0] && /^to /.test(rs[0][1][0]));
   }
@@ -255,7 +275,8 @@
     '的': x => {
       if (x.end && x.before.includes('是')) return ['de', '(是…的: stresses who / when / how)'];
       if (x.end) return ['de', '(…的: the one / the thing that …)'];
-      if (PRONOUN.has(x.prev)) return ['de', '\'s; of (belonging to)'];
+      // a person's thing: 我的, 奶奶的, 朋友的 (a place or thing before 的 describes)
+      if (PRONOUN.has(x.prev) || x.person(x.prev)) return ['de', '\'s; of (belonging to)'];
       return ['de', '(links the description before it to the noun)'];
     },
     '地': x => (x.next && x.verb(x.next) && x.prev && !PRONOUN.has(x.prev))
@@ -450,10 +471,21 @@
       const lex = D.lexicon[c] || D.lexicon[simp(D, c)];
       if (lex) return { pin: lex[0], gloss: lex[1], alt: null, parts: [[lex[0], lex[1]]] };
       const rs = readingsOf(D, c);
-      const pin = rs[0] ? rs[0][0] : ((D.HZ.index[c] || [])[2] || '');
+      let row = rs[0];
+      // jieba's tag says how the character is used on its own. A verb wants a
+      // "to …" sense, a noun or adjective one that is not (累: lèi "tired", not
+      // lěi "to accumulate"); when the first reading opens with the wrong kind,
+      // take the reading that opens with the right one, then its fitting senses first
+      const t = tagOf(D, c)[0];
+      if (row && (t === 'v' || t === 'a' || t === 'n')) {
+        const fits = m => /^to /.test(m) === (t === 'v');
+        if (row[1][0] && !fits(row[1][0])) row = rs.find(r => r[1][0] && fits(r[1][0])) || row;
+        row = [row[0], row[1].filter(fits).concat(row[1].filter(m => !fits(m)))];
+      }
+      const pin = row ? row[0] : ((D.HZ.index[c] || [])[2] || '');
       const e = D.HZ.index[c] || D.HZ.index[simp(D, c)];
-      const g = (rs[0] && joinMeanings(rs[0][1])) || (e ? shortGloss(e[3]) : '');
-      const alt = rs.slice(1).filter(r => r[1].length).slice(0, 1).map(r => [r[0], joinMeanings(r[1])]);
+      const g = (row && joinMeanings(row[1])) || (e ? shortGloss(e[3]) : '');
+      const alt = rs.filter(r => r[0] !== pin && r[1].length).slice(0, 1).map(r => [r[0], joinMeanings(r[1])]);
       return { pin, gloss: g, alt: alt.length ? alt : null, parts: [[pin, g]] };
     }
 
@@ -466,12 +498,16 @@
     const lex = D.lexicon[w] || D.lexicon[sw];
     if (lex) return withParts(lex[0], lex[1]);
 
-    const r = D.rank.get(w);
-    if (r !== undefined) {
-      const [, , dictPin, def] = D.words[r];
+    const e = entry(D, w);
+    if (e && e[2]) {
+      const [[dictPin, def], ...others] = e[2];
       const base = syllables(dictPin, han.length), sy = unstress(w, base, def, x);
       // keep the dictionary's own spelling (zhèr, Zhōng guó) unless a syllable changed
-      return withParts(sy.some((s, i) => s !== base[i]) ? sy.join(' ') : dictPin, joinMeanings([def]));
+      const out = withParts(sy.some((s, i) => s !== base[i]) ? sy.join(' ') : dictPin, joinMeanings([def]));
+      // the next everyday reading, if any (东西 dōng xī "east and west")
+      const alt = others.filter(r => r[0][0] === r[0][0].toLowerCase()).slice(0, 1).map(r => [r[0], joinMeanings([r[1]])]);
+      if (alt.length) out.alt = alt;
+      return out;
     }
     if (isNumeral(w)) return withParts(han.map(c => (readingsOf(D, c)[0] || [''])[0]).join(' '), numberValue(w));
     if (han.length === 2 && han[0] === han[1]) {
@@ -558,7 +594,7 @@
           prev: words[i - 1] || null, next: words[i + 1] || null, next2: words[i + 1] && words[i + 2] || null,
           nextText: nextTok && typeof nextTok === 'object' ? nextTok.s : '',
           end: !words[i + 1], before: words.slice(a, i),
-          verb: w => looksVerb(D, w),
+          verb: w => looksVerb(D, w), person: w => isPerson(D, w),
         };
         const w = tk, han = [...w].filter(isHan);
         n += han.length;

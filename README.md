@@ -108,6 +108,7 @@ build/radicaldata.py    the 214 Kangxi radicals and their glosses
 build/readingorder.py   orders each character's readings and meanings most-used first
 build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded reader)
 build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> site/data/readings.js
+                        data/raw/{cedict,jieba_dict}.txt -> site/data/readerwords.js
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
 test/accuracy.js        scores textstory.js against the hand-glossed stories
@@ -174,14 +175,21 @@ CC-CEDICT as likely typos, and reports character meanings that fell back to the 
 ### Reading any text
 
 [`site/textstory.js`](site/textstory.js) does automatically what the story glossaries do by
-hand, so any text can get the full reader. It splits the text into words (every way of cutting
-a run of characters into dictionary words is scored, and the most probable wins, as in jieba),
-regroups them the way the stories do (一 个, 每 天, 不 是; 二十八 as one number), and gives
-each word its reading and meaning. A word of two or more characters brings its own pinyin, which
-settles polyphones (银行 háng, 进行 xíng), with place and direction endings unstressed as the
-stories write them (家里 jiā li, 回来 huí lai). A character standing alone goes through context
-rules (了 after a verb or at the end of a clause, 还 hái or huán, 得 de or děi, 只 after a
-number), then `lexicon.txt`, before falling back to CC-CEDICT. Everything runs offline.
+hand, so any text can get the full reader. It splits the text into words the way jieba does
+(every way of cutting a run of characters into dictionary words is scored by jieba's word
+frequencies, and the most probable wins), regroups them the way the stories do (一 个, 每 天,
+不 是; 二十八 as one number), and gives each word its reading and meaning. A word of two or more
+characters brings its own pinyin, which settles polyphones (银行 háng, 进行 xíng), with place and
+direction endings unstressed as the stories write them (家里 jiā li, 回来 huí lai). A character
+standing alone goes through context rules (了 after a verb or at the end of a clause, 还 hái or
+huán, 得 de or děi, 只 after a number, 的 after a person), then `lexicon.txt`, then CC-CEDICT,
+where jieba's part-of-speech tag picks the kind of sense (累 is an adjective: lèi "tired", not
+lěi "to accumulate"). Everything runs offline.
+
+Its word data is `site/data/readerwords.js` (~9 MB, loaded only by the reader), written by
+`build/export_reader.py` from `data/raw/cedict.txt` and `data/raw/jieba_dict.txt`. Unlike
+`words.js` it keeps every reading of a word, everyday ones first: 告诉 gào su "to tell" before
+gào sù "to press charges", 东西 dōng xi "thing" before dōng xī "east and west".
 
 `node test/accuracy.js` puts each story's text back together without the spaces, runs it
 through the engine and compares the result with the hand-made glossary. The last story of each
@@ -189,17 +197,19 @@ level is held out while rules are written. On 2026-09-28:
 
 | | dev (18 stories) | held out (6) |
 | --- | --- | --- |
-| words split as by hand | 93.3% | 93.1% |
+| words split as by hand | 93.5% | 93.9% |
 | words cut through the middle | 0.2% | 0.0% |
-| pinyin per character | 99.1% | 98.9% |
-| meaning shares a content word with the hand gloss | 86.7% | 86.2% |
-| … for words not in `lexicon.txt` | 77.1% | 76.8% |
-| … for context-dependent characters (了, 还, 得 …) | 82.3% | 81.4% |
+| pinyin per character | 99.4% | 99.2% |
+| meaning shares a content word with the hand gloss | 87.2% | 85.8% |
+| … for words not in `lexicon.txt` | 78.0% | 75.9% |
+| … for context-dependent characters (了, 还, 得 …) | 83.0% | 79.9% |
 
 `--errors` lists the mistakes, `--show 上` prints every sentence a word appears in, and
 `--tune` searches the segmentation parameters. Most remaining meaning "errors" are wording
-(mama vs mum). The real ones mostly come from `words.js` holding one reading per word, so 告诉
-is gào sù "to press charges" and 东西 dōng xī "east and west".
+(mama vs mum, frequently vs often).
+
+`words.js` itself still has the one-reading problem, so site search shows 告诉 as gào sù "to
+press charges". Fixing it means a full `build.py` rebuild with all six sources in `data/raw/`.
 
 ### Phonetic relationships
 
