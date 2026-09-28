@@ -1,0 +1,15 @@
+{
+  "name": "hanzihome-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HanziHome on the desktop: reads Chinese off the screen with Windows OCR",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:ocr": "node ocr/build.js",
+    "test:ocr": "node ocr/build.js render && node test/ocr.js"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5"
+  }
+}

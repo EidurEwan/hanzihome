@@ -10,8 +10,16 @@ and `site/data/readerwords.js` (from `build/export_reader.py`, which needs
 `data/raw/cedict.txt` and `jieba_dict.txt`), and `test/accuracy.js`; the scores are in README →
 "Reading any text". Step 2: pasted text on the site opens at `#/reader/text` in the story
 reader. Step 3: the OCR helper `desktop/ocr/` (`node desktop/ocr/build.js`), its Node client
-`desktop/src/ocr.js`, the repair `desktop/src/ocrfix.js`, and `desktop/test/ocr.js`. Next:
-step 4, the Electron shell (needs `npm install electron`).
+`desktop/src/ocr.js`, the repair `desktop/src/ocrfix.js`, and `desktop/test/ocr.js`. Step 4:
+the Electron shell, `desktop/src/main.js` (run with `npm start` in `desktop/`): the site in
+one window at `app://hanzihome/`, tray menu, the store bridge (`preload.js` +
+`tellDesktop()` in `site/app.js`), background sync, and "Read the screen now" (OCR →
+ocrfix → `layout.js` paragraphs → the site's reader). New logo: `site/logo.svg` (icons
+drawn from it by `desktop/tools/make-icons.js`). Next: step 5, the colour overlay.
+
+Running it: `cd desktop && npm install && node ocr/build.js && npm start`. The app has
+its own browser storage, so it starts with no progress: connect the same Google Sheet
+in Settings → Sync (or Settings → import an exported JSON).
 
 ## Decisions made
 
@@ -116,7 +124,9 @@ reusing `vocabList()` / `charList()`.
 3. **OCR helper.** C# console app: capture, change detection, OCR, JSON out; repair in
    Node. Tested on rendered pictures in several fonts, sizes and styles, and on this PC's
    screen (timings and counts only).
-4. **Electron shell.** Tray, main window with `site/`, shared store, sync.
+4. **Electron shell.** Tray, main window with `site/`, shared store, sync. The page stays
+   the store's owner (it keeps running while hidden); the main process keeps a copy
+   through the bridge rather than a second store, so nothing is duplicated.
 5. **Colour overlay.** Bars over recognised words, per-colour toggles, recolour on mark.
 6. **Hover lookup.** Hold key, word popup, mark buttons, open character page.
 7. **"On screen now" page, settings** (hotkey, colours, which monitors, pause list for

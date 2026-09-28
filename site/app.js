@@ -122,6 +122,7 @@ const Store = {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); }
     catch (e) { console.warn('could not save', e); }
     Sync.markDirty();
+    tellDesktop();
   },
   touch() { const d = this.load(); d.days[today()] = (d.days[today()] || 0) + 1; this.save(); },
 
@@ -181,6 +182,13 @@ const Store = {
     this.touch();
   },
 };
+
+/* Inside the desktop app (desktop/), its preload script provides
+   window.hanzihomeDesktop; the app keeps a copy of the store for its screen
+   overlay. In a browser this does nothing. */
+function tellDesktop() {
+  if (window.hanzihomeDesktop) window.hanzihomeDesktop.saved(JSON.stringify(Store.load()));
+}
 
 /* ============================ sync ============================
    Optional: keep the store in step across browsers through a Google Apps
@@ -346,6 +354,7 @@ const Sync = {
     try { localStorage.setItem(Store.key, JSON.stringify(data)); } catch (e) { /* keep going in memory */ }
     Store.data = null;
     Store.load();
+    tellDesktop();
     const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
     if (!typing) rerenderKeepingScroll();
     else markNav(currentPath());
@@ -2086,6 +2095,7 @@ document.addEventListener('keydown', e => {
 initSearch();
 if (!location.hash) location.hash = '#/dashboard';
 render();
+tellDesktop();
 
 /* sync: on load, when the tab comes back, every few minutes while open, and a
    last push when the tab is hidden with changes still waiting */
