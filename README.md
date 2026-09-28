@@ -107,7 +107,10 @@ build/export_static.py  the database ->  site/data/*.js       (~29 MB)
 build/radicaldata.py    the 214 Kangxi radicals and their glosses
 build/readingorder.py   orders each character's readings and meanings most-used first
 build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded reader)
+build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> site/data/readings.js
 site/                   index.html, app.js, style.css — the app itself
+site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
+test/accuracy.js        scores textstory.js against the hand-glossed stories
 sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet
 sync/mock-server.js     runs Code.gs locally for testing, no Google account needed
 server.py               optional: serves the same database over HTTP instead
@@ -167,6 +170,36 @@ are refused there. `chars.txt` says what a character means inside a word (面 in
 characters and a meaning for every word, that pinyin has one syllable per character, lists
 vocabulary above the story's HSK level (HSK 2.0 and 3.0 lists), flags words missing from
 CC-CEDICT as likely typos, and reports character meanings that fell back to the dictionary.
+
+### Reading any text
+
+[`site/textstory.js`](site/textstory.js) does automatically what the story glossaries do by
+hand, so any text can get the full reader. It splits the text into words (every way of cutting
+a run of characters into dictionary words is scored, and the most probable wins, as in jieba),
+regroups them the way the stories do (一 个, 每 天, 不 是; 二十八 as one number), and gives
+each word its reading and meaning. A word of two or more characters brings its own pinyin, which
+settles polyphones (银行 háng, 进行 xíng), with place and direction endings unstressed as the
+stories write them (家里 jiā li, 回来 huí lai). A character standing alone goes through context
+rules (了 after a verb or at the end of a clause, 还 hái or huán, 得 de or děi, 只 after a
+number), then `lexicon.txt`, before falling back to CC-CEDICT. Everything runs offline.
+
+`node test/accuracy.js` puts each story's text back together without the spaces, runs it
+through the engine and compares the result with the hand-made glossary. The last story of each
+level is held out while rules are written. On 2026-09-28:
+
+| | dev (18 stories) | held out (6) |
+| --- | --- | --- |
+| words split as by hand | 93.3% | 93.1% |
+| words cut through the middle | 0.2% | 0.0% |
+| pinyin per character | 99.1% | 98.9% |
+| meaning shares a content word with the hand gloss | 86.7% | 86.2% |
+| … for words not in `lexicon.txt` | 77.1% | 76.8% |
+| … for context-dependent characters (了, 还, 得 …) | 82.3% | 81.4% |
+
+`--errors` lists the mistakes, `--show 上` prints every sentence a word appears in, and
+`--tune` searches the segmentation parameters. Most remaining meaning "errors" are wording
+(mama vs mum). The real ones mostly come from `words.js` holding one reading per word, so 告诉
+is gào sù "to press charges" and 东西 dōng xī "east and west".
 
 ### Phonetic relationships
 
