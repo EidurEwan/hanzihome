@@ -15,7 +15,10 @@ the Electron shell, `desktop/src/main.js` (run with `npm start` in `desktop/`): 
 one window at `app://hanzihome/`, tray menu, the store bridge (`preload.js` +
 `tellDesktop()` in `site/app.js`), background sync, and "Read the screen now" (OCR →
 ocrfix → `layout.js` paragraphs → the site's reader). New logo: `site/logo.svg` (icons
-drawn from it by `desktop/tools/make-icons.js`). Next: step 5, the colour overlay.
+drawn from it by `desktop/tools/make-icons.js`). Step 5: the colour overlay,
+`desktop/src/overlays.js` + `overlay/` + `words.js` + `settings.js`, with tray toggles for it
+and each colour. Next: step 6, hover lookup (needs a native keyboard hook, `uiohook-napi`;
+ask before installing).
 
 Running it: `cd desktop && npm install && node ocr/build.js && npm start`. The app has
 its own browser storage, so it starts with no progress: connect the same Google Sheet
@@ -128,6 +131,11 @@ reusing `vocabList()` / `charList()`.
    the store's owner (it keeps running while hidden); the main process keeps a copy
    through the bridge rather than a second store, so nothing is duplicated.
 5. **Colour overlay.** Bars over recognised words, per-colour toggles, recolour on mark.
+   Measured 2026-09-28: content protection keeps the overlay out of the helper's GDI
+   captures (`npm run test:protect`: magenta captured unprotected, not protected); bars land
+   under the words (`npm run test:overlay` draws them over a test picture); live on a
+   text-heavy 1080p screen, ~100 lines: 2.1 s for the first read, 0.2–0.75 s per changed
+   re-read after that. Colours follow the site: green learned, blue learning, red new.
 6. **Hover lookup.** Hold key, word popup, mark buttons, open character page.
 7. **"On screen now" page, settings** (hotkey, colours, which monitors, pause list for
    apps like games), **installer** (electron-builder, NSIS `.exe`), start with Windows.

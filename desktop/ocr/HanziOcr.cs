@@ -20,6 +20,7 @@
 //        without "monitor", the monitor under the foreground window;
 //        "picture":"a.png" reads that file as if it were the screen (for tests)
 //   {"id":5,"cmd":"forget"}                      drop remembered frames
+//   {"id":7,"cmd":"color","x":0,"y":0,"w":40,"h":40}   average colour there (tests)
 //   {"id":6,"cmd":"quit"}
 //
 // A reply is {"id":…,"ok":true,…} or {"id":…,"ok":false,"error":"…"}. Text comes
@@ -157,6 +158,7 @@ namespace HanziOcr
                         return r;
                     }
                 case "screen": return ReadScreen(req);
+                case "color": return AverageColor(req);
                 case "forget": Frames.Clear(); return new Dictionary<string, object>();
                 case "quit": return null;
                 default: throw new Exception("unknown command: " + cmd);
@@ -327,6 +329,26 @@ namespace HanziOcr
                 times["total"] = sw.ElapsedMilliseconds;
                 r["ms"] = times;
                 return r;
+            }
+        }
+
+        // The average colour of a small screen rectangle, captured the same way as
+        // "screen": lets desktop/test/overlay.js check that the overlay stays out of
+        // our own captures without reading anything that is on the screen.
+        static Dictionary<string, object> AverageColor(Dictionary<string, object> req)
+        {
+            var rect = new Rectangle((int)Num(req, "x", 0), (int)Num(req, "y", 0),
+                Math.Max(1, (int)Num(req, "w", 1)), Math.Max(1, (int)Num(req, "h", 1)));
+            using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+            {
+                using (var g = Graphics.FromImage(bmp))
+                    g.CopyFromScreen(rect.X, rect.Y, 0, 0, rect.Size, CopyPixelOperation.SourceCopy);
+                long r = 0, gr = 0, b = 0;
+                var px = PixelsOf(bmp);
+                foreach (var p in px) { r += (p >> 16) & 255; gr += (p >> 8) & 255; b += p & 255; }
+                var reply = new Dictionary<string, object>();
+                reply["rgb"] = new[] { (int)(r / px.Length), (int)(gr / px.Length), (int)(b / px.Length) };
+                return reply;
             }
         }
 

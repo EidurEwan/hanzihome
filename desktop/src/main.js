@@ -3,14 +3,18 @@
  * The whole site (site/) runs in one window, served at app://hanzihome/ so it has
  * a proper origin for localStorage. That page owns the progress store and its
  * Google Sheet sync, exactly as in a browser. Closing the window only hides it:
- * the app lives in the tray, and the page keeps running so sync and (later) the
- * screen overlay always have the store. The page reports each save through the
- * preload bridge, and this process keeps a copy (store) for the overlay.
+ * the app lives in the tray, and the page keeps running so sync and the screen
+ * overlay always have the store. The page reports each save through the preload
+ * bridge, and this process keeps a copy (store) for the overlay.
  *
- * The tray's "Read the screen now" runs the whole pipeline: the OCR helper reads
- * the screen, ocrfix repairs it, and the text opens in the site's reader.
+ * The colour overlay (overlays.js) puts a bar under every Chinese word on screen,
+ * coloured by what you know; the tray menu turns it and each colour on and off
+ * (settings.js). The tray's "Read the screen now" runs the whole pipeline: the OCR
+ * helper reads the screen, ocrfix repairs it, and the text opens in the reader.
  *
  *   npm start                                    (from desktop/)
+ *   npm start -- --hidden                        start in the tray, window closed
+ *   HANZIHOME_DEBUG=1 npm start                  log each overlay read (counts only)
  *   npm start -- --picture=a.png --read-now      read a picture instead of the
  *                                                screen, straight away (for tests)
  *   npm start -- --snapshot=out.png              save the window as a picture once
@@ -28,6 +32,8 @@ const { OcrHelper } = require('./ocr');
 const { repair } = require('./ocrfix');
 const { loadHZ } = require('./data');
 const { paragraphs } = require('./layout');
+const { Overlays } = require('./overlays');
+const { loadSettings, saveSettings } = require('./settings');
 
 const SITE = path.join(__dirname, '..', '..', 'site');
 const ASSETS = path.join(__dirname, '..', 'assets');
@@ -41,6 +47,15 @@ const arg = name => {
 
 let win = null, tray = null, ocr = null, HZ = null, quitting = false;
 let store = null;               // the page's progress store, as it last saved it
+let settings = null, overlays = null;
+const testRun = () => !!(arg('snapshot') || arg('check-store') || arg('read-now'));
+const debug = (...a) => { if (process.env.HANZIHOME_DEBUG) console.log(...a); };
+
+// the site's data, for the OCR repair and word splitting (~9 MB, loaded on first use)
+function data() {
+  if (!HZ) HZ = loadHZ(['index', 'readings', 'readerwords']);
+  return HZ;
+}
 
 // ------------------------------------------------------------------ the site
 
@@ -102,7 +117,16 @@ function createWindow() {
     e.preventDefault();
     win.hide();
   });
-  win.once('ready-to-show', () => { if (!arg('snapshot') && !arg('read-now')) win.show(); });
+  win.once('ready-to-show', () => { if (!testRun() && !arg('hidden')) win.show(); });
+  // the overlay leaves this window bare, so it redraws as the window comes and goes
+  for (const ev of ['show', 'hide', 'minimize', 'restore', 'move', 'resize']) {
+    win.on(ev, () => { if (overlays) overlays.repaint(); });
+  }
+}
+
+/* where the overlay should not draw: this window, while it is on screen */
+function ownWindow() {
+  return win && win.isVisible() && !win.isMinimized() ? win.getBounds() : null;
 }
 
 function showWindow() {
@@ -115,7 +139,8 @@ function showWindow() {
 // the page calls window.hanzihomeDesktop.saved(json) whenever its store changes
 ipcMain.on('store-saved', (e, json) => {
   if (e.sender !== win.webContents) return;
-  try { store = JSON.parse(json); } catch (err) { /* keep the last good copy */ }
+  try { store = JSON.parse(json); } catch (err) { return; /* keep the last good copy */ }
+  if (overlays) overlays.repaint();               // recolour what is on screen
 });
 
 // the page in the tray still syncs on changes, but its own timer only runs while
@@ -144,10 +169,9 @@ async function readScreen() {
     const r = await helper().request('screen', picture
       ? { picture: path.resolve(String(picture)), incremental: false }
       : { incremental: false });
-    if (!HZ) HZ = loadHZ(['index', 'readings', 'readerwords']);
     // Chinese lines only (menus and English text would crowd the reader), wrapped
     // lines joined back into paragraphs
-    const text = paragraphs(repair(r.lines, HZ).lines).join('\n');
+    const text = paragraphs(repair(r.lines, data()).lines).join('\n');
     if (!text) {
       await showNote('No Chinese found on the screen.');
       return;
@@ -192,6 +216,30 @@ async function checkStore() {
   app.quit();
 }
 
+// --------------------------------------------------------------- the overlay
+
+function startOverlay() {
+  if (!overlays) {
+    overlays = new Overlays({
+      ocr: helper, HZ: data, settings: () => settings, exclude: ownWindow,
+      status: () => (store && store.status) || {}, log: debug,
+    });
+  }
+  overlays.start().catch(e => console.error('overlay:', e.message));
+}
+
+function stopOverlay() {
+  if (overlays) overlays.stop();
+}
+
+function setSetting(change) {
+  change(settings);
+  saveSettings(settings);
+  if (settings.overlay) startOverlay(); else stopOverlay();
+  if (overlays) overlays.repaint();
+  buildTrayMenu();
+}
+
 // ------------------------------------------------------------------- tray
 
 function createTray() {
@@ -201,13 +249,27 @@ function createTray() {
   }
   tray = new Tray(img);
   tray.setToolTip('HanziHome');
+  tray.on('click', showWindow);
+  buildTrayMenu();
+}
+
+function buildTrayMenu() {
+  const colour = (key, label) => ({
+    label, type: 'checkbox', checked: settings.show[key], enabled: settings.overlay,
+    click: () => setSetting(s => { s.show[key] = !s.show[key]; }),
+  });
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Open HanziHome', click: showWindow },
     { label: 'Read the screen now', click: readScreen },
     { type: 'separator' },
+    { label: 'Colour words on screen', type: 'checkbox', checked: settings.overlay,
+      click: () => setSetting(s => { s.overlay = !s.overlay; }) },
+    colour('learned', '    Learned (green)'),
+    colour('learning', '    Learning (blue)'),
+    colour('new', '    New (red)'),
+    { type: 'separator' },
     { label: 'Quit HanziHome', click: () => { quitting = true; app.quit(); } },
   ]));
-  tray.on('click', showWindow);
 }
 
 // ------------------------------------------------------------------ start
@@ -219,11 +281,13 @@ if (!app.requestSingleInstanceLock()) {
   app.setAppUserModelId('app.hanzihome.desktop');
 
   app.whenReady().then(() => {
+    settings = loadSettings();
     serveSite();
     createWindow();
     createTray();
     setInterval(syncNow, SYNC_EVERY);
     powerMonitor.on('resume', syncNow);
+    if (settings.overlay && !testRun()) startOverlay();
 
     win.webContents.once('did-finish-load', async () => {
       if (arg('check-store')) await checkStore();
@@ -250,6 +314,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', () => {});
   app.on('before-quit', () => {
     quitting = true;
+    stopOverlay();
     if (ocr) ocr.close();
   });
 }

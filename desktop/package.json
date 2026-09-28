@@ -7,7 +7,9 @@
   "scripts": {
     "start": "electron .",
     "build:ocr": "node ocr/build.js",
-    "test:ocr": "node ocr/build.js render && node test/ocr.js"
+    "test:ocr": "node ocr/build.js render && node test/ocr.js",
+    "test:protect": "electron test/protect.js",
+    "test:overlay": "electron test/overlay.js"
   },
   "devDependencies": {
     "electron": "^44.4.5"
