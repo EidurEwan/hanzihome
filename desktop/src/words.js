@@ -11,6 +11,7 @@
 'use strict';
 
 const TextStory = require('../../site/textstory.js');
+const { repair } = require('./ocrfix');
 
 const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 
@@ -52,4 +53,15 @@ function stateOf(word, status, HZ) {
   return 'new';
 }
 
-module.exports = { wordsOf, stateOf };
+/* the OCR helper's lines -> repaired, split into words, boxes mapped by toGlobal
+   (helper pixels -> global DIP); each word knows its line and its place among the
+   line's words, so hover.js can gloss it in the context of its line */
+function wordsFromLines(lines, HZ, toGlobal) {
+  const out = [];
+  for (const line of repair(lines, HZ).lines) {
+    wordsOf(line, HZ).forEach((w, index) => out.push(Object.assign(w, toGlobal(w), { line, index })));
+  }
+  return out;
+}
+
+module.exports = { wordsOf, stateOf, wordsFromLines };

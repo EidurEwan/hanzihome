@@ -9,8 +9,11 @@
  *
  * The colour overlay (overlays.js) puts a bar under every Chinese word on screen,
  * coloured by what you know; the tray menu turns it and each colour on and off
- * (settings.js). The tray's "Read the screen now" runs the whole pipeline: the OCR
- * helper reads the screen, ocrfix repairs it, and the text opens in the reader.
+ * (settings.js). Holding the look-up key (Ctrl by default) and pointing at a word
+ * opens the reader's word popup for it (hover.js); marking a character there marks
+ * it in the site's store. The tray's "Read the screen now" runs the whole
+ * pipeline: the OCR helper reads the screen, ocrfix repairs it, and the text
+ * opens in the reader.
  *
  *   npm start                                    (from desktop/)
  *   npm start -- --hidden                        start in the tray, window closed
@@ -33,6 +36,7 @@ const { repair } = require('./ocrfix');
 const { loadHZ } = require('./data');
 const { paragraphs } = require('./layout');
 const { Overlays } = require('./overlays');
+const { Hover } = require('./hover');
 const { loadSettings, saveSettings } = require('./settings');
 
 const SITE = path.join(__dirname, '..', '..', 'site');
@@ -47,7 +51,7 @@ const arg = name => {
 
 let win = null, tray = null, ocr = null, HZ = null, quitting = false;
 let store = null;               // the page's progress store, as it last saved it
-let settings = null, overlays = null;
+let settings = null, overlays = null, hover = null;
 const testRun = () => !!(arg('snapshot') || arg('check-store') || arg('read-now'));
 const debug = (...a) => { if (process.env.HANZIHOME_DEBUG) console.log(...a); };
 
@@ -232,10 +236,44 @@ function stopOverlay() {
   if (overlays) overlays.stop();
 }
 
+// ------------------------------------------------------------ hover look-up
+
+/* mark a character in the site's store, as its own pages do, and hand back every
+   status (the popup redraws with them; the store bridge recolours the overlay) */
+function markChar(c, s) {
+  return win.webContents.executeJavaScript(`(() => {
+    const c = ${JSON.stringify(c)};
+    Store.setStatus(c, ${JSON.stringify(s || null)});
+    applyStateChange(c);
+    return Store.load().status;
+  })()`, true);
+}
+
+function openChar(c) {
+  showWindow();
+  win.webContents.executeJavaScript(`go('/character/' + encodeURIComponent(${JSON.stringify(c)}))`, true)
+    .catch(() => {});
+}
+
+function startHover() {
+  if (!hover) {
+    hover = new Hover({
+      key: () => settings.hoverKey, overlays: () => overlays, ocr: helper, HZ: data,
+      status: () => (store && store.status) || {}, mark: markChar, open: openChar, log: debug,
+    });
+  }
+  try { hover.start(); } catch (e) { console.error('hover:', e.message); }
+}
+
+function stopHover() {
+  if (hover) hover.stop();
+}
+
 function setSetting(change) {
   change(settings);
   saveSettings(settings);
   if (settings.overlay) startOverlay(); else stopOverlay();
+  if (settings.hoverKey === 'off') stopHover(); else startHover();
   if (overlays) overlays.repaint();
   buildTrayMenu();
 }
@@ -267,6 +305,12 @@ function buildTrayMenu() {
     colour('learned', '    Learned (green)'),
     colour('learning', '    Learning (blue)'),
     colour('new', '    New (red)'),
+    { label: 'Look-up key (hold and point at a word)', submenu: [
+      ['ctrl', 'Ctrl'], ['alt', 'Alt (opens some programs’ menus)'], ['shift', 'Shift'], ['off', 'Off'],
+    ].map(([key, label]) => ({
+      label, type: 'radio', checked: settings.hoverKey === key,
+      click: () => setSetting(s => { s.hoverKey = key; }),
+    })) },
     { type: 'separator' },
     { label: 'Quit HanziHome', click: () => { quitting = true; app.quit(); } },
   ]));
@@ -288,6 +332,7 @@ if (!app.requestSingleInstanceLock()) {
     setInterval(syncNow, SYNC_EVERY);
     powerMonitor.on('resume', syncNow);
     if (settings.overlay && !testRun()) startOverlay();
+    if (settings.hoverKey !== 'off' && !testRun()) startHover();
 
     win.webContents.once('did-finish-load', async () => {
       if (arg('check-store')) await checkStore();
@@ -314,6 +359,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('window-all-closed', () => {});
   app.on('before-quit', () => {
     quitting = true;
+    stopHover();
     stopOverlay();
     if (ocr) ocr.close();
   });

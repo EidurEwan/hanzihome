@@ -22,8 +22,7 @@
 
 const path = require('path');
 const { BrowserWindow, screen, powerMonitor } = require('electron');
-const { repair } = require('./ocrfix');
-const { wordsOf, stateOf } = require('./words');
+const { stateOf, wordsFromLines } = require('./words');
 
 const DISPLAY_EVENTS = ['display-added', 'display-removed', 'display-metrics-changed'];
 
@@ -113,11 +112,7 @@ class Overlays {
         for (const p of this.panes.slice()) {
           const r = await this.o.ocr().request('screen', Object.assign({ incremental: true }, p.request));
           if (!r.changed || !this.running) continue;
-          const HZ = this.o.HZ();
-          p.words = [];
-          for (const line of repair(r.lines, HZ).lines) {
-            for (const w of wordsOf(line, HZ)) p.words.push(Object.assign(w, p.toGlobal(w)));
-          }
+          p.words = this.words(r.lines, p.toGlobal);
           const bars = this.paint(p);
           this.log(`read ${JSON.stringify(p.request)}: ${r.lines.length} lines, ${p.words.length} words, ` +
             `${bars.length} bars, ${r.ms.total} ms`);
@@ -127,6 +122,19 @@ class Overlays {
       this.log('overlay: ' + e.message);
     }
     if (this.running) this.timer = setTimeout(() => this.tick(), this.o.settings().interval);
+  }
+
+  words(lines, toGlobal) { return wordsFromLines(lines, this.o.HZ(), toGlobal); }
+
+  /* the word under a point (global DIP), from what was last read */
+  wordAt(pt) {
+    for (const p of this.panes) {
+      for (const w of p.words) {
+        // the bar under a word counts as the word
+        if (pt.x >= w.x && pt.x < w.x + w.w && pt.y >= w.y - 2 && pt.y < w.y + w.h + 5) return w;
+      }
+    }
+    return null;
   }
 
   /* send one window the bars for its words, as its settings and statuses say */

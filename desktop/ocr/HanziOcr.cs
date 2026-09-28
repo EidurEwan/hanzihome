@@ -319,7 +319,9 @@ namespace HanziOcr
                 }
                 times["ocr"] = sw.ElapsedMilliseconds;
 
-                Frames[key] = new Frame { W = rect.Width, H = rect.Height, Pixels = pixels, Lines = lines };
+                // only incremental reads come back to the same rectangle; a one-off read
+                // (hover's strip around the pointer) would leave a frame behind for good
+                if (incremental) Frames[key] = new Frame { W = rect.Width, H = rect.Height, Pixels = pixels, Lines = lines };
                 var bandList = new List<object>();
                 foreach (var b in bands) bandList.Add(new[] { b[0] + rect.Y, b[1] + rect.Y });
                 r["changed"] = true;

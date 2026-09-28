@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'">
+<title>HanziHome word</title>
+<!-- the site's own styles, so this is the reader's word popup exactly -->
+<link rel="stylesheet" href="../../../site/style.css">
+<style>
+  html, body { margin: 0; background: var(--panel); overflow: hidden; }
+  body { border: 1px solid var(--line-2); border-radius: 0; }
+  #word-pop { position: static; box-shadow: none; border: 0; border-radius: 0; max-width: 360px; }
+  .wp-c { cursor: pointer; text-decoration: none; }
+</style>
+</head>
+<body>
+<div id="word-pop"></div>
+<script src="popup.js"></script>
+</body>
+</html>

@@ -11,6 +11,9 @@ const DEFAULTS = {
   overlay: true,                                     // colour words on screen
   show: { learned: true, learning: true, new: true },
   interval: 500,                                     // ms between screen checks
+  hoverKey: 'ctrl',          // hold to look up: 'ctrl', 'alt', 'shift' or 'off'.
+                             // Not Alt by default: many programs open their menu
+                             // bar when Alt is pressed and let go on its own.
 };
 
 const file = () => path.join(app.getPath('userData'), 'settings.json');

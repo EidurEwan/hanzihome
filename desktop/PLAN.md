@@ -17,8 +17,9 @@ one window at `app://hanzihome/`, tray menu, the store bridge (`preload.js` +
 ocrfix → `layout.js` paragraphs → the site's reader). New logo: `site/logo.svg` (icons
 drawn from it by `desktop/tools/make-icons.js`). Step 5: the colour overlay,
 `desktop/src/overlays.js` + `overlay/` + `words.js` + `settings.js`, with tray toggles for it
-and each colour. Next: step 6, hover lookup (needs a native keyboard hook, `uiohook-napi`;
-ask before installing).
+and each colour. Step 6: hover lookup, `desktop/src/hover.js` + `popup/` (keyboard hook
+`uiohook-napi`); the look-up key is Ctrl by default (tray: Ctrl, Alt, Shift or off). Next:
+step 7, the "On screen now" page, settings and the installer.
 
 Running it: `cd desktop && npm install && node ocr/build.js && npm start`. The app has
 its own browser storage, so it starts with no progress: connect the same Google Sheet
@@ -38,12 +39,13 @@ in Settings → Sync (or Settings → import an exported JSON).
 ## What it does
 
 **Colour overlay.** A see-through, click-through window covers the screen. Each recognised
-word gets a thin colour bar under it: green = every character learned, amber = some marked,
-red = new. These are the reader's `wordState()` rules. Bars, not tints, so the text stays
+word gets a thin colour bar under it: green = every character learned, blue = some marked
+(the site's colour for learning), red = new. These are the reader's `wordState()` rules. Bars, not tints, so the text stays
 readable. Tray toggles turn each colour on or off, as the reader's filter checkboxes do.
 Marking a character recolours every place it appears straight away.
 
-**Hover lookup.** Hold a key (default: Left Alt, configurable) and point at a word. The
+**Hover lookup.** Hold a key (default: Ctrl, configurable; not Alt, which many programs
+turn into opening their menu bar when it is let go) and point at a word. The
 reader's word popup appears: word, pinyin, meaning, then one row per character with what
 it contributes and Not known / Learning / Learned buttons. Clicking a character opens its
 full page in the main window.
@@ -136,7 +138,9 @@ reusing `vocabList()` / `charList()`.
    under the words (`npm run test:overlay` draws them over a test picture); live on a
    text-heavy 1080p screen, ~100 lines: 2.1 s for the first read, 0.2–0.75 s per changed
    re-read after that. Colours follow the site: green learned, blue learning, red new.
-6. **Hover lookup.** Hold key, word popup, mark buttons, open character page.
+6. **Hover lookup.** Hold key, word popup, mark buttons, open character page. The popup is
+   the site's own word popup (it loads site/style.css), in a window that takes clicks but
+   never focus; `npm run test:hover` checks pointing, glossing and marking off screen.
 7. **"On screen now" page, settings** (hotkey, colours, which monitors, pause list for
    apps like games), **installer** (electron-builder, NSIS `.exe`), start with Windows.
 

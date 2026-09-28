@@ -9,9 +9,13 @@
     "build:ocr": "node ocr/build.js",
     "test:ocr": "node ocr/build.js render && node test/ocr.js",
     "test:protect": "electron test/protect.js",
-    "test:overlay": "electron test/overlay.js"
+    "test:overlay": "electron test/overlay.js",
+    "test:hover": "electron test/hover.js"
   },
   "devDependencies": {
     "electron": "^44.4.5"
+  },
+  "dependencies": {
+    "uiohook-napi": "^1.5.5"
   }
 }
