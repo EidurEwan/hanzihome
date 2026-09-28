@@ -26,7 +26,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 4;
+const DATA_VERSION = 5;
 
 const _loading = {};
 function loadScript(src) {
@@ -85,6 +85,13 @@ const need = {
   prodchars: () => HZ.productiveCharacters ? Promise.resolve() : loadScript('data/prodchars.js'),
   phon: d => HZ.phoneticSets[d] ? Promise.resolve() : loadScript('data/phon' + d + '.js'),
   stories: () => HZ.stories ? Promise.resolve() : loadScript('data/stories.js'),
+  // the reader for pasted text: the engine, every character's readings, and the
+  // word list with frequencies (~9 MB, so only when someone reads their own text)
+  textStory: () => Promise.all([
+    window.TextStory ? null : loadScript('textstory.js'),
+    HZ.readings ? null : loadScript('data/readings.js'),
+    HZ.rwords ? null : loadScript('data/readerwords.js'),
+  ]),
 };
 
 let _byRank = null;
@@ -1332,14 +1339,17 @@ const uniqueHan = lines => {
 };
 const trackedIn = chars => chars.filter(c => Store.status(c)).length;
 
-/* one run of story text, every marked character coloured */
-const readableRun = run => [...run].map(c => {
-  if (c === '\n') return '<br>';
-  if (!isHan(c) || !HZ.index[c]) return esc(c);
-  const st = Store.status(c);
-  return `<b class="${st === 'learned' ? 'known' : st === 'learning' ? 'learning' : ''}"` +
-         ` data-c="${esc(c)}">${esc(c)}</b>`;
-}).join('');
+/* The text pasted into the reader. Kept in this browser so #/reader/text
+   survives a reload; not synced, since it is a scratch pad rather than progress. */
+const READER_TEXT_KEY = 'hanzihome.readerText';
+let _readerText = '';
+function readerText() {
+  try { return localStorage.getItem(READER_TEXT_KEY) || _readerText; } catch (e) { return _readerText; }
+}
+function setReaderText(t) {
+  _readerText = t;
+  try { localStorage.setItem(READER_TEXT_KEY, t); } catch (e) { /* kept in memory for this visit */ }
+}
 
 async function pageReader() {
   app.innerHTML = '<p class="muted">Loading…</p>';
@@ -1367,13 +1377,18 @@ async function pageReader() {
 
     <h2 class="sec-h">Your own text</h2>
     <div class="decomp-box pad">
-      <p class="muted small">Paste anything — an article, a chat, a textbook passage.</p>
-      <textarea id="reader-text" placeholder="把中文放在这里…"></textarea>
-      <p class="row" style="margin-top:10px"><button class="btn" id="do-read">Read it</button>
-        <span class="small muted" id="read-stats"></span></p>
-      <div class="reading-pane" id="pane" style="margin-top:12px"></div>
+      <p class="muted small">Paste anything — an article, a chat, a textbook passage. It opens in
+        the same reader as the stories, split into words with the meaning each one has there.
+        The meanings are worked out from the dictionary, so now and then one will be off.</p>
+      <textarea id="reader-text" placeholder="把中文放在这里…">${esc(readerText())}</textarea>
+      <p class="row" style="margin-top:10px"><button class="btn" id="do-read">Read it</button></p>
     </div>`);
-  document.getElementById('do-read').addEventListener('click', paintReader);
+  document.getElementById('do-read').addEventListener('click', () => {
+    const t = document.getElementById('reader-text').value;
+    if (!t.trim()) return;
+    setReaderText(t);
+    go('/reader/text');
+  });
   paintRail();
 }
 
@@ -1391,6 +1406,7 @@ let _story = null;
 let _tab = 'v';
 
 async function pageStory(id) {
+  if (id === 'text') return pageText();
   app.innerHTML = '<p class="muted">Loading…</p>';
   await optional(need.stories());
   const st = (HZ.stories || []).find(x => x.id === id);
@@ -1398,10 +1414,28 @@ async function pageStory(id) {
     app.innerHTML = '<div class="card"><p class="empty">No such story.</p></div>';
     return;
   }
-  _story = st;
+  showStory(st, 'Back to stories');
+}
 
+/* Pasted text, glossed by textstory.js into the same shape as a story, so
+   everything below draws it the way it draws the graded stories. */
+async function pageText() {
+  const text = readerText();
+  if (!text.trim()) { go('/reader'); return; }
+  app.innerHTML = '<p class="muted">Loading the dictionary…</p>';
+  await need.textStory();
+  const st = TextStory.textToStory(text, HZ);
+  // the first line stands in for a title
+  const first = text.trim().split(/\r?\n/)[0];
+  st.zh = [...first].length > 18 ? [...first].slice(0, 18).join('') + '…' : first;
+  st.en = `Your text · ${num(st.n)} characters`;
+  showStory(st, 'Back to the reader to edit or paste new text');
+}
+
+function showStory(st, back) {
+  _story = st;
   app.innerHTML = `
-    <p class="crumb"><a href="#/reader">← Back to stories</a></p>
+    <p class="crumb"><a href="#/reader">← ${esc(back)}</a></p>
     <div class="readlayout">
       <aside class="readside">
         <section class="card" id="read-stats-card"></section>
@@ -1565,7 +1599,9 @@ function showWordPop(el) {
   clearTimeout(_wpHide);
   const pop = wordPop();
   _wpAnchor = el;
-  const [w, p, d, parts] = _story.g[el.dataset.k];
+  // pasted text may also name other likely senses (extra.alt) when context can't decide
+  const [w, p, d, parts, extra] = _story.g[el.dataset.k];
+  const alt = (extra && extra.alt) || [];
   const han = [...w].filter(isHan);
   const multi = han.length > 1;
   const row = (c, i) => {
@@ -1587,6 +1623,7 @@ function showWordPop(el) {
   pop.innerHTML = `
     <div class="wp-head"><span class="han">${esc(w)}</span>
       <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
+    ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
     ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
   pop.hidden = false;
 
@@ -1605,72 +1642,8 @@ function hideWordPop() {
 }
 window.addEventListener('scroll', () => { if (_wpEl) _wpEl.hidden = true; }, true);
 
-function bindReadingPane() {
-  const pane = document.getElementById('pane');
-  if (!pane) return;
-  pane.querySelectorAll('b[data-c]').forEach(b =>
-    b.addEventListener('click', () => showPop(b, b.dataset.c)));
-}
-
-function paintReader() {
-  const el = document.getElementById('reader-text');
-  const pane = document.getElementById('pane');
-  if (!el || !pane) return;
-  const text = el.value;
-  let known = 0, total = 0;
-  for (const c of text) {
-    if (isHan(c) && HZ.index[c]) {
-      total++;
-      if (Store.status(c) === 'learned') known++;
-    }
-  }
-  pane.innerHTML = readableRun(text);
-  document.getElementById('read-stats').textContent =
-    total ? `${known} of ${total} characters known (${(known / total * 100).toFixed(0)}%)` : '';
-  bindReadingPane();
-}
-
-/* marking from the popup refreshes whichever reading surface is on screen */
-function refreshReadingSurface() {
-  if (document.getElementById('reader-text')) paintReader();
-  else if (document.getElementById('pane')) rerenderKeepingScroll();
-}
-
-async function showPop(anchor, ch) {
-  closePop();
-  const d = await charData(ch);
-  if (!d) return;
-  const first = d.rd[0];
-  const div = document.createElement('div');
-  div.className = 'pop';
-  div.innerHTML = `
-    <div class="row" style="align-items:baseline"><span class="g">${esc(ch)}</span>
-      <b>${esc(first ? first[1] : '')}</b>
-      ${d.r ? `<span class="muted small">#${d.r}</span>` : ''}</div>
-    <p class="small" style="margin:6px 0">${esc(first ? first[2].slice(0, 4).join(' • ') : '')}</p>
-    ${d.cm.length ? `<p class="small muted" style="margin:0 0 8px">
-      ${d.cm.map(c => esc(c) + (glossOf(c) ? ' ' + esc(glossOf(c)) : '')).join(' + ')}</p>` : ''}
-    <div class="row"><button class="btn quiet mark" data-s="learning">Learning</button>
-      <button class="btn quiet mark" data-s="learned">Learned</button>
-      <a class="small" href="#/character/${encodeURIComponent(ch)}">Open →</a></div>`;
-  const r = anchor.getBoundingClientRect();
-  div.style.left = Math.max(8, Math.min(window.innerWidth - 320, r.left + window.scrollX)) + 'px';
-  div.style.top = (r.bottom + window.scrollY + 6) + 'px';
-  document.getElementById('pop-host').appendChild(div);
-  div.querySelectorAll('.mark').forEach(b => b.addEventListener('click', () => {
-    Store.setStatus(ch, Store.status(ch) === b.dataset.s ? null : b.dataset.s);
-    closePop();
-    refreshReadingSurface();
-    paintRail();
-    markNav(currentPath());
-  }));
-}
-const closePop = () => { document.getElementById('pop-host').innerHTML = ''; };
 document.addEventListener('click', () => {
   document.querySelectorAll('.dd-pop').forEach(p => { p.hidden = true; });
-});
-document.addEventListener('click', e => {
-  if (!e.target.closest('.pop') && !e.target.closest('b[data-c]')) closePop();
 });
 
 /* ============================ list pages ============================ */
@@ -2053,7 +2026,6 @@ function render(keepScroll) {
   const path = currentPath();
   markNav(path);
   setNav(false);
-  closePop();
   if (!keepScroll) window.scrollTo(0, 0);
   const seg = path.split('/').filter(Boolean);
   const n = i => parseInt(seg[i], 10) || 1;

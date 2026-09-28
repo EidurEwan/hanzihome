@@ -361,17 +361,6 @@ a.word:hover { border-color: var(--accent); text-decoration: none; }
   background: var(--panel); color: var(--ink); resize: vertical;
 }
 .reading-pane { font-family: var(--han); font-size: 30px; line-height: 2; }
-.reading-pane b { font-weight: 400; cursor: pointer; border-radius: 4px; padding: 0 1px; }
-.reading-pane b:hover { background: var(--accent-soft); }
-.reading-pane b.known { color: var(--green); }
-.reading-pane b.learning { color: var(--blue); }
-.pop {
-  position: absolute; z-index: 80; min-width: 220px; max-width: 300px;
-  background: var(--panel); border: 1px solid var(--line-2); border-radius: 10px;
-  box-shadow: 0 8px 26px rgba(17, 24, 39, .15); padding: 13px 15px;
-  font-family: var(--ui); font-size: 13px;
-}
-.pop .g { font-family: var(--han); font-size: 32px; line-height: 1.1; }
 
 /* ---------------- tables ---------------- */
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -576,12 +565,6 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .hero-glyph,
 .hero-glyph.learned,
 .hero-glyph.learning { color: var(--ink); }
-
-/* the reader has no border to lean on, so status shows as a soft fill */
-.reading-pane b.known,
-.reading-pane b.learning { color: var(--ink); }
-.reading-pane b.known { background: var(--green-soft); box-shadow: inset 0 -2px 0 var(--green); }
-.reading-pane b.learning { background: var(--blue-soft); box-shadow: inset 0 -2px 0 var(--blue); }
 
 /* ---------- character cards in lists ----------
    They sit raised by default and press flat on hover: shadow drops away and
@@ -789,6 +772,9 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .wp-head .han { font-size: 21px; font-weight: 700; }
 .wp-head b { color: var(--accent); font-size: 13.5px; }
 .wp-head .wp-d { color: var(--ink-2); font-size: 13px; }
+/* pasted text: another sense the context could not rule out */
+.wp-alt { margin: -4px 0 8px; font-size: 12.5px; color: var(--ink-3); }
+.wp-alt b { color: var(--ink-2); font-weight: 700; }
 .wp-char { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
 .wp-c { font-size: 19px; width: 24px; text-align: center; color: var(--ink); }
 .seg3 { display: flex; gap: 4px; }

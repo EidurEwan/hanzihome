@@ -82,7 +82,8 @@ long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 
 simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
 a word shows the reading and meaning it has *in that sentence* — 还 is "to give back" in one
 line and "also" in the next — plus what each of its characters contributes, with buttons to
-mark them. You can also paste your own text.
+mark them. Text you paste in opens in the same reader, glossed automatically (see "Reading
+any text" below); when context can't settle a meaning, the popup names the other one too.
 
 **Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
 productive components, productive characters, the full frequency list, plus your own

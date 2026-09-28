@@ -5,9 +5,11 @@ character on screen by what you know, and shows the reader's word popup when you
 one. It uses HanziHome's dictionary and your HanziHome progress. Everything runs offline
 apart from progress sync.
 
-Status (2026-09-28): **step 1 done.** `site/textstory.js`, `site/data/readings.js`
-(from `build/export_reader.py`) and `test/accuracy.js`. The scores are in README → "Reading
-any text". Next: step 2.
+Status (2026-09-28): **steps 1–2 done.** Step 1: `site/textstory.js`, `site/data/readings.js`
+and `site/data/readerwords.js` (from `build/export_reader.py`, which needs
+`data/raw/cedict.txt` and `jieba_dict.txt`), and `test/accuracy.js`; the scores are in README →
+"Reading any text". Step 2: pasted text on the site opens at `#/reader/text` in the story
+reader. Next: step 3, the OCR helper (needs the .NET 8 SDK; ask before installing).
 
 ## Decisions made
 
