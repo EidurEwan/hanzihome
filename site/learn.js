@@ -66,6 +66,7 @@
   function review(item, right, now, rnd = Math.random) {
     const wrongBefore = (item.hist || []).slice(-5).filter(r => !r).length;
     item.hist = (item.hist || []).concat(right).slice(-10);
+    item.last = now;
     if (right) {
       item.stage = Math.min(MASTER, Math.max(1, item.stage) + 1);
       const days = STAGES[item.stage][1];
@@ -97,6 +98,150 @@
 
   /* what a character's review stage means for the rest of the site */
   const statusFor = item => item.stage >= LEARNED_FROM ? 'learned' : item.stage >= 1 ? 'learning' : null;
+
+  /* A character you already know (marked Learned on the rest of the site) joins the
+     reviews at Journeyman I without a lesson; its first review comes `wait` ms from now.
+     It has no `learnt` time, so it doesn't count against the day's lessons. */
+  function known(kind, info, now, wait) {
+    const item = newItem(kind, info, now);
+    item.stage = LEARNED_FROM;
+    item.joined = now;
+    item.due = now + wait;
+    return item;
+  }
+
+  /* back from vacation: every review waits as long again as you were away */
+  function resume(items, since, now) {
+    const away = Math.max(0, now - since);
+    for (const it of Object.values(items)) if (it.stage >= 1 && it.stage < MASTER) it.due += away;
+  }
+
+  // ------------------------------------------------------------ settings
+
+  const FAMILIAR = 3;          // HanziHero: familiar = reached the third stage (Apprentice I)
+
+  /* HanziHero's application settings, as far as they apply here (every item here is
+     one you added yourself, so there is no course, dictionary queue or skipping) */
+  const DEFAULTS = {
+    batch: 5,                  // lessons per batch
+    lessonLimit: 10,           // lessons a day (0: no limit)
+    wordLimit: 7,              // how many of those may be words
+    reviewLimit: 0,            // a soft limit on reviews a day (0: none)
+    charUnlock: 'now',         // a character waits for its components: 'now' | 'learned' | 'familiar'
+    wordWait: true,            // a word waits for its characters...
+    wordUnlock: 'familiar',    // ...until they are 'familiar' or 'learned' (lesson done)
+    autoChars: true,           // adding a word adds its characters too, prioritized
+    questionOrder: 'pinyin',   // a pair: 'pinyin' first | 'meaning' first; or 'random'
+    lessonOrder: 'words',      // 'words' first | 'chars' first | 'mix'
+    prioRespect: true,         // prioritized items keep to the limits and the lesson order
+    reviewOrder: 'random',     // 'random' | 'type' | 'oldest' | 'newest' | 'easiest' | 'lowest'
+    showPct: true, showCount: true,
+    validate: false,           // shake at answers that aren't pinyin, instead of marking them wrong
+    sentences: false,          // word reviews show the word in a sentence
+    voice: 'female', speed: 'normal', muteSfx: false, muteVoice: false,
+    vacation: 0,               // when vacation mode began (0: not on vacation)
+  };
+  const settings = s => Object.assign({}, DEFAULTS, s || {});
+
+  const dayStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); return +d; };
+  const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
+
+  function shuffle(a, rnd) {
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+
+  /* due reviews in the order the settings ask for */
+  function reviewOrder(keys, items, how, now, rnd = Math.random) {
+    const ks = keys.slice(), it = k => items[k];
+    const since = x => x.learnt || x.joined || x.added || 0;
+    switch (how) {
+      case 'type': return ks.sort((a, b) => (it(a).kind === 'word') - (it(b).kind === 'word') || it(a).due - it(b).due);
+      case 'oldest': return ks.sort((a, b) => since(it(a)) - since(it(b)));
+      case 'newest': return ks.sort((a, b) => since(it(b)) - since(it(a)));
+      case 'lowest': return ks.sort((a, b) => it(a).stage - it(b).stage || it(a).due - it(b).due);
+      case 'easiest': {
+        // most likely still remembered: the least time gone by for the wait it was given
+        const worn = x => {
+          const from = x.last || since(x), wait = Math.max(1, x.due - from);
+          return (now - from) / wait;
+        };
+        return ks.sort((a, b) => worn(it(a)) - worn(it(b)));
+      }
+      default: return shuffle(ks, rnd);
+    }
+  }
+
+  /* What there is to study now.
+     env.level(c): how far along a character is, as a stage (null: nothing to wait for);
+     env.comps(k): a character's components (null: not known yet);
+     env.compOk(c, stage): whether a component counts as known at that stage.
+     -> {lessons: ready now in order, waiting: every queued key in order, locked: {key:
+        [what it waits for]}, lessonsToday, wordsToday, due, reviews (due, in order),
+        reviewsToday, reviewsLeft (under the soft limit), vacation} */
+  function plan(items, cfg, now, env, rnd = Math.random) {
+    cfg = settings(cfg);
+    const start = dayStart(now), keys = Object.keys(items), it = k => items[k];
+    const today = keys.filter(k => it(k).learnt >= start);
+    const out = {
+      lessons: [], waiting: [], locked: {},
+      lessonsToday: today.length, wordsToday: today.filter(k => it(k).kind === 'word').length,
+      due: [], reviews: [], reviewsToday: keys.filter(k => it(k).last >= start).length, reviewsLeft: 0,
+      vacation: !!cfg.vacation,
+    };
+
+    const need = { learned: 1, familiar: FAMILIAR };
+    const queued = keys.filter(k => it(k).stage === 0);
+    for (const k of queued) {
+      let wait = [];
+      if (it(k).kind === 'word' && cfg.wordWait) {
+        wait = [...new Set([...k].filter(isHan))].filter(c => {
+          const l = env.level(c);
+          return l != null && l < need[cfg.wordUnlock];
+        });
+      } else if (it(k).kind !== 'word' && need[cfg.charUnlock]) {
+        wait = (env.comps(k) || []).filter(c => !env.compOk(c, need[cfg.charUnlock]));
+      }
+      if (wait.length) out.locked[k] = wait;
+    }
+
+    const first = (a, b) => (it(b).prio ? 1 : 0) - (it(a).prio ? 1 : 0) || it(a).added - it(b).added;
+    const order = ks => {
+      const w = ks.filter(k => it(k).kind === 'word').sort(first);
+      const c = ks.filter(k => it(k).kind !== 'word').sort(first);
+      if (cfg.lessonOrder === 'words') return w.concat(c);
+      if (cfg.lessonOrder === 'chars') return c.concat(w);
+      const mixed = [];                            // 'mix': each kind in proportion
+      let i = 0, j = 0;
+      while (i < w.length || j < c.length) {
+        if (j < c.length && (i >= w.length || j / c.length <= i / w.length)) mixed.push(c[j++]);
+        else mixed.push(w[i++]);
+      }
+      return mixed;
+    };
+    // with the priority queue absolute, prioritized items go before everything
+    out.waiting = cfg.prioRespect ? order(queued)
+      : order(queued.filter(k => it(k).prio)).concat(order(queued.filter(k => !it(k).prio)));
+
+    let left = cfg.lessonLimit ? Math.max(0, cfg.lessonLimit - out.lessonsToday) : Infinity;
+    let words = cfg.lessonLimit ? Math.max(0, Math.min(cfg.wordLimit, cfg.lessonLimit) - out.wordsToday) : Infinity;
+    for (const k of out.waiting) {
+      if (out.locked[k]) continue;
+      const word = it(k).kind === 'word';
+      if (it(k).prio && !cfg.prioRespect) { out.lessons.push(k); continue; }
+      if (left <= 0 || (word && words <= 0)) continue;
+      out.lessons.push(k);
+      left--;
+      if (word) words--;
+    }
+
+    out.due = keys.filter(k => isDue(it(k), now));
+    out.reviews = reviewOrder(out.due, items, cfg.reviewOrder, now, rnd);
+    out.reviewsLeft = cfg.reviewLimit ? Math.min(out.due.length, Math.max(0, cfg.reviewLimit - out.reviewsToday))
+      : out.due.length;
+    if (out.vacation) { out.lessons = []; out.reviews = []; out.reviewsLeft = 0; }
+    return out;
+  }
 
   // ------------------------------------------------------------ answers
 
@@ -179,8 +324,53 @@
       || (a.length >= 4 && distance(a, m) <= (a.length >= 8 ? 2 : 1)));
   }
 
+  /* Pinyin answer validation: is this pinyin at all? Every syllable has to be a real one
+     (an erhua r allowed), and a tone number has to follow a syllable (not "yi22" or
+     "jeu4"). A typo that lands on another real syllable (yi as yu) can't be caught. */
+  const SYLLABLES = new Set(('a ai an ang ao ba bai ban bang bao bei ben beng bi bia bian biang biao bie bin bing bo bu ca '
+    + ' cai can cang cao ce cen ceng cha chai chan chang chao che chen cheng chi chong chou chu chua '
+    + ' chuai chuan chuang chui chun chuo ci cong cou cu cuan cui cun cuo da dai dan dang dao de dei '
+    + ' den deng di dia dian diao die ding diu dong dou du duan dui dun duo e ei en eng er fa fan '
+    + ' fang fei fen feng fiao fo fou fu ga gai gan gang gao ge gei gen geng gong gou gu gua guai '
+    + ' guan guang gui gun guo ha hai han hang hao he hei hen heng hm hng hong hou hu hua huai huan '
+    + ' huang hui hun huo ji jia jian jiang jiao jie jin jing jiong jiu ju juan jue jun ka kai kan '
+    + ' kang kao ke kei ken keng kong kou ku kua kuai kuan kuang kui kun kuo la lai lan lang lao le '
+    + ' lei leng li lia lian liang liao lie lin ling liu lo long lou lu luan lun luo lv lve m ma mai '
+    + ' man mang mao me mei men meng mi mian miao mie min ming miu mo mou mu n na nai nan nang nao '
+    + ' ne nei nen neng ng ni nian niang niao nie nin ning niu nong nou nu nuan nun nuo nv nve o ou '
+    + ' pa pai pan pang pao pei pen peng pi pian piao pie pin ping po pou pu qi qia qian qiang qiao '
+    + ' qie qin qing qiong qiu qu quan que qun r ran rang rao re ren reng ri rong rou ru rua ruan '
+    + ' rui run ruo sa sai san sang sao se sen seng sha shai shan shang shao she shei shen sheng shi '
+    + ' shou shu shua shuai shuan shuang shui shun shuo si song sou su suan sui sun suo ta tai tan '
+    + ' tang tao te tei teng ti tian tiao tie ting tong tou tu tuan tui tun tuo wa wai wan wang wei '
+    + ' wen weng wo wu xi xia xian xiang xiao xie xin xing xiong xiu xu xuan xue xun ya yan yang yao '
+    + ' ye yi yin ying yo yong you yu yuan yue yun za zai zan zang zao ze zei zen zeng zha zhai zhan '
+    + ' zhang zhao zhe zhei zhen zheng zhi zhong zhou zhu zhua zhuai zhuan zhuang zhui zhun zhuo zi '
+    + ' zong zou zu zuan zui zun zuo').split(/\s+/));
+
+  function syllables(x) {                          // can x be cut into syllables?
+    const ok = [true];
+    for (let i = 1; i <= x.length; i++) {
+      ok[i] = false;
+      for (let j = Math.max(0, i - 7); j < i && !ok[i]; j++) {
+        const s = x.slice(j, i);
+        if (ok[j] && (SYLLABLES.has(s) || (s.length > 1 && s.endsWith('r') && SYLLABLES.has(s.slice(0, -1))))) ok[i] = true;
+      }
+    }
+    return ok[x.length];
+  }
+
+  function validPinyin(answer) {
+    const s = String(answer || '').toLowerCase().replace(/u:/g, 'v').normalize('NFD')
+      .replace(/u\u0308/g, 'v').replace(/[\u0300-\u036f]/g, '').trim();
+    if (!/[a-z]/.test(s) || /[^a-z1-5\s'’-]/.test(s)) return false;
+    if (/\d\d/.test(s) || /(^|[\s'’-])\d/.test(s)) return false;
+    return s.split(/[\s'’-]+|(?<=\d)/).filter(Boolean).every(chunk => syllables(chunk.replace(/\d$/, '')));
+  }
+
   return {
-    STAGES, MASTER, LEARNED_FROM, DAY, stageName, group, newItem, finishLesson, review,
-    isDue, waiting, forecast, statusFor, checkPinyin, checkMeaning, meanings, parsePinyin,
+    STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson,
+    review, known, resume, isDue, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin,
   };
 });

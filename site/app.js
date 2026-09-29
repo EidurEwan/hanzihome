@@ -114,7 +114,7 @@ const Store = {
     try { d = JSON.parse(localStorage.getItem(this.key) || '{}'); } catch (e) { d = {}; }
     d.status = d.status || {}; d.comps = d.comps || {}; d.lists = d.lists || [];
     d.notes = d.notes || {}; d.history = d.history || []; d.items = d.items || {};
-    d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT;
+    d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT; d.study = d.study || {};
     // The old Study flashcards (srs) gave way to lessons and reviews: a character
     // that was marked Learning joins the reviews at Novice I, due when it was due.
     for (const c of Object.keys(d.srs || {})) {
@@ -126,6 +126,17 @@ const Store = {
       }
     }
     d.srs = {};
+    // Characters marked Learned are in the reviews too, from Journeyman I. The ones
+    // that aren't yet (from before, or from a device that didn't do this) get their
+    // first reviews spread over the next month, most common first, 20 a day at most.
+    const known = Object.keys(d.status).filter(c => d.status[c] === 'learned' && !d.items[c] && HZ.index[c]);
+    if (known.length) {
+      const now = Date.now(), rank = c => HZ.index[c][0] || 1e9;
+      const span = Math.max(30, Math.ceil(known.length / 20)) * Learn.DAY;
+      known.sort((a, b) => rank(a) - rank(b)).forEach((c, i) => {
+        d.items[c] = Learn.known('char', charInfo(c), now, Math.round(span * i / known.length));
+      });
+    }
     this.data = d;
     return d;
   },
@@ -141,6 +152,16 @@ const Store = {
   setStatus(ch, s) {
     const d = this.load();
     if (s) d.status[ch] = s; else delete d.status[ch];
+    // marked learned: in the reviews at Journeyman I, first review a month on
+    if (s === 'learned' && HZ.index[ch]) {
+      const it = d.items[ch], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
+      if (!it) d.items[ch] = Learn.known('char', charInfo(ch), now, wait);
+      else if (it.stage < Learn.LEARNED_FROM) {
+        it.stage = Learn.LEARNED_FROM;
+        it.due = now + wait;
+        if (!it.learnt) it.joined = now;
+      }
+    }
     this.touch();
   },
   chars(s) { const d = this.load(); return Object.keys(d.status).filter(c => d.status[c] === s); },
@@ -180,12 +201,33 @@ const Store = {
   //      schedules them, site/study.js draws the pages) ----
   item(k) { return this.load().items[k] || null; },
   learnAdd(k, kind, info) {
-    const d = this.load();
-    if (!d.items[k]) d.items[k] = Learn.newItem(kind, info, Date.now());
+    const d = this.load(), now = Date.now();
+    if (!d.items[k]) {
+      d.items[k] = Learn.newItem(kind, info, now);
+      if (kind === 'char') rememberParts(k);
+      // a word brings along the characters in it you don't know yet, prioritized
+      // (Automatically prioritize characters, in HanziHero's settings)
+      if (kind === 'word' && this.cfg().autoChars) {
+        const syl = String(info.pin || '').split(/\s+/), written = [...((info.ex && info.ex.w) || k)];
+        [...k].filter(isHan).forEach((c, i) => {
+          if (!HZ.index[c] || d.items[c] || d.status[c] === 'learned') return;
+          const it = d.items[c] = Learn.newItem('char', charInfo(c, syl[i]), now);
+          it.prio = true;
+          if (info.ex) it.ex = { text: info.ex.text, w: written.filter(isHan)[i] || c, t: info.ex.t };
+          rememberParts(c);
+        });
+      }
+    }
     this.touch();
     return d.items[k];
   },
   learnRemove(k) { delete this.load().items[k]; this.save(); },
+  prioritize(k) {
+    const it = this.item(k);
+    if (!it) return;
+    if (it.prio) delete it.prio; else it.prio = true;
+    this.save();
+  },
   /* after a lesson or review: a character's stage decides its status on the rest of the site */
   learnSaved(k) {
     const d = this.load(), it = d.items[k];
@@ -195,13 +237,18 @@ const Store = {
     }
     this.touch();
   },
-  lessons() {
-    const d = this.load();
-    return Object.keys(d.items).filter(k => d.items[k].stage === 0).sort((a, b) => d.items[a].added - d.items[b].added);
-  },
-  due() {
+  /* the settings (HanziHero's), and what there is to study now under them */
+  cfg() { return Learn.settings(this.load().study); },
+  setCfg(patch) { Object.assign(this.load().study, patch); this.save(); },
+  plan() { const d = this.load(); return Learn.plan(d.items, d.study, Date.now(), learnEnv()); },
+  lessons() { return this.plan().lessons; },
+  due() { const p = this.plan(); return p.reviews.slice(0, p.reviewsLeft); },
+  /* vacation mode: nothing to study; coming back moves every review on by the time away */
+  vacation(on) {
     const d = this.load(), now = Date.now();
-    return Object.keys(d.items).filter(k => Learn.isDue(d.items[k], now));
+    if (on) d.study.vacation = now;
+    else if (d.study.vacation) { Learn.resume(d.items, d.study.vacation, now); d.study.vacation = 0; }
+    this.save();
   },
 };
 
@@ -509,8 +556,9 @@ function merge3(base, local, remote) {
 
   const out = {};
   new Set([...Object.keys(b), ...Object.keys(local), ...Object.keys(remote)]).forEach(k => {
-    // (items: each character or word learnt changes on its own; srs is the old flashcards)
-    if (k === 'status' || k === 'comps' || k === 'notes' || k === 'srs' || k === 'items') out[k] = map(b[k], local[k], remote[k]);
+    // (items: each character or word learnt changes on its own; study: each setting;
+    //  srs is the old flashcards)
+    if (['status', 'comps', 'notes', 'srs', 'items', 'study'].includes(k)) out[k] = map(b[k], local[k], remote[k]);
     else if (k === 'lists') out[k] = lists();
     else if (k === 'history') out[k] = history();
     else if (k === 'days') out[k] = days();
@@ -1869,6 +1917,7 @@ function pageSettings() {
   const d = Store.load();
   app.innerHTML = '<h1 class="page-title">Settings</h1>' + withRail(`
     ${window.hanzihomeDesktop ? '<section class="card" id="desktop-card"><h2>Desktop app</h2></section>' : ''}
+    <section class="card" id="study-card"></section>
     <section class="card">
       <h2>Learning goal</h2>
       <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
@@ -1925,6 +1974,7 @@ function pageSettings() {
     }
   });
   wireSyncCard();
+  paintStudySettings();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
 }

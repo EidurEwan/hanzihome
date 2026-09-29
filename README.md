@@ -86,10 +86,27 @@ order; anything missed comes back again before the session ends and has its inte
 (halved again for each miss in its last five reviews). A neutral tone may be typed with any
 tone or none, meanings allow a typo and ignore "to" and brackets, and **My answer was right**
 keeps your wording as a synonym. A character counts as learning from its first lesson and as
-learned from Journeyman (a month). The Study page shows what is due, the week ahead and how many
-items are at each stage. The rules are in [`site/learn.js`](site/learn.js), checked by
-`node test/learn.js`; characters that were being learned with the old flashcards start at
-Novice I.
+learned from Journeyman (a month). Every character marked Learned is in the reviews too,
+from Journeyman I: ones marked before this have their first reviews spread over a month, most
+common first (20 a day at most), and one marked later comes up a month after. The Study page
+shows what you can start now (and why not, when nothing), the week ahead, the lesson queue
+(☆ to prioritize, 🔒 for what waits to unlock) and how many items are at each stage.
+
+HanziHero's settings are in **Settings → Lessons and reviews**, saved as you change them and
+synced: lesson batch size; daily lesson limit (Casual 5 to Jump start 40, or none) and how many
+of those may be words; a soft daily review limit; when a character unlocks (right away, or once
+its components are learned or familiar) and when a word does (once its characters are learned
+or familiar; adding a word can put its unknown characters at the front of the queue);
+question order, lesson order, the priority queue and review order (random, by type, oldest,
+newest, easiest, lowest stage); the progress counters; pinyin answer validation (an answer
+that isn't pinyin shakes instead of counting as wrong); targeted sentence reviews (a word shown
+in the sentence you found it in, or one from the stories); the voice, its speed and muting it
+and the sound effects (reading aloud uses the device's Chinese voice); and vacation mode, which
+pauses everything and moves reviews on by the time away. HanziHero's daily dictionary limit and
+word skipping have no counterpart here: every item is one you added, and nothing is skipped.
+
+The rules are in [`site/learn.js`](site/learn.js), checked by `node test/learn.js`; characters
+that were being learned with the old flashcards start at Novice I.
 
 **Reader** — 24 original graded stories, four per HSK level, each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and

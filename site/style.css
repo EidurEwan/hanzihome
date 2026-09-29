@@ -1145,6 +1145,54 @@ a.lx-q { padding: 4px 9px; }
 .wp-learn button { border: 1px solid var(--line-2); background: var(--panel); border-radius: 6px; padding: 3px 9px;
   font: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink); cursor: pointer; }
 .wp-learn a { font-size: 12.5px; font-weight: 700; }
+
+/* the hub under the settings: a tile greys out when there's nothing to start, and
+   says why; the queue marks prioritized (★) and locked (🔒) lessons */
+.lx-tile.idle { filter: grayscale(.85) brightness(1.05); opacity: .8; }
+.lx-tile em { display: block; font-style: normal; font-size: 13px; font-weight: 700; opacity: .9; margin-top: 4px; }
+.lx-today { margin: -4px 0 14px; }
+.lx-q .lx-star { opacity: .85; padding: 0 3px 0 0; font-size: 14px; }
+.lx-q.prio { box-shadow: 0 0 0 2px #f59e0b; }
+.lx-q.locked { opacity: .55; }
+.lx-vac { border-left: 4px solid #0e7490; }
+.lx-say { padding: 2px 9px; font-size: 12.5px; margin-left: 8px; }
+
+/* targeted sentence reviews: the word, marked, in its sentence */
+.lx-sentence .lx-glyph { font-size: clamp(26px, 4.4vw, 42px); line-height: 1.6; padding: 6px 8px 10px; }
+.lx-sentence mark { background: rgba(255, 255, 255, .2); color: #fff; border-bottom: 3px solid #fff;
+  border-radius: 4px; padding: 0 3px; }
+
+/* pinyin answer validation: the answer box shakes */
+.rv-hint { text-align: center; color: var(--accent); font-weight: 600; margin: 2px 0 0; }
+.rv-input.shake { animation: rv-shake .4s; border-color: var(--accent); }
+@keyframes rv-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+@media (prefers-reduced-motion: reduce) { .rv-input.shake { animation: none; } }
+
+/* the Settings page's lessons and reviews card */
+.st-field { margin: 16px 0; max-width: 460px; }
+.st-label { font-weight: 700; margin-bottom: 6px; }
+.st-note { font-size: 13px; color: var(--ink-2); margin: 6px 0 0; }
+.st-select { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--panel); color: var(--ink); margin: 4px 0; }
+.st-range { display: flex; align-items: center; gap: 12px; }
+.st-range input { flex: 1; accent-color: var(--accent); }
+.st-range output { min-width: 2ch; font-weight: 700; text-align: right; }
+.st-toggle { display: flex; align-items: center; gap: 10px; margin: 8px 0; cursor: pointer; }
+.st-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.st-toggle i { flex: none; position: relative; width: 40px; height: 22px; border-radius: 11px;
+  background: var(--line-2); transition: background .15s; }
+.st-toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, .25); transition: transform .15s; }
+.st-toggle input:checked + i { background: var(--accent); }
+.st-toggle input:checked + i::after { transform: translateX(18px); }
+.st-toggle input:focus-visible + i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.st-h { margin: 22px 0 4px; }
+.st-saved { font-size: 12px; font-weight: 700; color: #15803d; margin-left: 8px; vertical-align: middle; }
+.st-try { padding: 2px 9px; font-size: 12.5px; margin-left: 6px; }
 @media (max-width: 600px) {
   .lx-hub, .lx-stages { grid-template-columns: 1fr 1fr; }
   .lx-dl { grid-template-columns: 1fr; }
