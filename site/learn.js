@@ -131,7 +131,7 @@
     wordWait: true,            // a word waits for its characters...
     wordUnlock: 'familiar',    // ...until they are 'familiar' or 'learned' (lesson done)
     autoChars: true,           // adding a word adds its characters too, prioritized
-    questionOrder: 'pinyin',   // a pair: 'pinyin' first | 'meaning' first; or 'random'
+    questionOrder: 'pinyin',   // 'pinyin': pronunciation then meaning, in pairs; 'random': shuffled
     lessonOrder: 'words',      // 'words' first | 'chars' first | 'mix'
     prioRespect: true,         // prioritized items keep to the limits and the lesson order
     reviewOrder: 'random',     // 'random' | 'type' | 'oldest' | 'newest' | 'easiest' | 'lowest'

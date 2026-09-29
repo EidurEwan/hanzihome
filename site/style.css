@@ -1098,6 +1098,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
   border: 1px solid var(--line-2); border-radius: 10px; background: var(--panel); color: var(--ink);
 }
 .lx-wrong { color: var(--accent); font-weight: 600; }
+.lx-input.ok { background: #15803d; color: #fff; border-color: #15803d; }
 .lx-batch { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
 .lx-batch span { font-family: var(--han); font-size: 15px; padding: 6px 9px; border-radius: 8px;
   color: #fff; background: var(--lx-char); opacity: .55; }

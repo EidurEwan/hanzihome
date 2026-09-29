@@ -79,11 +79,12 @@ lessons** (on a character's page, or in the reader's word popup, here or on the 
 character or word in a queue, with the sentence you found it in. A lesson, five at a time, goes
 through its parts (a character's components and sound component, a word's characters), a
 mnemonic you write yourself on a scaffold of those parts, its meanings and pronunciation, and
-examples, then asks you to type its pinyin (tone numbers: `ren4shi`) and its meaning. After
+examples, then asks you to type its pinyin (tone numbers: `ren4shi`), then its meaning. After
 that it comes back for review on HanziHero's ten stages: a day, 4 days, a week, 2 weeks, a
-month, 2, 4 and 8 months and a year, then Master. A review asks both questions (in the order
-set in Settings); anything missed comes back again before the session ends and has its
-interval halved (halved again for each miss in its last five reviews). A neutral tone may be
+month, 2, 4 and 8 months and a year, then Master. A review asks both questions, the
+meaning only once the pronunciation is right (in pairs or shuffled); anything missed comes
+back again before the session ends and has its interval halved (halved again for each miss
+in its last five reviews). A neutral tone may be
 typed with any tone or none, meanings allow a typo and ignore "to" and brackets, and **My
 answer was right** keeps your wording as a synonym. Under the answer is HanziHero's toolbar,
 with its keys: item info once answered (I: parts, pronunciation, meaning and your synonyms (+

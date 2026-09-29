@@ -445,11 +445,15 @@ async function pageLessons() {
         <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
       ${!(it.ex && it.ex.text) && !f.words.length ? '<p class="muted">No examples yet.</p>' : ''}`;
   } else {
+    // the pronunciation first; the meaning only once that is right
+    const pinDone = s.pinOk === k;
     body = `<h3>Confirmation</h3>
-      <p class="muted">Type its <b>pronunciation</b> (tone numbers, like ${esc(numbered(it.pin) || 'pin1yin1')}) and its <b>meaning</b>.</p>
+      <p class="muted">${pinDone ? 'Right. Now its <b>meaning</b>.'
+        : 'First its <b>pronunciation</b>, with tone numbers (like pin1yin1). Its meaning comes after.'}</p>
       <form id="lx-quiz" autocomplete="off">
-        <input id="lx-pin" class="lx-input" placeholder="Pronunciation…" spellcheck="false" autocapitalize="off" lang="en">
-        <input id="lx-mean" class="lx-input" placeholder="Meaning…" spellcheck="false" autocapitalize="off" lang="en">
+        <input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
+          autocapitalize="off" lang="en"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>
+        ${pinDone ? '<input id="lx-mean" class="lx-input" placeholder="Meaning…" spellcheck="false" autocapitalize="off" lang="en">' : ''}
         <div id="lx-verdict"></div>
         <button class="btn" type="submit">Check</button>
       </form>`;
@@ -491,23 +495,35 @@ async function pageLessons() {
 
   const form = document.getElementById('lx-quiz');
   if (form) {
-    document.getElementById('lx-pin').focus();
+    (document.getElementById('lx-mean') || document.getElementById('lx-pin')).focus();
     form.addEventListener('submit', e => {
       e.preventDefault();
-      const pa = document.getElementById('lx-pin').value, ma = document.getElementById('lx-mean').value;
-      const pinOk = Learn.checkPinyin(pa, it.pin), meanOk = Learn.checkMeaning(ma, it);
-      if (pinOk && meanOk) {
+      const verdict = document.getElementById('lx-verdict');
+      if (s.pinOk !== k) {
+        const pa = document.getElementById('lx-pin').value;
+        if (!pa.trim()) return;
+        if (Learn.checkPinyin(pa, it.pin)) {
+          Sound.ding();
+          Sound.say(k);
+          s.pinOk = k;
+          s.pinAnswer = pa;
+          return pageLessons();
+        }
+        verdict.innerHTML = `<p class="lx-wrong">It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}). Try again.</p>`;
+        return;
+      }
+      const ma = document.getElementById('lx-mean').value;
+      if (!ma.trim()) return;
+      if (Learn.checkMeaning(ma, it)) {
         Sound.ding();
         Learn.finishLesson(Store.item(k) || it, Date.now());
         Store.learnSaved(k);
         s.done.push(k);
-        s.i++; s.tab = 0;
+        s.i++; s.tab = 0; s.pinOk = null;
         markNav(currentPath());
         return pageLessons();
       }
-      document.getElementById('lx-verdict').innerHTML = `<p class="lx-wrong">
-        ${pinOk ? '' : `Pronunciation: <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}). `}
-        ${meanOk ? '' : `Meaning: <b>${esc(primary(it))}</b>. `}Try again.</p>`;
+      verdict.innerHTML = `<p class="lx-wrong">It means <b>${esc(primary(it))}</b>. Try again.</p>`;
     });
   }
   paintRail();
@@ -563,10 +579,10 @@ async function pageReviews() {
       paintRail();
       return;
     }
-    // Item question order: a pair, pronunciation or meaning first; or every question shuffled
+    // Item question order: pronunciation then meaning, in pairs or shuffled (a meaning
+    // still waits for its pronunciation: see deferMeaning)
     let queue = [];
-    const pair = cfg.questionOrder === 'meaning' ? ['meaning', 'pinyin'] : ['pinyin', 'meaning'];
-    keys.forEach(k => pair.forEach(q => queue.push({ k, q })));
+    keys.forEach(k => queue.push({ k, q: 'pinyin' }, { k, q: 'meaning' }));
     if (cfg.questionOrder === 'random') queue = shuffle(queue);
     reviewState = {
       queue, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, sent: {}, facts: {},
@@ -578,6 +594,7 @@ async function pageReviews() {
   }
   const s = reviewState;
   if (s.i >= s.queue.length) return reviewsDone();
+  for (let n = 0; n < s.queue.length && deferMeaning(s); n++);
   const { k, q } = s.queue[s.i], it = Store.item(k);
   if (!it) { s.i++; return pageReviews(); }
   if (!it.alts.length || !it.pin) await itemFacts(k, it);
@@ -662,6 +679,19 @@ async function pageReviews() {
   app.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => reviewTool(b.dataset.tool)));
   wireReviewPanel(k);
   paintRail();
+}
+
+/* An item's meaning is only asked once its pronunciation is right: a meaning question
+   whose pronunciation is still to come (missed, undone, or shuffled ahead of it) moves
+   to just after it. True when it moved one. */
+function deferMeaning(s) {
+  const { k, q } = s.queue[s.i];
+  if (q !== 'meaning' || (s.answered[k] || {}).pinyin) return false;
+  const j = s.queue.findIndex((x, n) => n > s.i && x.k === k && x.q === 'pinyin');
+  if (j < 0) return false;
+  const [m] = s.queue.splice(s.i, 1);              // the pronunciation is now at j - 1
+  s.queue.splice(j, 0, m);
+  return true;
 }
 
 /* a missed question taken back: the miss, and its repeat at the end of the queue */
@@ -909,7 +939,8 @@ function paintStudySettings() {
       ${sel('wordUnlock', [['familiar', 'Unlock when characters are familiar'], ['learned', 'Unlock when characters are learned']])}`,
       'Familiar: its characters have reached Apprentice I, two right reviews on different days. Learned: they have had their lessons, so you learn the word alongside them. Automatically prioritizing puts the characters of a word you add, the ones you don\'t know yet, at the front of your lessons.')}
     ${field('Item question order', sel('questionOrder', [['pinyin', 'Pair pronunciation, then meaning'],
-      ['meaning', 'Pair meaning, then pronunciation'], ['random', 'Select questions randomly']]))}
+      ['random', 'Select questions randomly']]),
+      'Either way, an item’s meaning is only asked once its pronunciation is right.')}
     ${field('Lesson order', sel('lessonOrder', [['words', 'Words first, then characters'],
       ['chars', 'Characters first, then words'], ['mix', 'Mix characters and words']]))}
     ${field('Priority queue', tog('prioRespect', 'Respect daily limits and lesson order'),
