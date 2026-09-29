@@ -2229,3 +2229,12 @@ document.addEventListener('visibilitychange', () => {
 });
 setInterval(() => { if (document.visibilityState === 'visible' && Sync.on()) Sync.run(); }, 5 * 60 * 1000);
 setInterval(() => Sync.paint(), 60 * 1000);
+
+/* another tab (or the desktop app's second window, from a review's "open in a new
+   tab") saved the store: start again from its copy, so neither overwrites the other */
+window.addEventListener('storage', e => {
+  if (e.key !== Store.key) return;
+  Store.data = null;
+  tellDesktop();
+  markNav(currentPath());
+});

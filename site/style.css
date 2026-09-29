@@ -1162,6 +1162,39 @@ a.lx-q { padding: 4px 9px; }
 .lx-sentence mark { background: rgba(255, 255, 255, .2); color: #fff; border-bottom: 3px solid #fff;
   border-radius: 4px; padding: 0 3px; }
 
+/* the review toolbar (item info, sound, quiz settings, reveal, open, wrap up, undo)
+   and the panel under it, with a notch pointing at its button */
+.rv-tools { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 12px; }
+.rv-tool { display: grid; place-items: center; height: 44px; border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--panel); color: var(--ink-2); cursor: pointer; }
+.rv-tool svg { width: 20px; height: 20px; }
+.rv-tool:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.rv-tool.on { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.rv-tool:disabled { opacity: .35; cursor: default; }
+.rv-panel { position: relative; margin-top: 12px; background: var(--panel); border: 1px solid var(--line-2);
+  border-radius: 12px; padding: 16px 20px; }
+.rv-panel::before { content: ""; position: absolute; top: -8px; width: 14px; height: 14px; background: var(--panel);
+  border-left: 1px solid var(--line-2); border-top: 1px solid var(--line-2); transform: rotate(45deg);
+  left: calc((100% + 2px - 48px) / 7 * (var(--at) + .5) + var(--at) * 8px - 8px); }
+.rv-qs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px 28px; }
+.rv-qs h4 { margin: 0 0 4px; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.rv-stage { margin: 0 0 6px; color: var(--ink-2); font-weight: 700; }
+.rv-stage .han { font-size: 20px; color: var(--ink); }
+.rv-sec { border-bottom: 1px solid var(--line); }
+.rv-sec summary { cursor: pointer; padding: 10px 0; font-size: 18px; font-weight: 700; }
+.rv-sec > div { padding: 0 0 12px; }
+.rv-text { white-space: pre-wrap; }
+.rv-sec textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line-2); border-radius: 8px;
+  background: var(--panel); color: var(--ink); }
+.rv-syns { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-right: 6px; }
+.rv-syns span { display: inline-flex; align-items: center; border: 1px solid var(--line-2); border-radius: 6px; padding: 1px 2px 1px 8px; }
+.rv-syns button { border: 0; background: none; cursor: pointer; color: var(--ink-2); padding: 0 5px; }
+.rv-synform { display: inline-flex; gap: 6px; margin-top: 4px; }
+.rv-synform input { font: inherit; padding: 4px 9px; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--panel); color: var(--ink); width: 180px; }
+.rv-synform .btn { padding: 3px 10px; }
+.rv-wrapping { color: #0e7490; }
+
 /* pinyin answer validation: the answer box shakes */
 .rv-hint { text-align: center; color: var(--accent); font-weight: 600; margin: 2px 0 0; }
 .rv-input.shake { animation: rv-shake .4s; border-color: var(--accent); }
@@ -1200,6 +1233,10 @@ a.lx-q { padding: 4px 9px; }
   .lx-tabs button { padding: 6px 7px; font-size: 13px; }
   .lx-body { gap: 0; }
   .lx-arrow { padding: 0 2px; font-size: 26px; }
+  .rv-tools { gap: 4px; }
+  .rv-tool { height: 40px; }
+  .rv-panel { padding: 12px 14px; }
+  .rv-panel::before { left: calc((100% + 2px - 24px) / 7 * (var(--at) + .5) + var(--at) * 4px - 8px); }
 }
 
 /* study pages: on one column the rail goes under the lessons and reviews, not above */

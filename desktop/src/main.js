@@ -83,6 +83,25 @@ function serveSite() {
   });
 }
 
+function keepInApp(contents) {
+  contents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:/.test(url)) shell.openExternal(url);
+    else if (contents === win.webContents && url.startsWith(ORIGIN + '/')) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: { width: 1100, height: 820, icon: icon(256), backgroundColor: '#ffffff' },
+      };
+    }
+    return { action: 'deny' };
+  });
+  contents.on('will-navigate', (e, url) => {
+    if (!url.startsWith(ORIGIN + '/')) {
+      e.preventDefault();
+      if (/^https?:/.test(url)) shell.openExternal(url);
+    }
+  });
+}
+
 function icon(size) {
   return nativeImage.createFromPath(path.join(ASSETS, `icon-${size}.png`));
 }
@@ -104,15 +123,12 @@ function createWindow() {
   win.loadURL(ORIGIN + '/index.html#/dashboard');
 
   // links out of the app open in the browser; the app itself never navigates away
-  win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:/.test(url)) shell.openExternal(url);
-    return { action: 'deny' };
-  });
-  win.webContents.on('will-navigate', (e, url) => {
-    if (!url.startsWith(ORIGIN + '/')) {
-      e.preventDefault();
-      if (/^https?:/.test(url)) shell.openExternal(url);
-    }
+  keepInApp(win.webContents);
+  // the site's own pages opened in a new tab (a review's "open in a new tab") get a
+  // window of their own, sharing the store (the pages follow each other's changes)
+  win.webContents.on('did-create-window', child => {
+    child.removeMenu();
+    keepInApp(child.webContents);
   });
   // F12 or Ctrl+Shift+I: developer tools; F5 / Ctrl+R: reload
   win.webContents.on('before-input-event', (e, input) => {

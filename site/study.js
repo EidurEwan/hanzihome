@@ -225,7 +225,7 @@ function foundIn(k, it) {
   return `<blockquote class="lx-ex han">${parts.map(esc).join(`<mark>${esc(w)}</mark>`)}</blockquote>`;
 }
 
-function chip(c, gloss, href) {
+function lxChip(c, gloss, href) {
   return `<a class="lx-chip" href="${href || '#/character/' + encodeURIComponent(c)}">
     <span class="han">${esc(c)}</span><span>${esc(gloss || '')}</span></a>`;
 }
@@ -418,9 +418,9 @@ async function pageLessons() {
   if (s.tab === 0) {
     body = it.kind === 'word'
       ? `<h3>Characters</h3><p class="muted">This word is made of these characters. Can you see how they
-          make its meaning and its sound?</p><div class="lx-chips">${f.parts.map(([c, g]) => chip(c, g)).join('')}</div>`
+          make its meaning and its sound?</p><div class="lx-chips">${f.parts.map(([c, g]) => lxChip(c, g)).join('')}</div>`
       : `<h3>Composition</h3><p class="muted">This character is made of these parts. Can you see where they are?</p>
-         <div class="lx-chips">${f.comps.map(([c, g]) => chip(c, g)).join('') || '<span class="muted small">It is a part of its own.</span>'}</div>
+         <div class="lx-chips">${f.comps.map(([c, g]) => lxChip(c, g)).join('') || '<span class="muted small">It is a part of its own.</span>'}</div>
          ${f.sound ? `<h3>Sound</h3><p class="muted"><span class="han">${esc(f.sound[0])}</span> ${esc(f.sound[1])}
            gives the sound: <b>${esc(it.pin)}</b>.</p>` : ''}`;
   } else if (s.tab === 1) {
@@ -442,7 +442,7 @@ async function pageLessons() {
     body = `<h3>Examples</h3>
       ${it.ex && it.ex.text ? `<p class="muted">Where you found it:</p>${foundIn(k, it)}` : ''}
       ${f.words.length ? `<p class="muted">Words it is in:</p>
-        <div class="lx-chips">${f.words.map(([w, p]) => chip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
+        <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
       ${!(it.ex && it.ex.text) && !f.words.length ? '<p class="muted">No examples yet.</p>' : ''}`;
   } else {
     body = `<h3>Confirmation</h3>
@@ -482,7 +482,7 @@ async function pageLessons() {
       clearTimeout(timer);
       document.getElementById('lx-mn-state').textContent = 'Saving…';
       timer = setTimeout(() => {
-        it.mnemonic = mn.value.trim();
+        (Store.item(k) || it).mnemonic = mn.value.trim();     // (the store may have been reloaded meanwhile)
         Store.save();
         document.getElementById('lx-mn-state').textContent = 'Saved.';
       }, 500);
@@ -498,7 +498,7 @@ async function pageLessons() {
       const pinOk = Learn.checkPinyin(pa, it.pin), meanOk = Learn.checkMeaning(ma, it);
       if (pinOk && meanOk) {
         Sound.ding();
-        Learn.finishLesson(it, Date.now());
+        Learn.finishLesson(Store.item(k) || it, Date.now());
         Store.learnSaved(k);
         s.done.push(k);
         s.i++; s.tab = 0;
@@ -533,6 +533,21 @@ function shuffle(a) {
   return a;
 }
 
+/* the review toolbar, as HanziHero has it: item info, play the pronunciation, quiz
+   settings, reveal the answer, open the item in a new tab, wrap up, undo */
+const TOOL_ICONS = {
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/>',
+  sound: '<path d="M4 9.5h3.5L12 6v12L7.5 14.5H4zM16.5 9.5a4 4 0 0 1 0 5M19 7a7.5 7.5 0 0 1 0 10"/>',
+  settings: '<path d="M4 6.5h9M17 6.5h3M4 12h3M11 12h9M4 17.5h11M19 17.5h1"/><circle cx="15" cy="6.5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17.5" r="2"/>',
+  reveal: '<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/>',
+  open: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  wrap: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+};
+const TOOLS = ['info', 'sound', 'settings', 'reveal', 'open', 'wrap', 'undo'];
+const toolIcon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOOL_ICONS[name]}</svg>`;
+
 async function pageReviews() {
   if (!reviewState) {
     const cfg = Store.cfg(), p = Store.plan();
@@ -553,7 +568,13 @@ async function pageReviews() {
     const pair = cfg.questionOrder === 'meaning' ? ['meaning', 'pinyin'] : ['pinyin', 'meaning'];
     keys.forEach(k => pair.forEach(q => queue.push({ k, q })));
     if (cfg.questionOrder === 'random') queue = shuffle(queue);
-    reviewState = { queue, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, info: false, sent: {} };
+    reviewState = {
+      queue, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, sent: {}, facts: {},
+      panel: null,        // 'info' | 'settings'
+      secs: {},           // info sections opened or closed by hand, for this question
+      edit: null,         // 'mnemonic' | 'note', being edited in the info panel
+      wrap: false, parked: [],
+    };
   }
   const s = reviewState;
   if (s.i >= s.queue.length) return reviewsDone();
@@ -563,12 +584,19 @@ async function pageReviews() {
   const cfg = Store.cfg();
   // targeted sentences: a word is shown in a sentence
   if (cfg.sentences && it.kind === 'word' && !(k in s.sent)) s.sent[k] = await sentenceFor(k, it);
+  if (s.panel === 'info' && !s.facts[k]) s.facts[k] = await itemFacts(k, it);
   const total = new Set(s.queue.map(x => x.k)).size, finished = s.right.length + s.wrong.length;
   const pct = finished ? Math.round(100 * s.right.length / finished) : 100;
   const shown = s.shown;
+  const can = { info: !!shown, sound: !!shown && Sound.voices().length > 0, settings: true, reveal: !shown,
+    open: !!shown, wrap: true, undo: !!shown };
+  const labels = { info: 'Item info (I)', sound: 'Play the pronunciation (P)', settings: 'Quiz settings (Q)',
+    reveal: 'Reveal the answer (Ctrl+Enter)', open: 'Open in a new tab (O)',
+    wrap: s.wrap ? 'Stop wrapping up (W)' : 'Wrap up: finish the items started, then stop (W)', undo: 'Undo this answer (Ctrl+Z)' };
 
   app.innerHTML = `
-    <div class="rv-top">${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
+    <div class="rv-top">${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
+      ${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
     ${cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
     <div class="rv-prompt">${kindName(it)} <b>${q === 'pinyin' ? 'Pronunciation' : 'Meaning'}?</b></div>
@@ -582,19 +610,21 @@ async function pageReviews() {
       ${shown.ok ? '' : `<p class="lx-wrong">${q === 'pinyin'
         ? `It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}).` : `It means <b>${esc(primary(it))}</b>.`}</p>`}
       <p class="row">
-        <button class="btn quiet" id="rv-info">${s.info ? 'Hide' : 'Show'} ${kindName(it).toLowerCase()}</button>
         ${!shown.ok && q === 'meaning' && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
         <span class="small muted">Enter for the next one</span></p>
-      ${s.info ? `<div class="card rv-info">
-        <p><b class="han">${esc(k)}</b> · <b>${esc(it.pin)}</b> (${esc(numbered(it.pin))}) · ${esc(Learn.meanings(it).join(', '))}</p>
-        <p class="small muted">${esc(Learn.stageName(it.stage))}${it.mnemonic ? '' : ' · no mnemonic yet'}</p>
-        ${it.mnemonic ? `<p>${esc(it.mnemonic)}</p>` : ''}
-        ${foundIn(k, it)}
-        <p class="small"><a href="#/character/${encodeURIComponent([...k][0])}">Open ${esc([...k][0])} →</a></p></div>` : ''}
-    </div>` : ''}`;
+    </div>` : ''}
+    <div class="rv-tools">${TOOLS.map(t => `<button type="button" class="rv-tool${s.panel === t || (t === 'wrap' && s.wrap) ? ' on' : ''}"
+      data-tool="${t}" title="${esc(labels[t])}" aria-label="${esc(labels[t])}"${can[t] ? '' : ' disabled'}>${toolIcon(t)}</button>`).join('')}</div>
+    ${s.panel === 'settings' ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('settings')}">${quizSettings(cfg)}</div>` : ''}
+    ${s.panel === 'info' && shown ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('info')}">${infoPanel(k, Store.item(k), q)}</div>` : ''}`;
 
   const input = document.getElementById('rv-in');
-  input.focus();
+  const edit = document.getElementById('rv-edit');
+  if (edit) edit.focus();
+  else if (s.focus === 'syn' && document.getElementById('rv-synin')) document.getElementById('rv-synin').focus();
+  else input.focus();
+  s.focus = null;
+
   document.getElementById('rv-form').addEventListener('submit', e => {
     e.preventDefault();
     if (s.shown) return nextQuestion();
@@ -620,24 +650,184 @@ async function pageReviews() {
     }
     pageReviews();
   });
-  if (shown) {
-    document.getElementById('rv-info').addEventListener('click', () => { s.info = !s.info; pageReviews(); });
-    const syn = document.getElementById('rv-syn');
-    if (syn) syn.addEventListener('click', () => {
-      // accept it: remember the wording, and take back the miss and the repeat
-      Sound.rip();
-      it.syn = (it.syn || []).concat(shown.answer.trim());
-      s.misses[k]--;
-      for (let j = s.queue.length - 1; j > s.i; j--) {
-        if (s.queue[j].k === k && s.queue[j].q === q) { s.queue.splice(j, 1); break; }
-      }
-      s.shown = { ok: true, answer: shown.answer };
-      Store.save();
-      pageReviews();
-    });
-  }
+  const syn = document.getElementById('rv-syn');
+  if (syn) syn.addEventListener('click', () => {
+    // accept it: remember the wording, and take back the miss and the repeat
+    Sound.rip();
+    addSynonym(k, shown.answer);
+    takeBack(k, q);
+    s.shown = { ok: true, answer: shown.answer };
+    pageReviews();
+  });
+  app.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => reviewTool(b.dataset.tool)));
+  wireReviewPanel(k);
   paintRail();
 }
+
+/* a missed question taken back: the miss, and its repeat at the end of the queue */
+function takeBack(k, q) {
+  const s = reviewState;
+  s.misses[k] = Math.max(0, (s.misses[k] || 0) - 1);
+  for (let j = s.queue.length - 1; j > s.i; j--) {
+    if (s.queue[j].k === k && s.queue[j].q === q) { s.queue.splice(j, 1); break; }
+  }
+}
+
+function addSynonym(k, text) {
+  const it = Store.item(k), t = String(text || '').trim();
+  if (!it || !t || (it.syn || []).includes(t)) return;
+  it.syn = (it.syn || []).concat(t);
+  Store.save();
+}
+
+function reviewTool(name) {
+  const s = reviewState;
+  if (!s || s.i >= s.queue.length) return;
+  const { k, q } = s.queue[s.i], it = Store.item(k);
+  if (name === 'settings') { s.panel = s.panel === 'settings' ? null : 'settings'; return pageReviews(); }
+  if (name === 'wrap') return toggleWrap();
+  if (name === 'reveal') {
+    // don't know it: count it as missed, show the answer and the item
+    if (s.shown) return;
+    s.shown = { ok: false, answer: '', revealed: true };
+    s.misses[k] = (s.misses[k] || 0) + 1;
+    s.queue.push({ k, q });
+    s.panel = 'info';
+    return pageReviews();
+  }
+  if (!s.shown) return;                            // the rest wait for an answer
+  if (name === 'info') { s.panel = s.panel === 'info' ? null : 'info'; s.edit = null; return pageReviews(); }
+  if (name === 'syn') { s.panel = 'info'; s.secs.Meaning = true; s.focus = 'syn'; return pageReviews(); }
+  if (name === 'sound') return Sound.say(k, true);
+  if (name === 'open') {
+    const path = it.kind === 'word' ? '#/search/' : '#/character/';
+    return window.open(location.href.split('#')[0] + path + encodeURIComponent(k), '_blank');
+  }
+  if (name === 'undo') {
+    // don't count this answer: the question goes back into the queue, later on
+    Sound.rip();
+    if (!s.shown.ok) takeBack(k, q);
+    const [cur] = s.queue.splice(s.i, 1);
+    const at = s.i + 1 + Math.floor(Math.random() * Math.max(0, s.queue.length - s.i));
+    s.queue.splice(Math.min(at, s.queue.length), 0, cur);
+    s.shown = null; s.panel = null; s.edit = null; s.secs = {};
+    return pageReviews();
+  }
+}
+
+/* Wrap up: only the items already started (a question answered or missed) stay in
+   the session; the rest wait for the next one. Again to carry on as before. */
+function toggleWrap() {
+  const s = reviewState;
+  if (!s.wrap) {
+    const started = new Set([s.queue[s.i].k, ...Object.keys(s.answered), ...Object.keys(s.misses)]);
+    const rest = s.queue.slice(s.i + 1);
+    s.queue = s.queue.slice(0, s.i + 1).concat(rest.filter(x => started.has(x.k)));
+    s.parked = rest.filter(x => !started.has(x.k));
+    s.wrap = true;
+  } else {
+    s.queue = s.queue.concat(s.parked);
+    s.parked = [];
+    s.wrap = false;
+  }
+  pageReviews();
+}
+
+/* the quiz settings panel: the progress indicators and the sounds */
+function quizSettings(cfg) {
+  const tog = (k, label) => `<label class="st-toggle"><input type="checkbox" data-qk="${k}"${cfg[k] ? ' checked' : ''}>
+    <i></i><span>${label}</span></label>`;
+  return `<div class="rv-qs">
+    <div><h4>Progress indicators</h4>${tog('showPct', 'Show the percentage correct')}${tog('showCount', 'Show the number correct and left over')}</div>
+    <div><h4>Audio</h4>${tog('muteSfx', 'Mute sound effects')}${tog('muteVoice', 'Mute the voiced pronunciation')}</div>
+  </div>`;
+}
+
+/* the item info panel, once the question is answered. A section that would give away
+   the item's other question, still to come, starts closed. */
+function infoPanel(k, it, q) {
+  const s = reviewState, f = s.facts[k] || { parts: [], comps: [], words: [] };
+  const pending = other => s.queue.slice(s.i + 1).some(x => x.k === k && x.q === other);
+  const sec = (title, body, open) => `<details class="rv-sec" data-sec="${title}"${(title in s.secs ? s.secs[title] : open) ? ' open' : ''}>
+    <summary>${title}</summary><div>${body}</div></details>`;
+  const parts = it.kind === 'word' ? f.parts : f.comps;
+  const note = it.kind === 'word' ? it.note || '' : Store.load().notes[k] || '';
+  const alts = others(Object.assign({}, it, { syn: [] }));
+  const editing = (what, value, placeholder) => `<textarea id="rv-edit" rows="3" placeholder="${placeholder}">${esc(value)}</textarea>
+    <p class="row"><button class="btn" data-save="${what}">Save</button><button class="btn quiet" data-cancel>Cancel</button></p>`;
+  return `
+    <p class="rv-stage"><b class="han">${esc(k)}</b> · ${esc(Learn.stageName(it.stage))}</p>
+    ${parts.length ? sec(it.kind === 'word' ? 'Characters' : 'Composition',
+      `<div class="lx-chips">${parts.map(([c, g]) => lxChip(c, g)).join('')}</div>`, true) : ''}
+    ${sec('Pronunciation', `<dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}</dd></dl>`,
+      !(q === 'meaning' && pending('pinyin')))}
+    ${sec('Meaning', `<dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
+      <dt>Alternatives</dt><dd>${alts.length ? esc(alts.join(', ')) : '<span class="muted">none</span>'}</dd>
+      <dt>Your synonyms</dt><dd><span class="rv-syns">${(it.syn || []).map(x => `<span>${esc(x)}
+        <button type="button" data-unsyn="${esc(x)}" aria-label="Remove ${esc(x)}">×</button></span>`).join('')}</span>
+        <form id="rv-synform" class="rv-synform" autocomplete="off"><input id="rv-synin" placeholder="Add a synonym (+)"
+          spellcheck="false" autocapitalize="off" lang="en"><button class="btn quiet">Add</button></form></dd></dl>`,
+      !(q === 'pinyin' && pending('meaning')))}
+    ${sec('Mnemonic', s.edit === 'mnemonic' ? editing('mnemonic', it.mnemonic || '', 'A little story that joins the parts, the meaning and the sound…')
+      : `${it.mnemonic ? `<p class="rv-text">${esc(it.mnemonic)}</p>` : '<p class="muted">No mnemonic yet.</p>'}
+        <p><button class="btn quiet" data-edit="mnemonic">Edit</button></p>`, true)}
+    ${sec('Notes', s.edit === 'note' ? editing('note', note, 'Anything to remember about it…')
+      : `${note ? `<p class="rv-text">${esc(note)}</p>` : ''}
+        <p><button class="btn quiet" data-edit="note">${note ? 'Edit' : 'Add a note'}</button></p>`, true)}
+    ${sec('Usage', `${it.ex && it.ex.text ? `<p class="muted small">Where you found it:</p>${foundIn(k, it)}` : ''}
+      ${f.words.length ? `<p class="muted small">Words it is in:</p><div class="lx-chips">${f.words.map(([w, p]) =>
+        lxChip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
+      ${!(it.ex && it.ex.text) && !f.words.length ? '<p class="muted">No examples yet.</p>' : ''}`, false)}`;
+}
+
+function wireReviewPanel(k) {
+  const s = reviewState;
+  app.querySelectorAll('[data-qk]').forEach(el => el.addEventListener('change', () => {
+    Store.setCfg({ [el.dataset.qk]: el.checked });
+    pageReviews();
+  }));
+  app.querySelectorAll('details[data-sec]').forEach(d => d.addEventListener('toggle', () => { s.secs[d.dataset.sec] = d.open; }));
+  app.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => { s.edit = b.dataset.edit; pageReviews(); }));
+  app.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', () => { s.edit = null; pageReviews(); }));
+  app.querySelectorAll('[data-save]').forEach(b => b.addEventListener('click', () => {
+    const it = Store.item(k), v = document.getElementById('rv-edit').value.trim();
+    if (b.dataset.save === 'mnemonic') { it.mnemonic = v; Store.save(); }
+    else if (it.kind === 'word') { if (v) it.note = v; else delete it.note; Store.save(); }
+    else Store.note(k, v);                         // a character's note, as on its page
+    s.edit = null;
+    pageReviews();
+  }));
+  const form = document.getElementById('rv-synform');
+  if (form) form.addEventListener('submit', e => {
+    e.preventDefault();
+    addSynonym(k, document.getElementById('rv-synin').value);
+    s.focus = 'syn';
+    pageReviews();
+  });
+  app.querySelectorAll('[data-unsyn]').forEach(b => b.addEventListener('click', () => {
+    const it = Store.item(k);
+    it.syn = (it.syn || []).filter(x => x !== b.dataset.unsyn);
+    Store.save();
+    pageReviews();
+  }));
+}
+
+/* HanziHero's review keys: I, P, Q, O, W and + once the question is answered;
+   Ctrl+Enter reveals the answer, Ctrl+Z undoes it */
+document.addEventListener('keydown', e => {
+  const s = reviewState;
+  if (!s || currentPath() !== '/reviews' || s.i >= s.queue.length) return;
+  const t = e.target;
+  if (t && (t.tagName === 'TEXTAREA' || t.isContentEditable || (t.tagName === 'INPUT' && t.id !== 'rv-in'))) return;
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (ctrl && e.key === 'Enter') { e.preventDefault(); reviewTool('reveal'); return; }
+  if (ctrl && e.key.toLowerCase() === 'z') { if (s.shown) { e.preventDefault(); reviewTool('undo'); } return; }
+  if (!s.shown || ctrl || e.altKey) return;
+  const name = { i: 'info', p: 'sound', q: 'settings', o: 'open', w: 'wrap', '+': 'syn' }[e.key.toLowerCase()];
+  if (!name) return;
+  e.preventDefault();
+  reviewTool(name);
+});
 
 function nextQuestion() {
   const s = reviewState, { k, q } = s.queue[s.i];
@@ -654,7 +844,9 @@ function nextQuestion() {
   }
   s.i++;
   s.shown = null;
-  s.info = false;
+  s.panel = s.panel === 'settings' ? 'settings' : null;
+  s.edit = null;
+  s.secs = {};
   pageReviews();
 }
 

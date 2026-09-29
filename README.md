@@ -81,11 +81,18 @@ through its parts (a character's components and sound component, a word's charac
 mnemonic you write yourself on a scaffold of those parts, its meanings and pronunciation, and
 examples, then asks you to type its pinyin (tone numbers: `ren4shi`) and its meaning. After
 that it comes back for review on HanziHero's ten stages: a day, 4 days, a week, 2 weeks, a
-month, 2, 4 and 8 months and a year, then Master. A review asks both questions in random
-order; anything missed comes back again before the session ends and has its interval halved
-(halved again for each miss in its last five reviews). A neutral tone may be typed with any
-tone or none, meanings allow a typo and ignore "to" and brackets, and **My answer was right**
-keeps your wording as a synonym. A character counts as learning from its first lesson and as
+month, 2, 4 and 8 months and a year, then Master. A review asks both questions (in the order
+set in Settings); anything missed comes back again before the session ends and has its
+interval halved (halved again for each miss in its last five reviews). A neutral tone may be
+typed with any tone or none, meanings allow a typo and ignore "to" and brackets, and **My
+answer was right** keeps your wording as a synonym. Under the answer is HanziHero's toolbar,
+with its keys: item info once answered (I: parts, pronunciation, meaning and your synonyms (+
+to add one), your mnemonic and notes to edit, usage; a section that would give away the item's
+other question starts closed), play the pronunciation (P), quiz settings (Q), reveal the answer
+(Ctrl+Enter, counted as missed), open the item in a new tab (O; a second window in the desktop
+app), wrap up (W: finish the items already started, leave the rest for next time) and undo
+(Ctrl+Z: the answer doesn't count and the question comes again later). Tabs and windows open on
+the site follow each other's changes. A character counts as learning from its first lesson and as
 learned from Journeyman (a month). Every character marked Learned is in the reviews too,
 from Journeyman I: ones marked before this have their first reviews spread over a month, most
 common first (20 a day at most), and one marked later comes up a month after. The Study page
