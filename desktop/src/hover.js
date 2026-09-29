@@ -21,6 +21,7 @@
 const path = require('path');
 const { BrowserWindow, screen, ipcMain } = require('electron');
 const TextStory = require('../../site/textstory.js');
+const Learn = require('../../site/learn.js');
 const { wordsFromLines } = require('./words');
 
 const KEYS = { ctrl: ['Ctrl', 'CtrlRight'], alt: ['Alt', 'AltRight'], shift: ['Shift', 'ShiftRight'] };
@@ -37,7 +38,8 @@ const inside = (r, p, pad = 0) => p.x >= r.x - pad && p.x < r.x + (r.w || r.widt
 class Hover {
   /* opts: key() -> 'ctrl'|'alt'|'shift'|'off'; overlays() -> Overlays or null; ocr(); HZ();
      status() -> {char: state}; mark(char, state) -> Promise of the new statuses;
-     open(char); paused() -> Promise: is the program in front on the pause list;
+     items() -> the lesson items {key: item}; learn(word, pinyin, gloss, sentence) ->
+     Promise of the item, once added to the lessons; open(char); paused() -> Promise: is the program in front on the pause list;
      log(msg); pointer() -> the pointer in global DIP (tests; default: the
      real one); offscreen (tests) */
   constructor(opts) {
@@ -58,6 +60,12 @@ class Hover {
       try { this.show(this.word, await this.o.mark(this.simp(c), s)); }
       catch (err) { this.log('mark: ' + err.message); }
     });
+    ipcMain.on('popup-learn', async e => {
+      if (!this.from(e) || !this.word) return;
+      const word = this.word, [w, p, d] = this.gloss(word);
+      try { this.show(word, null, await this.o.learn(w, p, d, sentenceOf(word))); }
+      catch (err) { this.log('learn: ' + err.message); }
+    });
     ipcMain.on('popup-open', (e, c) => {
       if (!this.from(e)) return;
       this.hide();
@@ -68,6 +76,8 @@ class Hover {
   log(m) { if (this.o.log) this.o.log(m); }
   from(e) { return this.win && !this.win.isDestroyed() && e.sender === this.win.webContents; }
   simp(c) { return (this.o.HZ().t2s || {})[c] || c; }
+  /* the key a lesson item is kept under, as the site's learnKey() makes it */
+  learnKey(w) { return (this.o.HZ().rwordsT2S || {})[w] || [...w].map(c => this.simp(c)).join(''); }
 
   // ------------------------------------------------------------- the key
 
@@ -205,8 +215,9 @@ class Hover {
     return this.win;
   }
 
-  /* status: the statuses to show, when they have just changed (after a mark) */
-  async show(word, status) {
+  /* status: the statuses to show, when they have just changed (after a mark);
+     item: the word's lesson item, when it has just been added */
+  async show(word, status, item) {
     const win = this.popup();
     await this.ready;
     this.word = word;
@@ -218,7 +229,10 @@ class Hover {
       st[c] = all[this.simp(c)] || all[c] || null;
       known[c] = !!(HZ.index[c] || HZ.index[this.simp(c)]);
     }
-    win.webContents.send('popup-show', { entry, status: st, known });
+    const it = item || ((this.o.items && this.o.items()) || {})[this.learnKey(entry[0])];
+    const learn = !this.o.learn ? null
+      : it ? { stage: it.stage ? Learn.stageName(it.stage) : 'In lessons' } : { add: true };
+    win.webContents.send('popup-show', { entry, status: st, known, learn });
   }
 
   /* the page has drawn and measured itself: fit the window, next to the word */
@@ -243,4 +257,11 @@ class Hover {
   }
 }
 
-module.exports = { Hover };
+/* the sentence of the word's line that holds the word, for the lesson's example */
+function sentenceOf(word) {
+  const text = (word.line && word.line.text) || word.text;
+  const parts = text.split(/(?<=[。！？!?；…])/);
+  return (parts.find(x => x.includes(word.text)) || text).trim().slice(0, 160);
+}
+
+module.exports = { Hover, sentenceOf };

@@ -255,6 +255,13 @@ function markChar(c, s) {
   })()`, true);
 }
 
+/* add a word to the site's lesson queue, as the reader's popup does (site/study.js),
+   with the line it was read from as its example; hands back the new item */
+function learnWord(w, pin, gloss, sentence) {
+  const a = [w, pin, gloss, sentence].map(x => JSON.stringify(x || '')).join(', ');
+  return win.webContents.executeJavaScript(`learnFromReader(${a})`, true);
+}
+
 function openChar(c) {
   showWindow();
   win.webContents.executeJavaScript(`go('/character/' + encodeURIComponent(${JSON.stringify(c)}))`, true)
@@ -266,6 +273,7 @@ function startHover() {
     hover = new Hover({
       key: () => settings.hoverKey, overlays: () => overlays, ocr: helper, HZ: data,
       status: () => (store && store.status) || {}, mark: markChar, open: openChar, log: debug,
+      items: () => (store && store.items) || {}, learn: learnWord,
       paused: async () => settings.pause.includes((await helper().request('foreground')).process),
     });
   }

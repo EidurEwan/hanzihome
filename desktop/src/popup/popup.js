@@ -2,7 +2,8 @@
  * on screen. The main process (desktop/src/hover.js) sends the word's glossary
  * entry, as textToStory made it, and the status of each of its characters; this
  * draws it, reports its size so the window can fit it, and passes on clicks:
- * a status button marks the character, the character itself opens its page. */
+ * a status button marks the character, the character itself opens its page, and
+ * "Add to lessons" puts the word in the site's lesson queue (site/study.js). */
 
 'use strict';
 
@@ -11,7 +12,7 @@ const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-function render({ entry, status, known }) {
+function render({ entry, status, known, learn }) {
   const [w, p, d, parts, extra] = entry;
   const alt = (extra && extra.alt) || [];
   const han = [...w].filter(isHan);
@@ -35,6 +36,9 @@ function render({ entry, status, known }) {
     <div class="wp-head"><span class="han">${esc(w)}</span>
       <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
+    ${!learn ? '' : `<p class="wp-learn">${learn.add
+      ? '<button type="button" data-learn>＋ Add to lessons</button>'
+      : `<span>✓ ${esc(learn.stage)}</span>`}</p>`}
     ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
   const r = pop.getBoundingClientRect();
   window.popup.size(Math.ceil(r.width) + 2, Math.ceil(r.height) + 2);   // + the 1px border
@@ -43,6 +47,7 @@ function render({ entry, status, known }) {
 pop.addEventListener('click', e => {
   const b = e.target.closest('button[data-s]');
   if (b) { window.popup.mark(b.dataset.c, b.dataset.s || null); return; }
+  if (e.target.closest('button[data-learn]')) { window.popup.learn(); return; }
   const a = e.target.closest('[data-open]');
   if (a) window.popup.open(a.dataset.open);
 });

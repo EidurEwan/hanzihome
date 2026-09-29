@@ -55,7 +55,9 @@ Marking a character recolours every place it appears straight away.
 turn into opening their menu bar when it is let go) and point at a word. The
 reader's word popup appears: word, pinyin, meaning, then one row per character with what
 it contributes and Not known / Learning / Learned buttons. Clicking a character opens its
-full page in the main window.
+full page in the main window. **Add to lessons** puts the word in the site's lesson queue
+(`learnFromReader()` in `site/study.js`, run in the main window's page), with the
+sentence of the line it was read from as its example; after that the popup shows its stage.
 
 **Main window.** The whole of `site/`, opened from the tray. It also has an "On screen now"
 page: counts plus the Vocabulary and Characters tabs for the text currently recognised,
@@ -147,7 +149,8 @@ reusing `vocabList()` / `charList()`.
    re-read after that. Colours follow the site: green learned, blue learning, red new.
 6. **Hover lookup.** Hold key, word popup, mark buttons, open character page. The popup is
    the site's own word popup (it loads site/style.css), in a window that takes clicks but
-   never focus; `npm run test:hover` checks pointing, glossing and marking off screen.
+   never focus; `npm run test:hover` checks pointing, glossing, marking and adding to the
+   lessons off screen.
 7. **"On screen now" page, settings** (hotkey, colours, which monitors, pause list for
    apps like games), **installer** (electron-builder, NSIS `.exe`), start with Windows.
    Settings live in the site's Settings page, drawn only when `window.hanzihomeDesktop`

@@ -74,15 +74,29 @@ CC-CEDICT reading, phonetic-component clues, "appears in", example words split i
 common / uncommon / rare, frequency facts, stroke count, radical, and a private note field.
 Components are clickable: mark one as known and it lights up green everywhere it occurs.
 
-**Study** — flashcards over the characters you are learning, with Leitner-style spacing
-(0 → 1 → 2 → 4 → 8 → 16 → 32 days). Getting one right three times promotes it to Learned.
+**Study** — lessons and reviews in the style of [HanziHero](https://hanzihero.com). **Add to
+lessons** (on a character's page, or in the reader's word popup, here or on the desktop) puts a
+character or word in a queue, with the sentence you found it in. A lesson, five at a time, goes
+through its parts (a character's components and sound component, a word's characters), a
+mnemonic you write yourself on a scaffold of those parts, its meanings and pronunciation, and
+examples, then asks you to type its pinyin (tone numbers: `ren4shi`) and its meaning. After
+that it comes back for review on HanziHero's ten stages: a day, 4 days, a week, 2 weeks, a
+month, 2, 4 and 8 months and a year, then Master. A review asks both questions in random
+order; anything missed comes back again before the session ends and has its interval halved
+(halved again for each miss in its last five reviews). A neutral tone may be typed with any
+tone or none, meanings allow a typo and ignore "to" and brackets, and **My answer was right**
+keeps your wording as a synonym. A character counts as learning from its first lesson and as
+learned from Journeyman (a month). The Study page shows what is due, the week ahead and how many
+items are at each stage. The rules are in [`site/learn.js`](site/learn.js), checked by
+`node test/learn.js`; characters that were being learned with the old flashcards start at
+Novice I.
 
 **Reader** — 24 original graded stories, four per HSK level, each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and
 simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
 a word shows the reading and meaning it has *in that sentence* — 还 is "to give back" in one
 line and "also" in the next — plus what each of its characters contributes, with buttons to
-mark them. Text you paste in opens in the same reader, glossed automatically (see "Reading
+mark them and to add the word to your lessons. Text you paste in opens in the same reader, glossed automatically (see "Reading
 any text" below); when context can't settle a meaning, the popup names the other one too.
 
 **Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
@@ -234,7 +248,8 @@ and from the tray it:
 * puts a coloured bar under every Chinese word on screen: green learned, blue learning,
   red new;
 * shows the reader's word popup for the word under the pointer while you hold Ctrl, with
-  the buttons to mark its characters;
+  the buttons to mark its characters and to add the word to your lessons (with the line
+  it was on as the example);
 * opens whatever is on screen in the reader ("On screen now").
 
 Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from

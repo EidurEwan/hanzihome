@@ -113,8 +113,19 @@ const Store = {
     let d = {};
     try { d = JSON.parse(localStorage.getItem(this.key) || '{}'); } catch (e) { d = {}; }
     d.status = d.status || {}; d.comps = d.comps || {}; d.lists = d.lists || [];
-    d.notes = d.notes || {}; d.history = d.history || []; d.srs = d.srs || {};
+    d.notes = d.notes || {}; d.history = d.history || []; d.items = d.items || {};
     d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT;
+    // The old Study flashcards (srs) gave way to lessons and reviews: a character
+    // that was marked Learning joins the reviews at Novice I, due when it was due.
+    for (const c of Object.keys(d.srs || {})) {
+      if (d.status[c] === 'learning' && !d.items[c]) {
+        const e = HZ.index[c] || [], now = Date.now();
+        const it = Learn.finishLesson(Learn.newItem('char', { pin: e[2] || '', mean: e[3] || '' }, now), now);
+        it.due = Math.min(d.srs[c].due || now, now);
+        d.items[c] = it;
+      }
+    }
+    d.srs = {};
     this.data = d;
     return d;
   },
@@ -129,10 +140,7 @@ const Store = {
   status(ch) { return this.load().status[ch] || null; },
   setStatus(ch, s) {
     const d = this.load();
-    if (s) {
-      d.status[ch] = s;
-      if (!d.srs[ch]) d.srs[ch] = { box: 0, due: Date.now() };
-    } else { delete d.status[ch]; delete d.srs[ch]; }
+    if (s) d.status[ch] = s; else delete d.status[ch];
     this.touch();
   },
   chars(s) { const d = this.load(); return Object.keys(d.status).filter(c => d.status[c] === s); },
@@ -168,18 +176,32 @@ const Store = {
     this.save();
     return i < 0;
   },
+  // ---- lessons and reviews: characters and words you chose to learn (site/learn.js
+  //      schedules them, site/study.js draws the pages) ----
+  item(k) { return this.load().items[k] || null; },
+  learnAdd(k, kind, info) {
+    const d = this.load();
+    if (!d.items[k]) d.items[k] = Learn.newItem(kind, info, Date.now());
+    this.touch();
+    return d.items[k];
+  },
+  learnRemove(k) { delete this.load().items[k]; this.save(); },
+  /* after a lesson or review: a character's stage decides its status on the rest of the site */
+  learnSaved(k) {
+    const d = this.load(), it = d.items[k];
+    if (it && it.kind === 'char') {
+      const s = Learn.statusFor(it);
+      if (s) d.status[k] = s;
+    }
+    this.touch();
+  },
+  lessons() {
+    const d = this.load();
+    return Object.keys(d.items).filter(k => d.items[k].stage === 0).sort((a, b) => d.items[a].added - d.items[b].added);
+  },
   due() {
     const d = this.load(), now = Date.now();
-    return Object.keys(d.srs).filter(c => d.status[c] && (d.srs[c].due || 0) <= now);
-  },
-  grade(ch, ok) {
-    const d = this.load(), s = d.srs[ch] || { box: 0 };
-    const steps = [0, 1, 2, 4, 8, 16, 32];
-    s.box = ok ? Math.min(s.box + 1, steps.length - 1) : 0;
-    s.due = Date.now() + steps[s.box] * 864e5 + (ok ? 0 : 6e5);
-    d.srs[ch] = s;
-    if (ok && s.box >= 3) d.status[ch] = 'learned';
-    this.touch();
+    return Object.keys(d.items).filter(k => Learn.isDue(d.items[k], now));
   },
 };
 
@@ -487,7 +509,8 @@ function merge3(base, local, remote) {
 
   const out = {};
   new Set([...Object.keys(b), ...Object.keys(local), ...Object.keys(remote)]).forEach(k => {
-    if (k === 'status' || k === 'comps' || k === 'notes' || k === 'srs') out[k] = map(b[k], local[k], remote[k]);
+    // (items: each character or word learnt changes on its own; srs is the old flashcards)
+    if (k === 'status' || k === 'comps' || k === 'notes' || k === 'srs' || k === 'items') out[k] = map(b[k], local[k], remote[k]);
     else if (k === 'lists') out[k] = lists();
     else if (k === 'history') out[k] = history();
     else if (k === 'days') out[k] = days();
@@ -562,6 +585,7 @@ const currentPath = () => {
 };
 
 function markNav(path) {
+  path = path.replace(/^\/(lessons|reviews)/, '/study');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
     a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
@@ -764,8 +788,9 @@ function railHtml() {
   </section>`;
 }
 
-function withRail(main) {
-  return `<div class="dash"><div>${main}</div><div class="rail">${railHtml()}</div></div>`;
+/* railLast: on one column, keep the rail under the page instead of above it */
+function withRail(main, railLast) {
+  return `<div class="dash${railLast ? ' rail-last' : ''}"><div>${main}</div><div class="rail">${railHtml()}</div></div>`;
 }
 
 async function paintRail() {
@@ -998,7 +1023,7 @@ async function pageDashboard() {
           ${learned.length > 8 ? `<span class="plusn">+${learned.length - 8}</span>` : ''}</div>
       </div>
       <div style="margin-left:auto"><a class="btn" href="#/study">
-        ${dueN ? `Keep studying (${dueN})` : 'Start studying'}</a></div>
+        ${dueN ? `Reviews (${dueN})` : Store.lessons().length ? `Lessons (${Store.lessons().length})` : 'Study'}</a></div>
     </section>
     <section class="card">
       <h2 class="caps">Most common characters</h2>
@@ -1113,6 +1138,7 @@ async function pageCharacter(ch) {
             <button class="btn addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
             <div class="dd-pop" id="listpop" hidden></div>
           </div>
+          ${learnButton(ch)}
         </div>
       </div>
       <p class="neighbours">${prev ? `Previous (${charLink(prev)})` : ''}
@@ -1197,6 +1223,8 @@ async function pageCharacter(ch) {
     pop.addEventListener('click', e => e.stopPropagation());
   };
   dd('statusbtn', 'statuspop');
+  wireLearnButton(ch, () => ({ pin: first ? first[1] : '', mean: first ? first[2].slice(0, 2).join('; ') : '',
+    alts: first ? first[2].slice(0, 6) : [] }));
   document.getElementById('statuspop').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     Store.setStatus(ch, b.dataset.s || null);
@@ -1276,68 +1304,9 @@ async function pageSearch(q) {
   paintRail();
 }
 
-/* ============================ study ============================ */
-
-let studyState = null;
-
-async function pageStudy() {
-  const due = Store.due();
-  const queue = due.length ? due : Store.chars('learning');
-  if (!queue.length) {
-    app.innerHTML = '<h1 class="page-title">Study</h1>' + withRail(
-      `<div class="card"><p class="empty">Nothing to review right now.</p>
-       <p class="small muted">Mark characters as <b>Learning</b> on their page, or add one
-          of the suggestions from the dashboard, and they will appear here.</p>
-       <p><a class="btn" href="#/dashboard">Back to dashboard</a></p></div>`);
-    paintRail();
-    studyState = null;
-    return;
-  }
-  if (!studyState) studyState = { queue: queue.slice(), i: 0, shown: false, done: 0 };
-  await drawCard();
-}
-
-async function drawCard() {
-  const s = studyState;
-  if (s.i >= s.queue.length) {
-    app.innerHTML = '<h1 class="page-title">Study</h1>' + withRail(
-      `<div class="card study"><h2>Session complete</h2>
-       <p class="muted">${s.done} card${s.done === 1 ? '' : 's'} reviewed.</p>
-       <p><a class="btn" href="#/dashboard">Back to dashboard</a></p></div>`);
-    studyState = null;
-    paintRail();
-    return;
-  }
-  const ch = s.queue[s.i];
-  const d = await charData(ch);
-  const first = d ? (d.rd[0]) : null;
-  app.innerHTML = '<h1 class="page-title">Study</h1>' + withRail(`
-    <div class="study">
-      <p class="small muted">${s.i + 1} of ${s.queue.length}</p>
-      <div class="flash"><div class="q han">${esc(ch)}</div>
-        ${s.shown ? `<div class="a">
-          <div class="pin">${esc(first ? first[1] : '')}</div>
-          <div class="mean">${esc(first ? first[2].slice(0, 5).join(' • ') : '')}</div>
-          ${d && d.cm.length ? `<p class="small muted" style="margin-top:9px">
-            ${d.cm.map(c => esc(c) + (glossOf(c) ? ' ' + esc(glossOf(c)) : '')).join(' + ')}</p>` : ''}
-        </div>` : ''}</div>
-      ${s.shown ? `<div class="grade">
-          <button class="again" data-g="0">Again</button>
-          <button class="good" data-g="1">Got it</button></div>`
-        : '<button class="btn" id="reveal">Show answer</button>'}
-      <p class="small" style="margin-top:14px">
-        <a href="#/character/${encodeURIComponent(ch)}">Open full entry →</a></p>
-    </div>`);
-  const rev = document.getElementById('reveal');
-  if (rev) rev.addEventListener('click', () => { s.shown = true; drawCard(); });
-  app.querySelectorAll('.grade button').forEach(b => b.addEventListener('click', () => {
-    Store.grade(ch, b.dataset.g === '1');
-    s.i++; s.shown = false; s.done++;
-    drawCard();
-    markNav(currentPath());
-  }));
-  paintRail();
-}
+/* ============================ study ============================
+   Lessons and reviews live in study.js (pageStudy, pageLessons, pageReviews),
+   loaded before this file; learn.js does their scheduling. */
 
 /* ============================ reader ============================ */
 
@@ -1618,6 +1587,15 @@ function wordPop() {
   _wpEl.addEventListener('mouseenter', () => clearTimeout(_wpHide));
   _wpEl.addEventListener('mouseleave', hideWordPop);
   _wpEl.addEventListener('click', e => {
+    const l = e.target.closest('button[data-learn]');
+    if (l && _wpAnchor && !Store.item(learnKey(l.dataset.learn))) {
+      const a = _wpAnchor, [w, p, d] = _story.g[a.dataset.k];
+      learnFromReader(w, p, d, sentenceAround(a, w)).then(() => {
+        if (_wpAnchor === a) showWordPop(a);
+        markNav(currentPath());
+      });
+      return;
+    }
     const b = e.target.closest('button[data-s]');
     if (!b) return;
     Store.setStatus(b.dataset.c, b.dataset.s || null);
@@ -1660,6 +1638,9 @@ function showWordPop(el) {
     <div class="wp-head"><span class="han">${esc(w)}</span>
       <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
+    <p class="wp-learn">${Store.item(learnKey(w))
+      ? `<a href="#/study">✓ ${esc(Store.item(learnKey(w)).stage ? Learn.stageName(Store.item(learnKey(w)).stage) : 'In lessons')}</a>`
+      : `<button type="button" data-learn="${esc(w)}">＋ Add to lessons</button>`}</p>
     ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
   pop.hidden = false;
 
@@ -2121,12 +2102,14 @@ function render(keepScroll) {
   if (!keepScroll) window.scrollTo(0, 0);
   const seg = path.split('/').filter(Boolean);
   const n = i => parseInt(seg[i], 10) || 1;
-  if (seg[0] !== 'study') studyState = null;
+  leaveStudy(seg[0]);
 
   if (path === '/' || seg[0] === 'dashboard') return pageDashboard();
   if (seg[0] === 'character') return pageCharacter(seg.slice(1).join('/'));
   if (seg[0] === 'search') return pageSearch(seg.slice(1).join('/'));
   if (seg[0] === 'study') return pageStudy();
+  if (seg[0] === 'lessons') return pageLessons();
+  if (seg[0] === 'reviews') return pageReviews();
   if (seg[0] === 'reader') return seg[1] ? pageStory(seg[1]) : pageReader();
   if (seg[0] === 'screen') return pageScreen();
   if (seg[0] === 'frequency') return pageFrequency();

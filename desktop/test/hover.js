@@ -3,8 +3,8 @@
  * Reads a test picture with the overlay controller (off screen, as in
  * test/overlay.js), "points" at a word with Hover.lookAt (no keyboard hook, no
  * real pointer), saves the popup, clicks Learned on its first character inside
- * the popup page, and saves it again. Marking goes through the same channel as in
- * the app, to a stand-in for the site's store.
+ * the popup page, then Add to lessons, and saves it again. Marking and adding go
+ * through the same channels as in the app, to a stand-in for the site's store.
  *
  *   npx electron test/hover.js [word]        (from desktop/; default 鸡蛋)
  *   -> test/out/hover-1.png, test/out/hover-2.png
@@ -39,10 +39,12 @@ app.whenReady().then(async () => {
     settings: () => ({ show: { learned: true, learning: true, new: true }, interval: 100000 }),
     picture: { path: picture, w, h }, offscreen: true,
   });
-  const marks = [];
+  const marks = [], items = {}, learnt = [];
   const hover = new Hover({
     key: () => 'off', overlays: () => overlays, ocr: () => ocr, HZ: () => HZ, status: () => status,
     mark: async (c, s) => { marks.push(c + '=' + s); if (s) status[c] = s; else delete status[c]; return status; },
+    items: () => items,
+    learn: async (w, p, d, sentence) => { learnt.push({ w, p, d, sentence }); return (items[w] = { stage: 0 }); },
     open: () => {}, offscreen: true, log: m => console.log(m),
     pointer: () => pointer,          // stays on the word, as a real user's would
   });
@@ -64,6 +66,10 @@ app.whenReady().then(async () => {
   const first = [...want][0];
   await page.executeJavaScript(`document.querySelector('button[data-c="${first}"][data-s="learned"]').click()`);
   await wait(700);
+  const button = await page.executeJavaScript('(document.querySelector("button[data-learn]") || {}).textContent || ""');
+  await page.executeJavaScript('document.querySelector("button[data-learn]").click()');
+  await wait(700);
+  const added = await page.executeJavaScript('(document.querySelector(".wp-learn") || {}).innerText || ""');
   await shot(2);
   const on = await page.executeJavaScript(
     `[...document.querySelectorAll('button.on')].map(b => b.dataset.c + '=' + (b.dataset.s || 'none')).join(' ')`);
@@ -71,6 +77,7 @@ app.whenReady().then(async () => {
   console.log(`pointed at ${want} (${Math.round(word.x)},${Math.round(word.y)} ${Math.round(word.w)}×${Math.round(word.h)})`);
   console.log('popup: ' + before.replace(/\s+/g, ' ').trim());
   console.log(`clicked Learned on ${first}: store got ${marks.join(', ') || 'nothing'}; popup now shows ${on || 'no marks'}`);
+  console.log(`clicked "${button.trim()}": the store got ${learnt.map(x => JSON.stringify(x)).join(', ') || 'nothing'}; popup now shows "${added.trim()}"`);
   console.log(`window ${JSON.stringify(hover.win.getContentBounds())}; saved ${path.relative(process.cwd(), OUT(1))}, ${path.relative(process.cwd(), OUT(2))}`);
   overlays.stop();
   hover.hide();

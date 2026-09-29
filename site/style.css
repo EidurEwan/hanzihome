@@ -1055,3 +1055,104 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 }
 .dk-chip button { border: 0; background: none; cursor: pointer; color: var(--ink-2); font-size: 15px; line-height: 1; padding: 0 5px; }
 .dk-recent .btn { padding: 3px 9px; font-size: 12.5px; }
+
+/* ---------------- lessons and reviews (study.js) ----------------
+   HanziHero's layout: a coloured band with the item (red for characters, purple
+   for words), tabs under it, and a big answer box that turns green or red. */
+:root { --lx-char: #9b1c3c; --lx-word: #5b21b6; }
+.lx-band {
+  position: relative; border-radius: 14px; padding: 18px 16px 22px; text-align: center;
+  color: #fff; background: var(--lx-char); margin-bottom: 14px;
+}
+.lx-band.word { background: var(--lx-word); }
+.lx-pin { font-size: 20px; opacity: .85; min-height: 26px; }
+.lx-glyph { font-size: clamp(64px, 12vw, 120px); line-height: 1.1; }
+.lx-mean { font-size: 28px; font-weight: 800; margin-top: 4px; }
+.lx-kind { position: absolute; right: 12px; bottom: 10px; font-size: 11px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.lx-tabs { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
+.lx-tabs button { border: 0; background: none; font: inherit; font-weight: 700; color: var(--ink-2);
+  padding: 7px 14px; border-radius: 8px; cursor: pointer; }
+.lx-tabs button.on { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line-2); }
+.lx-body { display: flex; gap: 10px; align-items: flex-start; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 14px; padding: 18px 10px; }
+.lx-main { flex: 1; min-width: 0; max-width: 720px; margin: 0 auto; }
+.lx-main h3 { margin: 14px 0 6px; font-size: 17px; }
+.lx-main h3:first-child { margin-top: 0; }
+.lx-arrow { border: 0; background: none; font-size: 30px; line-height: 1; color: var(--ink-2); cursor: pointer; padding: 0 6px; }
+.lx-arrow[disabled] { visibility: hidden; }
+.lx-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.lx-chip { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; }
+.lx-chip .han { display: inline-grid; place-items: center; min-width: 38px; height: 38px; padding: 0 6px;
+  border-radius: 8px; background: var(--lx-char); color: #fff; font-size: 20px; }
+.lx-chip:hover { text-decoration: none; }
+.lx-chip:hover .han { filter: brightness(1.15); }
+.lx-dl { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin: 0; }
+.lx-dl dt { color: var(--ink-2); }
+.lx-dl dd { margin: 0; }
+.lx-main textarea { width: 100%; min-height: 90px; }
+.lx-ex { margin: 6px 0 12px; padding: 8px 14px; border-left: 3px solid var(--line-2); font-size: 20px; line-height: 1.6; }
+.lx-ex mark { background: var(--accent-soft); color: var(--accent); border-radius: 3px; padding: 0 2px; }
+.lx-input, .rv-input {
+  width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; margin: 6px 0;
+  border: 1px solid var(--line-2); border-radius: 10px; background: var(--panel); color: var(--ink);
+}
+.lx-wrong { color: var(--accent); font-weight: 600; }
+.lx-batch { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+.lx-batch span { font-family: var(--han); font-size: 15px; padding: 6px 9px; border-radius: 8px;
+  color: #fff; background: var(--lx-char); opacity: .55; }
+.lx-batch span.word { background: var(--lx-word); }
+.lx-batch span.on { opacity: 1; box-shadow: 0 0 0 2px var(--ink); }
+.lx-batch span.done { opacity: 1; }
+.lx-batch span.done::after { content: ' ✓'; }
+
+.rv-top { display: flex; justify-content: flex-end; gap: 16px; font-size: 13px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+.rv-prompt { text-align: center; font-size: 26px; margin: 10px 0 4px; }
+.rv-input { text-align: center; font-size: 26px; padding: 16px; }
+.rv-input.ok { background: #15803d; color: #fff; border-color: #15803d; }
+.rv-input.bad { background: var(--lx-char); color: #fff; border-color: var(--lx-char); }
+.rv-after { text-align: center; }
+.rv-after .row { justify-content: center; flex-wrap: wrap; }
+.rv-info { text-align: left; margin-top: 10px; }
+
+.lx-hub { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.lx-tile { position: relative; display: block; border-radius: 14px; padding: 26px 22px; color: #fff; text-decoration: none; }
+.lx-tile:hover { text-decoration: none; filter: brightness(1.08); }
+.lx-tile b { font-size: clamp(30px, 5vw, 48px); font-weight: 800; }
+.lx-tile span { position: absolute; top: 10px; right: 14px; font-size: 18px; font-weight: 800; }
+.lx-tile.lessons { background: #0e7490; }
+.lx-tile.reviews { background: #334155; }
+.lx-fc div { display: grid; grid-template-columns: 110px 1fr 44px; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px; }
+.lx-fc i { display: block; height: 3px; background: #14b8a6; justify-self: end; min-width: 2px; }
+.lx-fc b { text-align: right; }
+.lx-queue { display: flex; flex-wrap: wrap; gap: 6px; }
+.lx-q { display: inline-flex; align-items: center; gap: 2px; border-radius: 8px; background: var(--lx-char);
+  padding: 4px 4px 4px 9px; }
+.lx-q.word { background: var(--lx-word); }
+.lx-q a, .lx-q > .han { color: #fff; font-family: var(--han); font-size: 17px; text-decoration: none; }
+.lx-q button { border: 0; background: none; color: #fff; opacity: .7; cursor: pointer; font-size: 15px; padding: 0 5px; }
+a.lx-q { padding: 4px 9px; }
+.lx-stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
+.lx-stages div { border-radius: 10px; padding: 10px 6px; text-align: center; color: #fff; }
+.lx-stages b { display: block; font-size: 22px; }
+.lx-stages span { font-size: 12px; font-weight: 700; }
+.lx-stages .novice { background: #a16207; }
+.lx-stages .apprentice { background: #15803d; }
+.lx-stages .journeyman { background: #1d4ed8; }
+.lx-stages .expert { background: #6d28d9; }
+.lx-stages .master { background: var(--lx-char); }
+.wp-learn { margin: 0 0 6px; }
+.wp-learn button { border: 1px solid var(--line-2); background: var(--panel); border-radius: 6px; padding: 3px 9px;
+  font: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink); cursor: pointer; }
+.wp-learn a { font-size: 12.5px; font-weight: 700; }
+@media (max-width: 600px) {
+  .lx-hub, .lx-stages { grid-template-columns: 1fr 1fr; }
+  .lx-dl { grid-template-columns: 1fr; }
+  .lx-tabs { flex-wrap: nowrap; gap: 2px; overflow-x: auto; justify-content: safe center; }
+  .lx-tabs button { padding: 6px 7px; font-size: 13px; }
+  .lx-body { gap: 0; }
+  .lx-arrow { padding: 0 2px; font-size: 26px; }
+}
+
+/* study pages: on one column the rail goes under the lessons and reviews, not above */
+.dash.rail-last .rail { order: 0; }
