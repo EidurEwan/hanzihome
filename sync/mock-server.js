@@ -10,7 +10,8 @@
 //   signin      every request is sent to a Google sign-in page (access not "Anyone")
 //   standalone  the script isn't attached to a Sheet
 //
-// Development aid only; the real thing is the deployed Apps Script.
+// Development aid only; the real thing is the deployed Apps Script. Required as a
+// module (test/sync.js), it only loads the script: load(mode) -> {context, sheets}.
 
 const http = require('http');
 const fs = require('fs');
@@ -63,10 +64,11 @@ function makeSheet() {
   };
 }
 
+function load(mode = MODE) {
 const sheets = {};
 const context = {
   SpreadsheetApp: {
-    getActiveSpreadsheet: () => (MODE === 'standalone' ? null : {
+    getActiveSpreadsheet: () => (mode === 'standalone' ? null : {
       getSheetByName: name => sheets[name] || null,
       insertSheet: name => (sheets[name] = makeSheet()),
     }),
@@ -79,6 +81,14 @@ const context = {
 };
 vm.createContext(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'Code.gs'), 'utf8'), context, { filename: 'Code.gs' });
+return { context, sheets };
+}
+
+module.exports = { load, makeSheet };
+if (require.main === module) serve();
+
+function serve() {
+const { context, sheets } = load();
 
 /* ---- HTTP, shaped like script.google.com ---- */
 
@@ -112,6 +122,14 @@ http.createServer((req, res) => {
     });
     return;
   }
+  // a test hook: the sheet as it is half-way through a save in the first scripts,
+  // its data rows cleared and not yet written again (the revision still the old one)
+  if (url.pathname === '/mock/half-saved') {
+    const sh = sheets['HanziHome sync'];
+    if (sh && sh.getLastRow() >= 2) sh.getRange(2, 1, sh.getLastRow() - 1, 1).clearContent();
+    res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true, rev: sh ? sh.getRange('A1').getValues()[0][0] : 0 }));
+  }
   if (url.pathname === '/echo') {
     const text = pending.get(url.searchParams.get('id'));
     pending.delete(url.searchParams.get('id'));
@@ -120,3 +138,4 @@ http.createServer((req, res) => {
   }
   res.writeHead(404, cors); res.end();
 }).listen(PORT, () => console.log(`HanziHome sync mock on http://localhost:${PORT}/exec (${MODE})`));
+}

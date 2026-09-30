@@ -276,16 +276,24 @@ function tellDesktop() {
    against the copy from the last successful sync (the "base"), so a change
    made on one device and a different change made on another both survive,
    and removing something (a status, a list entry) is not undone by a device
-   that still has it. When both sides changed the same item, this device wins. */
+   that still has it. When both sides changed the same item, this device wins.
+
+   A change is pushed straight away (one request); only a refusal brings the
+   sheet's copy back to merge. With nothing to push, a sync just asks for the
+   revision (a few bytes) and fetches the copy only when it has moved on.
+   A copy the sheet can't give whole (another device half-way through saving
+   it, with the first scripts) is never taken for an empty one: nothing here
+   changes, and the sync tries again a few seconds later. */
 
 const REDEPLOY = 'Paste the current sync/Code.gs into the Apps Script editor, save, then Deploy → '
   + 'Manage deployments → Edit (pencil) → Version: New version → Deploy.';
 const OLD_SCRIPT = 'Your deployment is still running the old script, which asks for a sync key. ' + REDEPLOY;
+const SCRIPT_VERSION = 4;           // sync/Code.gs's VERSION
 
 const Sync = {
   cfgKey: 'hanzihome.sync',          // {url, rev, dirty, lastSync}
   baseKey: 'hanzihome.sync.base',    // the store as of the last successful sync
-  timer: null, busy: null, again: false, error: '', lastRun: 0,
+  timer: null, busy: null, again: false, error: '', lastRun: 0, retries: 0,
 
   cfg() { try { return JSON.parse(localStorage.getItem(this.cfgKey) || 'null'); } catch (e) { return null; } },
   setCfg(c) {
@@ -305,11 +313,13 @@ const Sync = {
     if (!this.on()) return;
     this.update({ dirty: true });
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.run(), 2500);
+    this.timer = setTimeout(() => this.run(), 5000);
     this.paint();
   },
 
-  async post(body, cfg) {
+  /* soft: a refusal comes back as the reply instead of an error (for 'rev', which the
+     first scripts don't know) */
+  async post(body, cfg, soft) {
     const c = cfg || this.cfg();
     let res;
     try {
@@ -330,6 +340,12 @@ const Sync = {
     let j;
     try { j = await res.json(); }
     catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
+    if (!j.ok && !j.conflict && soft) return j;
+    if (!j.ok && (j.error === 'busy' || j.error === 'unreadable')) {
+      const err = new Error('The Google Sheet was busy saving. Trying again in a moment; nothing here has changed.');
+      err.code = 'retry';
+      throw err;
+    }
     if (!j.ok && !j.conflict) {
       throw new Error({
         // only the first version of Code.gs asked for a key
@@ -373,8 +389,16 @@ const Sync = {
     clearTimeout(this.timer);
     this.lastRun = Date.now();
     this.busy = this.cycle()
-      .then(() => { this.error = ''; this.errorCode = ''; })
-      .catch(e => { this.error = e.message; this.errorCode = e.code || ''; })
+      .then(() => { this.error = ''; this.errorCode = ''; this.retries = 0; this.checkScript(); })
+      .catch(e => {
+        // the sheet half-way through a save: quietly try again, a few times, before saying so
+        if (e.code === 'retry' && this.retries < 4) {
+          this.retries++;
+          this.timer = setTimeout(() => this.run(), 3000 * this.retries);
+          return;
+        }
+        this.error = e.message; this.errorCode = e.code || '';
+      })
       .finally(() => {
         this.busy = null;
         this.paint();
@@ -385,27 +409,33 @@ const Sync = {
   },
 
   async cycle() {
-    let remote = await this.post({ action: 'pull' });
+    let c = this.cfg();
+    if (!c) return;
+    let remote = null;                             // the sheet's copy, when we have fetched it
+    if (!c.dirty) {
+      // nothing to send: has the sheet moved on? (just the revision; the first
+      // scripts don't know 'rev', and then the copy is fetched)
+      const head = await this.post({ action: 'rev' }, null, true);
+      if (head.ok && head.rev === (c.rev || 0)) { this.update({ lastSync: Date.now() }); return; }
+      remote = this.whole(await this.post({ action: 'pull' }));
+      c = this.cfg();
+      if (!c) return;
+      if (remote.rev === (c.rev || 0) && !c.dirty) { this.update({ lastSync: Date.now() }); return; }
+      if (!c.dirty) { this.adopt(remote.data || {}, remote.rev); return; }   // only the other side changed
+    }
     for (let attempt = 0; attempt < 4; attempt++) {
-      const c = this.cfg();
+      c = this.cfg();
       if (!c) return;                              // disconnected mid-flight
-      const local = Store.load();
-      const remoteData = remote.data || null;
-
-      if (remote.rev === (c.rev || 0)) {
-        if (!c.dirty) { this.update({ lastSync: Date.now() }); return; }
-      } else if (!c.dirty) {
-        // only the other side changed: take its copy as it is
-        this.adopt(remoteData || {}, remote.rev);
-        return;
-      } else {
-        const merged = merge3(this.base(), local, remoteData || {});
+      if (remote && remote.rev !== (c.rev || 0)) {
+        // the sheet moved on: merge its copy with this device's changes first
+        const local = Store.load();
+        const merged = merge3(this.base(), local, remote.data || {});
         if (!same(merged, local)) this.apply(merged);
-        if (remoteData && same(merged, remoteData)) { this.adopt(remoteData, remote.rev); return; }
+        if (remote.data && same(merged, remote.data)) { this.adopt(remote.data, remote.rev); return; }
       }
-
+      const baseRev = remote ? remote.rev : (c.rev || 0);
       const pushed = JSON.parse(JSON.stringify(Store.load()));
-      const r = await this.post({ action: 'push', baseRev: remote.rev, data: pushed });
+      const r = await this.post({ action: 'push', baseRev, data: pushed });
       if (r.ok) {
         // only clear the flag if nothing changed while the request was out
         this.update({ rev: r.rev, lastSync: Date.now(), dirty: !same(Store.load(), pushed) });
@@ -413,9 +443,33 @@ const Sync = {
         if (this.cfg() && this.cfg().dirty) this.markDirty();
         return;
       }
-      remote = r;                                  // someone pushed first: merge with theirs
+      remote = this.whole(r);                      // someone pushed first: merge with theirs
     }
     throw new Error('Other devices kept changing the data at the same moment. Try Sync now again.');
+  },
+
+  /* The sheet's copy, only if it came whole. A sheet that has been saved to (rev
+     above 0) but gives no data was caught half-way through a save: taking that
+     for an empty copy is what used to make everything vanish until the next sync. */
+  whole(reply) {
+    const d = reply.data;
+    if (reply.rev > 0 && (!d || typeof d !== 'object' || Array.isArray(d))) {
+      const err = new Error('The Google Sheet was busy saving. Trying again in a moment; nothing here has changed.');
+      err.code = 'retry';
+      throw err;
+    }
+    return reply;
+  },
+
+  /* once per visit: does the deployment run the current script? (the older ones
+     can be read half-way through a save, and are slower) */
+  checkScript() {
+    if (this.scriptChecked || !this.on()) return;
+    this.scriptChecked = true;
+    fetch(this.cfg().url, { redirect: 'follow' }).then(r => r.json()).then(info => {
+      this.oldScript = !!(info && info.app === 'HanziHome sync' && (info.version || 0) < SCRIPT_VERSION);
+      this.paint();
+    }).catch(() => {});
   },
 
   adopt(data, rev) {
@@ -441,6 +495,7 @@ const Sync = {
     await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL
     // rev 0 and dirty: the first cycle merges this browser's data with the sheet's
     this.setCfg({ url, rev: 0, dirty: true, lastSync: 0 });
+    this.scriptChecked = false;                  // a new deployment: check its script again
     this.setBase(null);
     this.error = '';
     return this.run();
@@ -478,7 +533,11 @@ const Sync = {
         : `${c.dirty ? 'Changes waiting to sync' : 'Up to date'} · last synced ${c.lastSync ? ago(c.lastSync) : 'never'} · version ${c.rev || 0}`;
       box.classList.toggle('sync-err', !!this.error);
       const help = document.getElementById('sync-help-box');
-      if (help) help.innerHTML = c && this.errorCode === 'unreachable' ? syncTroubleHtml(c.url) : '';
+      if (help) {
+        help.innerHTML = c && this.errorCode === 'unreachable' ? syncTroubleHtml(c.url)
+          : c && this.oldScript ? `<p class="small sync-err">Your deployment runs an older sync script. Updating it
+            makes syncing quicker and safer (a sync can no longer catch a save half-way): ${esc(REDEPLOY)}</p>` : '';
+      }
     }
   },
 };

@@ -35,15 +35,22 @@ who has the `/exec` URL can read and replace your synced progress: keep the URL 
 changing the script, use **Manage deployments → Edit → New version** so the URL stays the same.
 
 To check a deployment, open the `/exec` URL in a **private window** (the site is not signed in to
-Google, so that is what it sees). A working one shows `"version":3` and `"sheet":"ok"`. A
+Google, so that is what it sees). A working one shows `"version":4` and `"sheet":"ok"`. A
 sign-in page means *Execute as* is not *Me* or access is not *Anyone*. A `"problem"` names what
 stops the script opening its Sheet.
 
 How it behaves:
 
-* Changes are sent about 2.5 seconds after you make them. The site also syncs when it opens,
-  when you return to the tab, and every 5 minutes while it is open. Changes made offline wait
-  and go out on the next sync.
+* Changes are sent about 5 seconds after you stop making them, in one request. The site also
+  checks when it opens, when you return to the tab, and every 5 minutes while it is open: a
+  request for the version number only, with the whole copy fetched just when it has changed.
+  Changes made offline wait and go out on the next sync.
+* Reads and saves take turns in the script, and the Sheet keeps the saved copy's length, so a
+  copy is never read half-way through a save. The site also never takes a copy that doesn't
+  arrive whole for an empty one: it keeps what it has and tries again a few seconds later.
+  (Before version 4 of the script, a sync that caught another device's save half-way could
+  empty the store until the next sync.) The Settings page says when a deployment runs an older
+  script; update it as in step 2 above, with **Manage deployments → Edit → New version**.
 * The script keeps a version number and refuses a save based on an out-of-date copy. The
   browser then merges and tries again, so two devices can't silently overwrite each other.
 * The merge compares both copies with the last synced one. Edits to different items on different
