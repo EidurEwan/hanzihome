@@ -40,6 +40,8 @@ class Hover {
      status() -> {char: state}; mark(char, state) -> Promise of the new statuses;
      items() -> the lesson items {key: item}; learn(word, pinyin, gloss, sentence) ->
      Promise of the item, once added to the lessons; open(char); paused() -> Promise: is the program in front on the pause list;
+     direct() -> take text straight from the program under the pointer when it
+     offers it; skip: HanziHome's process ids;
      log(msg); pointer() -> the pointer in global DIP (tests; default: the
      real one); offscreen (tests) */
   constructor(opts) {
@@ -161,6 +163,11 @@ class Hover {
   }
 
   async find(pt) {
+    // the program under the pointer may hand over its text: the exact line, at once
+    if (this.o.direct && this.o.direct()) {
+      const hit = await this.direct(pt);
+      if (hit) return hit;
+    }
     const ov = this.o.overlays();
     const hit = ov && ov.running ? ov.wordAt(pt) : null;
     if (hit) return hit;
@@ -179,6 +186,21 @@ class Hover {
       this.strip = { t: Date.now(), top, bottom, words: wordsFromLines(r.lines, this.o.HZ(), toGlobal) };
     }
     return this.strip.words.find(w => inside(w, pt, 1)) || null;
+  }
+
+  /* the word at a point from the line the program there offers (desktop/ocr/
+     TextReader.cs), or null: it offers none, or there is no word just there */
+  async direct(pt) {
+    const p = screen.dipToScreenPoint(pt);
+    let r;
+    try { r = await this.o.ocr().request('text-at', { x: p.x, y: p.y, skip: this.o.skip || [] }); }
+    catch (e) { return null; }
+    if (!r.lines.length) return null;
+    const toGlobal = w => {
+      const dip = screen.screenToDipRect(null, { x: w.x, y: w.y, width: w.w, height: w.h });
+      return { x: dip.x, y: dip.y, w: dip.width, h: dip.height };
+    };
+    return wordsFromLines(r.lines, this.o.HZ(), toGlobal).find(w => inside(w, pt, 1)) || null;
   }
 
   // ----------------------------------------------------------- the popup

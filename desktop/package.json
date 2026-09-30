@@ -12,6 +12,7 @@
     "test:protect": "electron test/protect.js",
     "test:overlay": "electron test/overlay.js",
     "test:hover": "electron test/hover.js",
+    "test:text": "electron test/text.js",
     "dist": "node ocr/build.js && electron-builder --win"
   },
   "devDependencies": {

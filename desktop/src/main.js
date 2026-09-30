@@ -33,11 +33,11 @@
 const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, net, protocol, powerMonitor, shell } = require('electron');
+const { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, net, protocol, powerMonitor, shell, clipboard } = require('electron');
 const { OcrHelper } = require('./ocr');
 const { repair } = require('./ocrfix');
 const { loadHZ } = require('./data');
-const { paragraphs } = require('./layout');
+const { paragraphs, directParagraphs } = require('./layout');
 const { Overlays } = require('./overlays');
 const { Hover } = require('./hover');
 const { loadSettings, saveSettings } = require('./settings');
@@ -49,6 +49,8 @@ const SYNC_EVERY = 5 * 60 * 1000;
 // this app's own program name ("electron" running from desktop/, "hanzihome" installed),
 // left out of the pause list's suggestions
 const SELF = path.basename(process.execPath, '.exe').toLowerCase();
+// this process, which owns all of HanziHome's windows: text is never read from them
+const SKIP = [process.pid];
 
 const arg = name => {
   const hit = process.argv.find(a => a === '--' + name || a.startsWith('--' + name + '='));
@@ -192,12 +194,22 @@ async function readScreen() {
   }
   try {
     const picture = arg('picture');
-    const r = await helper().request('screen', picture
-      ? { picture: path.resolve(String(picture)), incremental: false }
-      : { incremental: false });
-    // Chinese lines only (menus and English text would crowd the reader), wrapped
-    // lines joined back into paragraphs
-    const text = paragraphs(repair(r.lines, data()).lines).join('\n');
+    let text = '';
+    // straight from the program in front when it offers its text: exact, with its
+    // paragraphs as the program has them, and no reading off the screen
+    if (!picture && settings.directText !== false) {
+      const d = await helper().request('read-text', { skip: SKIP });
+      text = directParagraphs(d.lines).join('\n');
+      debug(`read-text ${d.process || '?'}: ${text ? d.lines.length + ' lines' : 'nothing (' + d.why + ')'}, ${d.ms} ms`);
+    }
+    if (!text) {
+      const r = await helper().request('screen', picture
+        ? { picture: path.resolve(String(picture)), incremental: false }
+        : { incremental: false });
+      // Chinese lines only (menus and English text would crowd the reader), wrapped
+      // lines joined back into paragraphs
+      text = paragraphs(repair(r.lines, data()).lines).join('\n');
+    }
     if (!text) {
       await showNote('No Chinese found on the screen.');
       return;
@@ -210,6 +222,20 @@ async function readScreen() {
   } catch (e) {
     await showNote('Could not read the screen: ' + e.message);
   }
+}
+
+/* the text on the clipboard, in the reader: for text that can't be pointed at */
+async function readClipboard() {
+  const text = clipboard.readText().trim();
+  if (![...text].some(c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; })) {
+    await showNote('There is no Chinese text on the clipboard. Copy some, then try again.');
+    return;
+  }
+  await win.webContents.executeJavaScript(`(() => {
+    setReaderText(${JSON.stringify(text)}, 'Copied text');
+    if (location.hash === '#/reader/text') render(); else go('/reader/text');
+  })()`, true);
+  showWindow();
 }
 
 // a short message in the window, for when there is nothing to show
@@ -247,7 +273,7 @@ async function checkStore() {
 function startOverlay() {
   if (!overlays) {
     overlays = new Overlays({
-      ocr: helper, HZ: data, settings: () => settings, exclude: ownWindow, self: SELF,
+      ocr: helper, HZ: data, settings: () => settings, exclude: ownWindow, self: SELF, skip: SKIP,
       status: () => (store && store.status) || {}, log: debug,
     });
   }
@@ -290,6 +316,7 @@ function startHover() {
       key: () => settings.hoverKey, overlays: () => overlays, ocr: helper, HZ: data,
       status: () => (store && store.status) || {}, mark: markChar, open: openChar, log: debug,
       items: () => (store && store.items) || {}, learn: learnWord,
+      direct: () => settings.directText !== false, skip: SKIP,
       paused: async () => settings.pause.includes((await helper().request('foreground')).process),
     });
   }
@@ -339,6 +366,7 @@ ipcMain.handle('desktop-set', (e, patch) => {
       if (typeof patch.show[k] === 'boolean') s.show[k] = patch.show[k];
     }
     if (['ctrl', 'alt', 'shift', 'off'].includes(patch.hoverKey)) s.hoverKey = patch.hoverKey;
+    if (typeof patch.directText === 'boolean') s.directText = patch.directText;
     if (Array.isArray(patch.pause)) {
       s.pause = [...new Set(patch.pause.map(p => String(p).trim().toLowerCase().replace(/\.exe$/, '')).filter(Boolean))];
     }
@@ -368,6 +396,7 @@ function buildTrayMenu() {
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: 'Open HanziHome', click: showWindow },
     { label: 'Read the screen now', click: readScreen },
+    { label: 'Read copied text', click: readClipboard },
     { type: 'separator' },
     { label: 'Colour words on screen', type: 'checkbox', checked: settings.overlay,
       click: () => setSetting(s => { s.overlay = !s.overlay; }) },

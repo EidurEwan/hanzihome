@@ -38,8 +38,10 @@ function compile(sources, out, refs) {
 }
 
 const here = __dirname;
-compile([path.join(here, 'HanziOcr.cs')], path.join(here, 'bin', 'hanzi-ocr.exe'), [
+compile([path.join(here, 'HanziOcr.cs'), path.join(here, 'TextReader.cs')], path.join(here, 'bin', 'hanzi-ocr.exe'), [
   'System.Drawing.dll', 'System.Web.Extensions.dll', FACADE,
+  // UI Automation, for text read straight from programs (TextReader.cs)
+  ...['UIAutomationClient', 'UIAutomationTypes', 'WindowsBase'].map(n => path.join(FW, 'WPF', n + '.dll')),
   // for Windows.Foundation.Rect, which .NET maps to a struct of its own
   path.join(FW, 'System.Runtime.WindowsRuntime.dll'),
   ...['Foundation', 'Globalization', 'Graphics', 'Media', 'Security', 'Storage']

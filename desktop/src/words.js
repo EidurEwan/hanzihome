@@ -57,8 +57,12 @@ function stateOf(word, status, HZ) {
    (helper pixels -> global DIP); each word knows its line and its place among the
    line's words, so hover.js can gloss it in the context of its line */
 function wordsFromLines(lines, HZ, toGlobal) {
+  // lines read straight from a program ("src": "uia") are exact; only the OCR's
+  // need repairing
+  const direct = lines.filter(l => l.src === 'uia');
+  const read = repair(lines.filter(l => l.src !== 'uia'), HZ).lines;
   const out = [];
-  for (const line of repair(lines, HZ).lines) {
+  for (const line of direct.concat(read)) {
     wordsOf(line, HZ).forEach((w, index) => out.push(Object.assign(w, toGlobal(w), { line, index })));
   }
   return out;

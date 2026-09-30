@@ -63,6 +63,29 @@ sentence of the line it was read from as its example; after that the popup shows
 page: counts plus the Vocabulary and Characters tabs for the text currently recognised,
 reusing `vocabList()` / `charList()`.
 
+**Text straight from programs, OCR for the rest** (`ocr/TextReader.cs`). Most programs
+that show text hand it over through UI Automation's text pattern: browsers (the page is
+a document), Word, Notepad, Electron apps. The helper asks for it first:
+
+* the look-up (`text-at`): the element under the pointer, up to the nearest one with text,
+  `RangeFromPoint`, expanded to its line. A pure Chinese line's characters share its
+  rectangle evenly (they are all as wide); in a mixed line each run of Chinese is measured
+  on its own.
+* the overlay (`screen` with `text`): the window in front's visible ranges, a line at a
+  time. Those lines are painted out of the capture, so the OCR reads only the rest (other
+  windows, pictures, video) and doesn't see a scrolling page change. An unchanged window
+  costs nothing (its pixels are fingerprinted); a changed one a signature of its visible
+  text before any lines are read again.
+* "On screen now" (`read-text`): the window in front's lines, each numbered with its
+  paragraph, so a line that wraps on screen isn't taken for a new paragraph.
+
+Every call runs on its own thread with a deadline: a program that stops answering is left
+to the OCR for 30 s. Measured (`test/text.js`, a Chromium page): the line under a
+character in 5–25 ms, boxes within about 1 px; 132 of 133 characters right against the
+OCR's 114. On a real screen with Chrome in front: first read 590 ms (Chrome turns its
+accessibility on), unchanged rounds 35–50 ms. Text a program doesn't hand over (a canvas,
+a picture, a game) is read as before. The tray also has "Read copied text".
+
 ## How it works
 
 ```

@@ -2002,6 +2002,9 @@ function paintDesktopCard(state) {
       <select id="dk-key">${[['ctrl', 'Ctrl'], ['alt', 'Alt'], ['shift', 'Shift'], ['off', 'Off']]
         .map(([k, l]) => `<option value="${k}"${s.hoverKey === k ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
     <p class="small muted dk-note">Hold it and point at a word for its meaning. Alt makes some programs open their menus when you let go.</p>
+    ${check('dk-direct', s.directText !== false, 'Take text straight from programs that offer it')}
+    <p class="small muted dk-note">Browsers, Word, Notepad and most programs hand over their text: exact, and much
+      quicker than reading the screen, which is then only read for the rest (pictures, video, games).</p>
     ${check('dk-auto', state.autostart, 'Start with Windows', !state.canAutostart)}
     ${state.canAutostart ? '' : '<p class="small muted dk-note">Only the installed app can start with Windows.</p>'}
     <h3 class="dk-h">Pause in these programs</h3>
@@ -2020,6 +2023,7 @@ function paintDesktopCard(state) {
     document.getElementById('dk-' + k).addEventListener('change', () => set({ show: { [k]: on('dk-' + k) } }));
   }
   document.getElementById('dk-key').addEventListener('change', e => set({ hoverKey: e.target.value }));
+  document.getElementById('dk-direct').addEventListener('change', () => set({ directText: on('dk-direct') }));
   document.getElementById('dk-auto').addEventListener('change', () => set({ autostart: on('dk-auto') }));
   box.querySelectorAll('[data-unpause]').forEach(b => b.addEventListener('click', () =>
     set({ pause: s.pause.filter(n => n !== b.dataset.unpause) })));

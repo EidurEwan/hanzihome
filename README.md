@@ -280,7 +280,16 @@ and from the tray it:
 * shows the reader's word popup for the word under the pointer while you hold Ctrl, with
   the buttons to mark its characters and to add the word to your lessons (with the line
   it was on as the example);
-* opens whatever is on screen in the reader ("On screen now").
+* opens whatever is on screen in the reader ("On screen now"), or the text you copied
+  ("Read copied text").
+
+Where a program hands over its text (browsers, Word, Notepad, Electron apps: anything with
+UI Automation's text pattern), the app takes it from the program instead of reading the
+screen: the exact characters and where they are, with each paragraph as the program has it.
+The screen is read (OCR) only for the rest: other windows, pictures, video, games. On a page
+in Chrome, looking a word up takes about 10 ms; checking an unchanged screen, about 40 ms. A
+switch in Settings → Desktop app turns this off. `npx electron test/text.js` (in `desktop/`)
+compares both ways with where the characters really are.
 
 Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from
 here; `npm run dist` builds the installer. How it works, what was measured and what each

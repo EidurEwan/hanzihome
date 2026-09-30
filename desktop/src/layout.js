@@ -70,4 +70,21 @@ function paragraphs(lines) {
   return paras.map(p => punctuate(p.lines.map(l => l.text).join('')));
 }
 
-module.exports = { paragraphs, punctuate };
+/* lines read directly from a program (desktop/ocr/TextReader.cs), each numbered
+   with its paragraph (p) -> paragraphs of text, Chinese ones only. No guessing
+   from where lines sit: the program says where its paragraphs end, and its
+   punctuation is already right. */
+function directParagraphs(lines) {
+  const paras = [];
+  let cur = null, at = null;
+  for (const l of lines) {
+    if (cur === null || l.p !== at) { cur = []; paras.push(cur); at = l.p; }
+    cur.push(l.text);
+  }
+  const latin = c => /[A-Za-z0-9]/.test(c || '');
+  // a line that wrapped between two English words had its space at the break
+  const join = ts => ts.reduce((s, t) => s + (latin(s.slice(-1)) && latin(t[0]) ? ' ' : '') + t, '');
+  return paras.map(join).filter(hasHan);
+}
+
+module.exports = { paragraphs, directParagraphs, punctuate };

@@ -22,6 +22,9 @@
 //   {"id":5,"cmd":"forget"}                      drop remembered frames
 //   {"id":7,"cmd":"color","x":0,"y":0,"w":40,"h":40}   average colour there (tests)
 //   {"id":8,"cmd":"foreground"}                  {"process":"notepad"}: the program in front
+//   {"id":9,"cmd":"text-at","x":…,"y":…}         the line of text under a point, read
+//        directly from the program (TextReader.cs); no lines when it doesn't offer it
+//   {"id":10,"cmd":"read-text"}                  the visible text of the window in front
 //   {"id":6,"cmd":"quit"}
 //
 // A reply is {"id":…,"ok":true,…} or {"id":…,"ok":false,"error":"…"}. Text comes
@@ -34,6 +37,11 @@
 // same rectangle in strips STRIP pixels high and reads again only the bands that
 // changed, widened to whole remembered lines, keeping every other line as it
 // was. Nothing changed: {"changed":false} and no lines.
+//
+// "screen" with "text":true first reads the window in front directly, if it offers
+// its text (TextReader.cs), and blanks those lines out of the capture, so the OCR
+// only reads the rest: other windows, pictures, video. Those lines come back with
+// "src":"uia", and "direct" counts them. "skip":[pids] names HanziHome's processes.
 
 using System;
 using System.Collections.Generic;
@@ -61,6 +69,8 @@ namespace HanziOcr
 
     class Line
     {
+        public string Src;                    // "uia": read directly, not by OCR
+        public int Para = -1;                 // read directly: which paragraph (TextReader.cs)
         public string Text;
         public int X, Y, W, H;
         public List<Ch> Chars = new List<Ch>();
@@ -77,7 +87,7 @@ namespace HanziOcr
 
     static class Program
     {
-        const int Version = 1;
+        const int Version = 2;
         // Enlargement before OCR. desktop/test/ocr.js measured ×1.5 as the best single
         // setting (~97.6% of characters on its test pictures, against ~94% at ×1).
         const double DefaultScale = 1.5;
@@ -143,7 +153,8 @@ namespace HanziOcr
         static Dictionary<string, object> Handle(Dictionary<string, object> req)
         {
             string cmd = Str(req, "cmd");
-            if (cmd != "hello" && cmd != "quit" && engine == null)
+            // reading text directly and naming the program in front need no OCR
+            if (cmd != "hello" && cmd != "quit" && cmd != "text-at" && cmd != "read-text" && cmd != "foreground" && engine == null)
                 throw new Exception("Chinese (Simplified) OCR is not installed. Add it in Settings > Time & language > Language.");
             switch (cmd)
             {
@@ -161,7 +172,9 @@ namespace HanziOcr
                 case "screen": return ReadScreen(req);
                 case "color": return AverageColor(req);
                 case "foreground": return Foreground();
-                case "forget": Frames.Clear(); return new Dictionary<string, object>();
+                case "text-at": return TextReader.TextAt(req);
+                case "read-text": return TextReader.ReadText(req);
+                case "forget": Frames.Clear(); TextReader.Forget(); return new Dictionary<string, object>();
                 case "quit": return null;
                 default: throw new Exception("unknown command: " + cmd);
             }
@@ -177,6 +190,7 @@ namespace HanziOcr
             r["chinese"] = engine != null;
             r["languages"] = langs;
             r["maxSide"] = (int)OcrEngine.MaxImageDimension;
+            r["text"] = true;                                   // text-at, read-text, "screen" with "text"
             return r;
         }
 
@@ -285,16 +299,26 @@ namespace HanziOcr
             if (rect.Width <= 0 || rect.Height <= 0) throw new Exception("empty rectangle");
             double scale = Num(req, "scale", DefaultScale);
             bool incremental = !req.ContainsKey("incremental") || (bool)req["incremental"];
+            bool text = stand == null && req.ContainsKey("text") && (bool)req["text"];
+            string key = rect.X + "," + rect.Y + "," + rect.Width + "," + rect.Height;
 
             using (var bmp = stand ?? new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
             {
                 if (stand == null)
                     using (var g = Graphics.FromImage(bmp))
                         g.CopyFromScreen(rect.X, rect.Y, 0, 0, rect.Size, CopyPixelOperation.SourceCopy);
-                var pixels = PixelsOf(bmp);
                 times["capture"] = sw.ElapsedMilliseconds;
-
-                string key = rect.X + "," + rect.Y + "," + rect.Width + "," + rect.Height;
+                // the window in front, read directly when it offers its text; its lines
+                // are blanked so the OCR neither reads them again nor sees them change
+                List<Line> direct = null;
+                bool directChanged = false;
+                if (text)
+                {
+                    direct = TextReader.ScreenLines(req, key, rect, bmp, out directChanged);
+                    if (direct != null) Blank(bmp, direct, rect);
+                    times["text"] = sw.ElapsedMilliseconds;
+                }
+                var pixels = PixelsOf(bmp);
                 Frame last;
                 Frames.TryGetValue(key, out last);
                 var bands = new List<int[]>();
@@ -310,10 +334,12 @@ namespace HanziOcr
 
                 var r = new Dictionary<string, object>();
                 r["rect"] = new Dictionary<string, object> { { "x", rect.X }, { "y", rect.Y }, { "w", rect.Width }, { "h", rect.Height } };
+                r["direct"] = direct == null ? 0 : direct.Count;
                 if (!full && bands.Count == 0)
                 {
                     last.Pixels = pixels;
-                    r["changed"] = false;
+                    r["changed"] = directChanged;
+                    if (directChanged) r["lines"] = LinesJson(Merge(last.Lines, direct));
                     times["total"] = sw.ElapsedMilliseconds;
                     r["ms"] = times;
                     return r;
@@ -346,7 +372,7 @@ namespace HanziOcr
                 r["changed"] = true;
                 r["full"] = full;
                 r["bands"] = bandList;
-                r["lines"] = LinesJson(lines);
+                r["lines"] = LinesJson(Merge(lines, direct));
                 times["total"] = sw.ElapsedMilliseconds;
                 r["ms"] = times;
                 return r;
@@ -438,6 +464,33 @@ namespace HanziOcr
             return false;
         }
 
+        // lines read directly, painted out of a capture of rect (a little margin
+        // round each, so no sliver of them is left for the OCR)
+        static void Blank(Bitmap bmp, List<Line> lines, Rectangle rect)
+        {
+            using (var g = Graphics.FromImage(bmp))
+                foreach (var l in lines)
+                    g.FillRectangle(Brushes.White, l.X - rect.X - 3, l.Y - rect.Y - 3, l.W + 6, l.H + 6);
+        }
+
+        // the OCR's lines and the direct ones together; where both have a line, the
+        // direct one, which is exact
+        static List<Line> Merge(List<Line> ocr, List<Line> direct)
+        {
+            if (direct == null || direct.Count == 0) return ocr;
+            var all = new List<Line>(direct);
+            foreach (var o in ocr)
+            {
+                int cx = o.X + o.W / 2, cy = o.Y + o.H / 2;
+                bool covered = false;
+                foreach (var d in direct)
+                    if (cx >= d.X - 3 && cx < d.X + d.W + 3 && cy >= d.Y - 3 && cy < d.Y + d.H + 3) { covered = true; break; }
+                if (!covered) all.Add(o);
+            }
+            all.Sort(delegate(Line a, Line c) { return a.Y != c.Y ? a.Y.CompareTo(c.Y) : a.X.CompareTo(c.X); });
+            return all;
+        }
+
         // OCR one bitmap, enlarged by scale first (small text reads far better
         // bigger), with boxes mapped back to the unenlarged image plus an offset.
         static List<Line> Recognize(Bitmap bmp, double scale, int offX, int offY)
@@ -510,7 +563,7 @@ namespace HanziOcr
             return lines;
         }
 
-        static List<string> CodePoints(string s)
+        internal static List<string> CodePoints(string s)
         {
             var list = new List<string>();
             for (int i = 0; i < s.Length; i++)
@@ -521,7 +574,7 @@ namespace HanziOcr
             return list;
         }
 
-        static bool IsCjk(string cp)
+        internal static bool IsCjk(string cp)
         {
             int c = char.ConvertToUtf32(cp, 0);
             return (c >= 0x3000 && c <= 0x303F) || (c >= 0x3400 && c <= 0x9FFF) || (c >= 0xFF00 && c <= 0xFFEF)
@@ -530,7 +583,7 @@ namespace HanziOcr
 
         static bool IsLatin(char c) { return c < 0x3000 && char.IsLetterOrDigit(c); }
 
-        static List<object> LinesJson(List<Line> lines)
+        internal static List<object> LinesJson(List<Line> lines)
         {
             var list = new List<object>();
             foreach (var l in lines)
@@ -538,8 +591,11 @@ namespace HanziOcr
                 var chars = new List<object>();
                 foreach (var c in l.Chars)
                     chars.Add(new Dictionary<string, object> { { "t", c.T }, { "x", c.X }, { "y", c.Y }, { "w", c.W }, { "h", c.H } });
-                list.Add(new Dictionary<string, object> {
-                    { "text", l.Text }, { "x", l.X }, { "y", l.Y }, { "w", l.W }, { "h", l.H }, { "chars", chars } });
+                var d = new Dictionary<string, object> {
+                    { "text", l.Text }, { "x", l.X }, { "y", l.Y }, { "w", l.W }, { "h", l.H }, { "chars", chars } };
+                if (l.Src != null) d["src"] = l.Src;
+                if (l.Para >= 0) d["p"] = l.Para;
+                list.Add(d);
             }
             return list;
         }
@@ -566,7 +622,7 @@ namespace HanziOcr
             return d.TryGetValue(k, out v) && v != null ? v.ToString() : "";
         }
 
-        static double Num(Dictionary<string, object> d, string k, double fallback)
+        internal static double Num(Dictionary<string, object> d, string k, double fallback)
         {
             object v;
             return d.TryGetValue(k, out v) && v != null ? Convert.ToDouble(v) : fallback;

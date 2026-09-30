@@ -10,6 +10,10 @@
  * display's window, which draws the bars. Marking a character or changing a
  * setting recolours from the words already read, without reading again.
  *
+ * With settings.directText the helper first takes the text of the window in front
+ * straight from it, when it offers it (desktop/ocr/TextReader.cs): exact, and an
+ * unchanged page costs a few calls; the OCR then reads only the rest.
+ *
  * The helper works in physical pixels; windows in Electron's scaled units (DIP).
  * screen.screenToDipRect converts, and helper monitors are matched to Electron
  * displays by their physical origin.
@@ -30,7 +34,8 @@ class Overlays {
   /* opts: ocr() -> OcrHelper; HZ() -> the site's data; status() -> {char: 'learned'|…};
      settings() -> {show: {learned, learning, new}, interval, pause: [program names]};
      exclude() -> a DIP rect to leave bare (HanziHome's own window) or null;
-     self: HanziHome's own program name; log(msg); picture, offscreen (tests) */
+     self: HanziHome's own program name; skip: its process ids; log(msg);
+     picture, offscreen (tests) */
   constructor(opts) {
     this.o = opts;
     this.panes = [];
@@ -124,12 +129,14 @@ class Overlays {
           await this.o.ocr().request('forget');      // the words were dropped: read it all again
         }
         for (const p of this.panes.slice()) {
-          const r = await this.o.ocr().request('screen', Object.assign({ incremental: true }, p.request));
+          const direct = !this.o.picture && this.o.settings().directText !== false;
+          const r = await this.o.ocr().request('screen',
+            Object.assign({ incremental: true, text: direct, skip: this.o.skip || [] }, p.request));
           if (!r.changed || !this.running) continue;
           p.words = this.words(r.lines, p.toGlobal);
           const bars = this.paint(p);
-          this.log(`read ${JSON.stringify(p.request)}: ${r.lines.length} lines, ${p.words.length} words, ` +
-            `${bars.length} bars, ${r.ms.total} ms`);
+          this.log(`read ${JSON.stringify(p.request)}: ${r.lines.length} lines (${r.direct || 0} direct), ` +
+            `${p.words.length} words, ${bars.length} bars, ${r.ms.total} ms`);
         }
       }
     } catch (e) {

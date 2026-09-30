@@ -15,6 +15,8 @@ const DEFAULTS = {
                              // Not Alt by default: many programs open their menu
                              // bar when Alt is pressed and let go on its own.
   pause: [],                 // program names ("eldenring") where the app stays out of the way
+  directText: true,          // take text straight from programs that offer it (browsers,
+                             // Word, Notepad…); read the screen only for the rest
 };
 
 const file = () => path.join(app.getPath('userData'), 'settings.json');
