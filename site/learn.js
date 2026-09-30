@@ -1,20 +1,35 @@
-/* learn.js — lessons and spaced repetition, the way HanziHero does them.
+/* learn.js — lessons, and spaced repetition with FSRS.
  *
  * You add characters and words you meet to a lesson queue. A lesson shows the
  * item's parts, your mnemonic and an example, then checks you can type its
- * pinyin and its meaning; from then on it comes back for review on HanziHero's
- * schedule (https://hanzihero.com/docs/srs-stages): ten stages from Novice I
- * (a day) to Expert III (a year), then Master. A wrong answer halves the
- * interval, and halves it again for each of the item's last five reviews that
- * was also wrong.
+ * pinyin and its meaning. From then on it comes back for review when FSRS, the
+ * Free Spaced Repetition Scheduler (version 5, github.com/open-spaced-repetition),
+ * expects you to be about to forget it.
+ *
+ * FSRS keeps three numbers for each item's memory:
+ *   D  difficulty, 1 to 10: how hard the item is for you
+ *   S  stability, in days: how long until the chance of recalling it falls to 90%
+ *   R  retrievability: the chance of recalling it now, from S and the days since
+ *      the last review (retrievability())
+ * A review rates the recall 1 to 4 (again, hard, good, easy) and FSRS moves D and S
+ * by the rating. The rating is never asked for: gradeFrom() works it out from the
+ * answers (right or wrong, a slip of tone, how long before you started to type).
+ * The next review is due when R will have fallen to the retention you want (90%
+ * unless set otherwise).
+ *
+ * The stages (Novice I … Master, HanziHero's names) are bands of stability, so they
+ * say how long you would remember an item; Journeyman, a month and more, counts as
+ * learned on the rest of the site.
  *
  * An item, kept in the store under its characters (Store.data.items):
  *   {kind: 'char' | 'word', pin: 'rèn shi', mean: 'to know', alts: [...meanings],
- *    syn: [your synonyms], mnemonic, ex: {text, t} (where you met it),
- *    added, stage (0 = waiting for its lesson, 1-9 reviewing, 10 master), due, hist}
+ *    syn: [your synonyms], mnemonic, ex: {text, t} (where you met it), added,
+ *    stage (0: waiting for its lesson), D, S, last (the last review), due,
+ *    hist (right or not, lately), grades (the ratings, lately), reps, lapses}
  *
- * Pure functions, no DOM: site/app.js draws the pages, test/learn.js checks this.
- * Works in the browser (window.Learn) and in Node (require). */
+ * Pure functions, no DOM: site/study.js draws the pages, test/learn.js checks this
+ * (the FSRS numbers against the reference implementation's). Works in the browser
+ * (window.Learn) and in Node (require). */
 
 (function (root, factory) {
   const api = factory();
@@ -24,14 +39,14 @@
   'use strict';
 
   const DAY = 864e5;
-  // [name, days until the next review once an item reaches this stage]
+  // [name, the stability in days at which an item reaches this stage]
   const STAGES = [
     ['Lesson', 0],
-    ['Novice I', 1], ['Novice II', 4],
+    ['Novice I', 0], ['Novice II', 4],
     ['Apprentice I', 7], ['Apprentice II', 14],
     ['Journeyman I', 30], ['Journeyman II', 60],
     ['Expert I', 120], ['Expert II', 240], ['Expert III', 365],
-    ['Master', Infinity],
+    ['Master', 730],
   ];
   const MASTER = STAGES.length - 1;
   const LEARNED_FROM = 5;      // Journeyman and up count as learned on the rest of the site
@@ -41,11 +56,90 @@
   const stageName = s => (STAGES[s] || STAGES[0])[0];
   const group = s => GROUPS[s] || 'Lesson';
 
-  /* a little spread, so a day's lessons don't all come back in one lump (HanziHero
-     adds ±1 to ±4 days depending on the interval) */
-  function fuzz(days, rnd) {
-    const span = days >= 120 ? 4 : days >= 30 ? 2 : days >= 7 ? 1 : 0;
-    return span ? Math.round((rnd() * 2 - 1) * span) : 0;
+  // ---------------------------------------------------------------- FSRS-5
+
+  // the default weights, fitted by FSRS on a great many reviews
+  const W = [0.40255, 1.18385, 3.173, 15.69105, 7.1949, 0.5345, 1.4604, 0.0046, 1.54575, 0.1192,
+    1.01925, 1.9395, 0.11, 0.29605, 2.2698, 0.2315, 2.9898, 0.51655, 0.6621];
+  const DECAY = -0.5, FACTOR = 19 / 81;       // R(S days later) = 90%
+  const S_MIN = 0.01, MAX_DAYS = 36500, RETENTION = 0.9;
+  const AGAIN = 1, HARD = 2, GOOD = 3, EASY = 4;
+
+  const clampG = g => Math.max(1, Math.min(4, Math.round(g) || 1));
+  const clampD = d => Math.min(10, Math.max(1, d));
+  const clampS = s => Math.min(MAX_DAYS, Math.max(S_MIN, s));
+  const initD = g => clampD(W[4] - Math.exp((g - 1) * W[5]) + 1);
+  const initS = g => Math.max(W[g - 1], 0.1);
+
+  /* the chance of recalling it t days after the last review */
+  const retrievability = (t, S) => Math.pow(1 + FACTOR * t / S, DECAY);
+
+  function nextD(D, g) {
+    const d = D + (-W[6] * (g - 3)) * (10 - D) / 9;      // a move, damped near 10
+    return clampD(W[7] * initD(EASY) + (1 - W[7]) * d);  // and a pull back to the mean
+  }
+  // recalled: stability grows, the more the less likely recall had become
+  const recallS = (D, S, R, g) => clampS(S * (1 + Math.exp(W[8]) * (11 - D) * Math.pow(S, -W[9])
+    * (Math.exp((1 - R) * W[10]) - 1) * (g === HARD ? W[15] : 1) * (g === EASY ? W[16] : 1)));
+  // forgotten: stability falls (never above what it was, less the short-term boost)
+  const forgetS = (D, S, R) => Math.min(
+    clampS(W[11] * Math.pow(D, -W[12]) * (Math.pow(S + 1, W[13]) - 1) * Math.exp((1 - R) * W[14])),
+    Math.max(S_MIN, S / Math.exp(W[17] * W[18])));
+  // reviewed again the same day
+  const shortS = (S, g) => clampS(S * Math.exp(W[17] * (g - 3 + W[18])));
+
+  /* whole days between two times, by the calendar (as FSRS counts them) */
+  const days = (from, to) => Math.max(0, Math.round((dayStart(to) - dayStart(from)) / DAY));
+  const dayStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); return +d; };
+
+  /* days until R falls to the retention wanted, a little spread (FSRS's fuzz ranges)
+     so a day's reviews don't all come back on one day */
+  function intervalFor(S, retention, rnd, elapsed = 0) {
+    const r = Math.min(0.99, Math.max(0.7, retention || RETENTION));
+    const ivl = Math.min(Math.max(1, Math.round(S * (Math.pow(r, 1 / DECAY) - 1) / FACTOR)), MAX_DAYS);
+    if (!rnd || ivl < 2.5) return ivl;
+    let delta = 1;
+    for (const [start, end, factor] of [[2.5, 7, 0.15], [7, 20, 0.1], [20, Infinity, 0.05]]) {
+      delta += factor * Math.max(Math.min(ivl, end) - start, 0);
+    }
+    const hi = Math.min(Math.round(ivl + delta), MAX_DAYS);
+    let lo = Math.max(2, Math.round(ivl - delta));
+    if (ivl > elapsed) lo = Math.max(lo, elapsed + 1);
+    lo = Math.min(lo, hi);
+    return Math.floor(rnd() * (hi - lo + 1) + lo);
+  }
+
+  /* the stage an item's stability puts it at */
+  function stageFor(S) {
+    let s = 1;
+    for (let k = 2; k <= MASTER; k++) if (S >= STAGES[k][1]) s = k;
+    return s;
+  }
+
+  /* schedule the next review from the item's stability, and set its stage */
+  function schedule(item, now, retention, rnd, elapsed = 0) {
+    item.stage = stageFor(item.S);
+    item.due = now + intervalFor(item.S, retention, rnd, elapsed) * DAY;
+    return item;
+  }
+
+  /* An item from before FSRS: its stability from the stage it had reached (the wait
+     that stage gave), its difficulty higher for each recent miss */
+  function adopt(item) {
+    if (item.S != null || !(item.stage >= 1)) return item;
+    item.S = Math.max(1, STAGES[Math.min(item.stage, MASTER)][1]) || 1;
+    if (item.stage === 1) item.S = 1;
+    const misses = (item.hist || []).slice(-5).filter(r => !r).length;
+    item.D = clampD(initD(GOOD) + misses);
+    return item;
+  }
+
+  /* R now, and the rest of an item's memory, for showing */
+  function memory(item, now) {
+    adopt(item);
+    if (item.S == null) return null;
+    const since = item.last || item.learnt || item.joined || item.added || now;
+    return { D: item.D, S: item.S, R: retrievability(Math.max(0, (now - since) / DAY), item.S) };
   }
 
   function newItem(kind, info, now) {
@@ -55,65 +149,114 @@
     };
   }
 
-  function finishLesson(item, now) {
-    item.stage = 1;
-    item.due = now + STAGES[1][1] * DAY;
+  /* A lesson done: its quiz is the item's first rating (good when both answers were
+     right first time), which sets its first difficulty and stability. */
+  function finishLesson(item, now, grade = GOOD, opts = {}) {
+    const g = clampG(grade);
+    item.D = initD(g);
+    item.S = initS(g);
     item.learnt = now;
-    return item;
-  }
-
-  /* a review's result: right = both questions right first time */
-  function review(item, right, now, rnd = Math.random) {
-    const wrongBefore = (item.hist || []).slice(-5).filter(r => !r).length;
-    item.hist = (item.hist || []).concat(right).slice(-10);
     item.last = now;
-    if (right) {
-      item.stage = Math.min(MASTER, Math.max(1, item.stage) + 1);
-      const days = STAGES[item.stage][1];
-      item.due = days === Infinity ? 0 : now + (days + fuzz(days, rnd)) * DAY;
-      return item;
-    }
-    const days = STAGES[Math.max(1, Math.min(item.stage, MASTER - 1))][1] / Math.pow(2, 1 + wrongBefore);
-    let stage = 1;
-    for (let s = 1; s < MASTER; s++) if (STAGES[s][1] <= days) stage = s;
-    item.stage = stage;
-    item.due = now + days * DAY;
-    return item;
+    item.reps = 1;
+    item.lapses = 0;
+    item.grades = [g];
+    return schedule(item, now, opts.retention, opts.rnd);
   }
 
-  const isDue = (item, now) => item.stage >= 1 && item.stage < MASTER && item.due <= now;
+  /* A review. grade: 1 again (forgotten), 2 hard, 3 good, 4 easy (true and false stand
+     for good and again). A lapse is relearned before the session ends (the question
+     comes back until it is right), which FSRS counts as a same-day review.
+     opts: retention; rnd (spreads the next due date); assumeDue: rate it as if it
+     were reviewed right when due (a calibration test: how long it has really been is
+     unknown). */
+  function review(item, grade, now, rnd, opts = {}) {
+    const g = clampG(grade === true ? GOOD : grade === false ? AGAIN : grade);
+    adopt(item);
+    if (item.S == null) { item.D = initD(g); item.S = initS(g); }
+    const since = item.last || item.learnt || item.joined || item.added || now;
+    const t = opts.assumeDue ? intervalFor(item.S, opts.retention) : days(since, now);
+    const R = retrievability(t, item.S);
+    let S, D = item.D;
+    if (t === 0 && !opts.assumeDue) S = shortS(item.S, g);
+    else if (g === AGAIN) S = forgetS(D, item.S, R);
+    else S = recallS(D, item.S, R, g);
+    D = nextD(D, g);
+    if (g === AGAIN) {                      // relearned in the session: a same-day good
+      S = shortS(S, GOOD);
+      D = nextD(D, GOOD);
+      item.lapses = (item.lapses || 0) + 1;
+    }
+    item.S = S;
+    item.D = D;
+    item.last = now;
+    item.reps = (item.reps || 0) + 1;
+    item.hist = (item.hist || []).concat(g > AGAIN).slice(-10);
+    item.grades = (item.grades || []).concat(g).slice(-10);
+    return schedule(item, now, opts.retention, rnd, t);
+  }
+
+  /* The rating a review earned, worked out from the answers: one per question, each
+     {ok, near (a slip: the right syllables with a wrong tone), ms (from the question
+     showing to the first key typed)}. Wrong: again. A slip, or a long think: hard.
+     Right at once on every question: easy. Otherwise good. */
+  const QUICK = 3000, SLOW = 15000;
+  function gradeFrom(answers) {
+    if (!answers.length) return GOOD;
+    if (answers.some(a => !a.ok && !a.near)) return AGAIN;
+    if (answers.some(a => a.near || a.ms > SLOW)) return HARD;
+    if (answers.every(a => a.ms <= QUICK)) return EASY;
+    return GOOD;
+  }
+  const GRADE_NAMES = [null, 'Again', 'Hard', 'Good', 'Easy'];
+
+  const isDue = (item, now) => item.stage >= 1 && item.due <= now;
   const waiting = item => item.stage === 0;
 
   /* how many reviews fall due on each of the next `days` days (index 0 = today, from now) */
-  function forecast(items, now, days = 7) {
-    const start = new Date(now); start.setHours(0, 0, 0, 0);
-    const out = new Array(days).fill(0);
+  function forecast(items, now, n = 7) {
+    const start = dayStart(now);
+    const out = new Array(n).fill(0);
     for (const it of items) {
-      if (it.stage < 1 || it.stage >= MASTER) continue;
+      if (it.stage < 1) continue;
       const k = Math.max(0, Math.floor((it.due - start) / DAY));
-      if (k < days) out[k]++;
+      if (k < n) out[k]++;
     }
     return out;
   }
 
-  /* what a character's review stage means for the rest of the site */
+  /* what a character's stage means for the rest of the site */
   const statusFor = item => item.stage >= LEARNED_FROM ? 'learned' : item.stage >= 1 ? 'learning' : null;
 
   /* A character you already know (marked Learned on the rest of the site) joins the
-     reviews at Journeyman I without a lesson; its first review comes `wait` ms from now.
-     It has no `learnt` time, so it doesn't count against the day's lessons. */
+     reviews at Journeyman I without a lesson: stability a month, difficulty average;
+     its first review comes `wait` ms from now. It has no `learnt` time, so it doesn't
+     count against the day's lessons. */
   function known(kind, info, now, wait) {
     const item = newItem(kind, info, now);
-    item.stage = LEARNED_FROM;
+    item.S = STAGES[LEARNED_FROM][1];
+    item.D = initD(GOOD);
+    item.stage = stageFor(item.S);
     item.joined = now;
     item.due = now + wait;
     return item;
   }
 
+  /* A calibration test sorts items (above all the characters marked learned, which
+     joined at Journeyman I unchecked) by how well you really know them: a review,
+     rated from the answers like any other, taken as if it came right when due. */
+  function calibrate(item, grade, now, rnd, opts = {}) {
+    review(item, grade, now, rnd, Object.assign({}, opts, { assumeDue: true }));
+    item.cal = now;
+    return item;
+  }
+
+  /* joined as a known character and never checked since: what calibration is for */
+  const uncalibrated = item => !!item.joined && !item.cal && !(item.hist || []).length && item.stage >= 1;
+
   /* back from vacation: every review waits as long again as you were away */
   function resume(items, since, now) {
     const away = Math.max(0, now - since);
-    for (const it of Object.values(items)) if (it.stage >= 1 && it.stage < MASTER) it.due += away;
+    for (const it of Object.values(items)) if (it.stage >= 1) it.due += away;
   }
 
   // ------------------------------------------------------------ settings
@@ -127,6 +270,7 @@
     lessonLimit: 10,           // lessons a day (0: no limit)
     wordLimit: 7,              // how many of those may be words
     reviewLimit: 0,            // a soft limit on reviews a day (0: none)
+    retention: 0.9,            // FSRS: review when the chance of recall has fallen to this
     charUnlock: 'now',         // a character waits for its components: 'now' | 'learned' | 'familiar'
     wordWait: true,            // a word waits for its characters...
     wordUnlock: 'familiar',    // ...until they are 'familiar' or 'learned' (lesson done)
@@ -143,7 +287,6 @@
   };
   const settings = s => Object.assign({}, DEFAULTS, s || {});
 
-  const dayStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); return +d; };
   const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 
   function shuffle(a, rnd) {
@@ -159,14 +302,11 @@
       case 'type': return ks.sort((a, b) => (it(a).kind === 'word') - (it(b).kind === 'word') || it(a).due - it(b).due);
       case 'oldest': return ks.sort((a, b) => since(it(a)) - since(it(b)));
       case 'newest': return ks.sort((a, b) => since(it(b)) - since(it(a)));
-      case 'lowest': return ks.sort((a, b) => it(a).stage - it(b).stage || it(a).due - it(b).due);
+      case 'lowest': return ks.sort((a, b) => it(a).stage - it(b).stage || (it(a).S || 0) - (it(b).S || 0));
       case 'easiest': {
-        // most likely still remembered: the least time gone by for the wait it was given
-        const worn = x => {
-          const from = x.last || since(x), wait = Math.max(1, x.due - from);
-          return (now - from) / wait;
-        };
-        return ks.sort((a, b) => worn(it(a)) - worn(it(b)));
+        // most likely still remembered: the highest retrievability now
+        const R = x => { const m = memory(x, now); return m ? m.R : 0; };
+        return ks.sort((a, b) => R(it(b)) - R(it(a)));
       }
       default: return shuffle(ks, rnd);
     }
@@ -371,6 +511,8 @@
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson,
     review, known, resume, isDue, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
+    W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin,
   };
 });

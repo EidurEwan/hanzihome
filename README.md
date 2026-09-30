@@ -79,12 +79,22 @@ lessons** (on a character's page, or in the reader's word popup, here or on the 
 character or word in a queue, with the sentence you found it in. A lesson, five at a time, goes
 through its parts (a character's components and sound component, a word's characters), a
 mnemonic you write yourself on a scaffold of those parts, its meanings and pronunciation, and
-examples, then asks you to type its pinyin (tone numbers: `ren4shi`), then its meaning. After
-that it comes back for review on HanziHero's ten stages: a day, 4 days, a week, 2 weeks, a
-month, 2, 4 and 8 months and a year, then Master. A review asks both questions, the
+examples, then asks you to type its pinyin (tone numbers: `ren4shi`), then its meaning.
+
+Reviews are scheduled by [FSRS](https://github.com/open-spaced-repetition) (version 5, its
+default weights), checked against the reference implementation in `test/learn.js`. Each item
+has a difficulty (1–10) and a stability (days until the chance of recalling it falls to 90%),
+and so a retrievability, the chance of recalling it now; it comes back when that falls to the
+retention you want (90% unless set otherwise in Settings). The rating each review gives FSRS
+isn't asked for: it comes from the answers. A wrong answer (or the answer shown) is *again*, a
+slip of tone or a long think (over 15 seconds before typing starts) *hard*, right *good*, right
+and typing within 3 seconds on both questions *easy*; the lesson's quiz gives the first rating.
+A lapse is relearned in the session, which FSRS counts as a same-day review. The stages keep
+HanziHero's names as bands of stability (Novice under 4 days, Apprentice from a week,
+Journeyman from a month, Expert from 4 months, Master from 2 years), and the item info panel
+shows each item's numbers. A review asks both questions, the
 meaning only once the pronunciation is right (in pairs or shuffled); anything missed comes
-back again before the session ends and has its interval halved (halved again for each miss
-in its last five reviews). A neutral tone may be
+back again before the session ends. A neutral tone may be
 typed with any tone or none, meanings allow a typo and ignore "to" and brackets, and **My
 answer was right** keeps your wording as a synonym. Under the answer is HanziHero's toolbar,
 with its keys: item info once answered (I: parts, pronunciation, meaning and your synonyms (+
@@ -95,18 +105,24 @@ app), wrap up (W: finish the items already started, leave the rest for next time
 (Ctrl+Z: the answer doesn't count and the question comes again later). Tabs and windows open on
 the site follow each other's changes. The summary after a session shows the share right first
 time, what was reviewed, right and missed and how long it took, a tile per item with the stage
-it moved to (and from) and what you answered when you missed it, which characters became
+it moved to (and from), the rating the app gave it, its stability and difficulty, and what you
+answered when you missed it, which characters became
 learned, mastered or slipped back to learning, and when the next reviews come. **Practice the
 missed** runs them again without changing their schedule, as does **Recent mistakes** on the
 Study page (misses from the last three days). A character counts as learning from its first lesson and as
 learned from Journeyman (a month). Every character marked Learned is in the reviews too,
 from Journeyman I: ones marked before this have their first reviews spread over a month, most
-common first (20 a day at most), and one marked later comes up a month after. The Study page
+common first (20 a day at most), and one marked later comes up a month after. The
+**calibration test** (Study → Calibration test) sorts them by how well you really know them: a
+review session over the ones not yet checked, rated from your answers like any other and taken
+as if each came right when due, so FSRS puts each where it fits (from a stability of a month:
+wrong goes to Novice, a slip stays at Journeyman, right goes up to Journeyman II, right at once
+to Expert). The ones you didn't know can go back to the lessons. The Study page
 shows what you can start now (and why not, when nothing), the week ahead, the lesson queue
 (☆ to prioritize, 🔒 for what waits to unlock) and how many items are at each stage.
 
 HanziHero's settings are in **Settings → Lessons and reviews**, saved as you change them and
-synced: lesson batch size; daily lesson limit (Casual 5 to Jump start 40, or none) and how many
+synced: the desired retention for FSRS (80–97%; changing it moves every review); lesson batch size; daily lesson limit (Casual 5 to Jump start 40, or none) and how many
 of those may be words; a soft daily review limit; when a character unlocks (right away, or once
 its components are learned or familiar) and when a word does (once its characters are learned
 or familiar; adding a word can put its unknown characters at the front of the queue);

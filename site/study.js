@@ -170,7 +170,16 @@ async function sentenceFor(k, it) {
 const partGloss = c => glossOf(c) || String((HZ.index[c] || [])[3] || '').split(/;|…/)[0].trim();
 
 /* the item's main meaning, and the rest */
-const primary = it => String(it.mean || '').split(';')[0].trim();
+const primary = it => {
+  // the first sense, without the notes in brackets that open some: "(pronoun) this",
+  // "(third-person singular) (…) he"; a sense that is only a note stays as it is
+  const raw = String(it.mean || '').split(';').map(x => x.trim()).filter(Boolean);
+  const bare = raw.map(x => x.replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim());
+  let p = bare.find(Boolean) || raw[0] || '';
+  // cut short in the dictionary's index: end at the last whole phrase
+  if (p.endsWith('…')) { const cut = p.lastIndexOf(','); if (cut > 8) p = p.slice(0, cut); }
+  return p;
+};
 const others = it => Learn.meanings(it).filter(m => m !== primary(it).toLowerCase().replace(/^to /, ''));
 
 /* what a page needs about an item beyond what is stored: its parts, the words it is
@@ -188,7 +197,7 @@ async function itemFacts(k, it) {
       if (r) {
         if (!it.pin) it.pin = r[1];
         if (!it.alts.length) it.alts = r[2].slice(0, 6);
-        if (!it.mean) it.mean = r[2].slice(0, 2).join('; ');
+        if (!it.mean || /…$/.test(it.mean)) it.mean = r[2].slice(0, 2).join('; ');   // (the index's are cut short)
       }
     }
   } else {
@@ -291,7 +300,7 @@ function pageStudy() {
 
 function drawStudy() {
   const d = Store.load(), cfg = Store.cfg(), items = Object.entries(d.items), now = Date.now();
-  const p = Store.plan(), mistakes = recentMistakes();
+  const p = Store.plan(), mistakes = recentMistakes(), unsorted = calibrationSets().unsorted.length;
   const fc = Learn.forecast(items.map(e => e[1]), now, 7);
   const max = Math.max(1, ...fc);
   const dayName = i => i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
@@ -336,6 +345,11 @@ function drawStudy() {
     <p class="small muted lx-today">Today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
       (${of(p.wordsToday, cfg.lessonLimit && Math.min(cfg.wordLimit, cfg.lessonLimit))} words) ·
       ${of(p.reviewsToday, cfg.reviewLimit)} reviews · <a href="#/settings">Settings</a></p>
+    ${unsorted ? `<section class="card cb-cta">
+      <h2>Sort your learned characters</h2>
+      <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
+        Journeyman without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
+      <p><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : ''}
     <section class="card">
       <h2 class="caps">Upcoming reviews</h2>
       <div class="lx-fc">${fc.map((n, i) => `<div><span>${dayName(i)}</span>
@@ -362,10 +376,14 @@ function drawStudy() {
       <h2 class="caps">Stages</h2>
       <div class="lx-stages">${groups.map(g =>
         `<div class="${g.toLowerCase()}"><b>${inGroup(g)}</b><span>${g}</span></div>`).join('')}</div>
-      <p class="small muted">Reviews come back after a day, 4 days, a week, 2 weeks, a month,
-        2, 4 and 8 months and a year, then the item is mastered. A miss halves the wait.
-        Characters at Journeyman or beyond count as learned on the rest of the site, and
-        characters you mark learned join the reviews there.</p>
+      <p class="small muted">Reviews are scheduled by FSRS, which keeps each item's difficulty and
+        stability (how many days until your chance of recalling it falls to 90%) and brings it back
+        when that chance falls to ${Math.round(cfg.retention * 100)}%. Each review is rated from your
+        answers: wrong is <i>again</i>, a slip of tone or a long think <i>hard</i>, right <i>good</i>,
+        right straight away <i>easy</i>. The stages are bands of stability: Novice under 4 days,
+        Apprentice from a week, Journeyman from a month (learned, on the rest of the site), Expert from
+        4 months, Master from 2 years. Characters you mark learned join at Journeyman; a
+        <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.</p>
     </section>`, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { Store.learnRemove(b.dataset.rm); redraw(); }));
@@ -513,6 +531,7 @@ async function pageLessons() {
           s.pinAnswer = pa;
           return pageLessons();
         }
+        s.missed = (s.missed || 0) + 1;
         verdict.innerHTML = `<p class="lx-wrong">It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}). Try again.</p>`;
         return;
       }
@@ -520,13 +539,18 @@ async function pageLessons() {
       if (!ma.trim()) return;
       if (Learn.checkMeaning(ma, it)) {
         Sound.ding();
-        Learn.finishLesson(Store.item(k) || it, Date.now());
+        // the quiz is the item's first rating for FSRS: right first time is good, one
+        // miss hard, more again
+        const g = !s.missed ? 3 : s.missed === 1 ? 2 : 1;
+        Learn.finishLesson(Store.item(k) || it, Date.now(), g, { retention: Store.cfg().retention, rnd: Math.random });
+        s.missed = 0;
         Store.learnSaved(k);
         s.done.push(k);
         s.i++; s.tab = 0; s.pinOk = null;
         markNav(currentPath());
         return pageLessons();
       }
+      s.missed = (s.missed || 0) + 1;
       verdict.innerHTML = `<p class="lx-wrong">It means <b>${esc(primary(it))}</b>. Try again.</p>`;
     });
   }
@@ -538,7 +562,7 @@ function lessonsDone() {
   lessonState = null;
   app.innerHTML = '<h1 class="page-title">Lessons</h1>' + withRail(`<div class="card">
     <h2>${s.done.length} lesson${s.done.length === 1 ? '' : 's'} done</h2>
-    <p class="muted">They come back for their first review tomorrow.</p>
+    <p class="muted">They come back for their first review when FSRS expects you to start forgetting them: in a few days for those you got right first time.</p>
     <p class="row">${more ? `<a class="btn" href="#/lessons" id="lx-more">More lessons (${more})</a>` : ''}
       <a class="btn quiet" href="#/study">Back to study</a></p></div>`, true);
   const m = document.getElementById('lx-more');
@@ -568,8 +592,9 @@ const TOOLS = ['info', 'sound', 'settings', 'reveal', 'open', 'wrap', 'undo'];
 const toolIcon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOOL_ICONS[name]}</svg>`;
 
-/* a review session over these items; practice ones leave the schedule alone */
-function newSession(keys, practice) {
+/* a session over these items: 'review'; 'practice', which leaves the schedule alone;
+   or 'calibrate' (the calibration test) */
+function newSession(keys, mode = 'review') {
   // Item question order: pronunciation then meaning, in pairs or shuffled (a meaning
   // still waits for its pronunciation: see deferMeaning)
   let queue = [];
@@ -582,9 +607,12 @@ function newSession(keys, practice) {
     secs: {},           // info sections opened or closed by hand, for this question
     edit: null,         // 'mnemonic' | 'note', being edited in the info panel
     wrap: false, parked: [],
-    practice: !!practice, start: Date.now(),
+    mode, practice: mode === 'practice', calibrating: mode === 'calibrate', start: Date.now(),
     before: Object.fromEntries(keys.map(k => [k, d.items[k] ? d.items[k].stage : 0])),   // for the summary
     typed: {},          // the misses: {key: [{q, answer}]}
+    first: {},          // each question's first answer: {key: {pinyin: {ok, near, ms}, meaning: …}}
+    grades: {},         // the rating each item earned (1 again … 4 easy)
+    asked: -1, askedAt: 0, keyAt: 0,   // the question on screen, since when, its first key
   };
 }
 
@@ -603,7 +631,7 @@ async function pageReviews() {
       paintRail();
       return;
     }
-    reviewState = newSession(keys, false);
+    reviewState = newSession(keys, 'review');
   }
   const s = reviewState;
   if (s.i >= s.queue.length) return reviewsDone();
@@ -626,6 +654,7 @@ async function pageReviews() {
 
   app.innerHTML = `
     <div class="rv-top">${s.practice ? '<span class="rv-practice">Practice: the schedule stays as it is</span>' : ''}
+      ${s.calibrating ? '<span class="rv-practice">Calibration test</span>' : ''}
       ${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
       ${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
@@ -650,6 +679,8 @@ async function pageReviews() {
     ${s.panel === 'info' && shown ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('info')}">${infoPanel(k, Store.item(k), q)}</div>` : ''}`;
 
   const input = document.getElementById('rv-in');
+  if (s.asked !== s.i) { s.asked = s.i; s.askedAt = Date.now(); s.keyAt = 0; }
+  input.addEventListener('input', () => { if (!s.keyAt) s.keyAt = Date.now(); });
   const edit = document.getElementById('rv-edit');
   if (edit) edit.focus();
   else if (s.focus === 'syn' && document.getElementById('rv-synin')) document.getElementById('rv-synin').focus();
@@ -674,6 +705,13 @@ async function pageReviews() {
       Sound.ding();
       if (q === 'pinyin') Sound.say(k);
     }
+    // the first answer to each question is what the rating goes by: right or wrong,
+    // a slip (the right syllables with a wrong tone), and how soon typing began
+    const f = s.first[k] = s.first[k] || {};
+    if (!f[q]) {
+      const nearly = !ok && q === 'pinyin' && Learn.parsePinyin(answer).letters === Learn.parsePinyin(it.pin).letters;
+      f[q] = { ok, near: nearly, ms: (s.keyAt || Date.now()) - s.askedAt };
+    }
     s.shown = { ok, answer };
     if (!ok) {
       s.misses[k] = (s.misses[k] || 0) + 1;
@@ -688,6 +726,8 @@ async function pageReviews() {
     Sound.rip();
     addSynonym(k, shown.answer);
     takeBack(k, q);
+    const f = (s.first[k] || {})[q];
+    if (f) { f.ok = true; f.near = false; }
     s.shown = { ok: true, answer: shown.answer };
     pageReviews();
   });
@@ -738,6 +778,8 @@ function reviewTool(name) {
     if (s.shown) return;
     s.shown = { ok: false, answer: '', revealed: true };
     s.misses[k] = (s.misses[k] || 0) + 1;
+    const f = s.first[k] = s.first[k] || {};
+    if (!f[q]) f[q] = { ok: false, near: false, ms: Infinity };
     (s.typed[k] = s.typed[k] || []).push({ q, answer: '' });
     s.queue.push({ k, q });
     s.panel = 'info';
@@ -755,6 +797,8 @@ function reviewTool(name) {
     // don't count this answer: the question goes back into the queue, later on
     Sound.rip();
     if (!s.shown.ok) takeBack(k, q);
+    if (s.first[k]) delete s.first[k][q];
+    s.asked = -1;
     const [cur] = s.queue.splice(s.i, 1);
     const at = s.i + 1 + Math.floor(Math.random() * Math.max(0, s.queue.length - s.i));
     s.queue.splice(Math.min(at, s.queue.length), 0, cur);
@@ -822,6 +866,7 @@ function infoPanel(k, it, q) {
     ${sec('Notes', s.edit === 'note' ? editing('note', note, 'Anything to remember about it…')
       : `${note ? `<p class="rv-text">${esc(note)}</p>` : ''}
         <p><button class="btn quiet" data-edit="note">${note ? 'Edit' : 'Add a note'}</button></p>`, true)}
+    ${sec('Memory', memoryPanel(it), false)}
     ${sec('Usage', `${it.ex && it.ex.text ? `<p class="muted small">Where you found it:</p>${foundIn(k, it)}` : ''}
       ${f.words.length ? `<p class="muted small">Words it is in:</p><div class="lx-chips">${f.words.map(([w, p]) =>
         lxChip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
@@ -884,15 +929,17 @@ function nextQuestion() {
     a[q] = true;
     if (a.meaning && a.pinyin) {
       const it = Store.item(k), right = !s.misses[k];
-      if (!s.practice) {
-        Learn.review(it, right, Date.now());
-        Store.learnSaved(k);
-      }
+      const g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}));
+      const opts = { retention: Store.cfg().retention };
+      if (s.calibrating) Learn.calibrate(it, g, Date.now(), Math.random, opts);
+      else if (!s.practice) Learn.review(it, g, Date.now(), Math.random, opts);
+      if (!s.practice) Store.learnSaved(k);
       (right ? s.right : s.wrong).push(k);
       markNav(currentPath());
     }
   }
   s.i++;
+  s.asked = -1;
   s.shown = null;
   s.panel = s.panel === 'settings' ? 'settings' : null;
   s.edit = null;
@@ -911,7 +958,11 @@ function reviewsDone() {
   const pct = done ? Math.round(100 * s.right.length / done) : 100;
   const secs = Math.round((now - s.start) / 1000);
   const time = secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s`;
-  const title = s.practice ? 'Practice summary' : 'Review summary';
+  const title = s.practice ? 'Practice summary' : s.calibrating ? 'Calibration summary' : 'Review summary';
+  // how the app rated each item from the answers, and how many got each rating
+  const rated = [0, 0, 0, 0, 0];
+  for (const k of Object.keys(s.grades)) rated[s.grades[k]]++;
+  const gradeTag = g => g ? `<span class="rs-grade g${g}" title="${esc(GRADE_WHY[g])}">${Learn.GRADE_NAMES[g]}</span>` : '';
 
   const stage = st => `<span class="rs-stage ${Learn.group(st).toLowerCase()}">${esc(Learn.stageName(st))}</span>`;
   const tile = k => {
@@ -922,20 +973,27 @@ function reviewsDone() {
       : after < before ? `<small class="down">↓ from ${esc(Learn.stageName(before))}</small>` : '<small>stays</small>');
     const typed = (s.typed[k] || []).map(t => `${t.q === 'pinyin' ? 'pronunciation' : 'meaning'}
       ${t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
+    const m = !s.practice && Learn.memory(it, now);
     const href = (it.kind === 'word' ? '#/search/' : '#/character/') + encodeURIComponent(k);
     return `<a class="rs-item ${it.kind}" href="${href}">
       <span class="rs-glyph han">${esc(k)}</span>
       <span class="rs-body"><span><b>${esc(it.pin)}</b> ${esc(primary(it))}</span>
-        <span class="rs-move">${move}</span>
+        <span class="rs-move">${gradeTag(s.grades[k])}${move}</span>
+        ${m ? `<span class="rs-mem" title="Stability: days until the chance of recall falls to 90%. Difficulty: 1 to 10.">
+          stability ${days(m.S)} · difficulty ${m.D.toFixed(1)}</span>` : ''}
         ${typed ? `<span class="rs-typed">You answered: ${typed}</span>` : ''}</span></a>`;
   };
   const chars = ks => ks.filter(k => d.items[k] && d.items[k].kind !== 'word');
   const learned = s.practice ? [] : chars(s.right).filter(k => s.before[k] < Learn.LEARNED_FROM && d.items[k].stage >= Learn.LEARNED_FROM);
   const slipped = s.practice ? [] : chars(s.wrong).filter(k => s.before[k] >= Learn.LEARNED_FROM && d.items[k].stage < Learn.LEARNED_FROM);
-  const mastered = s.practice ? [] : s.right.filter(k => d.items[k] && d.items[k].stage >= Learn.MASTER);
+  const mastered = s.practice ? [] : Object.keys(s.grades).filter(k => d.items[k] && d.items[k].stage >= Learn.MASTER
+    && s.before[k] < Learn.MASTER);
+  // calibration: the ones not known at all could start again from a lesson
+  const forgot = s.calibrating ? Object.keys(s.grades).filter(k => s.grades[k] === 1 && d.items[k]) : [];
+  const unsorted = s.calibrating ? calibrationSets().unsorted : [];
 
   // what comes next
-  const upcoming = Object.values(d.items).filter(it => it.stage >= 1 && it.stage < Learn.MASTER && it.due > now)
+  const upcoming = Object.values(d.items).filter(it => it.stage >= 1 && it.due > now)
     .map(it => it.due).sort((a, b) => a - b);
   const soon = upcoming.filter(t => t - now < Learn.DAY).length;
   const when = t => {
@@ -957,8 +1015,13 @@ function reviewsDone() {
           <div><b>${time}</b><span>time</span></div>
         </div>
         ${s.practice ? '<p class="small muted">Practice doesn’t change when they come back.</p>' : ''}
+        ${!s.practice && done ? `<p class="rs-rated">Rated from your answers: ${[4, 3, 2, 1].filter(g => rated[g])
+          .map(g => `${rated[g]} ${gradeTag(g)}`).join(' ')}</p>` : ''}
         <div class="rs-actions">
-          ${s.wrong.length ? `<button class="btn" id="rs-practice">Practice the ${s.wrong.length} missed</button>` : ''}
+          ${unsorted.length ? `<button class="btn" id="rs-calibrate">Carry on sorting (${unsorted.length} left)</button>` : ''}
+          ${forgot.length ? `<button class="btn quiet" id="rs-relearn" title="Learn them again from a lesson, with a mnemonic">
+            Send the ${forgot.length} forgotten to lessons</button>` : ''}
+          ${s.wrong.length && !s.calibrating ? `<button class="btn" id="rs-practice">Practice the ${s.wrong.length} missed</button>` : ''}
           ${more && !s.practice ? `<button class="btn${s.wrong.length ? ' quiet' : ''}" id="rs-more">Keep reviewing (${more})</button>` : ''}
           ${lessons ? `<a class="btn quiet" href="#/lessons">Lessons (${lessons})</a>` : ''}
           <a class="btn quiet" href="#/study">Back to study</a>
@@ -968,7 +1031,8 @@ function reviewsDone() {
     ${learned.length || slipped.length || mastered.length ? `<section class="card rs-news">
       ${learned.length ? `<p><b class="han">${esc(learned.join(' '))}</b> reached Journeyman: ${learned.length === 1 ? 'it now counts' : 'they now count'}
         as learned all over HanziHome.</p>` : ''}
-      ${mastered.length ? `<p><b class="han">${esc(mastered.join(' '))}</b> ${mastered.length === 1 ? 'is' : 'are'} mastered: no more reviews.</p>` : ''}
+      ${mastered.length ? `<p><b class="han">${esc(mastered.join(' '))}</b> reached Master: you'd remember ${mastered.length === 1 ? 'it' : 'them'}
+        for two years and more.</p>` : ''}
       ${slipped.length ? `<p><b class="han">${esc(slipped.join(' '))}</b> slipped below Journeyman, so ${slipped.length === 1 ? 'it is' : 'they are'}
         back to learning until ${slipped.length === 1 ? 'it climbs' : 'they climb'} again.</p>` : ''}
     </section>` : ''}
@@ -984,12 +1048,50 @@ function reviewsDone() {
   if (again) again.addEventListener('click', () => startPractice(s.wrong));
   const next = document.getElementById('rs-more');
   if (next) next.addEventListener('click', () => pageReviews());       // (already at #/reviews)
+  const cal = document.getElementById('rs-calibrate');
+  if (cal) cal.addEventListener('click', () => startCalibration(byCommon(unsorted).slice(0, 50)));
+  const relearn = document.getElementById('rs-relearn');
+  if (relearn) relearn.addEventListener('click', () => {
+    for (const k of forgot) {
+      const it = Store.item(k);
+      if (it) { it.stage = 0; it.due = 0; it.prio = true; }     // a lesson, at the front of the queue
+    }
+    Store.save();
+    markNav(currentPath());
+    relearn.outerHTML = '<span class="small">Sent to the front of your <a href="#/lessons">lessons</a>.</span>';
+  });
   paintRail();
 }
 
+/* a stability (days) in words */
+function days(S) {
+  return S < 1 ? Math.max(1, Math.round(S * 24)) + ' h' : S < 60 ? Math.round(S) + ' d'
+    : S < 730 ? Math.round(S / 30.4) + ' mo' : (S / 365).toFixed(1) + ' y';
+}
+
+/* an item's memory as FSRS has it, before this review */
+function memoryPanel(it) {
+  const m = Learn.memory(it, Date.now());
+  if (!m) return '<p class="muted">Nothing yet: it hasn’t had its lesson.</p>';
+  return `<dl class="lx-dl">
+    <dt>Stability</dt><dd><b>${days(m.S)}</b> <span class="small muted">until the chance of recalling it falls to 90%</span></dd>
+    <dt>Difficulty</dt><dd><b>${m.D.toFixed(1)}</b> <span class="small muted">of 10</span></dd>
+    <dt>Recall now</dt><dd><b>${Math.round(m.R * 100)}%</b> <span class="small muted">likely, going by the time since its last review</span></dd>
+    <dt>Reviews</dt><dd>${it.reps || 0}${it.lapses ? `, forgotten ${it.lapses} time${it.lapses === 1 ? '' : 's'}` : ''}${(it.grades || []).length
+      ? ` · lately ${it.grades.slice(-5).map(g => Learn.GRADE_NAMES[g].toLowerCase()).join(', ')}` : ''}</dd>
+  </dl>`;
+}
+
+/* why the app gives a rating (Learn.gradeFrom) */
+const GRADE_WHY = [null,
+  'A wrong answer (or the answer shown)',
+  'Right, but with a slip of tone or after a long think',
+  'Right first time',
+  'Right first time, and you started typing within ' + Learn.QUICK / 1000 + ' seconds on every question'];
+
 /* Practice: a session over the given items that leaves their schedule alone */
 function startPractice(keys) {
-  reviewState = newSession(shuffle(keys.slice()), true);
+  reviewState = newSession(shuffle(keys.slice()), 'practice');
   if (currentPath() === '/reviews') pageReviews(); else go('/reviews');
 }
 
@@ -1003,7 +1105,87 @@ function recentMistakes() {
   });
 }
 
+// -------------------------------------------------------------- calibration
+
+/* The calibration test: characters you marked as learned all joined the reviews at
+   Journeyman I, unchecked. The test is a review session over them (typed answers,
+   pronunciation first), rated by the app from the answers like any review, and
+   taken as if each came right when due (Learn.calibrate): FSRS moves each to the
+   stability that fits, and reviews carry on from there. No asking how well you
+   know them. */
+
+/* what could be sorted: items in reviews, and those never checked since joining */
+function calibrationSets() {
+  const d = Store.load();
+  const all = Object.keys(d.items).filter(k => d.items[k].stage >= 1);
+  return { all, unsorted: all.filter(k => Learn.uncalibrated(d.items[k])) };
+}
+
+/* most common first: a character by its frequency rank, a word by its rarest character */
+function byCommon(keys) {
+  const rank = k => Math.max(...[...k].map(c => (HZ.index[c] || [])[0] || 1e6));
+  return keys.slice().sort((a, b) => rank(a) - rank(b));
+}
+
+function pageCalibrate() {
+  const { all, unsorted } = calibrationSets();
+  app.innerHTML = '<h1 class="page-title">Calibration test</h1>' + withRail(`<section class="card">
+    <p>Characters you marked as learned all joined your reviews at Journeyman, whether you know them well
+      or hardly at all. This sorts them by how well you really know them: type each one's pronunciation and
+      meaning, as in a review, and HanziHome judges from your answers.</p>
+    <div class="cb-map">
+      <div class="g1"><b>Wrong</b><span>back to Novice: again in days</span></div>
+      <div class="g2"><b>A slip, or a long think</b><span>stays at Journeyman</span></div>
+      <div class="g3"><b>Right</b><span>up to Journeyman II: in about 3 months</span></div>
+      <div class="g4"><b>Right at once</b><span>up to Expert: in about 7 months</span></div>
+    </div>
+    <p class="small muted">“At once” is starting to type within ${Learn.QUICK / 1000} seconds; a long think is over
+      ${Learn.SLOW / 1000}. From there FSRS takes over: every review moves each one's stability up or down.
+      Each answer counts at once, so you can stop whenever you like (wrap up, or leave the page) and carry on later.
+      Characters that fall below Journeyman count as learning again across HanziHome.</p>
+    <div class="st-field"><div class="st-label">Which</div>
+      <label class="cb-opt"><input type="radio" name="cb-set" value="unsorted"${unsorted.length ? ' checked' : ' disabled'}>
+        Not sorted yet (${unsorted.length})</label>
+      <label class="cb-opt"><input type="radio" name="cb-set" value="all"${unsorted.length ? '' : ' checked'}>
+        Everything in your reviews (${all.length})</label></div>
+    <div class="st-field"><div class="st-label">How many at a time</div>
+      <select class="st-select" id="cb-size">${[20, 50, 100, 0].map(n =>
+        `<option value="${n}"${n === 50 ? ' selected' : ''}>${n || 'All of them'}</option>`).join('')}</select></div>
+    <div class="st-field"><div class="st-label">Order</div>
+      <label class="cb-opt"><input type="radio" name="cb-order" value="common" checked> Most common first</label>
+      <label class="cb-opt"><input type="radio" name="cb-order" value="random"> Shuffled</label></div>
+    <p class="row"><button class="btn" id="cb-start"${all.length ? '' : ' disabled'}>Start</button>
+      <a class="btn quiet" href="#/study">Back to study</a></p>
+  </section>`, true);
+  document.getElementById('cb-start').addEventListener('click', () => {
+    const set = (app.querySelector('input[name="cb-set"]:checked') || {}).value === 'unsorted' ? unsorted : all;
+    const order = (app.querySelector('input[name="cb-order"]:checked') || {}).value;
+    const size = +document.getElementById('cb-size').value;
+    const keys = order === 'random' ? shuffle(set.slice()) : byCommon(set);
+    startCalibration(size ? keys.slice(0, size) : keys);
+  });
+  paintRail();
+}
+
+/* a calibration session: a review session over these, rated the same way */
+function startCalibration(keys) {
+  reviewState = newSession(keys, 'calibrate');
+  if (currentPath() === '/reviews') pageReviews(); else go('/reviews');
+}
+
 // ----------------------------------------------------------------- settings
+
+/* A new retention: every review moves to when the chance of recall falls to it.
+   (Items never reviewed keep their first dates, which are spread out on purpose.) */
+function reschedule(retention) {
+  for (const it of Object.values(Store.load().items)) {
+    if (!(it.stage >= 1)) continue;
+    Learn.adopt(it);
+    const since = it.last || it.learnt;
+    if (since) it.due = since + Learn.intervalFor(it.S, retention) * Learn.DAY;
+  }
+  Store.save();
+}
 
 /* The Settings page's "Lessons and reviews" card: HanziHero's application settings,
    saved as you change them (in the store, so they sync) */
@@ -1037,6 +1219,12 @@ function paintStudySettings() {
       : 'Every lesson in your queue is ready as soon as it unlocks.')}
     ${c.lessonLimit ? field('Daily word limit', range('wordLimit', 0, c.lessonLimit),
       `We recommend <b>${Math.round(c.lessonLimit * 2 / 3)} words</b> for a good balance with characters.`) : ''}
+    ${field('Desired retention', `<div class="st-range"><input type="range" data-k="retention" data-t="pct" min="80" max="97"
+      value="${Math.round(c.retention * 100)}"><output>${Math.round(c.retention * 100)}%</output></div>`,
+      'Reviews are scheduled by FSRS: an item comes back when your chance of recalling it has fallen to this. Higher means '
+      + 'more reviews, each easier; 90% is FSRS’s own choice. The rating of each review (again, hard, good, easy) isn’t asked: '
+      + 'it comes from your answers. Wrong is again; a slip of tone or a long think (over ' + Learn.SLOW / 1000 + ' seconds '
+      + 'before you start typing) is hard; right is good; right and started within ' + Learn.QUICK / 1000 + ' seconds is easy.')}
     ${field('Daily review limit', sel('reviewLimit', reviewLimits, 'int'),
       'A soft limit: a session stops there, and once today\'s are done the Reviews tile greys out. You can still start another session.')}
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
@@ -1096,13 +1284,15 @@ function paintStudySettings() {
   };
   box.querySelectorAll('[data-k]').forEach(el => {
     const k = el.dataset.k, t = el.dataset.t;
-    const value = () => t === 'bool' ? el.checked : t === 'int' ? parseInt(el.value, 10) || 0 : el.value;
-    if (el.type === 'range') el.addEventListener('input', () => { el.nextElementSibling.textContent = el.value; });
+    const value = () => t === 'bool' ? el.checked : t === 'int' ? parseInt(el.value, 10) || 0
+      : t === 'pct' ? (parseInt(el.value, 10) || 90) / 100 : el.value;
+    if (el.type === 'range') el.addEventListener('input', () => { el.nextElementSibling.textContent = el.value + (t === 'pct' ? '%' : ''); });
     el.addEventListener('change', () => {
       const patch = { [k]: value() };
       // the word limit is at most the lesson limit
       if (k === 'lessonLimit' && patch.lessonLimit && c.wordLimit > patch.lessonLimit) patch.wordLimit = patch.lessonLimit;
       Store.setCfg(patch);
+      if (k === 'retention') reschedule(patch.retention);
       markNav(currentPath());
       if (['lessonLimit', 'voice'].includes(k)) paintStudySettings();
       saved();

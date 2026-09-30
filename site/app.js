@@ -126,6 +126,8 @@ const Store = {
       }
     }
     d.srs = {};
+    // items reviewed before FSRS: a stability from the stage they had reached
+    for (const it of Object.values(d.items)) Learn.adopt(it);
     // Characters marked Learned are in the reviews too, from Journeyman I. The ones
     // that aren't yet (from before, or from a device that didn't do this) get their
     // first reviews spread over the next month, most common first, 20 a day at most.
@@ -157,7 +159,11 @@ const Store = {
       const it = d.items[ch], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
       if (!it) d.items[ch] = Learn.known('char', charInfo(ch), now, wait);
       else if (it.stage < Learn.LEARNED_FROM) {
-        it.stage = Learn.LEARNED_FROM;
+        // said to be known: a month's stability at least, first checked in a month
+        Learn.adopt(it);
+        it.S = Math.max(it.S || 0, Learn.STAGES[Learn.LEARNED_FROM][1]);
+        it.D = it.D || Learn.initD(3);
+        it.stage = Learn.stageFor(it.S);
         it.due = now + wait;
         if (!it.learnt) it.joined = now;
       }
@@ -633,7 +639,7 @@ const currentPath = () => {
 };
 
 function markNav(path) {
-  path = path.replace(/^\/(lessons|reviews)/, '/study');
+  path = path.replace(/^\/(lessons|reviews|calibrate)/, '/study');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
     a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
@@ -2164,6 +2170,7 @@ function render(keepScroll) {
   if (seg[0] === 'study') return pageStudy();
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'reviews') return pageReviews();
+  if (seg[0] === 'calibrate') return pageCalibrate();
   if (seg[0] === 'reader') return seg[1] ? pageStory(seg[1]) : pageReader();
   if (seg[0] === 'screen') return pageScreen();
   if (seg[0] === 'frequency') return pageFrequency();

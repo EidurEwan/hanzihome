@@ -13,39 +13,85 @@ const check = (name, fn) => { fn(); n++; console.log('ok  ' + name); };
 const DAY = L.DAY, t0 = Date.UTC(2026, 8, 29, 12);
 const still = () => 0.5;                         // no fuzz
 
-check('a lesson leads to Novice I, due a day later', () => {
-  const it = L.finishLesson(L.newItem('word', { pin: 'rèn shi', mean: 'to know' }, t0), t0);
-  assert.strictEqual(it.stage, 1);
-  assert.strictEqual(it.due, t0 + DAY);
-});
+/* FSRS-5, as the reference implementation (ts-fsrs 4.7.1, default weights) computes it:
+   [grade, days since the last review, stability after, difficulty after], from the
+   memory a lesson rated good leaves (S 3.173, D 5.2824). An again is followed by the
+   same-day relearning good that a review session gives it. */
+const REFERENCE = [
+  [1, 3, 1.4860, 6.7805], [2, 3, 4.9245, 6.0350], [3, 3, 10.7389, 5.2730], [4, 3, 25.7936, 4.5110],
+  [1, 11, 2.1467, 6.7805], [2, 11, 8.3228, 6.0350], [3, 11, 25.4185, 5.2730], [4, 11, 69.6827, 4.5110],
+  [1, 35, 3.1730, 6.7805], [2, 35, 13.7819, 6.0350], [3, 35, 49.0000, 5.2730], [4, 35, 140.1864, 4.5110],
+  [3, 0, 4.4669, 5.2730],
+];
+const near = (a, b, what) => assert.ok(Math.abs(a - b) < 5e-4, `${what}: ${a} against ${b}`);
 
-check('right answers climb the stages on HanziHero\'s intervals', () => {
-  const it = L.finishLesson(L.newItem('char', { pin: 'chī', mean: 'to eat' }, t0), t0);
-  const days = [];
-  for (let i = 0; i < 9; i++) {
-    L.review(it, true, t0, still);
-    days.push(it.stage === L.MASTER ? 'master' : Math.round((it.due - t0) / DAY));
+check('a lesson sets the first memory by FSRS\'s first rating', () => {
+  const firsts = [[1, 0.4026, 7.1949], [2, 1.1839, 6.4883], [3, 3.1730, 5.2824], [4, 15.6911, 3.2245]];
+  for (const [g, S, D] of firsts) {
+    const it = L.finishLesson(L.newItem('word', { pin: 'rèn shi', mean: 'to know' }, t0), t0, g);
+    near(it.S, S, 'S after first rating ' + g);
+    near(it.D, D, 'D after first rating ' + g);
   }
-  assert.deepStrictEqual(days, [4, 7, 14, 30, 60, 120, 240, 365, 'master']);
-  assert.strictEqual(L.statusFor(it), 'learned');
+  const good = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  assert.strictEqual(L.stageName(good.stage), 'Novice I');
+  assert.strictEqual(good.due, t0 + 3 * DAY);                   // R is 90% after S days
 });
 
-check('a wrong answer halves the interval, more after recent misses', () => {
+check('reviews move difficulty and stability as the reference FSRS does', () => {
+  for (const [g, t, S, D] of REFERENCE) {
+    const it = { stage: 1, S: 3.173, D: 5.28243557, last: t0 - t * DAY };
+    L.review(it, g, t0);
+    near(it.S, S, `S after grade ${g} at ${t} days`);
+    near(it.D, D, `D after grade ${g} at ${t} days`);
+  }
+});
+
+check('good reviews carry an item up the stages; a lapse brings it down', () => {
   const it = L.finishLesson(L.newItem('char', { pin: 'chī', mean: 'to eat' }, t0), t0);
-  for (let i = 0; i < 4; i++) L.review(it, true, t0, still);     // Journeyman I: 30 days
-  assert.strictEqual(it.stage, 5);
-  L.review(it, false, t0, still);                                // 15 days -> Apprentice II
-  assert.strictEqual(Math.round((it.due - t0) / DAY), 15);
-  assert.strictEqual(it.stage, 4);
-  L.review(it, false, t0, still);                                // 14 / 2 / 2 = 3.5 days
-  assert.strictEqual((it.due - t0) / DAY, 3.5);
-  assert.strictEqual(it.stage, 1);
+  let now = t0;
+  const stages = [];
+  for (let i = 0; i < 4; i++) {
+    now = it.due;                                                 // reviewed when due
+    L.review(it, 3, now);
+    stages.push(L.stageName(it.stage));
+  }
+  assert.deepStrictEqual(stages, ['Apprentice I', 'Journeyman I', 'Journeyman II', 'Expert II']);
+  assert.strictEqual(L.statusFor(it), 'learned');
+  const before = it.S;
+  now = it.due;
+  L.review(it, 1, now);
+  assert.ok(it.S < before / 10, 'a lapse cuts stability');
+  assert.strictEqual(it.lapses, 1);
+  assert.deepStrictEqual(it.hist.slice(-2), [true, false]);
   assert.strictEqual(L.statusFor(it), 'learning');
 });
 
+check('the retention wanted sets the interval', () => {
+  assert.deepStrictEqual([0.5, 3.173, 11.13, 87.6, 400].map(s => L.intervalFor(s, 0.9)), [1, 3, 11, 88, 400]);
+  assert.deepStrictEqual([3.173, 30].map(s => L.intervalFor(s, 0.85)), [5, 49]);
+  near(L.retrievability(30, 30), 0.9, 'R after S days');
+});
+
+check('the rating comes from the answers, not from asking', () => {
+  const a = (ok, ms, nearly) => ({ ok, ms, near: !!nearly });
+  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 2500)]), 4);        // right, at once
+  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 6000)]), 3);        // right
+  assert.strictEqual(L.gradeFrom([a(true, 20000), a(true, 1000)]), 2);       // right after a long think
+  assert.strictEqual(L.gradeFrom([a(false, 1000, true), a(true, 1000)]), 2); // a slip of tone
+  assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)]), 1);       // wrong
+});
+
+check('an item from before FSRS keeps its place', () => {
+  const it = { stage: 5, due: t0 + 10 * DAY, hist: [true, false, true] };
+  L.adopt(it);
+  assert.strictEqual(it.S, 30);
+  assert.strictEqual(L.stageFor(it.S), 5);
+  near(it.D, 6.2824, 'D a little higher for a recent miss');
+});
+
 check('forecast counts reviews per day', () => {
-  const a = L.finishLesson(L.newItem('char', {}, t0), t0);       // due tomorrow
-  const b = L.finishLesson(L.newItem('char', {}, t0), t0 - DAY);  // due now
+  const a = L.finishLesson(L.newItem('char', {}, t0), t0, 2);     // S 1.18: due tomorrow
+  const b = L.finishLesson(L.newItem('char', {}, t0), t0 - DAY, 2); // due now
   const f = L.forecast([a, b, L.newItem('char', {}, t0)], t0, 3);
   assert.deepStrictEqual(f, [1, 1, 0]);
 });
@@ -156,6 +202,25 @@ check('a learned character joins at Journeyman I without using a lesson', () => 
   const it = L.known('char', { pin: 'hǎo', mean: 'good' }, t0, 3 * DAY);
   assert.deepStrictEqual([it.stage, L.stageName(it.stage), it.due, L.statusFor(it)], [5, 'Journeyman I', t0 + 3 * DAY, 'learned']);
   assert.strictEqual(L.plan({ 好: it }, {}, t0, world({ 好: it })).lessonsToday, 0);
+});
+
+check('calibration: rated from the answers, as if reviewed when due', () => {
+  // a character marked learned joins at Journeyman I (S 30 days, D average) unchecked
+  const joined = () => L.known('char', { pin: 'hǎo', mean: 'good' }, t0, 3 * DAY);
+  assert.ok(L.uncalibrated(joined()));
+  // FSRS from S 30 at R 90% (the reference gives S 5.03, 43.3, 87.6, 202.1)
+  const got = [1, 2, 3, 4].map(g => {
+    const it = L.calibrate(joined(), g, t0);
+    return [L.stageName(it.stage), Math.round((it.due - t0) / DAY), L.statusFor(it), L.uncalibrated(it)];
+  });
+  assert.deepStrictEqual(got, [
+    ['Novice II', 5, 'learning', false],
+    ['Journeyman I', 43, 'learned', false],
+    ['Journeyman II', 88, 'learned', false],
+    ['Expert I', 202, 'learned', false],
+  ]);
+  // something learned in a lesson isn't "unsorted"
+  assert.ok(!L.uncalibrated(L.finishLesson(L.newItem('char', {}, t0), t0)));
 });
 
 console.log(`\n${n} checks passed`);

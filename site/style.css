@@ -1234,10 +1234,53 @@ a.lx-q { padding: 4px 9px; }
 .rs-stage.expert { background: #6d28d9; }
 .rs-stage.master { background: var(--lx-char); }
 .rs-typed { font-size: 12.5px; color: var(--lx-char); }
+/* the rating the app gave (FSRS: again, hard, good, easy) and the item's memory after */
+.rs-grade { font-size: 11px; font-weight: 800; border-radius: 5px; padding: 1px 7px; border: 1px solid; }
+.rs-grade.g1 { color: var(--lx-char); border-color: var(--lx-char); }
+.rs-grade.g2 { color: #a16207; border-color: #a16207; }
+.rs-grade.g3 { color: #15803d; border-color: #15803d; }
+.rs-grade.g4 { color: #1d4ed8; border-color: #1d4ed8; }
+.rs-mem { font-size: 12px; color: var(--ink-2); }
+.rs-rated { font-size: 13px; color: var(--ink-2); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 4px 0 0; }
 .rs-next { margin-top: -4px; }
 .rv-practice { color: #6d28d9; }
 .lx-extra { display: flex; align-items: center; gap: 8px; margin: -4px 0 8px; }
 .lx-extra .btn { padding: 4px 11px; font-size: 13px; }
+
+/* the calibration test: a card, show the answer, four grades coloured like the
+   stages they lead to */
+.cb-cta { border-left: 4px solid #1d4ed8; }
+.cb-cta h2 { margin-top: 0; }
+.cb-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+.cb-map div { border-radius: 10px; padding: 10px 12px; color: #fff; }
+.cb-map b { display: block; }
+.cb-map span { font-size: 12.5px; opacity: .9; }
+.cb-map .g1, .cb-grade.g1 { background: #a16207; }
+.cb-map .g2, .cb-grade.g2 { background: #15803d; }
+.cb-map .g3, .cb-grade.g3 { background: #1d4ed8; }
+.cb-map .g4, .cb-grade.g4 { background: #6d28d9; }
+.cb-opt { display: flex; align-items: center; gap: 8px; margin: 6px 0; cursor: pointer; }
+.cb-opt input { accent-color: var(--accent); }
+.cb-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 14px; color: var(--ink-2); }
+.cb-top .btn { padding: 4px 11px; font-size: 13px; }
+.cb-bar { height: 4px; border-radius: 2px; background: var(--line); margin-bottom: 14px; overflow: hidden; }
+.cb-bar i { display: block; height: 100%; background: #1d4ed8; }
+.cb-prompt { text-align: center; font-size: 19px; margin: 18px 0 10px; }
+.cb-show { text-align: center; }
+.cb-show .btn { font-size: 17px; padding: 12px 26px; }
+.cb-answer { text-align: center; }
+.cb-answer p { margin: 6px 0; }
+.cb-grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+.cb-grade { border: 0; border-radius: 12px; padding: 14px 10px; color: #fff; cursor: pointer; font: inherit; text-align: center; }
+.cb-grade b { display: block; font-size: 17px; }
+.cb-grade span { font-size: 12.5px; opacity: .9; }
+.cb-grade:hover:not(:disabled) { filter: brightness(1.12); }
+.cb-grade:disabled { opacity: .35; cursor: default; }
+kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; border-radius: 4px;
+  border: 1px solid currentColor; opacity: .75; vertical-align: 2px; margin: 0 2px; }
+.cb-counts { grid-template-columns: repeat(4, 1fr); }
+.cb-didnt { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 6px; }
+.cb-didnt .han { font-size: 19px; }
 
 /* pinyin answer validation: the answer box shakes */
 .rv-hint { text-align: center; color: var(--accent); font-weight: 600; margin: 2px 0 0; }
@@ -1278,6 +1321,8 @@ a.lx-q { padding: 4px 9px; }
   .lx-body { gap: 0; }
   .lx-arrow { padding: 0 2px; font-size: 26px; }
   .rv-tools { gap: 4px; }
+  .cb-grades, .cb-map { grid-template-columns: 1fr 1fr; }
+  .cb-counts { grid-template-columns: 1fr 1fr; }
   .rs-head { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .rs-stats, .rs-actions { justify-content: center; }
   .rv-tool { height: 40px; }
