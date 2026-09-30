@@ -46,7 +46,7 @@ check('a large copy is saved and read back whole, then a smaller one over it', (
   assert.strictEqual(call({ action: 'push', baseRev: 0, data: big }).rev, 1);
   assert.deepStrictEqual(call({ action: 'pull' }).data, big);
   const small = store(10, 'b');
-  assert.strictEqual(call({ action: 'push', baseRev: 1, data: small }).rev, 2);
+  assert.strictEqual(call({ action: 'push', baseRev: 1, data: small, reset: true }).rev, 2);   // (on purpose)
   assert.deepStrictEqual(call({ action: 'pull' }).data, small);
   assert.strictEqual(sheet().getLastRow(), 2, 'the rows left over are cleared');
   assert.strictEqual(call({ action: 'rev' }).rev, 2);
@@ -76,8 +76,35 @@ check('a copy caught half-way through a save is "unreadable", never empty', () =
   cut.sheet().getRange(3, 1, 1, 1).clearContent();
   assert.strictEqual(cut.call({ action: 'pull' }).error, 'unreadable');
   // a push on top of it still works (it needs only the revision) and mends the copy
-  assert.strictEqual(cut.call({ action: 'push', baseRev: 1, data: store(20) }).rev, 2);
-  assert.deepStrictEqual(cut.call({ action: 'pull' }).data, store(20));
+  assert.strictEqual(cut.call({ action: 'push', baseRev: 1, data: store(1400) }).rev, 2);
+  assert.deepStrictEqual(cut.call({ action: 'pull' }).data, store(1400));
+});
+
+check('a push that would lose most of the copy is refused, unless it is a reset', () => {
+  const { call } = script();
+  call({ action: 'push', baseRev: 0, data: store(150) });
+  // what an emptied device used to send: only a character or two left
+  const r = call({ action: 'push', baseRev: 1, data: store(1, 'x') });
+  assert.deepStrictEqual([r.ok, r.error, r.have, r.got], [false, 'shrink', 300, 2]);
+  assert.deepStrictEqual(call({ action: 'pull' }).data, store(150), 'the copy is untouched');
+  // smaller, but not by half: fine (characters un-marked, a list cleared)
+  assert.strictEqual(call({ action: 'push', baseRev: 1, data: store(100) }).rev, 2);
+  // Reset everything says so
+  assert.strictEqual(call({ action: 'push', baseRev: 2, data: store(0), reset: true }).rev, 3);
+});
+
+check('earlier copies are kept, and one can be put back', () => {
+  const { call } = script();
+  call({ action: 'push', baseRev: 0, data: store(150) });
+  call({ action: 'push', baseRev: 1, data: store(151) });           // keeps revision 1's copy
+  call({ action: 'push', baseRev: 2, data: store(152) });           // (not again within half an hour)
+  call({ action: 'push', baseRev: 3, data: store(10), reset: true });  // a big drop: keeps revision 3's
+  const list = call({ action: 'backups' }).backups;
+  assert.deepStrictEqual(list.map(b => [b.rev, b.heft]).sort(), [[1, 300], [3, 304]]);
+  const r = call({ action: 'restore', rev: 3 });
+  assert.strictEqual(r.rev, 5);
+  assert.deepStrictEqual(call({ action: 'pull' }).data, store(152));
+  assert.strictEqual(call({ action: 'restore', rev: 99 }).error, 'no-backup');
 });
 
 console.log(`\n${n} checks passed`);

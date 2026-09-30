@@ -1332,3 +1332,10 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 
 /* study pages: on one column the rail goes under the lessons and reviews, not above */
 .dash.rail-last .rail { order: 0; }
+
+/* sync: paused (a copy with far less in it), and the script's earlier copies */
+.sync-held { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 8px 14px; margin: 10px 0; }
+.sync-held p { margin: 6px 0; }
+.sync-backups { list-style: none; padding: 0; margin: 10px 0; }
+.sync-backups li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.sync-backups .btn { margin-left: auto; padding: 2px 11px; font-size: 12.5px; }

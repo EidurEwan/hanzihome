@@ -61,6 +61,7 @@ function makeSheet() {
   return {
     getRange(a, b, c, d) { return typeof a === 'string' ? range(...a1(a)) : range(a, b, c || 1, d || 1); },
     getLastRow() { return lastRow; },
+    getLastColumn() { let c = 0; for (const k of cells.keys()) c = Math.max(c, +k.split(',')[1]); return c; },
   };
 }
 

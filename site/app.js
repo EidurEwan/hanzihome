@@ -283,12 +283,29 @@ function tellDesktop() {
    revision (a few bytes) and fetches the copy only when it has moved on.
    A copy the sheet can't give whole (another device half-way through saving
    it, with the first scripts) is never taken for an empty one: nothing here
-   changes, and the sync tries again a few seconds later. */
+   changes, and the sync tries again a few seconds later.
+
+   Nor may any copy replace or merge away most of this device's data without
+   asking (shrinks()): an emptied copy from an older version of the site did
+   exactly that. Syncing pauses (cfg.held) until you choose which to keep. A
+   deliberate Reset everything says so (cfg.reset), and the script (version 5)
+   refuses the same kind of upload from any device, and keeps earlier copies. */
 
 const REDEPLOY = 'Paste the current sync/Code.gs into the Apps Script editor, save, then Deploy → '
   + 'Manage deployments → Edit (pencil) → Version: New version → Deploy.';
 const OLD_SCRIPT = 'Your deployment is still running the old script, which asks for a sync key. ' + REDEPLOY;
-const SCRIPT_VERSION = 4;           // sync/Code.gs's VERSION
+const SCRIPT_VERSION = 5;           // sync/Code.gs's VERSION
+
+/* how much a copy of the store holds: statuses, review items, known components,
+   notes and list entries */
+function heft(d) {
+  if (!d || typeof d !== 'object') return 0;
+  const n = o => (o && typeof o === 'object' ? Object.keys(o).length : 0);
+  const lists = Array.isArray(d.lists) ? d.lists.reduce((t, l) => t + ((l && l.chars) || []).length, 0) : 0;
+  return n(d.status) + n(d.items) + n(d.comps) + n(d.notes) + lists;
+}
+/* would going from one copy to the other lose most of it? */
+const shrinks = (from, to) => heft(from) >= 20 && heft(to) < heft(from) / 2;
 
 const Sync = {
   cfgKey: 'hanzihome.sync',          // {url, rev, dirty, lastSync}
@@ -341,6 +358,12 @@ const Sync = {
     try { j = await res.json(); }
     catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
     if (!j.ok && !j.conflict && soft) return j;
+    if (!j.ok && j.error === 'shrink') {
+      const err = new Error('held');
+      err.code = 'held';
+      err.there = j.have;
+      throw err;
+    }
     if (!j.ok && (j.error === 'busy' || j.error === 'unreadable')) {
       const err = new Error('The Google Sheet was busy saving. Trying again in a moment; nothing here has changed.');
       err.code = 'retry';
@@ -391,6 +414,7 @@ const Sync = {
     this.busy = this.cycle()
       .then(() => { this.error = ''; this.errorCode = ''; this.retries = 0; this.checkScript(); })
       .catch(e => {
+        if (e.code === 'held') { this.hold(e.there); return; }
         // the sheet half-way through a save: quietly try again, a few times, before saying so
         if (e.code === 'retry' && this.retries < 4) {
           this.retries++;
@@ -410,7 +434,7 @@ const Sync = {
 
   async cycle() {
     let c = this.cfg();
-    if (!c) return;
+    if (!c || c.held) return;                      // paused: waiting for a choice (hold)
     let remote = null;                             // the sheet's copy, when we have fetched it
     if (!c.dirty) {
       // nothing to send: has the sheet moved on? (just the revision; the first
@@ -421,7 +445,12 @@ const Sync = {
       c = this.cfg();
       if (!c) return;
       if (remote.rev === (c.rev || 0) && !c.dirty) { this.update({ lastSync: Date.now() }); return; }
-      if (!c.dirty) { this.adopt(remote.data || {}, remote.rev); return; }   // only the other side changed
+      if (!c.dirty) {                               // only the other side changed
+        if (!c.take) this.guard(Store.load(), remote.data, remote.data);
+        this.adopt(remote.data || {}, remote.rev);
+        if (c.take) this.update({ take: false });
+        return;
+      }
     }
     for (let attempt = 0; attempt < 4; attempt++) {
       c = this.cfg();
@@ -429,16 +458,18 @@ const Sync = {
       if (remote && remote.rev !== (c.rev || 0)) {
         // the sheet moved on: merge its copy with this device's changes first
         const local = Store.load();
-        const merged = merge3(this.base(), local, remote.data || {});
+        // after "keep this device's data": everything from both, this device's wins
+        const merged = merge3(c.union ? null : this.base(), local, remote.data || {});
+        if (!c.union) this.guard(local, merged, remote.data);
         if (!same(merged, local)) this.apply(merged);
         if (remote.data && same(merged, remote.data)) { this.adopt(remote.data, remote.rev); return; }
       }
       const baseRev = remote ? remote.rev : (c.rev || 0);
       const pushed = JSON.parse(JSON.stringify(Store.load()));
-      const r = await this.post({ action: 'push', baseRev, data: pushed });
+      const r = await this.post({ action: 'push', baseRev, data: pushed, reset: !!c.reset });
       if (r.ok) {
         // only clear the flag if nothing changed while the request was out
-        this.update({ rev: r.rev, lastSync: Date.now(), dirty: !same(Store.load(), pushed) });
+        this.update({ rev: r.rev, lastSync: Date.now(), dirty: !same(Store.load(), pushed), reset: false, union: false });
         this.setBase(pushed);
         if (this.cfg() && this.cfg().dirty) this.markDirty();
         return;
@@ -446,6 +477,45 @@ const Sync = {
       remote = this.whole(r);                      // someone pushed first: merge with theirs
     }
     throw new Error('Other devices kept changing the data at the same moment. Try Sync now again.');
+  },
+
+  /* this device's data would mostly go: stop, and ask */
+  guard(local, next, there) {
+    if (!shrinks(local, next)) return;
+    const err = new Error('held');
+    err.code = 'held';
+    err.there = heft(there);
+    throw err;
+  },
+
+  hold(there) {
+    this.update({ held: { at: Date.now(), here: heft(Store.load()), there: there || 0 } });
+    this.error = '';
+    this.paint();
+  },
+
+  /* the choices after a pause: keep this device's data (with anything new in the
+     synced copy) and upload it, or take the synced copy as it is */
+  keepHere() {
+    this.update({ held: null, dirty: true, union: true });
+    return this.run();
+  },
+  takeThere() {
+    this.update({ held: null, dirty: false, rev: -1, take: true });
+    return this.run();
+  },
+
+  /* earlier copies the script (version 5) keeps, and putting one back */
+  async backups() {
+    const j = await this.post({ action: 'backups' }, null, true);
+    if (!j.ok) return null;                        // an older script: it keeps none
+    return j.backups || [];
+  },
+  async restore(rev) {
+    const j = await this.post({ action: 'restore', rev });
+    this.update({ held: null, dirty: false, rev: -1, take: true });   // take it as it is, even if smaller
+    await this.run();
+    return j;
   },
 
   /* The sheet's copy, only if it came whole. A sheet that has been saved to (rev
@@ -517,6 +587,8 @@ const Sync = {
     let line = '', detail = '';
     if (!c) {
       line = 'Local profile'; detail = 'Everything is stored in this browser.';
+    } else if (c.held) {
+      line = 'Sync paused'; detail = 'Your data here is safe. Choose in Settings which copy to keep.';
     } else if (this.busy) {
       line = 'Syncing…'; detail = 'Google Sheets';
     } else if (this.error) {
@@ -526,12 +598,15 @@ const Sync = {
       detail = c.dirty ? 'Changes waiting to sync' : c.lastSync ? 'Last synced ' + ago(c.lastSync) : 'Not synced yet';
     }
     if (who) who.textContent = line;
-    if (sub) { sub.textContent = detail; sub.classList.toggle('sync-err', !!(c && this.error)); }
+    if (sub) { sub.textContent = detail; sub.classList.toggle('sync-err', !!(c && (this.error || c.held))); }
     const box = document.getElementById('sync-status');
     if (box) {
-      box.textContent = !c ? '' : this.busy ? 'Syncing…' : this.error ? this.error
+      box.textContent = !c ? '' : c.held ? `Sync paused: the synced copy has far less in it (${c.held.there}) than this device (${c.held.here}), so nothing was changed here.`
+        : this.busy ? 'Syncing…' : this.error ? this.error
         : `${c.dirty ? 'Changes waiting to sync' : 'Up to date'} · last synced ${c.lastSync ? ago(c.lastSync) : 'never'} · version ${c.rev || 0}`;
-      box.classList.toggle('sync-err', !!this.error);
+      box.classList.toggle('sync-err', !!(this.error || (c && c.held)));
+      const choice = document.getElementById('sync-held');
+      if (choice) choice.hidden = !(c && c.held);
       const help = document.getElementById('sync-help-box');
       if (help) {
         help.innerHTML = c && this.errorCode === 'unreachable' ? syncTroubleHtml(c.url)
@@ -2002,6 +2077,8 @@ function pageSettings() {
       <div class="row">
         <button class="btn quiet" id="export">Export JSON</button>
         <button class="btn quiet" id="import">Import JSON</button>
+        <button class="btn quiet" id="import-file">Import a file…</button>
+        <input type="file" id="import-pick" accept=".json,application/json" hidden>
         <button class="btn quiet" id="reset">Reset everything</button></div>
       <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font:inherit;
         padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
@@ -2031,10 +2108,25 @@ function pageSettings() {
       Store.data = null; Store.load(); Store.save(); render();
     } catch (e) { alert('That is not valid JSON.'); }
   });
+  // a file exported earlier, or a recovered copy: it replaces what is here
+  document.getElementById('import-file').addEventListener('click', () => document.getElementById('import-pick').click());
+  document.getElementById('import-pick').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (err) { alert('That file is not valid JSON.'); return; }
+    if (!data || typeof data !== 'object' || !data.status) { alert('That file is not a HanziHome export.'); return; }
+    const count = Object.keys(data.status).length;
+    if (!confirm(`Replace this device's progress with the file's (${count} characters marked)?`)) return;
+    localStorage.setItem(Store.key, JSON.stringify(data));
+    if (Sync.on()) Sync.update({ held: null });
+    Store.data = null; Store.load(); Store.save(); render();
+  });
   document.getElementById('reset').addEventListener('click', () => {
     const msg = Sync.on() ? 'Erase all progress, lists and notes? This also empties the synced copy in your Google Sheet.'
                           : 'Erase all progress, lists and notes?';
     if (confirm(msg)) {
+      Sync.update({ reset: true, held: null });     // (the script only lets an emptied copy through on purpose)
       localStorage.removeItem(Store.key); Store.data = null; Store.load(); Store.save(); render();
     }
   });
@@ -2124,11 +2216,22 @@ function syncCardBody() {
     return `<p class="muted small">This browser keeps its progress in step with your Google Sheet.
         Changes are sent a few seconds after you make them and picked up when you come back to the tab.</p>
       <p class="small sync-line" id="sync-status"></p>
+      <div id="sync-held" class="sync-held" hidden>
+        <p class="small">Which copy should both keep?</p>
+        <div class="row">
+          <button class="btn" id="sync-keep">Keep this device's data</button>
+          <button class="btn quiet" id="sync-take">Use the synced copy</button>
+        </div>
+        <p class="small muted">Keeping this device's data also keeps anything the synced copy has that this
+          device doesn't. The synced copy's earlier versions are below, if the script keeps them.</p>
+      </div>
       <div id="sync-help-box"></div>
       <div class="row">
         <button class="btn" id="sync-now">Sync now</button>
+        <button class="btn quiet" id="sync-backups">Earlier copies…</button>
         <button class="btn quiet" id="sync-off">Disconnect</button>
       </div>
+      <div id="sync-backup-list"></div>
       ${steps}`;
   }
   return `<p class="muted small">Keep your statuses, lists, notes and study schedule in step across
@@ -2201,6 +2304,31 @@ function wireSyncCard() {
     });
   }
   if ($('sync-now')) $('sync-now').addEventListener('click', () => Sync.run());
+  if ($('sync-keep')) $('sync-keep').addEventListener('click', () => Sync.keepHere());
+  if ($('sync-take')) $('sync-take').addEventListener('click', () => {
+    if (confirm('Replace this device’s data with the synced copy? It has far less in it.')) Sync.takeThere();
+  });
+  if ($('sync-backups')) $('sync-backups').addEventListener('click', async () => {
+    const box = $('sync-backup-list');
+    box.innerHTML = '<p class="small muted">Asking the script…</p>';
+    let list;
+    try { list = await Sync.backups(); } catch (e) { box.innerHTML = `<p class="small sync-err">${esc(e.message)}</p>`; return; }
+    if (!list) {
+      box.innerHTML = `<p class="small muted">Your deployment's script keeps no earlier copies. Update it to the current
+        sync/Code.gs (version ${SCRIPT_VERSION}) and it keeps the last 30.</p>`;
+      return;
+    }
+    box.innerHTML = list.length ? `<ul class="sync-backups">${list.map(b => `<li>
+      <span>${esc(new Date(b.time).toLocaleString())}</span><span class="muted">${b.heft} entries · version ${b.rev}</span>
+      <button class="btn quiet" data-restore="${b.rev}">Restore</button></li>`).join('')}</ul>`
+      : '<p class="small muted">No earlier copies yet: one is kept at most every half hour, as copies are saved.</p>';
+    box.querySelectorAll('[data-restore]').forEach(b => b.addEventListener('click', async () => {
+      if (!confirm('Put this copy back? It becomes the synced copy on every device.')) return;
+      b.disabled = true;
+      try { await Sync.restore(+b.dataset.restore); render(true); }
+      catch (e) { box.insertAdjacentHTML('beforeend', `<p class="small sync-err">${esc(e.message)}</p>`); }
+    }));
+  });
   if ($('sync-off')) {
     $('sync-off').addEventListener('click', () => {
       if (confirm('Stop syncing this browser? Your progress stays here, and the Google Sheet keeps its copy.')) {

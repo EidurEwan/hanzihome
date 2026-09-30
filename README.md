@@ -35,7 +35,7 @@ who has the `/exec` URL can read and replace your synced progress: keep the URL 
 changing the script, use **Manage deployments → Edit → New version** so the URL stays the same.
 
 To check a deployment, open the `/exec` URL in a **private window** (the site is not signed in to
-Google, so that is what it sees). A working one shows `"version":4` and `"sheet":"ok"`. A
+Google, so that is what it sees). A working one shows `"version":5` and `"sheet":"ok"`. A
 sign-in page means *Execute as* is not *Me* or access is not *Anyone*. A `"problem"` names what
 stops the script opening its Sheet.
 
@@ -51,6 +51,14 @@ How it behaves:
   (Before version 4 of the script, a sync that caught another device's save half-way could
   empty the store until the next sync.) The Settings page says when a deployment runs an older
   script; update it as in step 2 above, with **Manage deployments → Edit → New version**.
+* No sync may remove most of a device's data unasked. If the synced copy holds far less than a
+  device (under half), that device pauses syncing and asks which copy to keep: its own (with
+  anything new from the synced copy) or the synced one. The script (version 5) refuses such an
+  upload from any device, so an emptied device can't empty the others; only **Reset
+  everything** gets through, on purpose.
+* The script keeps earlier copies in a second sheet, "HanziHome backups": the last 30, one at
+  most every half hour, and always before a big drop or a restore. **Earlier copies…** in
+  Settings lists them and puts one back on every device. **Import a file…** loads an export.
 * The script keeps a version number and refuses a save based on an out-of-date copy. The
   browser then merges and tries again, so two devices can't silently overwrite each other.
 * The merge compares both copies with the last synced one. Edits to different items on different
