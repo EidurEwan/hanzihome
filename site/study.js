@@ -291,7 +291,7 @@ function pageStudy() {
 
 function drawStudy() {
   const d = Store.load(), cfg = Store.cfg(), items = Object.entries(d.items), now = Date.now();
-  const p = Store.plan();
+  const p = Store.plan(), mistakes = recentMistakes();
   const fc = Learn.forecast(items.map(e => e[1]), now, 7);
   const max = Math.max(1, ...fc);
   const dayName = i => i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
@@ -331,6 +331,8 @@ function drawStudy() {
       ${tile('lessons', 'Lessons', p.lessons.length, lessonNote)}
       ${tile('reviews', 'Reviews', p.reviewsLeft, reviewNote)}
     </div>
+    ${mistakes.length && !p.vacation ? `<p class="lx-extra"><span class="small muted">Extra study:</span>
+      <button class="btn quiet" id="lx-mistakes" title="Missed in the last three days. Practice doesn't change when they come back.">Recent mistakes (${mistakes.length})</button></p>` : ''}
     <p class="small muted lx-today">Today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
       (${of(p.wordsToday, cfg.lessonLimit && Math.min(cfg.wordLimit, cfg.lessonLimit))} words) ·
       ${of(p.reviewsToday, cfg.reviewLimit)} reviews · <a href="#/settings">Settings</a></p>
@@ -368,6 +370,8 @@ function drawStudy() {
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { Store.learnRemove(b.dataset.rm); redraw(); }));
   app.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => { Store.prioritize(b.dataset.prio); redraw(); }));
+  const mis = document.getElementById('lx-mistakes');
+  if (mis) mis.addEventListener('click', () => startPractice(mistakes));
   const back = document.getElementById('lx-back');
   if (back) back.addEventListener('click', () => { Store.vacation(false); redraw(); });
   const add = document.getElementById('lx-addmissing');
@@ -564,6 +568,26 @@ const TOOLS = ['info', 'sound', 'settings', 'reveal', 'open', 'wrap', 'undo'];
 const toolIcon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
   stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOOL_ICONS[name]}</svg>`;
 
+/* a review session over these items; practice ones leave the schedule alone */
+function newSession(keys, practice) {
+  // Item question order: pronunciation then meaning, in pairs or shuffled (a meaning
+  // still waits for its pronunciation: see deferMeaning)
+  let queue = [];
+  keys.forEach(k => queue.push({ k, q: 'pinyin' }, { k, q: 'meaning' }));
+  if (Store.cfg().questionOrder === 'random') queue = shuffle(queue);
+  const d = Store.load();
+  return {
+    queue, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, sent: {}, facts: {},
+    panel: null,        // 'info' | 'settings'
+    secs: {},           // info sections opened or closed by hand, for this question
+    edit: null,         // 'mnemonic' | 'note', being edited in the info panel
+    wrap: false, parked: [],
+    practice: !!practice, start: Date.now(),
+    before: Object.fromEntries(keys.map(k => [k, d.items[k] ? d.items[k].stage : 0])),   // for the summary
+    typed: {},          // the misses: {key: [{q, answer}]}
+  };
+}
+
 async function pageReviews() {
   if (!reviewState) {
     const cfg = Store.cfg(), p = Store.plan();
@@ -579,18 +603,7 @@ async function pageReviews() {
       paintRail();
       return;
     }
-    // Item question order: pronunciation then meaning, in pairs or shuffled (a meaning
-    // still waits for its pronunciation: see deferMeaning)
-    let queue = [];
-    keys.forEach(k => queue.push({ k, q: 'pinyin' }, { k, q: 'meaning' }));
-    if (cfg.questionOrder === 'random') queue = shuffle(queue);
-    reviewState = {
-      queue, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, sent: {}, facts: {},
-      panel: null,        // 'info' | 'settings'
-      secs: {},           // info sections opened or closed by hand, for this question
-      edit: null,         // 'mnemonic' | 'note', being edited in the info panel
-      wrap: false, parked: [],
-    };
+    reviewState = newSession(keys, false);
   }
   const s = reviewState;
   if (s.i >= s.queue.length) return reviewsDone();
@@ -612,7 +625,8 @@ async function pageReviews() {
     wrap: s.wrap ? 'Stop wrapping up (W)' : 'Wrap up: finish the items started, then stop (W)', undo: 'Undo this answer (Ctrl+Z)' };
 
   app.innerHTML = `
-    <div class="rv-top">${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
+    <div class="rv-top">${s.practice ? '<span class="rv-practice">Practice: the schedule stays as it is</span>' : ''}
+      ${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
       ${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
     ${cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
@@ -663,6 +677,7 @@ async function pageReviews() {
     s.shown = { ok, answer };
     if (!ok) {
       s.misses[k] = (s.misses[k] || 0) + 1;
+      (s.typed[k] = s.typed[k] || []).push({ q, answer });
       s.queue.push({ k, q });                      // asked again before the session ends
     }
     pageReviews();
@@ -698,6 +713,8 @@ function deferMeaning(s) {
 function takeBack(k, q) {
   const s = reviewState;
   s.misses[k] = Math.max(0, (s.misses[k] || 0) - 1);
+  const t = s.typed[k] || [];
+  for (let j = t.length - 1; j >= 0; j--) if (t[j].q === q) { t.splice(j, 1); break; }
   for (let j = s.queue.length - 1; j > s.i; j--) {
     if (s.queue[j].k === k && s.queue[j].q === q) { s.queue.splice(j, 1); break; }
   }
@@ -721,6 +738,7 @@ function reviewTool(name) {
     if (s.shown) return;
     s.shown = { ok: false, answer: '', revealed: true };
     s.misses[k] = (s.misses[k] || 0) + 1;
+    (s.typed[k] = s.typed[k] || []).push({ q, answer: '' });
     s.queue.push({ k, q });
     s.panel = 'info';
     return pageReviews();
@@ -866,8 +884,10 @@ function nextQuestion() {
     a[q] = true;
     if (a.meaning && a.pinyin) {
       const it = Store.item(k), right = !s.misses[k];
-      Learn.review(it, right, Date.now());
-      Store.learnSaved(k);
+      if (!s.practice) {
+        Learn.review(it, right, Date.now());
+        Store.learnSaved(k);
+      }
       (right ? s.right : s.wrong).push(k);
       markNav(currentPath());
     }
@@ -880,19 +900,107 @@ function nextQuestion() {
   pageReviews();
 }
 
+/* After a session: how it went, every item with the stage it moved to (and what you
+   typed when you missed it), characters that became learned or slipped back, what's
+   next, and a practice round for the ones you missed. */
 function reviewsDone() {
   const s = reviewState;
   reviewState = null;
-  const list = ks => ks.map(k => `<a class="lx-q ${(Store.item(k) || {}).kind || ''}" href="#/character/${encodeURIComponent([...k][0])}">
-    <span class="han">${esc(k)}</span></a>`).join('');
+  const d = Store.load(), p = Store.plan(), now = Date.now();
   const done = s.right.length + s.wrong.length;
-  app.innerHTML = '<h1 class="page-title">Review summary</h1>' + withRail(`<div class="card">
-    <h2>${done ? Math.round(100 * s.right.length / done) : 100}% right</h2>
-    <p class="muted">${s.right.length} of ${done} right first time.</p>
-    ${s.wrong.length ? `<h3>Missed</h3><div class="lx-queue">${list(s.wrong)}</div>` : ''}
-    ${s.right.length ? `<h3>Right</h3><div class="lx-queue">${list(s.right)}</div>` : ''}
-    <p><a class="btn" href="#/study">Back to study</a></p></div>`, true);
+  const pct = done ? Math.round(100 * s.right.length / done) : 100;
+  const secs = Math.round((now - s.start) / 1000);
+  const time = secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s`;
+  const title = s.practice ? 'Practice summary' : 'Review summary';
+
+  const stage = st => `<span class="rs-stage ${Learn.group(st).toLowerCase()}">${esc(Learn.stageName(st))}</span>`;
+  const tile = k => {
+    const it = d.items[k];
+    if (!it) return '';
+    const before = s.before[k], after = it.stage;
+    const move = stage(after) + (s.practice ? '' : after > before ? `<small class="up">↑ from ${esc(Learn.stageName(before))}</small>`
+      : after < before ? `<small class="down">↓ from ${esc(Learn.stageName(before))}</small>` : '<small>stays</small>');
+    const typed = (s.typed[k] || []).map(t => `${t.q === 'pinyin' ? 'pronunciation' : 'meaning'}
+      ${t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
+    const href = (it.kind === 'word' ? '#/search/' : '#/character/') + encodeURIComponent(k);
+    return `<a class="rs-item ${it.kind}" href="${href}">
+      <span class="rs-glyph han">${esc(k)}</span>
+      <span class="rs-body"><span><b>${esc(it.pin)}</b> ${esc(primary(it))}</span>
+        <span class="rs-move">${move}</span>
+        ${typed ? `<span class="rs-typed">You answered: ${typed}</span>` : ''}</span></a>`;
+  };
+  const chars = ks => ks.filter(k => d.items[k] && d.items[k].kind !== 'word');
+  const learned = s.practice ? [] : chars(s.right).filter(k => s.before[k] < Learn.LEARNED_FROM && d.items[k].stage >= Learn.LEARNED_FROM);
+  const slipped = s.practice ? [] : chars(s.wrong).filter(k => s.before[k] >= Learn.LEARNED_FROM && d.items[k].stage < Learn.LEARNED_FROM);
+  const mastered = s.practice ? [] : s.right.filter(k => d.items[k] && d.items[k].stage >= Learn.MASTER);
+
+  // what comes next
+  const upcoming = Object.values(d.items).filter(it => it.stage >= 1 && it.stage < Learn.MASTER && it.due > now)
+    .map(it => it.due).sort((a, b) => a - b);
+  const soon = upcoming.filter(t => t - now < Learn.DAY).length;
+  const when = t => {
+    const m = Math.round((t - now) / 60000);
+    return m < 60 ? `in ${Math.max(1, m)} minute${m === 1 ? '' : 's'}` : m < 60 * 24
+      ? `in ${Math.round(m / 60)} hour${Math.round(m / 60) === 1 ? '' : 's'}` : new Date(t).toLocaleString(undefined,
+        { weekday: 'long', hour: 'numeric', minute: '2-digit' });
+  };
+  const more = p.reviewsLeft, lessons = p.lessons.length;
+
+  app.innerHTML = `<h1 class="page-title">${title}</h1>` + withRail(`
+    <section class="card rs-head">
+      <div class="rs-ring" style="--p:${done ? pct : 100}"><div><b>${pct}%</b><span>right first time</span></div></div>
+      <div>
+        <div class="rs-stats">
+          <div><b>${done}</b><span>${s.practice ? 'practiced' : 'reviewed'}</span></div>
+          <div class="ok"><b>${s.right.length}</b><span>right</span></div>
+          <div class="bad"><b>${s.wrong.length}</b><span>missed</span></div>
+          <div><b>${time}</b><span>time</span></div>
+        </div>
+        ${s.practice ? '<p class="small muted">Practice doesn’t change when they come back.</p>' : ''}
+        <div class="rs-actions">
+          ${s.wrong.length ? `<button class="btn" id="rs-practice">Practice the ${s.wrong.length} missed</button>` : ''}
+          ${more && !s.practice ? `<button class="btn${s.wrong.length ? ' quiet' : ''}" id="rs-more">Keep reviewing (${more})</button>` : ''}
+          ${lessons ? `<a class="btn quiet" href="#/lessons">Lessons (${lessons})</a>` : ''}
+          <a class="btn quiet" href="#/study">Back to study</a>
+        </div>
+      </div>
+    </section>
+    ${learned.length || slipped.length || mastered.length ? `<section class="card rs-news">
+      ${learned.length ? `<p><b class="han">${esc(learned.join(' '))}</b> reached Journeyman: ${learned.length === 1 ? 'it now counts' : 'they now count'}
+        as learned all over HanziHome.</p>` : ''}
+      ${mastered.length ? `<p><b class="han">${esc(mastered.join(' '))}</b> ${mastered.length === 1 ? 'is' : 'are'} mastered: no more reviews.</p>` : ''}
+      ${slipped.length ? `<p><b class="han">${esc(slipped.join(' '))}</b> slipped below Journeyman, so ${slipped.length === 1 ? 'it is' : 'they are'}
+        back to learning until ${slipped.length === 1 ? 'it climbs' : 'they climb'} again.</p>` : ''}
+    </section>` : ''}
+    ${!done ? '<section class="card"><p class="empty">Nothing was finished in this session.</p></section>' : ''}
+    ${s.wrong.length ? `<section class="card"><h2 class="caps">Missed (${s.wrong.length})</h2>
+      <div class="rs-grid">${s.wrong.map(tile).join('')}</div></section>` : ''}
+    ${s.right.length ? `<section class="card"><h2 class="caps">Right (${s.right.length})</h2>
+      <div class="rs-grid">${s.right.map(tile).join('')}</div></section>` : ''}
+    <p class="small muted rs-next">${more ? `${more} more due now. ` : ''}${upcoming.length
+      ? `The next review is ${when(upcoming[0])}; ${soon} in the next 24 hours.` : 'No reviews coming up.'}</p>`, true);
+
+  const again = document.getElementById('rs-practice');
+  if (again) again.addEventListener('click', () => startPractice(s.wrong));
+  const next = document.getElementById('rs-more');
+  if (next) next.addEventListener('click', () => pageReviews());       // (already at #/reviews)
   paintRail();
+}
+
+/* Practice: a session over the given items that leaves their schedule alone */
+function startPractice(keys) {
+  reviewState = newSession(shuffle(keys.slice()), true);
+  if (currentPath() === '/reviews') pageReviews(); else go('/reviews');
+}
+
+/* items whose latest review was a miss, in the last three days (HanziHero's extra
+   study: recent mistakes) */
+function recentMistakes() {
+  const d = Store.load(), since = Learn.dayStart(Date.now()) - 2 * Learn.DAY;
+  return Object.keys(d.items).filter(k => {
+    const it = d.items[k], h = it.hist || [];
+    return it.stage >= 1 && it.last >= since && h.length && h[h.length - 1] === false;
+  });
 }
 
 // ----------------------------------------------------------------- settings

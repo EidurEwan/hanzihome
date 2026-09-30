@@ -93,7 +93,12 @@ other question starts closed), play the pronunciation (P), quiz settings (Q), re
 (Ctrl+Enter, counted as missed), open the item in a new tab (O; a second window in the desktop
 app), wrap up (W: finish the items already started, leave the rest for next time) and undo
 (Ctrl+Z: the answer doesn't count and the question comes again later). Tabs and windows open on
-the site follow each other's changes. A character counts as learning from its first lesson and as
+the site follow each other's changes. The summary after a session shows the share right first
+time, what was reviewed, right and missed and how long it took, a tile per item with the stage
+it moved to (and from) and what you answered when you missed it, which characters became
+learned, mastered or slipped back to learning, and when the next reviews come. **Practice the
+missed** runs them again without changing their schedule, as does **Recent mistakes** on the
+Study page (misses from the last three days). A character counts as learning from its first lesson and as
 learned from Journeyman (a month). Every character marked Learned is in the reviews too,
 from Journeyman I: ones marked before this have their first reviews spread over a month, most
 common first (20 a day at most), and one marked later comes up a month after. The Study page
