@@ -2,7 +2,7 @@
  * for window.hanzihomeDesktop: it tells it each time its progress store is saved
  * (so the app has a current copy for the screen overlay), shows its desktop-only
  * parts ("On screen now", the Settings page's Desktop app card), and reads and
- * changes the app's settings through it. */
+ * changes the app's settings through it, and checks for and installs updates. */
 
 'use strict';
 
@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld('hanzihomeDesktop', {
   settings: () => ipcRenderer.invoke('desktop-settings'),
   set: patch => ipcRenderer.invoke('desktop-set', patch),
   onSettings: cb => ipcRenderer.on('desktop-settings-changed', (e, state) => cb(state)),
+  update: what => ipcRenderer.send('desktop-update', what),     // 'check' or 'install'
 });

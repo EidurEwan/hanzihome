@@ -1,6 +1,7 @@
 # Runs the tests on every push and pull request.
 #   site     the study schedule, sync, the reader's readings and accuracy (Node only)
-#   desktop  builds the OCR helper on Windows and measures how well it reads test pictures
+#   desktop  builds the OCR helper on Windows, measures how well it reads test pictures,
+#            and builds the installer (kept with the run, under Artifacts)
 name: Tests
 
 on:
@@ -10,6 +11,11 @@ on:
 
 permissions:
   contents: read
+
+# a newer push to the same branch replaces a run still going
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   site:
@@ -51,3 +57,12 @@ jobs:
           name: ocr-test-pictures
           path: desktop/test/out/*.png
           if-no-files-found: ignore
+      # the installer, as a release would build it, kept with the run for trying a branch
+      - run: npm ci
+      - run: npm run dist -- --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HanziHome-installer
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/latest.yml

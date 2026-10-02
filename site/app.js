@@ -2208,6 +2208,22 @@ function pageSettings() {
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
 }
 
+/* the app's version, and what its updates are doing (desktop/src/updates.js) */
+function desktopUpdateLine(state) {
+  const u = state.update || {};
+  if (!state.version) return '';
+  const button = (what, label) => `<button type="button" class="btn quiet" id="dk-update" data-what="${what}">${label}</button>`;
+  const say = {
+    off: 'Updates come with the installed app.',
+    idle: 'Looks for a newer version every few hours. ' + button('check', 'Check now'),
+    checking: 'Looking for a newer version…',
+    downloading: `Downloading version ${esc(u.version || '')}…`,
+    ready: `Version ${esc(u.version || '')} is ready and installs when you quit. ` + button('install', 'Restart now'),
+    error: `Couldn't check for updates${u.error ? ` (${esc(u.error)})` : ''}. ` + button('check', 'Try again'),
+  }[u.status] || '';
+  return `<p class="small muted dk-update">HanziHome ${esc(state.version)}. ${say}</p>`;
+}
+
 /* Desktop app only: its switches for the rest of the screen, the same ones the
    tray menu has, plus start with Windows and the programs to pause in. */
 function paintDesktopCard(state) {
@@ -2236,6 +2252,7 @@ function paintDesktopCard(state) {
       quicker than reading the screen, which is then only read for the rest (pictures, video, games).</p>
     ${check('dk-auto', state.autostart, 'Start with Windows', !state.canAutostart)}
     ${state.canAutostart ? '' : '<p class="small muted dk-note">Only the installed app can start with Windows.</p>'}
+    ${desktopUpdateLine(state)}
     <h3 class="dk-h">Pause in these programs</h3>
     <p class="small muted">While one of them is in front, the colours and look-ups stay out of the way: for games, say.</p>
     <div class="dk-chips">${s.pause.map(n => `<span class="dk-chip">${esc(n)}
@@ -2254,6 +2271,8 @@ function paintDesktopCard(state) {
   document.getElementById('dk-key').addEventListener('change', e => set({ hoverKey: e.target.value }));
   document.getElementById('dk-direct').addEventListener('change', () => set({ directText: on('dk-direct') }));
   document.getElementById('dk-auto').addEventListener('change', () => set({ autostart: on('dk-auto') }));
+  const upd = document.getElementById('dk-update');
+  if (upd) upd.addEventListener('click', () => D.update(upd.dataset.what));
   box.querySelectorAll('[data-unpause]').forEach(b => b.addEventListener('click', () =>
     set({ pause: s.pause.filter(n => n !== b.dataset.unpause) })));
   box.querySelectorAll('[data-pause]').forEach(b => b.addEventListener('click', () =>

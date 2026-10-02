@@ -13,7 +13,8 @@
  * opens the reader's word popup for it (hover.js); marking a character there marks
  * it in the site's store. The tray's "Read the screen now" runs the whole
  * pipeline: the OCR helper reads the screen, ocrfix repairs it, and the text
- * opens in the reader.
+ * opens in the reader. The installed app updates itself from GitHub Releases
+ * (updates.js).
  *
  *   npm start                                    (from desktop/)
  *   npm start -- --hidden                        start in the tray, window closed
@@ -41,6 +42,7 @@ const { paragraphs, directParagraphs } = require('./layout');
 const { Overlays } = require('./overlays');
 const { Hover } = require('./hover');
 const { loadSettings, saveSettings } = require('./settings');
+const updates = require('./updates');
 
 const SITE = path.join(__dirname, '..', '..', 'site');
 const ASSETS = path.join(__dirname, '..', 'assets');
@@ -352,7 +354,13 @@ function desktopState() {
   return {
     settings, autostart: autostart(), canAutostart: canAutostart(),
     recent: (overlays && overlays.recent) || [],
+    version: app.getVersion(), update: Object.assign({}, updates.state),
   };
+}
+
+function installUpdate() {
+  quitting = true;
+  updates.install();
 }
 
 const fromPage = e => win && e.sender === win.webContents;
@@ -374,6 +382,11 @@ ipcMain.handle('desktop-set', (e, patch) => {
   return desktopState();
 });
 ipcMain.on('read-screen', e => { if (fromPage(e)) readScreen(); });
+ipcMain.on('desktop-update', (e, what) => {
+  if (!fromPage(e)) return;
+  if (what === 'install') installUpdate();
+  else updates.check();
+});
 
 // ------------------------------------------------------------------- tray
 
@@ -393,7 +406,10 @@ function buildTrayMenu() {
     label, type: 'checkbox', checked: settings.show[key], enabled: settings.overlay,
     click: () => setSetting(s => { s.show[key] = !s.show[key]; }),
   });
+  const u = updates.state;
+  tray.setToolTip(u.status === 'ready' ? `HanziHome: version ${u.version} installs when you quit` : 'HanziHome');
   tray.setContextMenu(Menu.buildFromTemplate([
+    ...(u.status === 'ready' ? [{ label: `Restart to update to ${u.version}`, click: installUpdate }, { type: 'separator' }] : []),
     { label: 'Open HanziHome', click: showWindow },
     { label: 'Read the screen now', click: readScreen },
     { label: 'Read copied text', click: readClipboard },
@@ -434,6 +450,12 @@ if (!app.requestSingleInstanceLock()) {
     powerMonitor.on('resume', syncNow);
     if (settings.overlay && !testRun()) startOverlay();
     if (settings.hoverKey !== 'off' && !testRun()) startHover();
+    if (!testRun()) {
+      updates.start(() => {
+        buildTrayMenu();
+        if (win) win.webContents.send('desktop-settings-changed', desktopState());
+      });
+    }
 
     win.webContents.once('did-finish-load', async () => {
       const open = arg('open');

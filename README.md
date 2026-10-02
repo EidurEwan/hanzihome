@@ -330,7 +330,10 @@ compares both ways with where the characters really are.
 Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from
 here; `npm run dist` builds the installer. Ready-built installers are on the repo's
 [Releases](https://github.com/EidurEwan/hanzihome/releases) page, built on Windows by
-`.github/workflows/desktop-installer.yml` for each pushed `v*` tag. How it works, what was measured and what each
+`.github/workflows/desktop-installer.yml` for each pushed `v*` tag (it must match `version` in
+`desktop/package.json`), and every push's test run keeps one under its Artifacts. The installed
+app updates itself from Releases: it downloads a new version in the background and installs it
+when you quit (or at once, from the tray). How it works, what was measured and what each
 part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 ## Known differences from the original

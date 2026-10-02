@@ -23,8 +23,12 @@ and each colour. Step 6: hover lookup, `desktop/src/hover.js` + `popup/` (keyboa
 only inside the app), a pause list of programs, start with Windows, and the installer.
 
 Running it from the repo: `cd desktop && npm install && node ocr/build.js && npm start`.
-Building the installer: `cd desktop && npm run dist` → `desktop/dist/HanziHome Setup
-0.1.0.exe` (~120 MB; per-user install, choosable folder, Start menu and desktop shortcuts).
+Building the installer: `cd desktop && npm run dist` → `desktop/dist/HanziHome-Setup-0.1.0.exe`
+(~120 MB; per-user install, choosable folder, Start menu and desktop shortcuts). Releases:
+set `version` in `desktop/package.json`, then push a tag `v` + that version; the
+"Desktop installer" workflow builds it on Windows and publishes it with `latest.yml`, which
+the installed app (`src/updates.js`) checks every few hours, downloading the new version and
+installing it when you quit.
 It is not code-signed, so Windows SmartScreen warns "unknown publisher" on first run
 (More info → Run anyway). The app has its own browser storage, so it starts with no
 progress: connect the same Google Sheet in Settings → Sync (or import an exported JSON).
