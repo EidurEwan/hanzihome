@@ -1,0 +1,30 @@
+# Runs the site's tests on every push and pull request: the study schedule, sync, the
+# reader's readings and accuracy (Node only). The desktop app's are in desktop-tests.yml.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# a newer push to the same branch replaces a run still going
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node test/learn.js
+      - run: node test/sync.js
+      - run: node test/polyphones.js
+      - run: node test/polyphones.js --heldout
+      - run: node test/accuracy.js

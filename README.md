@@ -16,6 +16,13 @@ datasets, so this is a reimplementation of the idea with its own data pipeline.
 no build step, no network. Data files load through `<script>` tags rather than `fetch()`,
 which is what lets it work from a plain `file://` URL.
 
+**On a phone, or offline:** opened from the live address, the site keeps every file it has
+used ([`site/sw.js`](site/sw.js), a service worker), so pages you have opened open again without
+a connection, and **Settings → Use offline → Keep everything** fetches the rest (about 70 MB).
+Add it to the home screen from the browser's menu and it opens like an app
+([`site/manifest.webmanifest`](site/manifest.webmanifest)). A new version shows as soon as the
+page is loaded with a connection.
+
 Everything you mark is kept in that browser's `localStorage`. Settings → Export JSON gives
 you a copy to back up or move to another machine, or turn on sync (below).
 
@@ -30,12 +37,17 @@ Google Sheet you own. Every browser connected to it stays in step.
 3. In HanziHome, **Settings → Sync with Google Sheets**: paste the URL. Repeat in each browser.
 
 The script is marked `@OnlyCurrentDoc`, so it can only open the Sheet it is attached to.
-"Anyone" means browsers can reach it without a Google sign-in. There is no password, so anyone
-who has the `/exec` URL can read and replace your synced progress: keep the URL private. After
-changing the script, use **Manage deployments → Edit → New version** so the URL stays the same.
+"Anyone" means browsers can reach it without a Google sign-in, so anyone who has the `/exec` URL
+can read and replace your synced progress: keep the URL private, and lock it with a passphrase
+(**Settings → Sync**, once connected). A locked script refuses every request without the
+passphrase, and stops answering for a quarter of an hour after 10 wrong ones. Each device asks
+for it once and keeps it beside the URL; the script keeps only a salted hash, in its script
+properties. Forgotten it? In the Apps Script editor, **Project Settings → Script properties**,
+delete `lockHash`. After changing the script, use **Manage deployments → Edit → New version**
+so the URL stays the same.
 
 To check a deployment, open the `/exec` URL in a **private window** (the site is not signed in to
-Google, so that is what it sees). A working one shows `"version":5` and `"sheet":"ok"`. A
+Google, so that is what it sees). A working one shows `"version":6` and `"sheet":"ok"`. A
 sign-in page means *Execute as* is not *Me* or access is not *Anyone*. A `"problem"` names what
 stops the script opening its Sheet.
 
@@ -84,8 +96,9 @@ All / Not known / Learning / Learned. A right-hand rail follows you across every
 * **Study next** — suggestions picked because *you already know both parts* of a character,
   or because it buys the most reading coverage.
 
-**Character pages** — breakdown tree, glossed components, full stroke expansion, every
-CC-CEDICT reading, phonetic-component clues, "appears in", example words split into
+**Character pages** — stroke order (played stroke by stroke, the radical's strokes in red,
+with practice tracing over it or writing it from memory, checked stroke by stroke), breakdown
+tree, glossed components, full stroke expansion, every CC-CEDICT reading, phonetic-component clues, "appears in", example words split into
 common / uncommon / rare, frequency facts, stroke count, radical, and a private note field.
 Components are clickable: mark one as known and it lights up green everywhere it occurs.
 
@@ -117,7 +130,11 @@ to add one), your mnemonic and notes to edit, usage; a section that would give a
 other question starts closed), play the pronunciation (P), quiz settings (Q), reveal the answer
 (Ctrl+Enter, counted as missed), open the item in a new tab (O; a second window in the desktop
 app), wrap up (W: finish the items already started, leave the rest for next time) and undo
-(Ctrl+Z: the answer doesn't count and the question comes again later). Tabs and windows open on
+(Ctrl+Z: the answer doesn't count and the question comes again later). Two more questions can be
+turned on in Settings: **Listening** asks an item's meaning from its sound alone, before you see
+it, and counts like the others; **Writing** asks you to draw a character, stroke by stroke, from
+its pinyin and meaning (after three misses on a stroke its outline shows, and needing it makes
+the review hard, never forgotten). Tabs and windows open on
 the site follow each other's changes. The summary after a session shows the share right first
 time, what was reviewed, right and missed and how long it took, a tile per item with the stage
 it moved to (and from), the rating the app gave it, its stability and difficulty, and what you
@@ -152,19 +169,37 @@ word skipping have no counterpart here: every item is one you added, and nothing
 The rules are in [`site/learn.js`](site/learn.js), checked by `node test/learn.js`; characters
 that were being learned with the old flashcards start at Novice I.
 
-**Reader** — 24 original graded stories, four per HSK level, each at least 250 characters
+**Anki** — the Study page's Anki card exports your lessons and reviews as a file Anki imports
+as it is (hanzi, pinyin, meaning, the sentence you found it in, your mnemonic, tags for kind and
+stage), and imports an Anki deck: a `.apkg` (old or new format, read in the page with sql.js and
+fzstd from `site/vendor/`) or Anki's plain-text export. It guesses which field is the hanzi,
+the pinyin and the meaning (you can change them), shows what it found, and adds the new ones to
+your lessons, or to your reviews at Journeyman if you already know them. Traditional decks are
+kept under their simplified form, and the dictionary's readings are used where it has the word.
+
+**Reader** — 30 original graded stories, five per HSK level, each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and
 simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
 a word shows the reading and meaning it has *in that sentence* — 还 is "to give back" in one
 line and "also" in the next — plus what each of its characters contributes, with buttons to
 mark them and to add the word to your lessons. Text you paste in opens in the same reader, glossed automatically (see "Reading
-any text" below); when context can't settle a meaning, the popup names the other one too.
+any text" below), and so do books: open an EPUB or a text file (UTF-8 or GB18030) and it is read a
+page at a time, remembering your place (`site/books.js`, kept in the browser's IndexedDB). On the
+live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)
+sends any web page you are on, or the part you selected, to the reader; when context can't settle a meaning, the popup names the other one too.
 
 **Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
 productive components, productive characters, the full frequency list, plus your own
 custom lists, notes and search history.
 
 **Search** — a character, pinyin (`hao3` or `hao`), or an English word, with type-ahead.
+
+**Simplified or traditional** — Settings → Appearance → Characters shows every page, story and
+review in traditional characters, or simplified with traditional beside it. The data stays
+simplified; [`build/export_s2t.js`](build/export_s2t.js) writes the table it is shown through:
+each character as CC-CEDICT's traditional spellings of words write it most often (发 發, 后 後),
+and the 1,885 words that convert otherwise (头发 頭髮, 皇后 皇后, 干净 乾淨). Dark mode is under
+Appearance too, or follows the device.
 
 ## How the data is put together
 
@@ -176,6 +211,9 @@ custom lists, notes and search history.
 | [jieba](https://github.com/fxsjy/jieba) dictionary | word frequency, common/uncommon/rare tiers | MIT |
 | [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) | stroke counts, radicals | LGPL / Arphic |
 | [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) | HSK levels | MIT |
+| [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) (Make Me a Hanzi's graphics) | stroke order, writing practice | Arphic Public License |
+| [Hanzi Writer](https://github.com/chanind/hanzi-writer) (`site/vendor/`) | drawing strokes and checking written ones | MIT |
+| [sql.js](https://github.com/sql-js/sql.js), [fzstd](https://github.com/101arrowz/fzstd) (`site/vendor/`) | reading Anki decks | MIT |
 
 ```
 build/build.py          data/raw/*  ->  data/hanzicraft.db   (SQLite, ~28 MB)
@@ -185,6 +223,9 @@ build/readingorder.py   orders each character's readings and meanings most-used 
 build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded reader)
 build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> site/data/readings.js
                         data/raw/{cedict,jieba_dict}.txt -> site/data/readerwords.js
+build/word_readings.py  everyday readings (build/everyday_readings.txt) into words.js, hsk.js, c/*.js
+build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the same 64 buckets)
+build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
 test/accuracy.js        scores textstory.js against the hand-glossed stories
@@ -193,8 +234,9 @@ sync/mock-server.js     runs Code.gs locally for testing, no Google account need
 server.py               optional: serves the same database over HTTP instead
 ```
 
-Rebuild with `python build/build.py && python build/export_static.py` (stop `server.py`
-first if it is running — it holds the database file open).
+Rebuild with `python build/build.py && python build/export_static.py && python
+build/export_reader.py && python build/word_readings.py` (stop `server.py` first if it is
+running — it holds the database file open).
 
 Character detail is split into 64 buckets by codepoint, so opening a character pulls in
 about 300 KB rather than the whole corpus. The word index (6.7 MB) only loads when you
@@ -243,7 +285,8 @@ never change meaning (我, 学校) sit in `lexicon.txt`; context-dependent ones 
 are refused there. `chars.txt` says what a character means inside a word (面 in 面包 is
 "flour", not "face").
 
-`python build/build_stories.py --report report.txt` checks every story has at least 250
+`python build/build_stories.py --report report.txt` (it works without `data/raw/` too, taking
+the dictionary and HSK lists from `site/data/`, when its level report is rougher) checks every story has at least 250
 characters and a meaning for every word, that pinyin has one syllable per character, lists
 vocabulary above the story's HSK level (HSK 2.0 and 3.0 lists), flags words missing from
 CC-CEDICT as likely typos, and reports character meanings that fell back to the dictionary.
@@ -269,23 +312,28 @@ gào sù "to press charges", 东西 dōng xi "thing" before dōng xī "east and 
 
 `node test/accuracy.js` puts each story's text back together without the spaces, runs it
 through the engine and compares the result with the hand-made glossary. The last story of each
-level is held out while rules are written. On 2026-09-28:
+level is held out while rules are written, and the six written later (s25–s30) were written
+after the rules, so they test them afresh. On 2026-10-02:
 
-| | dev (18 stories) | held out (6) |
-| --- | --- | --- |
-| words split as by hand | 93.5% | 93.9% |
-| words cut through the middle | 0.2% | 0.0% |
-| pinyin per character | 99.4% | 99.2% |
-| meaning shares a content word with the hand gloss | 87.2% | 85.8% |
-| … for words not in `lexicon.txt` | 78.0% | 75.9% |
-| … for context-dependent characters (了, 还, 得 …) | 83.0% | 79.9% |
+| | dev (18 stories) | held out (6) | written later (6) |
+| --- | --- | --- | --- |
+| words split as by hand | 93.5% | 93.9% | 92.2% |
+| words cut through the middle | 0.2% | 0.0% | 0.1% |
+| pinyin per character | 99.4% | 99.5% | 99.3% |
+| meaning shares a content word with the hand gloss | 87.3% | 85.9% | 87.0% |
+| … for words not in `lexicon.txt` | 78.2% | 76.1% | 79.3% |
+| … for context-dependent characters (了, 还, 得 …) | 83.4% | 80.2% | 81.0% |
 
 `--errors` lists the mistakes, `--show 上` prints every sentence a word appears in, and
 `--tune` searches the segmentation parameters. Most remaining meaning "errors" are wording
 (mama vs mum, frequently vs often).
 
-`words.js` itself still has the one-reading problem, so site search shows 告诉 as gào sù "to
-press charges". Fixing it means a full `build.py` rebuild with all six sources in `data/raw/`.
+`words.js` keeps one reading per word, which for some words was the rarer one (告诉 gào sù "to
+press charges"). [`build/word_readings.py`](build/word_readings.py) gives the words listed in
+`build/everyday_readings.txt`, checked by hand, their everyday reading and its meanings first,
+in search, the HSK lists and the character pages' example words: 告诉 gào su "to tell", 东西
+dōng xi "thing", 便宜 pián yi "cheap". The list is by hand because "a neutral tone first" is
+right for those and wrong for others (女人 nǚ rén, 土地 tǔ dì).
 
 ### Phonetic relationships
 
@@ -322,8 +370,21 @@ in Chrome, looking a word up takes about 10 ms; checking an unchanged screen, ab
 switch in Settings → Desktop app turns this off. `npx electron test/text.js` (in `desktop/`)
 compares both ways with where the characters really are.
 
+Windows' OCR sees only brightness, so coloured text close in brightness to its background,
+and white text in dark boxes, is read a second time from a copy redrawn by colour, and each
+line keeps the reading that looks more like Chinese: dark highlights went from 38% to 62% of
+characters read right, colour on colour from 83% to 91%; plain text is read once, as before.
+Calligraphy, handwriting and display fonts are still read poorly (about a quarter right),
+as is text with a shadow. `desktop/test/ocr.js` measures all of these on Windows in CI.
+
 Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from
-here; `npm run dist` builds the installer. How it works, what was measured and what each
+here; `npm run dist` builds the installer. Ready-built installers are on the repo's
+[Releases](https://github.com/EidurEwan/hanzihome/releases) page, built on Windows by
+`.github/workflows/desktop-installer.yml` for each pushed `v*` tag (it must match `version` in
+`desktop/package.json`), and every run of the "Desktop tests" workflow (on a push that changes
+`desktop/`) keeps one under its Artifacts. The installed
+app updates itself from Releases: it downloads a new version in the background and installs it
+when you quit (or at once, from the tray). How it works, what was measured and what each
 part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 ## Known differences from the original
@@ -340,8 +401,9 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 * **More characters** — 15,450 indexed against their ~6,800, so "component in N characters"
   runs slightly higher.
 * **No limits and no account.** The original caps tracked characters and full history on
-  the free tier; there is nothing to upgrade here. The trade-off is that progress lives in
-  one browser rather than syncing across devices — use Settings → Export JSON to move it.
+  the free tier; there is nothing to upgrade here. Progress lives in the browser, and moves
+  between devices through your own Google Sheet (see "Syncing between devices") or an
+  exported JSON file instead of an account.
 
 ## Typography and colour
 

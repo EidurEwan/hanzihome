@@ -18,7 +18,8 @@
  *
  * The last story of each HSK level is held out: rules are written while looking
  * at the other 18 (the "dev" set), and the held-out six show whether they
- * carry over to text they were not written for.
+ * carry over to text they were not written for. Stories written after that
+ * (s25 on, "later") were written after the rules, and are reported on their own.
  *
  *   node test/accuracy.js              scores
  *   node test/accuracy.js --errors     plus the dev set's mistakes, most common first
@@ -174,11 +175,15 @@ function report(name, t) {
   console.log(`${''.padEnd(9)}          ${pct(t.meanX, t.meanXN)} of words outside the lexicon (n=${t.meanXN})`);
 }
 
+// The first 24 stories: the last of each level is held out (s04, s08 … s24). Stories
+// written later (s25 on) came after the rules, so they are held out too, reported apart.
+const FIRST = 24, num = s => +s.id.slice(1);
 const byLevel = {};
-HZ.stories.forEach(s => (byLevel[s.l] = byLevel[s.l] || []).push(s));
+HZ.stories.filter(s => num(s) <= FIRST).forEach(s => (byLevel[s.l] = byLevel[s.l] || []).push(s));
 const held = new Set(Object.values(byLevel).map(l => l[l.length - 1].id));
-const dev = HZ.stories.filter(s => !held.has(s.id));
+const dev = HZ.stories.filter(s => num(s) <= FIRST && !held.has(s.id));
 const hold = HZ.stories.filter(s => held.has(s.id));
+const later = HZ.stories.filter(s => num(s) > FIRST);
 
 if (process.argv.includes('--tune')) {
   const P = TextStory.params;
@@ -216,6 +221,7 @@ const errors = process.argv.includes('--errors') ? { seg: {}, pin: {}, mean: {} 
 console.log(`dev = ${dev.length} stories, held out = ${hold.map(s => s.id).join(' ')}\n`);
 report('dev', score(dev, errors));
 report('held out', score(hold));
+if (later.length) report('later', score(later));
 
 if (errors) {
   const top = (o, n) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, n).map(([k, c]) => `  ${c}× ${k}`).join('\n');

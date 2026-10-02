@@ -272,3 +272,80 @@ words:
 下 | xià | next (下星期 = next week)
 还 | hái | again (still)
 多 | duō | many
+
+=== s25
+level: 1
+tag: A birthday
+zh: 我的生日
+en: My Birthday
+text:
+今天 是 我 的 生日 ， 我 八 岁 了@change 。 早上 ， 妈妈 说 ： “ 生日 快乐 ！ 今天 你 想 做 什么 ？ ” 我 说 ： “ 我 想 去 公园 ， 也 想 吃 蛋糕 。 ”
+
+上午 ， 爸爸 妈妈 和 我 一起 去 公园 。 公园 里 有 很 多 人 ， 有 很 多 花 ， 还有 一 个 小 湖 。 天气 很 好 ， 不 冷 也 不 热 。 我们 在 湖边 坐 了 很 长 时间 。 爸爸 给 我 买 了 一 个 红 气球 ， 我 很 高兴 。
+
+中午 ， 我们 在 一 个 饭馆 吃饭 。 饭馆 的 菜 很 好吃 。 爸爸 问 我 ： “ 你 想 喝 什么 ？ ” 我 说 ： “ 我 想 喝 牛奶 。 ”
+
+下午 ， 我 的 朋友 小王 和 小李 来 我 家 。 他们 给@give 了 我 一 本 书 和 一 只 小 狗 。 那 不 是 真 的 狗 ， 是 一 个 玩具 。 我 说 ： “ 谢谢 你们 ！ ” 我们 一起 看 书 ， 一起 玩 。 小王 说 ： “ 你 的 房间 很 漂亮 ！ ” 我们 都 很 开心 。
+
+晚上 七 点 ， 妈妈 拿 来@dir 了 一 个 大 蛋糕 。 蛋糕 上 有 八 个 小 蜡烛 。 大家 说 ： “ 生日 快乐 ！ ” 我 吃 了 一 大 块 蛋糕 。 太 好吃 了@tai ！ 这 是 我 最 高兴 的 一 天 。
+words:
+的 | de | 's; of; (links a description to a noun)
+生日 | shēng rì | birthday
+了@change | le | (a new situation: now)
+快乐 | kuài lè | happy (生日快乐 = happy birthday)
+想 | xiǎng | to want to
+做 | zuò | to do
+什么 | shén me | what
+去 | qù | to go
+公园 | gōng yuán | park
+蛋糕 | dàn gāo | cake
+和 | hé | and
+里 | li | in; inside
+多 | duō | many; a lot
+花 | huā | flower(s)
+一 | yī | one; a
+小 | xiǎo | small; little
+湖 | hú | lake
+好 | hǎo | good; nice
+冷 | lěng | cold
+热 | rè | hot
+在 | zài | at; in
+湖边 | hú biān | by the lake
+坐 | zuò | to sit
+了 | le | (the action is done)
+长 | cháng | long
+给 | gěi | for (someone)
+给@give | gěi | to give
+红 | hóng | red
+气球 | qì qiú | balloon
+饭馆 | fàn guǎn | restaurant
+吃饭 | chī fàn | to have a meal
+菜 | cài | dish; food
+好吃 | hǎo chī | tasty
+喝 | hē | to drink
+牛奶 | niú nǎi | milk
+小王 | Xiǎo Wáng | Xiao Wang (name)
+小李 | Xiǎo Lǐ | Xiao Li (name)
+来 | lái | to come
+来@dir | lai | (after a verb) over here (拿来 = to bring)
+家 | jiā | home
+本 | běn | (measure word for books)
+只 | zhī | (measure word for animals)
+狗 | gǒu | dog
+那 | nà | that
+真 | zhēn | real (真的 = a real one)
+玩具 | wán jù | toy
+谢谢 | xiè xie | thank you
+看 | kàn | to read; to look at
+玩 | wán | to play
+点 | diǎn | o'clock
+大 | dà | big
+上 | shang | on (top of)
+蜡烛 | là zhú | candle
+大家 | dà jiā | everyone
+块 | kuài | piece
+了@tai | le | (太…了: so …!)
+这 | zhè | this
+漂亮 | piào liang | pretty
+都 | dōu | all; both
+天 | tiān | day

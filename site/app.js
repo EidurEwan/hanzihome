@@ -26,7 +26,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 5;
+const DATA_VERSION = 7;
 
 const _loading = {};
 function loadScript(src) {
@@ -75,7 +75,17 @@ async function charData(ch) {
   if (!HZ.chunk[b]) { try { await loadScript('data/c/' + b + '.js'); } catch (e) { return null; } }
   return (HZ.chunk[b] || {})[ch] || null;
 }
+/* how to write a character, stroke by stroke (site/data/s/, build/export_strokes.js):
+   [strokes, medians, radStrokes], or null for the few characters it doesn't cover */
+const strokeCount = ch => { const b = HZ.strokes[bucketOf(ch)]; return b && b[ch] ? b[ch][0].length : 0; };
+async function strokeData(ch) {
+  const b = bucketOf(ch);
+  if (!HZ.strokes[b]) { try { await loadScript('data/s/' + b + '.js'); } catch (e) { return null; } }
+  return (HZ.strokes[b] || {})[ch] || null;
+}
+
 const need = {
+  writer: () => window.HanziWriter ? Promise.resolve() : loadScript('vendor/hanzi-writer.min.js'),
   comps: () => HZ.comps ? Promise.resolve() : loadScript('data/comps.js'),
   words: () => HZ.words ? Promise.resolve() : loadScript('data/words.js'),
   hsk: () => HZ.hsk ? Promise.resolve() : loadScript('data/hsk.js'),
@@ -289,12 +299,15 @@ function tellDesktop() {
    asking (shrinks()): an emptied copy from an older version of the site did
    exactly that. Syncing pauses (cfg.held) until you choose which to keep. A
    deliberate Reset everything says so (cfg.reset), and the script (version 5)
-   refuses the same kind of upload from any device, and keeps earlier copies. */
+   refuses the same kind of upload from any device, and keeps earlier copies.
+
+   A passphrase (script version 6) locks the script: set from Settings, kept here
+   beside the URL and sent with every request. */
 
 const REDEPLOY = 'Paste the current sync/Code.gs into the Apps Script editor, save, then Deploy → '
   + 'Manage deployments → Edit (pencil) → Version: New version → Deploy.';
 const OLD_SCRIPT = 'Your deployment is still running the old script, which asks for a sync key. ' + REDEPLOY;
-const SCRIPT_VERSION = 5;           // sync/Code.gs's VERSION
+const SCRIPT_VERSION = 6;           // sync/Code.gs's VERSION
 
 /* how much a copy of the store holds: statuses, review items, known components,
    notes and list entries */
@@ -308,7 +321,7 @@ function heft(d) {
 const shrinks = (from, to) => heft(from) >= 20 && heft(to) < heft(from) / 2;
 
 const Sync = {
-  cfgKey: 'hanzihome.sync',          // {url, rev, dirty, lastSync}
+  cfgKey: 'hanzihome.sync',          // {url, key, rev, dirty, lastSync}
   baseKey: 'hanzihome.sync.base',    // the store as of the last successful sync
   timer: null, busy: null, again: false, error: '', lastRun: 0, retries: 0,
 
@@ -344,7 +357,7 @@ const Sync = {
       res = await fetch(c.url, {
         method: 'POST', redirect: 'follow',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(c.key ? Object.assign({ key: c.key }, body) : body),
       });
     } catch (e) {
       // Google's own error pages carry no CORS header, so a wrong URL, an access
@@ -357,6 +370,16 @@ const Sync = {
     let j;
     try { j = await res.json(); }
     catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
+    if (!j.ok && /^(locked|wrong-passphrase|slow-down)$/.test(j.error)) {
+      const err = new Error({
+        'locked': 'This sync is locked with a passphrase, and this device needs it.',
+        'wrong-passphrase': "That passphrase doesn't match the one this sync is locked with.",
+        'slow-down': `Too many wrong passphrases: the script refuses everything for ${j.minutes || 15} minutes.`,
+      }[j.error]);
+      err.code = 'locked';
+      throw err;
+    }
+    if (typeof j.locked === 'boolean') this.locked = j.locked;
     if (!j.ok && !j.conflict && soft) return j;
     if (!j.ok && j.error === 'shrink') {
       const err = new Error('held');
@@ -376,6 +399,7 @@ const Sync = {
         'script-error': `The script ran but failed: ${j.message}`,
         'busy': 'The sheet was busy. Try again in a moment.',
         'too-large': 'Your data is too large for the script to accept.',
+        'short-passphrase': `A passphrase needs at least ${j.min || 6} characters.`,
       }[j.error] || `The script refused the request (${j.error || 'unknown error'}).`);
     }
     return j;
@@ -538,6 +562,8 @@ const Sync = {
     this.scriptChecked = true;
     fetch(this.cfg().url, { redirect: 'follow' }).then(r => r.json()).then(info => {
       this.oldScript = !!(info && info.app === 'HanziHome sync' && (info.version || 0) < SCRIPT_VERSION);
+      this.scriptVersion = info && info.version || 0;
+      if (info && typeof info.locked === 'boolean') this.locked = info.locked;
       this.paint();
     }).catch(() => {});
   },
@@ -559,15 +585,29 @@ const Sync = {
     else markNav(currentPath());
   },
 
-  async connect(url) {
-    const trial = { url };
+  async connect(url, key) {
+    const trial = key ? { url, key } : { url };
     this.errorCode = '';
-    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL
+    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL or passphrase
     // rev 0 and dirty: the first cycle merges this browser's data with the sheet's
-    this.setCfg({ url, rev: 0, dirty: true, lastSync: 0 });
+    this.setCfg(Object.assign({ url, rev: 0, dirty: true, lastSync: 0 }, key ? { key } : {}));
     this.scriptChecked = false;                  // a new deployment: check its script again
     this.setBase(null);
     this.error = '';
+    return this.run();
+  },
+
+  /* lock the script with a passphrase, change it, or ('' ) remove it */
+  async lock(newKey) {
+    const j = await this.post({ action: 'lock', newKey });
+    this.update({ key: newKey || undefined });
+    this.locked = j.locked;
+    this.paint();
+  },
+  /* this device's passphrase, after another device locked the sync */
+  unlock(key) {
+    this.update({ key });
+    this.error = ''; this.errorCode = '';
     return this.run();
   },
 
@@ -611,10 +651,52 @@ const Sync = {
       if (help) {
         help.innerHTML = c && this.errorCode === 'unreachable' ? syncTroubleHtml(c.url)
           : c && this.oldScript ? `<p class="small sync-err">Your deployment runs an older sync script. Updating it
-            makes syncing quicker and safer (a sync can no longer catch a save half-way): ${esc(REDEPLOY)}</p>` : '';
+            makes syncing quicker and safer, and lets you lock it with a passphrase: ${esc(REDEPLOY)}</p>` : '';
       }
+      this.paintLock(c);
     }
   },
+};
+
+/* the passphrase part of the sync card: drawn again only when what it shows changes,
+   so typing into it is never wiped */
+Sync.paintLock = function (c) {
+  const box = document.getElementById('sync-lock-box');
+  if (!box) return;
+  const state = !c ? '' : this.errorCode === 'locked' ? 'needs' : this.locked === true ? 'locked'
+    : this.locked === false && !this.oldScript ? 'open' : '';
+  if (box.dataset.state === state) return;
+  box.dataset.state = state;
+  box.innerHTML = {
+    needs: `<div class="row"><input id="sync-key" class="sync-key" type="password" autocomplete="off"
+        placeholder="Passphrase"><button class="btn" id="sync-unlock">Unlock</button></div>`,
+    open: `<p class="small muted">Anyone who has the URL can read and change your synced progress. Lock it with a
+        passphrase, which each device asks for once:</p>
+      <div class="row"><input id="sync-key" class="sync-key" type="password" autocomplete="new-password"
+        placeholder="New passphrase (6+ characters)"><button class="btn quiet" id="sync-lock">Lock</button></div>`,
+    locked: `<p class="small muted">Locked with a passphrase: a device needs it as well as the URL.</p>
+      <details class="sync-help"><summary>Change or remove the passphrase</summary>
+        <div class="row"><input id="sync-key" class="sync-key" type="password" autocomplete="new-password"
+          placeholder="New passphrase"><button class="btn quiet" id="sync-lock">Change</button>
+          <button class="btn quiet" id="sync-unlock-all">Remove</button></div>
+        <p class="small muted">Other devices then ask for the new one. Forgotten it everywhere? In the Apps Script
+          editor, Project Settings → Script properties: delete <code>lockHash</code>.</p></details>`,
+  }[state] || '';
+  const $ = id => document.getElementById(id);
+  const say = (e) => { box.insertAdjacentHTML('beforeend', `<p class="small sync-err">${esc(e.message)}</p>`); };
+  if ($('sync-unlock')) {
+    const go = () => { const k = $('sync-key').value; if (k) this.unlock(k); };
+    $('sync-unlock').addEventListener('click', go);
+    $('sync-key').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  }
+  if ($('sync-lock')) $('sync-lock').addEventListener('click', () => {
+    const k = $('sync-key').value;
+    if (k.length < 6) return say(new Error('A passphrase needs at least 6 characters.'));
+    this.lock(k).catch(say);
+  });
+  if ($('sync-unlock-all')) $('sync-unlock-all').addEventListener('click', () => {
+    if (confirm('Remove the passphrase? Anyone with the URL can then read and change your synced progress.')) this.lock('').catch(say);
+  });
 };
 
 function ago(t) {
@@ -833,16 +915,56 @@ function initSearch() {
   });
 }
 
+/* ===================== simplified or traditional =====================
+   Settings → Appearance → Characters. The data is simplified throughout; shown,
+   it can be traditional (site/data/s2t.js, build/export_s2t.js: the usual
+   traditional form of each character, and the words that convert otherwise:
+   头发 頭髮, 皇后 皇后), or both: simplified with traditional beside it. */
+const scriptMode = () => (HZ.s2t ? Store.cfg().script : 'simp') || 'simp';
+const needS2t = () => Store.cfg().script !== 'simp' && !HZ.s2t ? loadScript('data/s2t.js') : Promise.resolve();
+let _s2tMax = 0;
+function toTrad(text) {
+  if (!HZ.s2t) return text;
+  if (!_s2tMax) _s2tMax = Math.max(2, ...Object.keys(HZ.s2tWords).map(w => [...w].length));
+  const cs = [...String(text)];
+  let out = '';
+  for (let i = 0; i < cs.length;) {
+    let n = Math.min(_s2tMax, cs.length - i);
+    for (; n >= 2; n--) { const w = cs.slice(i, i + n).join(''); if (w in HZ.s2tWords) { out += HZ.s2tWords[w]; break; } }
+    if (n >= 2) { i += n; continue; }
+    // 只 counting animals is 隻 (一隻貓), "only" stays 只
+    out += cs[i] === '只' && i && /[一二两三四五六七八九十几这那每半]/.test(cs[i - 1]) ? '隻' : HZ.s2t[cs[i]] || cs[i];
+    i++;
+  }
+  return out;
+}
+/* a character or word where there is room: traditional, or simplified with the
+   traditional beside it (both), escaped */
+function zh(text) {
+  const m = scriptMode(), t = m === 'simp' ? text : toTrad(text);
+  if (t === text) return esc(text);
+  return m === 'trad' ? esc(t) : `${esc(text)}<span class="trad">${esc(t)}</span>`;
+}
+/* where there is room for one (tiles, links, running text): traditional only in 'trad' */
+const zhOne = text => esc(scriptMode() === 'trad' ? toTrad(text) : text);
+
 /* ============================ shared bits ============================ */
 
-const charLink = (c, cls) => `<a class="${cls || ''}" href="#/character/${encodeURIComponent(c)}">${esc(c)}</a>`;
+const charLink = (c, cls) => `<a class="${cls || ''}" href="#/character/${encodeURIComponent(c)}">${zhOne(c)}</a>`;
+/* a word as links to its characters' pages, shown in the chosen characters (trad: its own
+   traditional spelling) */
+function wordLinks(simp, trad) {
+  const s = [...simp], t = [...(scriptMode() === 'trad' ? trad || toTrad(simp) : simp)];
+  return s.map((c, i) => HZ.index[c]
+    ? `<a href="#/character/${encodeURIComponent(c)}">${esc(t.length === s.length ? t[i] : c)}</a>` : esc(c)).join('');
+}
 
 function tile(c, label) {
   const e = HZ.index[c] || [];
   const st = Store.status(c);
   return `<a class="tile ${st || ''}" href="#/character/${encodeURIComponent(c)}"
      title="${esc((e[2] || '') + '  ' + (e[3] || ''))}">
-     <span class="g">${esc(c)}</span><span class="n">${label != null ? label : (e[0] || '')}</span></a>`;
+     <span class="g">${zhOne(c)}</span><span class="n">${label != null ? label : (e[0] || '')}</span></a>`;
 }
 
 /* The tile hover menu lives on <body>, not inside the card, so nothing about
@@ -915,7 +1037,7 @@ function chip(c, rank) {
   const e = HZ.index[c] || [];
   const st = Store.status(c) === 'learned' ? 'learned' : '';
   return `<a class="chip ${st}" href="#/character/${encodeURIComponent(c)}">
-    <span class="g">${esc(c)}</span><span class="p">${esc(e[2] || '')}</span>
+    <span class="g">${zhOne(c)}</span><span class="p">${esc(e[2] || '')}</span>
     ${rank ? `<span class="r">#${rank}</span>` : ''}</a>`;
 }
 
@@ -1253,12 +1375,52 @@ const ICON = {
 const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
 
-const wordChip = w => `<a class="word" href="#/search/${encodeURIComponent(w[0])}">
-  <span class="w">${esc(w[0])}</span>${w[1] ? ` <span class="t">(${esc(w[1])})</span>` : ''}
-  <span class="p">${esc(w[2])}</span></a>`;
+// [simplified, traditional or '', pinyin]: the one chosen first, the other in brackets
+const wordChip = w => { const [a, b] = scriptMode() === 'trad' && w[1] ? [w[1], w[0]] : [w[0], w[1]];
+  return `<a class="word" href="#/search/${encodeURIComponent(w[0])}">
+  <span class="w">${esc(a)}</span>${b ? ` <span class="t">(${esc(b)})</span>` : ''}
+  <span class="p">${esc(w[2])}</span></a>`; };
 
 const REL = { 1: 'Exact match, including tone.', 2: 'Same pinyin, different tone.',
               3: 'It rhymes.', 4: 'Same initial sound.' };
+
+/* a square for HanziWriter to draw in, over a 米字格 practice grid */
+function writerBox(id, size = 220) {
+  return `<div class="writer-wrap" style="width:${size}px;height:${size}px">
+    <svg class="writer-grid" viewBox="0 0 100 100" aria-hidden="true"><rect x=".5" y=".5" width="99" height="99"/>
+      <path d="M0 0L100 100M100 0L0 100M50 0V100M0 50H100"/></svg>
+    <div id="${id}" class="writer"></div></div>`;
+}
+
+/* HanziWriter in the element with that id, drawing ch from site/data/s; null when
+   there are no strokes for it. Colours follow the page's (light or dark). */
+async function makeWriter(id, ch, size, opts) {
+  const [, d] = await Promise.all([need.writer(), strokeData(ch)]);
+  if (!d || !document.getElementById(id)) return null;
+  const css = getComputedStyle(document.documentElement);
+  const v = n => css.getPropertyValue(n).trim();
+  return HanziWriter.create(id, ch, Object.assign({
+    width: size, height: size, padding: 6,
+    strokeColor: v('--ink'), outlineColor: v('--line-2'), radicalColor: v('--accent'),
+    drawingColor: v('--blue'), highlightColor: v('--blue'),
+    strokeAnimationSpeed: 1.1, delayBetweenStrokes: 220, drawingWidth: 6,
+    charDataLoader: (c, done) => done({ strokes: d[0], medians: d[1], radStrokes: d[2] || [] }),
+  }, opts));
+}
+
+/* a writing quiz in a writer: tracing over the outline, or from memory (the outline
+   only comes back, stroke by stroke, after three misses on it). done(mistakes, strokes) */
+function writeQuiz(writer, memory, say, done) {
+  let strokes = 0;
+  writer.hideCharacter();
+  if (memory) writer.hideOutline(); else writer.showOutline();
+  writer.quiz({
+    showHintAfterMisses: 3, leniency: 1.1,
+    onCorrectStroke: s => { strokes = s.strokeNum + 1 + s.strokesRemaining; say(`Stroke ${s.strokeNum + 1} of ${strokes}.`); },
+    onMistake: s => say(s.mistakesOnStroke >= 3 ? `Stroke ${s.strokeNum + 1}: follow the hint.` : `Not quite: stroke ${s.strokeNum + 1} again.`),
+    onComplete: s => { writer.showOutline(); done(s.totalMistakes, strokes); },
+  });
+}
 
 async function pageCharacter(ch) {
   app.innerHTML = '<p class="muted">Loading…</p>';
@@ -1308,10 +1470,10 @@ async function pageCharacter(ch) {
 
   app.innerHTML = `<p class="crumb"><a href="#/dashboard">Dashboard</a> / <span class="han">${esc(ch)}</span></p>`
   + withRail(`
-    <div class="chartab han">${esc(ch)}</div>
+    <div class="chartab han">${zhOne(ch)}</div>
     <section class="card chartop">
       <div class="hero-row">
-        <div class="hero-glyph ${status || ''}">${esc(ch)}</div>
+        <div class="hero-glyph ${status || ''}">${zhOne(ch)}</div>
         <div class="hero-actions">
           <div class="dd">
             <button class="btn status-btn ${status || 'none'}" id="statusbtn">
@@ -1332,6 +1494,21 @@ async function pageCharacter(ch) {
       <p class="neighbours">${prev ? `Previous (${charLink(prev)})` : ''}
         ${next ? `Next (${charLink(next)})` : ''}</p>
       <ul class="facts">${facts.join('')}</ul>
+    </section>
+
+    <section id="stroke-sec" hidden>
+      <h2 class="sec-h">Stroke order</h2>
+      <div class="decomp-box pad stroke-box">
+        ${writerBox('writer')}
+        <div class="writer-side">
+          <p class="small muted" id="writer-msg"></p>
+          <div class="row">
+            <button class="btn" id="w-play">▶ Play</button>
+            <button class="btn quiet" id="w-trace">✎ Trace it</button>
+            <button class="btn quiet" id="w-recall">✎ Write from memory</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <h2 class="sec-h">Decomposition</h2>
@@ -1398,6 +1575,27 @@ async function pageCharacter(ch) {
         placeholder="A mnemonic, an example sentence, anything…">${esc(store.notes[ch] || '')}</textarea>
       <p class="small muted" id="note-state">Saved automatically.</p>
     </div>`);
+
+  // stroke order: play it, trace it, or write it from memory
+  makeWriter('writer', ch, 220, { showOutline: true }).then(writer => {
+    const sec = document.getElementById('stroke-sec');
+    if (!writer || !sec) return;
+    sec.hidden = false;
+    const msg = document.getElementById('writer-msg');
+    const n = strokeCount(ch);
+    const intro = `${n ? n + ' strokes. ' : ''}The radical's strokes are in red. Play them in order, then write it yourself.`;
+    msg.textContent = intro;
+    const say = t => { msg.textContent = t; };
+    document.getElementById('w-play').addEventListener('click', () => { writer.cancelQuiz(); say(intro); writer.animateCharacter(); });
+    const practise = memory => () => {
+      say(memory ? 'Write it from memory: draw each stroke in order.' : 'Trace over the outline, stroke by stroke.');
+      writeQuiz(writer, memory, say, (mistakes) => say(mistakes
+        ? `Done, with ${mistakes} ${mistakes === 1 ? 'slip' : 'slips'}. Again, or play it to compare.`
+        : 'Done, without a slip.'));
+    };
+    document.getElementById('w-trace').addEventListener('click', practise(false));
+    document.getElementById('w-recall').addEventListener('click', practise(true));
+  });
 
   const dd = (btnId, popId, build) => {
     const btn = document.getElementById(btnId), pop = document.getElementById(popId);
@@ -1470,8 +1668,13 @@ async function pageSearch(q) {
   let words = [];
   try {
     await optional(need.words());
-    const s = q.toLowerCase(), bare = s.replace(/[0-5\s]/g, '');
-    words = HZ.words.filter(w => w[0] === q || w[1] === q || w[4] === bare ||
+    // pinyin: "gaosu" matches 告诉 whatever its tones, "gao4su" only that way
+    // (a neutral tone may be left out); v or ü for ü
+    const s = q.toLowerCase();
+    const spelt = x => x.replace(/[\s:5]/g, '').replace(/[üv]/g, 'u');
+    const pin = /^[a-zü:\s1-5]+$/.test(s) ? (/[1-4]/.test(s) ? spelt : x => spelt(x).replace(/[1-4]/g, '')) : null;
+    const want = pin && pin(s);
+    words = HZ.words.filter(w => w[0] === q || w[1] === q || (want && pin(w[4]) === want) ||
       (han.length > 1 && w[0].includes(q)) ||
       (s.length > 2 && w[3].toLowerCase().includes(s))).slice(0, 60);
   } catch (e) { /* word index is optional */ }
@@ -1484,8 +1687,8 @@ async function pageSearch(q) {
       </tbody></table></section>` : ''}
     ${words.length ? `<section class="card"><h2>Words</h2><table><tbody>
       ${words.map(w => `<tr>
-        <td class="g">${[...w[0]].map(c => HZ.index[c] ? charLink(c) : esc(c)).join('')}</td>
-        <td class="num">${esc(w[1] || '')}</td>
+        <td class="g">${wordLinks(w[0], w[1])}</td>
+        <td class="num">${esc(scriptMode() === 'trad' ? (w[1] ? w[0] : '') : w[1] || '')}</td>
         <td><b>${esc(w[2])}</b><br><span class="muted">${esc(w[3])}</span></td></tr>`).join('')}
       </tbody></table></section>` : ''}
     ${!chars.length && !words.length ? '<div class="card"><p class="empty">Nothing found.</p></div>' : ''}`);
@@ -1536,7 +1739,7 @@ async function pageReader() {
     const chars = st.c.map(r => r[0]);   // precomputed at build time; st.t is gone
     return `<a class="story" href="#/reader/${st.id}">
       <span class="story-tag">HSK ${st.l} · ${esc(st.tag)}</span>
-      <span class="story-zh han">${esc(st.zh)}</span>
+      <span class="story-zh han">${zhOne(st.zh)}</span>
       <span class="story-en">${esc(st.en)}</span>
       <span class="story-stat">${trackedIn(chars)} of ${chars.length} unique characters tracked</span>
     </a>`;
@@ -1557,14 +1760,119 @@ async function pageReader() {
         The meanings are worked out from the dictionary, so now and then one will be off.</p>
       <textarea id="reader-text" placeholder="把中文放在这里…">${esc(readerText())}</textarea>
       <p class="row" style="margin-top:10px"><button class="btn" id="do-read">Read it</button></p>
-    </div>`);
+    </div>
+
+    <h2 class="sec-h">Books</h2>
+    <div class="decomp-box pad">
+      <p class="muted small">A book (EPUB) or a long text file opens here a page at a time, and remembers where you
+        are. Books stay in this browser.</p>
+      <div id="book-list"></div>
+      <p class="row"><label class="btn quiet book-pick">Open a book or text file…<input type="file" id="book-file"
+        accept=".epub,.txt,text/plain,application/epub+zip" hidden></label><span class="small" id="book-msg"></span></p>
+    </div>
+
+    ${/^https?:$/.test(location.protocol) ? `<h2 class="sec-h">From any web page</h2>
+    <div class="decomp-box pad">
+      <p class="muted small">Drag this button to your bookmarks bar. On a page in Chinese, click it to read the page here
+        (or select a part first, to read just that).</p>
+      <p><a class="btn quiet bookmarklet" href="${esc(bookmarklet())}" onclick="return false"
+        title="Drag me to the bookmarks bar">📖 Read in HanziHome</a></p>
+      <p class="small muted">In the desktop app, Read the screen does this for anything on screen.</p>
+    </div>` : ''}`);
   document.getElementById('do-read').addEventListener('click', () => {
     const t = document.getElementById('reader-text').value;
     if (!t.trim()) return;
     setReaderText(t);
     go('/reader/text');
   });
+  paintBooks();
+  document.getElementById('book-file').addEventListener('change', async e => {
+    const f = e.target.files[0], msg = document.getElementById('book-msg');
+    e.target.value = '';
+    if (!f) return;
+    msg.textContent = 'Opening…'; msg.classList.remove('sync-err');
+    try {
+      await needBooks();
+      const book = await Books.open(f);
+      go('/reader/book/' + book.id);
+    } catch (err) {
+      msg.textContent = err.message || String(err); msg.classList.add('sync-err');
+    }
+  });
   paintRail();
+}
+
+/* ---- books (books.js): kept in this browser, read a page at a time ---- */
+const needBooks = () => Promise.all([loadScript('zip.js'), loadScript('books.js')]);
+
+async function paintBooks() {
+  const box = document.getElementById('book-list');
+  if (!box) return;
+  let list = [];
+  try { await needBooks(); list = await Books.list(); } catch (e) { /* no IndexedDB: nothing kept */ }
+  box.innerHTML = list.length ? `<ul class="books">${list.map(b => `<li>
+      <a href="#/reader/book/${esc(b.id)}"><b class="han">${zhOne(b.title)}</b>${b.author ? ` <span class="muted">${esc(b.author)}</span>` : ''}</a>
+      <span class="small muted">page ${b.at + 1} of ${b.pages}</span>
+      <i class="book-bar"><i style="width:${Math.round(100 * (b.at + 1) / b.pages)}%"></i></i>
+      <button class="btn quiet" data-unbook="${esc(b.id)}" aria-label="Remove ${esc(b.title)}">×</button></li>`).join('')}</ul>` : '';
+  box.querySelectorAll('[data-unbook]').forEach(btn => btn.addEventListener('click', async () => {
+    if (!confirm('Remove this book from this browser?')) return;
+    await Books.remove(btn.dataset.unbook);
+    paintBooks();
+  }));
+}
+
+async function pageBook(id, n) {
+  app.innerHTML = '<p class="muted">Loading…</p>';
+  await needBooks();
+  const book = await optional(Books.get(id));
+  if (!book) { app.innerHTML = '<div class="card"><p class="empty">That book isn\'t in this browser.</p></div>'; return; }
+  const at = Math.max(0, Math.min(book.pages.length - 1, isNaN(n) ? book.at || 0 : n));
+  await need.textStory();
+  const page = book.pages[at];
+  const st = TextStory.textToStory(page.text, HZ);
+  st.zh = book.title;
+  st.en = `${page.ch ? page.ch + ' · ' : ''}page ${at + 1} of ${book.pages.length}`;
+  const link = (k, label) => k >= 0 && k < book.pages.length
+    ? `<a class="btn quiet" href="#/reader/book/${esc(id)}/${k}">${label}</a>` : `<span class="btn quiet" aria-disabled="true">${label}</span>`;
+  showStory(st, 'Back to the reader', `<p class="book-nav">${link(at - 1, '← Previous page')}
+    <span class="small muted">${at + 1} / ${book.pages.length}</span>${link(at + 1, 'Next page →')}</p>`);
+  Books.seen(id, at).catch(() => {});
+}
+
+/* the bookmarklet: run on any page, it opens #/reader/incoming here and hands it the
+   page's text (the selection, else the part of the page with the most Chinese) */
+function bookmarklet() {
+  const here = location.href.split('#')[0] + '#/reader/incoming';
+  return 'javascript:' + encodeURIComponent(`(function(){var s=String(getSelection()).trim(),best=document.body,n=0;
+if(!s){[].forEach.call(document.querySelectorAll('article,main,[role=main],#content,.content,.article,.post'),function(e){
+var k=(e.innerText.match(/[\u4e00-\u9fff]/g)||[]).length;if(k>n){n=k;best=e}})}
+var w=window.open(${JSON.stringify(here)});if(!w){alert('HanziHome: allow pop-ups on this site');return}
+var m={hanzihome:'read',title:document.title,text:(s||best.innerText).slice(0,200000)};
+addEventListener('message',function f(e){if(e.source===w&&e.data&&e.data.hanzihome==='ready'){w.postMessage(m,'*');removeEventListener('message',f)}})})()`
+    .replace(/\n/g, ''));
+}
+
+/* where the bookmarklet opens: say it's ready, take the text, read it */
+function pageIncoming() {
+  app.innerHTML = '<div class="card"><p class="empty">Waiting for the page’s text…</p></div>';
+  const take = e => {
+    const d = e.data;
+    // only from the page the button was pressed on, the one that opened this tab
+    if (!window.opener || e.source !== window.opener) return;
+    if (!d || d.hanzihome !== 'read' || typeof d.text !== 'string') return;
+    removeEventListener('message', take);
+    setReaderText(d.text.slice(0, 200000), String(d.title || '').slice(0, 80));
+    go('/reader/text');
+  };
+  addEventListener('message', take);
+  if (window.opener) window.opener.postMessage({ hanzihome: 'ready' }, '*');
+  setTimeout(() => {
+    if (currentPath() === '/reader/incoming') {
+      removeEventListener('message', take);
+      app.innerHTML = '<div class="card"><p class="empty">Nothing arrived. Use the Read in HanziHome button from a page in Chinese.</p></div>';
+    }
+  }, 8000);
 }
 
 /* A word is learned only when every character in it is; if any character is
@@ -1625,7 +1933,7 @@ function pageScreen() {
   window.hanzihomeDesktop.readScreen();
 }
 
-function showStory(st, back) {
+function showStory(st, back, nav) {
   _story = st;
   app.innerHTML = `
     <p class="crumb"><a href="#/reader">← ${esc(back)}</a></p>
@@ -1641,9 +1949,11 @@ function showStory(st, back) {
         </section>
       </aside>
       <div class="readmain">
-        <h1 class="storytitle han">${esc(st.zh)}</h1>
+        <h1 class="storytitle han">${zhOne(st.zh)}</h1>
         <p class="storysub">${esc(st.en)}</p>
+        ${nav || ''}
         <div class="reading-pane" id="pane"></div>
+        ${nav || ''}
       </div>
     </div>`;
 
@@ -1666,7 +1976,7 @@ function paintStory() {
     if (tk.br) return '<br>';               // a new speaker starts a new line
     if (typeof tk !== 'string') return esc(tk.s);
     const w = st.g[tk][0];
-    return `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${esc(w)}</span>`;
+    return `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${zhOne(w)}</span>`;
   }).join('') + '</p>').join('');
   pane.querySelectorAll('.w').forEach(el => {
     el.addEventListener('mouseenter', () => showWordPop(el));
@@ -1723,7 +2033,7 @@ function vocabList(st) {
   return '<h4 class="paneltitle">Vocabulary</h4>' + st.v.map(r => {
     const state = wordState(r[0]);
     return `<a class="vrow ${state}" href="#/character/${encodeURIComponent(r[0][0])}">
-      <span class="vw han">${esc(r[0])}</span>
+      <span class="vw han">${zhOne(r[0])}</span>
       <span class="vp">${esc(r[1] || '')}</span>
       <span class="vd">${esc(r[2] || '')}</span></a>`;
   }).join('');
@@ -1757,7 +2067,7 @@ function charList(st) {
     + (rows.length ? `<div class="crows">${rows.map(c => {
         const e = HZ.index[c] || [], r = inStory[c];
         return `<a class="crow ${stat(c) || ''}" href="#/character/${encodeURIComponent(c)}">
-          <span class="han">${esc(c)}</span>
+          <span class="han">${zhOne(c)}</span>
           <span class="rk">${e[0] ? '#' + e[0] : ''}</span>
           <span class="cp"><b>${esc(r[1])}</b> ${esc(r[2])}</span></a>`;
       }).join('')}</div>` : '<p class="empty small">Nothing in this group.</p>');
@@ -1816,14 +2126,14 @@ function showWordPop(el) {
     const meaning = multi
       ? `<span class="wp-cm"><b>${esc(cp)}</b> ${esc(cg)}</span>` : '';
     return `<div class="wp-char${multi ? ' multi' : ''}">
-      <a class="wp-c han" href="#/character/${encodeURIComponent(c)}">${esc(c)}</a>
+      <a class="wp-c han" href="#/character/${encodeURIComponent(c)}">${zhOne(c)}</a>
       <span class="wp-cbody">${meaning}${HZ.index[c]
         ? `<span class="seg3">${btn('', 'Not known', 'none')}${btn('learning', 'Learning', 'learning')}${btn('learned', 'Learned', 'learned')}</span>`
         : ''}</span>
     </div>`;
   };
   pop.innerHTML = `
-    <div class="wp-head"><span class="han">${esc(w)}</span>
+    <div class="wp-head"><span class="han">${zh(w)}</span>
       <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
     <p class="wp-learn">${Store.item(learnKey(w))
@@ -1888,7 +2198,7 @@ async function pageHsk(level) {
          you have marked as learned</p>
       <table><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th></tr></thead><tbody>
         ${words.map(w => `<tr>
-          <td class="g">${[...w[0]].map(c => HZ.index[c] ? charLink(c) : esc(c)).join('')}</td>
+          <td class="g">${wordLinks(w[0])}</td>
           <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td></tr>`).join('')}
       </tbody></table>
     </section>`);
@@ -2057,7 +2367,20 @@ function pageSettings() {
   const d = Store.load();
   app.innerHTML = '<h1 class="page-title">Settings</h1>' + withRail(`
     ${window.hanzihomeDesktop ? '<section class="card" id="desktop-card"><h2>Desktop app</h2></section>' : ''}
+    <section class="card">
+      <h2>Appearance</h2>
+      <div class="st-field"><div class="st-label">Theme</div>
+        <select class="st-select" id="theme">${[['system', 'Same as this device'], ['light', 'Light'], ['dark', 'Dark']]
+          .map(([v, l]) => `<option value="${v}"${theme() === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <p class="st-note">Kept on this device only, so a phone can be dark and a laptop light.</p></div>
+      <div class="st-field"><div class="st-label">Characters</div>
+        <select class="st-select" id="script">${[['simp', 'Simplified'], ['trad', 'Traditional'], ['both', 'Simplified, with traditional beside it']]
+          .map(([v, l]) => `<option value="${v}"${Store.cfg().script === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <p class="st-note">How characters and words are shown, on every page and in the stories. Searching, lessons and
+          answers work the same either way.</p></div>
+    </section>
     <section class="card" id="study-card"></section>
+    ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
     <section class="card">
       <h2>Learning goal</h2>
       <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
@@ -2130,10 +2453,33 @@ function pageSettings() {
       localStorage.removeItem(Store.key); Store.data = null; Store.load(); Store.save(); render();
     }
   });
+  document.getElementById('theme').addEventListener('change', e => { setTheme(e.target.value); render(true); });
+  document.getElementById('script').addEventListener('change', async e => {
+    Store.setCfg({ script: e.target.value });
+    await optional(needS2t());
+    render(true);
+  });
   wireSyncCard();
+  if (offlineCan()) paintOffline();
   paintStudySettings();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
+}
+
+/* the app's version, and what its updates are doing (desktop/src/updates.js) */
+function desktopUpdateLine(state) {
+  const u = state.update || {};
+  if (!state.version) return '';
+  const button = (what, label) => `<button type="button" class="btn quiet" id="dk-update" data-what="${what}">${label}</button>`;
+  const say = {
+    off: 'Updates come with the installed app.',
+    idle: 'Looks for a newer version every few hours. ' + button('check', 'Check now'),
+    checking: 'Looking for a newer version…',
+    downloading: `Downloading version ${esc(u.version || '')}…`,
+    ready: `Version ${esc(u.version || '')} is ready and installs when you quit. ` + button('install', 'Restart now'),
+    error: `Couldn't check for updates${u.error ? ` (${esc(u.error)})` : ''}. ` + button('check', 'Try again'),
+  }[u.status] || '';
+  return `<p class="small muted dk-update">HanziHome ${esc(state.version)}. ${say}</p>`;
 }
 
 /* Desktop app only: its switches for the rest of the screen, the same ones the
@@ -2164,6 +2510,7 @@ function paintDesktopCard(state) {
       quicker than reading the screen, which is then only read for the rest (pictures, video, games).</p>
     ${check('dk-auto', state.autostart, 'Start with Windows', !state.canAutostart)}
     ${state.canAutostart ? '' : '<p class="small muted dk-note">Only the installed app can start with Windows.</p>'}
+    ${desktopUpdateLine(state)}
     <h3 class="dk-h">Pause in these programs</h3>
     <p class="small muted">While one of them is in front, the colours and look-ups stay out of the way: for games, say.</p>
     <div class="dk-chips">${s.pause.map(n => `<span class="dk-chip">${esc(n)}
@@ -2182,6 +2529,8 @@ function paintDesktopCard(state) {
   document.getElementById('dk-key').addEventListener('change', e => set({ hoverKey: e.target.value }));
   document.getElementById('dk-direct').addEventListener('change', () => set({ directText: on('dk-direct') }));
   document.getElementById('dk-auto').addEventListener('change', () => set({ autostart: on('dk-auto') }));
+  const upd = document.getElementById('dk-update');
+  if (upd) upd.addEventListener('click', () => D.update(upd.dataset.what));
   box.querySelectorAll('[data-unpause]').forEach(b => b.addEventListener('click', () =>
     set({ pause: s.pause.filter(n => n !== b.dataset.unpause) })));
   box.querySelectorAll('[data-pause]').forEach(b => b.addEventListener('click', () =>
@@ -2209,7 +2558,7 @@ function syncCardBody() {
       </ol>
       <p class="small muted">The script can only open the one Sheet it is attached to. "Anyone" lets
         your browsers reach it without signing in, so anyone with the URL can read and change your
-        synced progress. Keep the URL to yourself.
+        synced progress. Keep the URL to yourself, and lock it with a passphrase once connected.
         After editing the script later, deploy a new version of the same deployment so the URL stays the same.</p>
     </details>`;
   if (c) {
@@ -2226,6 +2575,7 @@ function syncCardBody() {
           device doesn't. The synced copy's earlier versions are below, if the script keeps them.</p>
       </div>
       <div id="sync-help-box"></div>
+      <div id="sync-lock-box"></div>
       <div class="row">
         <button class="btn" id="sync-now">Sync now</button>
         <button class="btn quiet" id="sync-backups">Earlier copies…</button>
@@ -2240,6 +2590,8 @@ function syncCardBody() {
     <div class="sync-form">
       <label>Web app URL<input id="sync-url" type="url" spellcheck="false" autocomplete="off"
         placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <label>Passphrase <span class="muted">(only if you locked it)</span><input id="sync-key-new" type="password"
+        autocomplete="off"></label>
       <div class="row"><button class="btn" id="sync-connect">Connect</button>
         <span class="small" id="sync-msg"></span></div>
       <div id="sync-help-box"></div>
@@ -2293,7 +2645,7 @@ function wireSyncCard() {
       $('sync-connect').disabled = true;
       msg.textContent = 'Connecting…';
       try {
-        await Sync.connect(url);
+        await Sync.connect(url, $('sync-key-new').value);
         if (Sync.error) throw new Error(Sync.error);
         render(true);
       } catch (e) {
@@ -2339,6 +2691,85 @@ function wireSyncCard() {
   Sync.paint();
 }
 
+/* ============================ offline ============================
+   Served from a web address (GitHub Pages), the site installs a service worker
+   (sw.js) that keeps each file once used, so what you have opened opens again
+   without a connection, and Settings → Use offline can fetch the rest. Opened
+   from disk or in the desktop app, everything is already local. */
+const offlineCan = () => 'serviceWorker' in navigator && 'caches' in window && !window.hanzihomeDesktop
+  && (location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+if (offlineCan()) navigator.serviceWorker.register('sw.js').catch(e => console.warn('offline:', e));
+
+/* every file the site can load on demand, as loadScript asks for it */
+function offlineFiles() {
+  const hex = n => ('0' + n.toString(16)).slice(-2);
+  const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
+  return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
+    'stories', 'readings', 'readerwords', 's2t'].map(f => `data/${f}.js`)
+    .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
+      ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
+    .map(f => f + '?v=' + DATA_VERSION);
+}
+async function offlineStatus() {
+  const cache = await caches.open('hanzihome');
+  const have = new Set((await cache.keys()).map(r => new URL(r.url).pathname + new URL(r.url).search));
+  const base = new URL('.', location.href).pathname;
+  const files = offlineFiles();
+  return { files, kept: files.filter(f => have.has(base + f)).length };
+}
+/* fetch whatever isn't kept yet, four at a time; progress(done, total) */
+async function offlineAll(progress) {
+  const cache = await caches.open('hanzihome');
+  const { files } = await offlineStatus();
+  let done = 0, failed = 0;
+  const queue = files.slice();
+  const worker = async () => {
+    while (queue.length) {
+      const f = queue.shift();
+      try { if (!(await cache.match(f))) await cache.add(f); } catch (e) { failed++; }
+      progress(++done, files.length);
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  return failed;
+}
+async function paintOffline() {
+  const box = document.getElementById('offline-card');
+  if (!box) return;
+  const { files, kept } = await offlineStatus();
+  const all = kept === files.length;
+  box.innerHTML = `<h2>Use offline</h2>
+    <p class="muted small">${all ? 'Everything is kept on this device: HanziHome works without a connection.'
+      : `Pages you have opened work without a connection. ${kept} of ${files.length} data files are kept; the rest
+        (stroke order, example words, the reader's dictionary) load the first time you need them.`}
+      On a phone, add it to the home screen (the browser's Share or ⋮ menu) to open it like an app.</p>
+    ${all ? '' : '<div class="row"><button class="btn" id="offline-all">Keep everything (about 70 MB)</button><span class="small muted" id="offline-msg"></span></div>'}`;
+  const btn = document.getElementById('offline-all');
+  if (btn) btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const msg = document.getElementById('offline-msg');
+    const failed = await offlineAll((d, n) => { msg.textContent = `${d} of ${n}…`; });
+    if (failed) msg.textContent = `${failed} files couldn't be fetched. Try again with a connection.`;
+    else paintOffline();
+  });
+}
+
+/* ============================ appearance ============================
+   Light or dark: the device's preference unless Settings says otherwise. The
+   choice is this device's own (localStorage, not the synced store); index.html
+   applies it before the page draws, so a dark page never flashes white. */
+const THEME_KEY = 'hanzihome.theme';
+function theme() {
+  try { const t = localStorage.getItem(THEME_KEY); return t === 'light' || t === 'dark' ? t : 'system'; } catch (e) { return 'system'; }
+}
+function setTheme(t) {
+  try { t === 'system' ? localStorage.removeItem(THEME_KEY) : localStorage.setItem(THEME_KEY, t); } catch (e) { /* this visit only */ }
+  if (t === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+}
+// a page drawn with the theme's colours (stroke order) follows the device switching
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (theme() === 'system') render(true); });
+
 /* ============================ dispatch ============================ */
 
 function render(keepScroll) {
@@ -2358,6 +2789,8 @@ function render(keepScroll) {
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'reviews') return pageReviews();
   if (seg[0] === 'calibrate') return pageCalibrate();
+  if (seg[0] === 'reader' && seg[1] === 'book') return pageBook(seg[2], parseInt(seg[3], 10));
+  if (seg[0] === 'reader' && seg[1] === 'incoming') return pageIncoming();
   if (seg[0] === 'reader') return seg[1] ? pageStory(seg[1]) : pageReader();
   if (seg[0] === 'screen') return pageScreen();
   if (seg[0] === 'frequency') return pageFrequency();
@@ -2409,7 +2842,7 @@ document.addEventListener('keydown', e => {
 
 initSearch();
 if (!location.hash) location.hash = '#/dashboard';
-render();
+optional(needS2t()).then(() => render());
 tellDesktop();
 if (window.hanzihomeDesktop) {
   document.getElementById('nav-screen').hidden = false;

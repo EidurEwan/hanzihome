@@ -9,8 +9,12 @@
  *      Anyone. Copy the /exec URL.
  *   3. In HanziHome: Settings → Sync with Google Sheets → paste the URL.
  *
- * There is no password: anyone who has the /exec URL can read and replace
- * the synced copy, so treat the URL as private.
+ * Anyone who has the /exec URL can read and replace the synced copy, so treat
+ * the URL as private, and for more, lock it with a passphrase from HanziHome
+ * (Settings → Sync → Lock with a passphrase). Then every request must carry it.
+ * Only a salted hash of it is kept, in this script's properties. Forgot it?
+ * Project Settings (the gear) → Script properties → delete lockHash, and lock
+ * it again from HanziHome.
  *
  * The site talks to this script with POST requests whose body is JSON sent as
  * text/plain (so browsers do not send a CORS preflight, which Apps Script
@@ -24,7 +28,13 @@
  *                                          or {ok: false, error: "shrink", have, got}
  *   {action: "backups"}              -> {ok, backups: [{time, rev, heft}]}  (newest first)
  *   {action: "restore", rev}         -> {ok, rev, updatedAt}  (that earlier copy, saved anew)
+ *   {action: "lock", newKey}         -> {ok, locked}  (newKey "" removes the lock)
  *   any may answer {ok: false, error: "busy"} (a save took too long to finish)
+ *
+ * Once locked, every request carries {key: passphrase}; without it the answer is
+ * {ok: false, error: "locked"}, with a wrong one "wrong-passphrase", and after
+ * 10 wrong ones in a quarter of an hour "slow-down" until it has passed. "rev"
+ * and "pull" say whether the sync is locked ({locked}).
  *
  * `rev` goes up by one on every accepted push. A push is only accepted when
  * its baseRev matches the stored rev; otherwise the caller gets the newer copy
@@ -47,16 +57,19 @@
 var SHEET_NAME = 'HanziHome sync';
 var CHUNK = 45000;          // a cell holds at most 50,000 characters
 var MAX_BYTES = 5000000;    // refuse anything absurd
-var VERSION = 5;            // shown by doGet, so you can tell which code a deployment runs
+var VERSION = 6;            // shown by doGet, so you can tell which code a deployment runs
 var BACKUPS = 30;           // earlier copies kept
 var BACKUP_EVERY = 30 * 60 * 1000;
 var SHRINK_MIN = 20;        // copies smaller than this may shrink freely
+var KEY_MIN = 6;            // shortest passphrase
+var TRIES = 10;             // wrong passphrases allowed...
+var TRIES_FOR = 15 * 60;    // ...in this many seconds
 
 function doGet() {
   // Opening the /exec URL in a browser shows this. It also checks the Sheet can
   // be opened, because that is what fails when the script isn't attached to one
   // or hasn't been authorised, while this page itself still loads.
-  var info = { ok: true, app: 'HanziHome sync', version: VERSION };
+  var info = { ok: true, app: 'HanziHome sync', version: VERSION, locked: locked_() };
   try {
     sheet_();
     info.sheet = 'ok';
@@ -88,10 +101,27 @@ function handle_(e) {
     return json_({ ok: false, error: 'bad-json' });
   }
 
+  var refused = gate_(req);
+  if (refused) return json_(refused);
+
+  if (req.action === 'lock') {
+    var newKey = String(req.newKey || '');
+    if (newKey && newKey.length < KEY_MIN) return json_({ ok: false, error: 'short-passphrase', min: KEY_MIN });
+    var props = PropertiesService.getScriptProperties();
+    if (!newKey) {
+      props.deleteProperty('lockHash');
+      props.deleteProperty('lockSalt');
+    } else {
+      var salt = Utilities.getUuid();
+      props.setProperties({ lockSalt: salt, lockHash: hash_(salt, newKey) });
+    }
+    return json_({ ok: true, locked: !!newKey });
+  }
+
   if (req.action === 'rev') {
     // the revision is written last, in one go, so it can be read at any time
     var h = head_();
-    return json_({ ok: true, rev: h.rev, updatedAt: h.updatedAt });
+    return json_({ ok: true, rev: h.rev, updatedAt: h.updatedAt, locked: locked_() });
   }
 
   if (req.action === 'backups') {
@@ -105,7 +135,7 @@ function handle_(e) {
     try {
       if (req.action === 'pull') {
         var cur = read_();
-        return json_({ ok: true, rev: cur.rev, updatedAt: cur.updatedAt, data: cur.data });
+        return json_({ ok: true, rev: cur.rev, updatedAt: cur.updatedAt, data: cur.data, locked: locked_() });
       }
       var head = head_();
       if (req.action === 'restore') {
@@ -135,6 +165,31 @@ function handle_(e) {
   }
 
   return json_({ ok: false, error: 'unknown-action' });
+}
+
+/* ---- the passphrase: a salted SHA-256 of it in the script's properties ---- */
+
+function locked_() {
+  return !!PropertiesService.getScriptProperties().getProperty('lockHash');
+}
+
+function hash_(salt, key) {
+  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + key,
+    Utilities.Charset.UTF_8));
+}
+
+/* a refusal, or null when the request may go ahead */
+function gate_(req) {
+  var props = PropertiesService.getScriptProperties();
+  var want = props.getProperty('lockHash');
+  if (!want) return null;
+  var cache = CacheService.getScriptCache();
+  var fails = Number(cache.get('lockFails')) || 0;
+  if (fails >= TRIES) return { ok: false, error: 'slow-down', minutes: TRIES_FOR / 60 };
+  if (!req.key) return { ok: false, error: 'locked' };
+  if (hash_(props.getProperty('lockSalt'), String(req.key)) === want) return null;
+  cache.put('lockFails', String(fails + 1), TRIES_FOR);
+  return { ok: false, error: 'wrong-passphrase' };
 }
 
 /* ---- storage: A1 rev, B1 time saved, C1 length, D1 heft, column A from row 2 = JSON in chunks ---- */

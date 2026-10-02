@@ -1,0 +1,60 @@
+# Words whose everyday reading isn't the one the database keeps (build/word_readings.py).
+# One per line: word, then its everyday pinyin as build/export_reader.py writes it in
+# site/data/readerwords.js. Checked by hand: the reader puts a neutral-tone reading first
+# (告诉 gào su), which is right for these and wrong for many others (女人 is nǚ rén,
+# 土地 tǔ dì, 过去 guò qù), so only the words listed here change.
+地方 dì fang
+东西 dōng xi
+告诉 gào su
+多少 duō shao
+人家 rén jia
+故事 gù shi
+妻子 qī zi
+说法 shuō fa
+小子 xiǎo zi
+好处 hǎo chu
+大夫 dài fu
+便宜 pián yi
+媳妇 xí fu
+买卖 mǎi mai
+生意 shēng yi
+本事 běn shi
+得罪 dé zui
+大爷 dà ye
+工夫 gōng fu
+琢磨 zuó mo
+分量 fèn liang
+大方 dà fang
+口音 kǒu yin
+结实 jiē shi
+地道 dì dao
+把手 bǎ shou
+下场 xià chang
+花儿 huā r
+照应 zhào ying
+端详 duān xiang
+出息 chū xi
+猴儿 hóu r
+裁缝 cái feng
+门道 mén dao
+盘缠 pán chan
+格格 gé ge
+单子 dān zi
+铺盖 pū gai
+差事 chāi shi
+支吾 zhī wu
+滑溜 huá liu
+累赘 léi zhui
+准头 zhǔn tou
+行头 xíng tou
+劈柴 pǐ chai
+樟木 zhāng mù
+老街 lǎo jiē
+磕头如捣蒜 kē tóu rú dǎo suàn
+吧唧 bā ji
+托儿 tuō r
+扑棱 pū leng
+提子 tí zi
+铺衬 pū chen
+支子 zhī zi
+秃发 tū fà

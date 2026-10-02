@@ -1,0 +1,54 @@
+# Builds the Windows installer (desktop/dist/HanziHome-Setup-x.y.z.exe) and attaches it to a
+# GitHub Release, with the latest.yml that tells installed copies an update exists
+# (desktop/src/updates.js). Runs on a pushed tag like v0.2.0, which must match "version" in
+# desktop/package.json, or by hand from the Actions tab (the installer is then only kept
+# with the run). It has to run on Windows: the OCR helper is compiled with the C# compiler
+# that ships there.
+name: Desktop installer
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: The tag matches the app's version
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        run: |
+          want="v$(node -p "require('./package.json').version")"
+          if [ "$want" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match desktop/package.json's version ($want). Set the version first."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run dist -- --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HanziHome-installer
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.blockmap
+            desktop/dist/latest.yml
+      - if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            desktop/dist/*.exe
+            desktop/dist/*.blockmap
+            desktop/dist/latest.yml

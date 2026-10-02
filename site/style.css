@@ -8,7 +8,8 @@
  * License) so the page needs no network. Chinese uses a sans CJK stack,
  * because they serve a Noto Sans subset rather than a serif.
  *
- * Light theme only. */
+ * Light by default; dark when the device prefers it (or Settings → Appearance says
+ * so): the colours at the end of this file. */
 
 @font-face { font-family: Nunito; font-style: normal; font-weight: 400;
   font-display: swap; src: url(fonts/nunito-400.woff2) format('woff2'); }
@@ -40,6 +41,9 @@
   --side: #1f2937;
   --side-ink: #ffffff;
   --side-muted: #8a919a;
+  --hover: #f3f4f6;
+  --tile-rim: #f1f2f5;
+  --word-hover: #fdf0c8;
   --radius: 12px;
   --shadow: 0 1px 2px rgba(17, 24, 39, .04), 0 1px 3px rgba(17, 24, 39, .06);
   --topbar-h: 56px;
@@ -585,7 +589,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .tile.learned:hover,
 .tile.learning:hover {
   box-shadow: none;
-  background: #f3f4f6;
+  background: var(--hover);
 }
 
 /* the hero glyph carries a heavier rim to match */
@@ -637,7 +641,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 }
 
 /* unmarked cards get their own rim colour; learned/learning keep theirs */
-.tilegrid .tile:not(.learned):not(.learning) { border-color: #f1f2f5; }
+.tilegrid .tile:not(.learned):not(.learning) { border-color: var(--tile-rim); }
 
 
 /* The 30px card padding exists to frame the character list. Applying it to the
@@ -684,7 +688,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
   text-align: center;
 }
 
-.tile.hot { box-shadow: none; background: #f3f4f6; }
+.tile.hot { box-shadow: none; background: var(--hover); }
 
 /* ---------- reader: story library ----------
    Cards read off the reference: 2 columns with a 16px gutter, 20px padding,
@@ -756,7 +760,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .reading-pane .w { padding: 1px 1px; border-radius: 3px; cursor: pointer; }
 .reading-pane .w.learned { background: var(--green-soft); }
 .reading-pane .w.learning { background: var(--blue-soft); }
-.reading-pane .w:hover { background: #fdf0c8; }
+.reading-pane .w:hover { background: var(--word-hover); }
 .reading-pane.hide-learned .w.learned { background: transparent; }
 .reading-pane.hide-learning .w.learning { background: transparent; }
 .reading-pane.hide-new .w.new { background: transparent; }
@@ -1019,7 +1023,13 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
   font: inherit; font-weight: 400; color: var(--ink); padding: 8px 12px;
   border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); min-width: 0;
 }
-.sync-form input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.sync-form input:focus, .sync-key:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.sync-key {
+  font: inherit; color: var(--ink); padding: 7px 12px; flex: 1 1 200px; max-width: 320px;
+  border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); min-width: 0;
+}
+#sync-lock-box { margin-bottom: 12px; }
+#sync-lock-box:empty { display: none; }
 .sync-line { margin: 4px 0 12px; color: var(--ink-2); }
 .sync-err { color: var(--accent) !important; }
 .sync-help { margin-top: 14px; font-size: 13.5px; }
@@ -1339,3 +1349,138 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 .sync-backups { list-style: none; padding: 0; margin: 10px 0; }
 .sync-backups li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
 .sync-backups .btn { margin-left: auto; padding: 2px 11px; font-size: 12.5px; }
+
+/* ---------- stroke order and writing practice (hanzi-writer) ---------- */
+.stroke-box { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+.writer-wrap { position: relative; flex: none; background: var(--panel); border-radius: 10px; touch-action: none; }
+.writer-grid { position: absolute; inset: 0; width: 100%; height: 100%; }
+.writer-grid rect { fill: none; stroke: var(--line-2); stroke-width: 1; }
+.writer-grid path { fill: none; stroke: var(--line); stroke-width: .6; stroke-dasharray: 2 2; }
+.writer { position: absolute; inset: 0; }
+.writer svg { display: block; }
+.writer-side { flex: 1 1 240px; min-width: 0; }
+.writer-side .row { flex-wrap: wrap; }
+
+/* reviews: listening (the sound only) and writing (in a square, from the pinyin and meaning) */
+.lx-listen {
+  display: grid; place-items: center; width: 112px; height: 112px; margin: 6px auto 12px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .7); background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
+}
+.lx-listen:hover { background: rgba(255, 255, 255, .22); }
+.lx-listen svg { width: 52px; height: 52px; }
+.lx-write .writer-wrap { margin: 8px auto 6px; box-shadow: 0 1px 4px rgba(0, 0, 0, .2); }
+.lx-write .lx-mean { font-size: 22px; }
+.rv-writing { text-align: center; }
+.rv-write-msg { min-height: 1.5em; margin: 6px 0 0; color: var(--ink-2); }
+.rv-enter { position: absolute; left: -9999px; }
+.lx-right { color: #15803d; font-weight: 600; }
+
+/* ---------- dark ----------
+   When the device prefers it, unless Settings → Appearance says light; or when
+   Appearance says dark. app.js sets data-theme on <html> from that setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg: #0f1216;
+  --panel: #171b21;
+  --panel-2: #1c2129;
+  --ink: #e6e8eb;
+  --ink-2: #a2a9b4;
+  --ink-3: #737b87;
+  --line: #2a303a;
+  --line-2: #3a414d;
+  --accent: #d64f5e;
+  --accent-dark: #b83a4a;
+  --accent-soft: #35191d;
+  --blue: #5b9cf6;
+  --blue-soft: #16243a;
+  --green: #2fbf62;
+  --green-soft: #12291a;
+  --green-ink: #4ade80;
+  --purple: #a78bfa;
+  --amber: #d9aa52;
+  --side: #0b0d11;
+  --side-muted: #7d8590;
+  --hover: #222832;
+  --tile-rim: #262c35;
+  --hl-learned: #15412a;
+  --hl-learning: #1b335a;
+  --hl-hover: #5a4a14;
+  --word-hover: #4a3f1a;
+  --lx-char: #8e1c38;
+  --lx-word: #53209f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+  }
+  :root:not([data-theme="light"]) .status-btn, :root:not([data-theme="light"]) .seg button.on, :root:not([data-theme="light"]) .seg3 button.on.learned { background: #15803d; border-color: #15803d; }
+  :root:not([data-theme="light"]) .status-btn:hover { background: #166534; border-color: #166534; }
+  :root:not([data-theme="light"]) .lx-right, :root:not([data-theme="light"]) .st-saved, :root:not([data-theme="light"]) .rs-stats .ok b, :root:not([data-theme="light"]) .rs-move small.up { color: #4ade80; }
+  :root:not([data-theme="light"]) .rs-grade.g2 { color: #eab308; border-color: #eab308; }
+  :root:not([data-theme="light"]) .rs-grade.g3 { color: #4ade80; border-color: #4ade80; }
+  :root:not([data-theme="light"]) .rs-grade.g4 { color: #60a5fa; border-color: #60a5fa; }
+  :root:not([data-theme="light"]) .rv-practice { color: #a78bfa; }
+  :root:not([data-theme="light"]) .rv-wrapping { color: #22d3ee; }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216;
+  --panel: #171b21;
+  --panel-2: #1c2129;
+  --ink: #e6e8eb;
+  --ink-2: #a2a9b4;
+  --ink-3: #737b87;
+  --line: #2a303a;
+  --line-2: #3a414d;
+  --accent: #d64f5e;
+  --accent-dark: #b83a4a;
+  --accent-soft: #35191d;
+  --blue: #5b9cf6;
+  --blue-soft: #16243a;
+  --green: #2fbf62;
+  --green-soft: #12291a;
+  --green-ink: #4ade80;
+  --purple: #a78bfa;
+  --amber: #d9aa52;
+  --side: #0b0d11;
+  --side-muted: #7d8590;
+  --hover: #222832;
+  --tile-rim: #262c35;
+  --hl-learned: #15412a;
+  --hl-learning: #1b335a;
+  --hl-hover: #5a4a14;
+  --word-hover: #4a3f1a;
+  --lx-char: #8e1c38;
+  --lx-word: #53209f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .status-btn, :root[data-theme="dark"] .seg button.on, :root[data-theme="dark"] .seg3 button.on.learned { background: #15803d; border-color: #15803d; }
+:root[data-theme="dark"] .status-btn:hover { background: #166534; border-color: #166534; }
+:root[data-theme="dark"] .lx-right, :root[data-theme="dark"] .st-saved, :root[data-theme="dark"] .rs-stats .ok b, :root[data-theme="dark"] .rs-move small.up { color: #4ade80; }
+:root[data-theme="dark"] .rs-grade.g2 { color: #eab308; border-color: #eab308; }
+:root[data-theme="dark"] .rs-grade.g3 { color: #4ade80; border-color: #4ade80; }
+:root[data-theme="dark"] .rs-grade.g4 { color: #60a5fa; border-color: #60a5fa; }
+:root[data-theme="dark"] .rv-practice { color: #a78bfa; }
+:root[data-theme="dark"] .rv-wrapping { color: #22d3ee; }
+
+/* both kinds of characters: the traditional form beside the simplified one */
+.trad { font-size: .6em; margin-left: .12em; opacity: .75; }
+
+/* the Study page's Anki card */
+.anki-pick { cursor: pointer; }
+.anki-prev { margin-top: 12px; }
+.anki-cols { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 8px 0 10px; }
+.anki-cols label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.anki-table { margin: 4px 0 12px; }
+.anki-table td { padding: 4px 12px 4px 0; }
+
+/* the reader's books, and the bookmarklet */
+.book-pick { cursor: pointer; }
+.books { list-style: none; padding: 0; margin: 0 0 10px; }
+.books li { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--line); }
+.books li a { text-decoration: none; color: var(--ink); min-width: 0; }
+.book-bar { display: block; width: 80px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.book-bar i { display: block; height: 100%; background: var(--green); }
+.books .btn { padding: 2px 9px; }
+.book-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 14px; }
+.book-nav [aria-disabled] { opacity: .45; pointer-events: none; }
+.bookmarklet { cursor: grab; }

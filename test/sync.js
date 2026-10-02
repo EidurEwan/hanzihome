@@ -1,7 +1,8 @@
 /* Checks for sync/Code.gs, run against the in-memory sheet of sync/mock-server.js:
  * saving and reading copies of any size, refusing a push based on an old revision,
- * and never answering with an empty copy when the sheet can't give it whole (the
- * cause of data vanishing until the next sync, with the earlier scripts).
+ * never answering with an empty copy when the sheet can't give it whole (the
+ * cause of data vanishing until the next sync, with the earlier scripts), and the
+ * passphrase lock.
  *
  *   node test/sync.js
  */
@@ -105,6 +106,34 @@ check('earlier copies are kept, and one can be put back', () => {
   assert.strictEqual(r.rev, 5);
   assert.deepStrictEqual(call({ action: 'pull' }).data, store(152));
   assert.strictEqual(call({ action: 'restore', rev: 99 }).error, 'no-backup');
+});
+
+check('a passphrase locks every request until it is given, and can be changed or removed', () => {
+  const { call } = script();
+  call({ action: 'push', baseRev: 0, data: store(5) });
+  assert.strictEqual(call({ action: 'rev' }).locked, false);
+  assert.strictEqual(call({ action: 'lock', newKey: 'abc' }).error, 'short-passphrase');
+  assert.deepStrictEqual(call({ action: 'lock', newKey: 'river stone' }), { ok: true, locked: true });
+  for (const action of ['rev', 'pull', 'backups', 'lock']) assert.strictEqual(call({ action }).error, 'locked', action);
+  assert.strictEqual(call({ action: 'push', baseRev: 1, data: store(6) }).error, 'locked');
+  assert.strictEqual(call({ action: 'pull', key: 'river' }).error, 'wrong-passphrase');
+  const p = call({ action: 'pull', key: 'river stone' });
+  assert.deepStrictEqual([p.ok, p.locked, p.data], [true, true, store(5)]);
+  assert.strictEqual(call({ action: 'push', baseRev: 1, data: store(6), key: 'river stone' }).rev, 2);
+  // change it: the old one stops working
+  assert.ok(call({ action: 'lock', newKey: 'mountain path', key: 'river stone' }).ok);
+  assert.strictEqual(call({ action: 'rev', key: 'river stone' }).error, 'wrong-passphrase');
+  assert.strictEqual(call({ action: 'rev', key: 'mountain path' }).rev, 2);
+  // remove it
+  assert.deepStrictEqual(call({ action: 'lock', newKey: '', key: 'mountain path' }), { ok: true, locked: false });
+  assert.strictEqual(call({ action: 'rev' }).rev, 2);
+});
+
+check('guessing is cut short after 10 wrong passphrases', () => {
+  const { call } = script();
+  call({ action: 'lock', newKey: 'river stone' });
+  for (let i = 0; i < 10; i++) assert.strictEqual(call({ action: 'rev', key: 'guess' + i }).error, 'wrong-passphrase');
+  assert.strictEqual(call({ action: 'rev', key: 'river stone' }).error, 'slow-down');
 });
 
 console.log(`\n${n} checks passed`);

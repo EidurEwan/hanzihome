@@ -20,6 +20,7 @@
     "electron-builder": "^26.15.3"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "uiohook-napi": "^1.5.5"
   },
   "build": {
@@ -33,7 +34,8 @@
       "src/**",
       "assets/**",
       "data/**",
-      "ocr/bin/hanzi-ocr.exe"
+      "ocr/bin/hanzi-ocr.exe",
+      "ocr/bin/common.txt"
     ],
     "asarUnpack": [
       "ocr/bin/**"
@@ -49,7 +51,16 @@
       "target": "nsis",
       "icon": "assets/icon-256.png"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "EidurEwan",
+        "repo": "hanzihome",
+        "releaseType": "release"
+      }
+    ],
     "nsis": {
+      "artifactName": "HanziHome-Setup-${version}.${ext}",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,

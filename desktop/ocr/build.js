@@ -38,7 +38,7 @@ function compile(sources, out, refs) {
 }
 
 const here = __dirname;
-compile([path.join(here, 'HanziOcr.cs'), path.join(here, 'TextReader.cs')], path.join(here, 'bin', 'hanzi-ocr.exe'), [
+compile(['HanziOcr.cs', 'TextReader.cs', 'Enhance.cs'].map(f => path.join(here, f)), path.join(here, 'bin', 'hanzi-ocr.exe'), [
   'System.Drawing.dll', 'System.Web.Extensions.dll', FACADE,
   // UI Automation, for text read straight from programs (TextReader.cs)
   ...['UIAutomationClient', 'UIAutomationTypes', 'WindowsBase'].map(n => path.join(FW, 'WPF', n + '.dll')),
@@ -47,6 +47,19 @@ compile([path.join(here, 'HanziOcr.cs'), path.join(here, 'TextReader.cs')], path
   ...['Foundation', 'Globalization', 'Graphics', 'Media', 'Security', 'Storage']
     .map(n => path.join(WINMD, 'Windows.' + n + '.winmd')),
 ]);
+
+// bin/common.txt: the 6000 commonest characters, most frequent first, from the
+// site's data; the helper uses it to tell which of two readings looks more like
+// Chinese (Enhance.cs)
+{
+  const vm = require('vm');
+  const ctx = { HZ: {} };
+  vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(here, '..', '..', 'site', 'data', 'index.js'), 'utf8'), ctx);
+  const ranked = Object.entries(ctx.HZ.index).filter(([, v]) => v[0]).sort((a, b) => a[1][0] - b[1][0]);
+  fs.writeFileSync(path.join(here, 'bin', 'common.txt'), ranked.slice(0, 6000).map(([c]) => c).join(''));
+  console.log('wrote ' + path.relative(process.cwd(), path.join(here, 'bin', 'common.txt')));
+}
 
 if (process.argv.includes('render')) {
   const test = path.join(here, '..', 'test');

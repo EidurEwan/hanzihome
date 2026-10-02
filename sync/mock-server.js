@@ -17,6 +17,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const crypto = require('crypto');
 
 const PORT = Number(process.argv[2]) || 8787;
 const MODE = process.argv[3] || 'ok';
@@ -67,6 +68,12 @@ function makeSheet() {
 
 function load(mode = MODE) {
 const sheets = {};
+const stored = new Map(), cache = new Map();
+const props = {
+  getProperty: k => stored.get(k) ?? null,
+  setProperties: o => { for (const [k, v] of Object.entries(o)) stored.set(k, String(v)); },
+  deleteProperty: k => { stored.delete(k); },
+};
 const context = {
   SpreadsheetApp: {
     getActiveSpreadsheet: () => (mode === 'standalone' ? null : {
@@ -75,6 +82,14 @@ const context = {
     }),
   },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
+  PropertiesService: { getScriptProperties: () => props },
+  CacheService: { getScriptCache: () => ({ get: k => cache.get(k) ?? null, put: (k, v) => cache.set(k, v) }) },
+  Utilities: {
+    DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
+    getUuid: () => crypto.randomUUID(),
+    computeDigest: (alg, text) => [...crypto.createHash(alg).update(text, 'utf8').digest()].map(b => (b << 24) >> 24),
+    base64Encode: bytes => Buffer.from(bytes.map(b => b & 255)).toString('base64'),
+  },
   ContentService: {
     MimeType: { JSON: 'application/json' },
     createTextOutput: text => ({ text, setMimeType() { return this; } }),

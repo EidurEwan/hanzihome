@@ -23,8 +23,12 @@ and each colour. Step 6: hover lookup, `desktop/src/hover.js` + `popup/` (keyboa
 only inside the app), a pause list of programs, start with Windows, and the installer.
 
 Running it from the repo: `cd desktop && npm install && node ocr/build.js && npm start`.
-Building the installer: `cd desktop && npm run dist` → `desktop/dist/HanziHome Setup
-0.1.0.exe` (~120 MB; per-user install, choosable folder, Start menu and desktop shortcuts).
+Building the installer: `cd desktop && npm run dist` → `desktop/dist/HanziHome-Setup-0.1.0.exe`
+(~120 MB; per-user install, choosable folder, Start menu and desktop shortcuts). Releases:
+set `version` in `desktop/package.json`, then push a tag `v` + that version; the
+"Desktop installer" workflow builds it on Windows and publishes it with `latest.yml`, which
+the installed app (`src/updates.js`) checks every few hours, downloading the new version and
+installing it when you quit.
 It is not code-signed, so Windows SmartScreen warns "unknown publisher" on first run
 (More info → Run anyway). The app has its own browser storage, so it starts with no
 progress: connect the same Google Sheet in Settings → Sync (or import an exported JSON).
@@ -112,6 +116,26 @@ a picture, a game) is read as before. The tray also has "Read copied text".
      KaiTi 20–24px), 98% (dark mode), 99% (subtitles; big text reads best at ×1). A whole
      1920×1080 screen: 0.28 s at ×1, 0.56 s at ×2; an unchanged screen: ~40 ms. One
      paragraph changed on a page: 21% of it re-read, in 60 ms instead of 270.
+   * **A second look at colour** (`desktop/ocr/Enhance.cs`, 2026-10-02). Windows' OCR sees
+     brightness only, so text close in brightness to its background (red on green, yellow
+     on white), and white text in dark boxes among ordinary lines (tags, buttons, a
+     selection), read poorly. Rows with colour edges, or with boxes of their own colour, are
+     read again from a copy redrawn dark-on-white by each pixel's colour distance from its
+     background: the nearest flat patch, the box it is in, or the page. Each line keeps the
+     reading that looks more like Chinese (common characters for, rare ones and stray
+     symbols against). ClearType's coloured edges on black text don't count as colour, so
+     plain text is read once. `desktop/test/ocr.js` measures it on coloured words, light
+     colours, light and dark highlights, colour on colour, gradients, shadows, hollow text
+     and five unusual fonts (calligraphy, handwriting, display), on Windows in CI
+     (`.github/workflows/desktop-tests.yml`, which installs the Chinese OCR language).
+     Measured there 2026-10-02, characters read correctly at ×1.5 without → with it: dark
+     highlights 37.7 → 62.2%, colour on colour 82.8 → 90.9%, light colours 95.0 → 96.5%,
+     many colours 96.0 → 96.7%; plain web text (98.4%), light highlights (97.8%), subtitles
+     (99.0%) and the usual styles (97.9%) unchanged. Subtitles over video take twice as
+     long (0.5 s against 0.23 s), as their rows have colour. Not helped, the engine's own
+     limits: text with a shadow (~44%), hollow text (~82%), and calligraphy, handwriting
+     and display fonts (25–28%). Reading a poor strip again at ×2 and ×1 was tried for
+     look-ups and gained nothing, so it isn't done.
 2. **OCR repair** (`desktop/src/ocrfix.js`). Merges a character read as its two halves
    (亻尔 → 你: a narrow part plus a neighbour about one character wide, looked up in
    `desktop/data/ocrpairs.json` from the character breakdowns), turns 丿+b back into 儿,
@@ -186,8 +210,10 @@ a picture, a game) is read as before. The tray also has "Read copied text".
 ## Known risks
 
 * **OCR errors** on small, stylised or low-contrast text (game fonts, subtitles over video).
-  Mitigated by ×1.5 scale and the repair; 13px text still loses ~8% of characters. Could
-  improve: re-read small lines at ×2–3 and big ones at ×1.
+  Mitigated by ×1.5 scale, the second look at colour and the repair; 13px text still loses
+  ~8% of characters, and calligraphy, handwriting and display fonts lose three in four
+  (Windows' OCR doesn't know them; enlarging doesn't help). Text with a shadow reads at
+  ~44%. Could improve: another OCR engine for those, if one runs offline and fast enough.
 * **Lag after scrolling.** Bars vanish while the region is re-read (about 0.3–1 s).
 * **CPU.** Kept low by OCRing only changed tiles, and pausing when idle or in listed apps.
 * **Offline senses** will sometimes be wrong for 了/还/会-type words. The accuracy test

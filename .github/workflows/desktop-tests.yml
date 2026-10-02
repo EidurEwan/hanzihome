@@ -1,0 +1,64 @@
+# The desktop app's tests, on Windows, when desktop/ (or the site data it reads) changes:
+# builds the OCR helper, measures how well it reads test pictures (desktop/test/ocr.js),
+# and builds the installer, kept with the run under Artifacts for trying a branch.
+# Installing Windows' Chinese OCR language takes the first quarter of an hour.
+name: Desktop tests
+
+on:
+  push:
+    paths:
+      - 'desktop/**'
+      - 'site/data/index.js'
+      - 'site/data/readings.js'
+      - 'site/data/readerwords.js'
+      - 'site/textstory.js'
+      - '.github/workflows/desktop-tests.yml'
+  pull_request:
+    paths:
+      - 'desktop/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # first, so a mistake in the C# shows in seconds, not after the language install
+      - run: node ocr/build.js render
+      # Windows OCR reads Chinese only once the Chinese OCR language is installed.
+      - name: Install the Chinese OCR language
+        shell: powershell
+        run: |
+          $cap = Get-WindowsCapability -Online | Where-Object Name -like 'Language.OCR~~~zh-CN*'
+          $cap | Format-Table Name, State
+          if ($cap -and $cap.State -ne 'Installed') { Add-WindowsCapability -Online -Name $cap.Name | Out-Null }
+          Get-WindowsCapability -Online | Where-Object Name -like 'Language.OCR*' | Where-Object State -eq 'Installed' | Format-Table Name
+      - run: node test/ocr.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ocr-test-pictures
+          path: desktop/test/out/*.png
+          if-no-files-found: ignore
+      # the installer, as a release would build it, kept with the run for trying a branch
+      - run: npm ci
+      - run: npm run dist -- --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HanziHome-installer
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/latest.yml

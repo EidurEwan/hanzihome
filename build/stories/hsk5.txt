@@ -560,3 +560,138 @@ words:
 往往 | wǎng wǎng | often; usually
 知识 | zhī shi | knowledge
 热爱 | rè ài | (deep) love
+
+=== s29
+level: 5
+tag: One last game
+zh: 最后一场比赛
+en: The Last Game
+text:
+高中 三 年 ， 我 始终 是 学校 篮球队 里 最 普通 的 一 名 队员 。 与 别的 队员 相比 ， 我 个子 不 高 ， 跑 得 也 不 快 ， 大部分 比赛 都 坐 在 场边 。
+
+毕业 前 的 最后 一 场 比赛 ， 对手 是 全 市 最 强 的 队 。 比赛 开始 不久 ， 我们 的 主力 就 受伤 了 。 教练 看 了 看 场边 ， 竟然 叫 了 我 的 名字 。 我 之所以 吃惊 ， 是 因为 三 年 来 他 从 没 在 这么 重要 的 时候 让 我 上场 。
+
+一 上场 ， 我 的 手 就 不停 地 发抖 。 第一 个 球 我 就 投 丢 了 ， 观众席 上 传来 一片 叹气 声 。 我 心里 想 ： 一旦 再 失误 ， 我 就 成 了 全 队 的 罪人 。 何况 这 是 我们 最后 一 场 比赛 。
+
+暂停 的 时候 ， 教练 没有 批评 我 ， 反而 拍 了 拍 我 的 肩膀 说 ： “ 输赢 固然 重要 ， 但 你 打 了 三 年 球 ， 每 天 都 是 最后 一 个 离开 球场 的 。 在 我 看来 ， 篮球 的 意义 在于 这些 。 宁可 输 ， 也 不 要 怕 。 ”
+
+听 了 他 的 话 ， 我 逐渐 冷静 下来 。 与此同时 ， 对方 也 开始 累 了@change 。 最后 一 分钟 ， 球 传 到 了 我 手里 ， 我 没 多 想 ， 把 球 投 了 出去 。 球 进 了 。 我们 赢 了 一 分 。
+
+当然 ， 一 场 比赛 未必 能 改变 什么 ， 毕竟 第二 年 我们 就 各自 去 了 不同 的 城市 。 可是 从此 以后 ， 凡是 遇到 让 我 害怕 的 事 ， 我 都 会 想起 那 个 球 。 总之 ， 那 一 天 让 我 明白 ， 不 怕 失败 比 赢 更 重要 。
+words:
+高中 | gāo zhōng | high school
+篮球队 | lán qiú duì | basketball team
+里 | li | in
+普通 | pǔ tōng | ordinary
+的 | de | 's; of; (links a description to a noun)
+一 | yī | one; a
+名 | míng | (measure word for people in a role)
+队员 | duì yuán | team member
+别的 | bié de | other
+个子 | gè zi | height
+高 | gāo | tall
+得 | de | (links a verb to how it is done)
+快 | kuài | fast
+大部分 | dà bù fen | most
+比赛 | bǐ sài | game; match
+都 | dōu | all (mostly)
+坐 | zuò | to sit
+在 | zài | at; on; (在…看来: in …'s view)
+场边 | chǎng biān | the sidelines
+前 | qián | before
+最后 | zuì hòu | last
+场 | chǎng | (measure word for games)
+对手 | duì shǒu | opponent
+全 | quán | the whole
+市 | shì | city
+强 | qiáng | strong
+队 | duì | team
+不久 | bù jiǔ | soon after
+主力 | zhǔ lì | star player
+就 | jiù | right away; then (一…就: as soon as)
+受伤 | shòu shāng | to get hurt
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+教练 | jiào liàn | coach
+看 | kàn | to look at
+叫 | jiào | to call (out)
+之所以 | zhī suǒ yǐ | (之所以…是因为: the reason … is that)
+吃惊 | chī jīng | surprised
+来 | lái | (三年来: in those three years)
+从 | cóng | ever (从没: never)
+没 | méi | not (did not)
+这么 | zhè me | so
+让 | ràng | to let
+上场 | shàng chǎng | to go on (to play)
+不停 | bù tíng | without stopping
+地 | de | (links a description to the verb: …ly)
+发抖 | fā dǒu | to tremble
+球 | qiú | ball; shot
+投 | tóu | to shoot (at the basket)
+丢 | diū | to lose (投丢 = to miss a shot)
+观众席 | guān zhòng xí | the stands
+上 | shang | in; on
+传来 | chuán lái | to come (of a sound)
+一片 | yī piàn | a wave of
+叹气 | tàn qì | to sigh
+声 | shēng | sound
+想 | xiǎng | to think
+一旦 | yī dàn | once; if ever (一旦…就)
+再 | zài | again
+失误 | shī wù | to make a mistake
+成 | chéng | to become
+罪人 | zuì rén | the guilty one
+何况 | hé kuàng | and what's more
+这 | zhè | this
+暂停 | zàn tíng | time-out
+没有 | méi yǒu | did not
+批评 | pī píng | to criticize
+反而 | fǎn ér | instead
+拍 | pāi | to pat
+肩膀 | jiān bǎng | shoulder
+输赢 | shū yíng | winning or losing
+打 | dǎ | to play (a ball game)
+天 | tiān | day
+球场 | qiú chǎng | court
+看来 | kàn lái | (在…看来: in …'s view)
+篮球 | lán qiú | basketball
+意义 | yì yì | meaning
+在于 | zài yú | to lie in
+这些 | zhè xiē | these (things)
+宁可 | nìng kě | would rather (宁可…也不: rather … than)
+输 | shū | to lose
+要 | yào | (不要: don't)
+怕 | pà | to be afraid
+听 | tīng | to listen to
+逐渐 | zhú jiàn | gradually
+冷静 | lěng jìng | calm
+下来 | xia lai | (冷静下来: to calm down)
+与此同时 | yǔ cǐ tóng shí | at the same time
+对方 | duì fāng | the other side
+传 | chuán | to pass
+到 | dào | to; into
+手里 | shǒu li | in one's hands
+多 | duō | much (没多想: without thinking twice)
+把 | bǎ | (把 + object + verb)
+出去 | chu qu | out; away
+进 | jìn | to go in
+赢 | yíng | to win
+分 | fēn | point
+当然 | dāng rán | of course
+未必 | wèi bì | not necessarily
+改变 | gǎi biàn | to change
+什么 | shén me | anything
+毕竟 | bì jìng | after all
+第二 | dì èr | second (第二年 = the next year)
+各自 | gè zì | each (on their own)
+去 | qù | to go
+不同 | bù tóng | different
+从此 | cóng cǐ | from then on
+凡是 | fán shì | whenever; every
+遇到 | yù dào | to come up against
+害怕 | hài pà | afraid
+会 | huì | would; will
+想起 | xiǎng qǐ | to think of
+那 | nà | that
+总之 | zǒng zhī | in short
+失败 | shī bài | failure

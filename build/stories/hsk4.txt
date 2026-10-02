@@ -472,3 +472,113 @@ words:
 乱 | luàn | in a mess; in disorder
 反而 | fǎn ér | instead; on the contrary
 让 | ràng | to let; to allow
+
+=== s28
+level: 4
+tag: A neighbour's dog
+zh: 邻居的狗
+en: The Neighbour's Dog
+text:
+我们 楼 里 住 着 一 位 姓 张 的 老人 ， 他 养 了 一 条 大 黑狗 。 由于 那 条 狗 长 得 很 凶 ， 楼 里 的 孩子 都 不 敢 靠近 它 ， 甚至 有的 大人 看见 它 也 会 绕 着 走 。
+
+本来 我 也 很 怕 它 。 尽管 张 爷爷 告诉 我 它 从来 不 咬 人 ， 我 却 一直 不 相信 。 无论 什么 时候 在 楼梯 上 遇到 它 ， 我 都 会 马上 停 下来 ， 等 它 先 过去 。
+
+去年 冬天 的 一 个 晚上 ， 外面 下 着 大雪 。 我 加班 到 很 晚 ， 回家 的 时候 ， 竟然 发现 那 条 黑狗 坐 在 我们 楼 门口 ， 一直 对 着 我 叫 。 我 想 ： 既然 它 不 让 我 进去 ， 我 就 打 电话 给 张 爷爷 吧 。 可是 电话 一直 没 人 接 。
+
+随着 叫声 越来越 大 ， 我 觉得 事情 恐怕 不 对@right 。 于是 我 跟 着 它 上@go 了 楼 ， 发现 张 爷爷 家 的 门 开 着 ， 他 倒 在 地上 ， 已经 说 不 出 话 了@change 。 我 马上 叫@call 了 救护车 。
+
+医生 后来 说 ， 即使 晚 半 个 小时 ， 老人 也 可能 有 危险 。 通过 这 件 事 ， 楼 里 的 人 不仅 不 再 怕 那 条 狗 ， 而且 都 很 喜欢 它 。 我 也 明白 了@change ， 一 只 动物 好 不 好 ， 并不是 看 它 长 得 怎么样 ， 而是 看 它 做 了 什么 。 按照 张 爷爷 的 说法 ， 这 条 狗 值得 我们 每 个 人 尊重 。
+words:
+楼 | lóu | building (of flats); upstairs
+里 | li | in
+住 | zhù | to live
+着 | zhe | (going on: -ing; staying so)
+一 | yī | one; a
+姓 | xìng | to be surnamed
+张 | Zhāng | Zhang (surname)
+的 | de | 's; of; (links a description to a noun)
+老人 | lǎo rén | old man
+养 | yǎng | to keep (an animal)
+了 | le | (the action is done)
+了@change | le | (a new situation: now)
+条 | tiáo | (measure word for dogs)
+大 | dà | big
+黑狗 | hēi gǒu | black dog
+那 | nà | that
+狗 | gǒu | dog
+长 | zhǎng | to grow (长得 = to look)
+得 | de | (links a verb to how it is done)
+凶 | xiōng | fierce
+都 | dōu | all; (无论…都: whatever …, always)
+敢 | gǎn | to dare
+靠近 | kào jìn | to go near
+有的 | yǒu de | some
+大人 | dà ren | grown-ups
+会 | huì | would; will
+绕 | rào | to go round
+走 | zǒu | to walk
+本来 | běn lái | at first
+怕 | pà | to be afraid of
+尽管 | jǐn guǎn | although (尽管…却)
+咬 | yǎo | to bite
+却 | què | yet; still
+一直 | yī zhí | all along; on and on
+相信 | xiāng xìn | to believe
+无论 | wú lùn | no matter (无论…都)
+什么 | shén me | what (什么时候 = when)
+在 | zài | on; at
+楼梯 | lóu tī | stairs
+上 | shang | on
+上@go | shàng | to go up
+遇到 | yù dào | to run into
+停 | tíng | to stop
+下来 | xia lai | (停下来: to come to a stop)
+先 | xiān | first
+过去 | guò qu | to go past
+外面 | wài mian | outside
+下 | xià | to fall (of snow, rain)
+大雪 | dà xuě | heavy snow
+加班 | jiā bān | to work late
+到 | dào | until
+晚 | wǎn | late
+坐 | zuò | to sit
+对 | duì | at; towards
+叫 | jiào | to bark
+想 | xiǎng | to think
+让 | ràng | to let
+就 | jiù | then
+打 | dǎ | to make (a phone call)
+给 | gěi | to (someone)
+吧 | ba | (I'd better …)
+没 | méi | (there is) no
+接 | jiē | to answer (the phone)
+叫声 | jiào shēng | barking
+越来越 | yuè lái yuè | more and more
+事情 | shì qing | things; the matter
+对@right | duì | right (不对 = something is wrong)
+于是 | yú shì | so
+跟 | gēn | to follow
+家 | jiā | home; flat
+开 | kāi | open
+倒 | dǎo | to lie fallen
+出 | chū | out (说不出话 = can't get a word out)
+叫@call | jiào | to call (for)
+救护车 | jiù hù chē | ambulance
+医生 | yī shēng | doctor
+即使 | jí shǐ | even if (即使…也)
+可能 | kě néng | might
+危险 | wēi xiǎn | danger
+通过 | tōng guò | through
+这 | zhè | this
+再 | zài | (不再: no longer)
+只 | zhī | (measure word for animals)
+动物 | dòng wù | animal
+好 | hǎo | good
+并不是 | bìng bù shì | (并不是…而是: it isn't … but …)
+看 | kàn | to depend on
+怎么样 | zěn me yàng | how (长得怎么样 = how it looks)
+做 | zuò | to do
+按照 | àn zhào | according to
+说法 | shuō fa | way of putting it
+值得 | zhí de | to deserve
+尊重 | zūn zhòng | respect
