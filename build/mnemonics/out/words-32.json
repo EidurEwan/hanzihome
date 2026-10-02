@@ -1,0 +1,3202 @@
+[
+ {
+  "w": "时装",
+  "pos": "noun",
+  "m": "The **adornment** of the **hour**: **fashion**, **fashionable clothes**.",
+  "ex": [
+   [
+    "她喜欢看时装杂志。",
+    "She likes reading fashion magazines."
+   ],
+   [
+    "巴黎的时装周非常有名。",
+    "Paris Fashion Week is very famous."
+   ]
+  ],
+  "use": "时装表演 is a fashion show."
+ },
+ {
+  "w": "礼节",
+  "pos": "noun",
+  "m": "The **joints** of **courtesy**: **etiquette**.",
+  "ex": [
+   [
+    "中国人很重视礼节。",
+    "Chinese people value etiquette highly."
+   ],
+   [
+    "见面握手是一种基本礼节。",
+    "Shaking hands when you meet is basic etiquette."
+   ]
+  ],
+  "use": "Close to 礼貌, but about set customs."
+ },
+ {
+  "w": "照应",
+  "pos": "verb",
+  "m": "**Agree** to watch **according to** need: **to look after**.",
+  "ex": [
+   [
+    "出门在外，互相照应。",
+    "When away from home, look after each other."
+   ],
+   [
+    "我第一次来，请你多照应。",
+    "It's my first time here, so please keep an eye on me."
+   ]
+  ],
+  "use": "Spoken; close to 照顾."
+ },
+ {
+  "w": "信誉",
+  "pos": "noun",
+  "m": "Trust like a **letter** and **praise**: a **good reputation**.",
+  "ex": [
+   [
+    "这家公司信誉很好。",
+    "This company has a good reputation."
+   ],
+   [
+    "做生意最重要的是信誉。",
+    "In business, reputation is what matters most."
+   ]
+  ],
+  "use": "For businesses and their trustworthiness."
+ },
+ {
+  "w": "就职",
+  "pos": "verb",
+  "m": "**Take up** an **office**: **to take office**.",
+  "ex": [
+   [
+    "新市长今天就职。",
+    "The new mayor takes office today."
+   ],
+   [
+    "他在一家银行就职。",
+    "He works at a bank."
+   ]
+  ],
+  "use": "Formal; 就职典礼, inauguration."
+ },
+ {
+  "w": "爱惜",
+  "pos": "verb",
+  "m": "**Love** and **cherish**: **to treasure**, to use with care.",
+  "ex": [
+   [
+    "我们要爱惜粮食。",
+    "We should not waste food."
+   ],
+   [
+    "他很爱惜自己的书，从不弄脏。",
+    "He takes great care of his books and never gets them dirty."
+   ]
+  ],
+  "use": "For things, time, health: use them carefully."
+ },
+ {
+  "w": "衷心",
+  "pos": "adjective",
+  "m": "From the **inner feelings** of the **heart**: **heartfelt**.",
+  "ex": [
+   [
+    "衷心感谢您的帮助。",
+    "My heartfelt thanks for your help."
+   ],
+   [
+    "我衷心希望你能成功。",
+    "I sincerely hope you succeed."
+   ]
+  ],
+  "use": "Formal; before 感谢, 希望, 祝愿."
+ },
+ {
+  "w": "请客",
+  "pos": "verb",
+  "m": "**Ask** the **guests**: **to treat**, to pay for others.",
+  "ex": [
+   [
+    "今天我请客。",
+    "Today it's my treat."
+   ],
+   [
+    "他升职了，说要请客吃饭。",
+    "He got promoted and says he'll treat us to a meal."
+   ]
+  ],
+  "use": "Means paying the bill for friends."
+ },
+ {
+  "w": "踊跃",
+  "pos": "adjective / verb",
+  "m": "**Leap** and **jump**: **eager**, **enthusiastic**.",
+  "ex": [
+   [
+    "大家踊跃发言。",
+    "Everyone eagerly spoke up."
+   ],
+   [
+    "欢迎同学们踊跃参加比赛。",
+    "Students are warmly encouraged to take part in the contest."
+   ]
+  ],
+  "use": "Often 踊跃参加, 踊跃报名."
+ },
+ {
+  "w": "层出不穷",
+  "pos": "idiom",
+  "m": "**Layers** keep **coming out** and are **never** used **up**: **endless**.",
+  "ex": [
+   [
+    "新的手机层出不穷。",
+    "New phones keep appearing one after another."
+   ],
+   [
+    "网上的骗局层出不穷，大家要小心。",
+    "Online scams keep popping up; everyone should be careful."
+   ]
+  ],
+  "use": "For new things or problems that keep appearing."
+ },
+ {
+  "w": "流浪",
+  "pos": "verb",
+  "m": "**Flow** with the **waves**: **to wander**, to drift.",
+  "ex": [
+   [
+    "他年轻时在外面流浪了几年。",
+    "When young, he drifted around for a few years."
+   ],
+   [
+    "路边有一只流浪猫。",
+    "There's a stray cat by the road."
+   ]
+  ],
+  "use": "流浪狗, stray dog; 流浪汉, a tramp."
+ },
+ {
+  "w": "合伙",
+  "pos": "verb",
+  "m": "**Join** together for **meals** and work: **to go into partnership**.",
+  "ex": [
+   [
+    "我们合伙开了一家店。",
+    "We opened a shop together as partners."
+   ],
+   [
+    "他跟朋友合伙做生意。",
+    "He went into business with a friend."
+   ]
+  ],
+  "use": "合伙人 is a partner."
+ },
+ {
+  "w": "坚韧",
+  "pos": "adjective",
+  "m": "**Strong** and **tough**: **tenacious**.",
+  "ex": [
+   [
+    "她是个坚韧的女人。",
+    "She is a resilient woman."
+   ],
+   [
+    "这种绳子非常坚韧。",
+    "This rope is very tough."
+   ]
+  ],
+  "use": "For materials and character."
+ },
+ {
+  "w": "巴不得",
+  "pos": "verb",
+  "m": "**Long for** it so much you can **not** **get** enough: **to be eager to**.",
+  "ex": [
+   [
+    "我巴不得马上放假。",
+    "I can't wait for the holidays to start."
+   ],
+   [
+    "他巴不得你早点走呢。",
+    "He'd love for you to leave early."
+   ]
+  ],
+  "use": "Spoken; followed by a verb or clause."
+ },
+ {
+  "w": "彩票",
+  "pos": "noun",
+  "m": "A **coloured** **ticket**: a **lottery ticket**.",
+  "ex": [
+   [
+    "他每周都买彩票。",
+    "He buys a lottery ticket every week."
+   ],
+   [
+    "听说他中了彩票，得了一百万。",
+    "I heard he won a million on the lottery."
+   ]
+  ],
+  "use": "中彩票, to win the lottery."
+ },
+ {
+  "w": "发烧",
+  "pos": "verb",
+  "m": "**Send out** a **burning**: **to have a fever**.",
+  "ex": [
+   [
+    "孩子发烧了。",
+    "The child has a fever."
+   ],
+   [
+    "我昨天发烧，没去上班。",
+    "I had a fever yesterday and didn't go to work."
+   ]
+  ],
+  "use": "发高烧, a high fever; 发烧友, a fan or buff."
+ },
+ {
+  "w": "谦逊",
+  "pos": "adjective",
+  "m": "**Modest** and **yielding**: **humble**.",
+  "ex": [
+   [
+    "他为人谦逊。",
+    "He is a humble person."
+   ],
+   [
+    "这位科学家非常谦逊，从不炫耀。",
+    "This scientist is very humble and never shows off."
+   ]
+  ],
+  "use": "More formal than 谦虚."
+ },
+ {
+  "w": "拘留",
+  "pos": "verb",
+  "m": "**Capture** and **keep**: **to detain**.",
+  "ex": [
+   [
+    "他被警察拘留了。",
+    "He was detained by the police."
+   ],
+   [
+    "那个司机因为酒后开车被拘留了十天。",
+    "The driver was held for ten days for drink-driving."
+   ]
+  ],
+  "use": "Legal; short-term custody."
+ },
+ {
+  "w": "比方",
+  "pos": "noun / verb",
+  "m": "**Compare** to a **square** example: an **analogy**, **for example**.",
+  "ex": [
+   [
+    "打个比方，你就明白了。",
+    "Let me give you an analogy, and you'll understand."
+   ],
+   [
+    "比方说，你可以先学简单的字。",
+    "For example, you can learn the simple characters first."
+   ]
+  ],
+  "use": "比方说 means for example."
+ },
+ {
+  "w": "总而言之",
+  "pos": "idiom",
+  "m": "In **general**, **and** in **words** of it: **in short**.",
+  "ex": [
+   [
+    "总而言之，我们要努力。",
+    "In short, we must work hard."
+   ],
+   [
+    "总而言之，这次旅行很成功。",
+    "All in all, this trip was a success."
+   ]
+  ],
+  "use": "Starts a summary; 总之 is shorter."
+ },
+ {
+  "w": "谅解",
+  "pos": "verb",
+  "m": "**Understand** and **untie** the problem: **to forgive**, to understand.",
+  "ex": [
+   [
+    "请你谅解。",
+    "Please understand."
+   ],
+   [
+    "我们得到了大家的谅解。",
+    "We received everyone's understanding."
+   ]
+  ],
+  "use": "Polite; often 请谅解 or 互相谅解."
+ },
+ {
+  "w": "旗袍",
+  "pos": "noun",
+  "m": "The **gown** of the **banner** people: a **qipao**, cheongsam.",
+  "ex": [
+   [
+    "她穿了一件旗袍。",
+    "She's wearing a qipao."
+   ],
+   [
+    "旗袍是中国传统服装。",
+    "The qipao is a traditional Chinese dress."
+   ]
+  ],
+  "use": "Measure word 件."
+ },
+ {
+  "w": "自私",
+  "pos": "adjective",
+  "m": "Thinking only of **self** and the **personal**: **selfish**.",
+  "ex": [
+   [
+    "他太自私了。",
+    "He is too selfish."
+   ],
+   [
+    "别那么自私，也想想别人。",
+    "Don't be so selfish; think of others too."
+   ]
+  ],
+  "use": "Opposite: 无私."
+ },
+ {
+  "w": "吃苦",
+  "pos": "verb",
+  "m": "**Eat** **bitterness**: **to bear hardship**.",
+  "ex": [
+   [
+    "他从小能吃苦。",
+    "He's been able to endure hardship since he was little."
+   ],
+   [
+    "年轻人应该吃苦，才能成长。",
+    "Young people should face hardship in order to grow."
+   ]
+  ],
+  "use": "吃苦耐劳, hardworking and tough."
+ },
+ {
+  "w": "人质",
+  "pos": "noun",
+  "m": "A **person** held as **pledge**: a **hostage**.",
+  "ex": [
+   [
+    "警察救出了人质。",
+    "The police rescued the hostages."
+   ],
+   [
+    "那个人抓了三个人质。",
+    "That man took three hostages."
+   ]
+  ],
+  "use": "Measure word 名 or 个."
+ },
+ {
+  "w": "想方设法",
+  "pos": "idiom",
+  "m": "**Think** of every **way** and **set up** every **method**: **to try every means**.",
+  "ex": [
+   [
+    "他想方设法帮助我。",
+    "He tried every way to help me."
+   ],
+   [
+    "妈妈想方设法让孩子多吃蔬菜。",
+    "Mum does everything she can to get her child to eat more vegetables."
+   ]
+  ],
+  "use": "Before a verb."
+ },
+ {
+  "w": "家喻户晓",
+  "pos": "idiom",
+  "m": "Every **home** **describes** it and every **household** **knows** it: **a household name**.",
+  "ex": [
+   [
+    "这个故事家喻户晓。",
+    "Everyone knows this story."
+   ],
+   [
+    "他是一位家喻户晓的演员。",
+    "He is a household-name actor."
+   ]
+  ],
+  "use": "For famous stories and people."
+ },
+ {
+  "w": "丰盛",
+  "pos": "adjective",
+  "m": "**Abundant** and **flourishing**: **sumptuous**.",
+  "ex": [
+   [
+    "今天的晚饭很丰盛。",
+    "Tonight's dinner is a real feast."
+   ],
+   [
+    "过年时，家家都准备了丰盛的饭菜。",
+    "At New Year, every family prepares a big feast."
+   ]
+  ],
+  "use": "Mostly for meals."
+ },
+ {
+  "w": "字典",
+  "pos": "noun",
+  "m": "A **canon** of **characters**: a **dictionary**.",
+  "ex": [
+   [
+    "我查了一下字典。",
+    "I looked it up in the dictionary."
+   ],
+   [
+    "这本字典对学中文很有帮助。",
+    "This dictionary is very helpful for learning Chinese."
+   ]
+  ],
+  "use": "Measure word 本; 词典 lists words, 字典 characters."
+ },
+ {
+  "w": "收音机",
+  "pos": "noun",
+  "m": "A **machine** that **receives** **sound**: a **radio**.",
+  "ex": [
+   [
+    "爷爷每天听收音机。",
+    "Grandpa listens to the radio every day."
+   ],
+   [
+    "这台收音机已经用了二十年。",
+    "This radio has been in use for twenty years."
+   ]
+  ],
+  "use": "Measure word 台."
+ },
+ {
+  "w": "护照",
+  "pos": "noun",
+  "m": "A paper that **protects** you, **according to** law: a **passport**.",
+  "ex": [
+   [
+    "别忘了带护照。",
+    "Don't forget your passport."
+   ],
+   [
+    "我的护照下个月就过期了。",
+    "My passport expires next month."
+   ]
+  ],
+  "use": "Measure word 本."
+ },
+ {
+  "w": "阳台",
+  "pos": "noun",
+  "m": "A **platform** in the **sun**: a **balcony**.",
+  "ex": [
+   [
+    "我在阳台上种了花。",
+    "I planted flowers on the balcony."
+   ],
+   [
+    "天气好的时候，我喜欢在阳台上看书。",
+    "When the weather is nice, I like reading on the balcony."
+   ]
+  ],
+  "use": "Goes with 在……上."
+ },
+ {
+  "w": "颠簸",
+  "pos": "verb",
+  "m": "Tossed head over **top** like grain being **winnowed**: **to be jolted**.",
+  "ex": [
+   [
+    "路不好，车很颠簸。",
+    "The road is bad, so the car bumps a lot."
+   ],
+   [
+    "飞机颠簸得很厉害，大家都很紧张。",
+    "The plane shook badly, and everyone was nervous."
+   ]
+  ],
+  "use": "For bumpy rides in cars, boats and planes."
+ },
+ {
+  "w": "饭馆",
+  "pos": "noun",
+  "m": "A **building** for **meals**: a **restaurant**.",
+  "ex": [
+   [
+    "附近有一家饭馆。",
+    "There's a restaurant nearby."
+   ],
+   [
+    "我们去饭馆吃吧，不做饭了。",
+    "Let's eat at a restaurant instead of cooking."
+   ]
+  ],
+  "use": "Measure word 家; plainer than 饭店 or 餐厅."
+ },
+ {
+  "w": "乌黑",
+  "pos": "adjective",
+  "m": "**Crow** **black**: **jet-black**.",
+  "ex": [
+   [
+    "她有一头乌黑的头发。",
+    "She has jet-black hair."
+   ],
+   [
+    "天上乌黑一片，快下雨了。",
+    "The sky has gone pitch-black; it's about to rain."
+   ]
+  ],
+  "use": "Often for hair and eyes."
+ },
+ {
+  "w": "竹子",
+  "pos": "noun",
+  "m": "**Bamboo**: **bamboo**.",
+  "ex": [
+   [
+    "熊猫爱吃竹子。",
+    "Pandas love eating bamboo."
+   ],
+   [
+    "这把椅子是竹子做的。",
+    "This chair is made of bamboo."
+   ]
+  ],
+  "use": "Measure word 根 or 棵."
+ },
+ {
+  "w": "须知",
+  "pos": "noun",
+  "m": "What you **must** **know**: **notes**, **instructions**.",
+  "ex": [
+   [
+    "请先阅读考试须知。",
+    "Please read the exam instructions first."
+   ],
+   [
+    "入住须知贴在门后。",
+    "The check-in notes are posted on the back of the door."
+   ]
+  ],
+  "use": "Often on signs: 乘客须知, 游客须知."
+ },
+ {
+  "w": "冷酷",
+  "pos": "adjective",
+  "m": "**Cold** and **ruthless**: **callous**.",
+  "ex": [
+   [
+    "他是一个冷酷的人。",
+    "He is a cold-hearted person."
+   ],
+   [
+    "现实有时候很冷酷。",
+    "Reality can sometimes be harsh."
+   ]
+  ],
+  "use": "Strong; 冷酷无情, heartless."
+ },
+ {
+  "w": "姥姥",
+  "pos": "noun",
+  "m": "**Grandma** twice over: **maternal grandmother**.",
+  "ex": [
+   [
+    "我周末去姥姥家。",
+    "I'm going to Grandma's at the weekend."
+   ],
+   [
+    "姥姥做的饺子最好吃。",
+    "Grandma's dumplings are the best."
+   ]
+  ],
+  "use": "Northern; elsewhere 外婆."
+ },
+ {
+  "w": "从容不迫",
+  "pos": "idiom",
+  "m": "At **ease** and **not** **forced** or hurried: **calm and unhurried**.",
+  "ex": [
+   [
+    "他从容不迫地回答问题。",
+    "He answered the questions calmly."
+   ],
+   [
+    "面对困难，她总是从容不迫。",
+    "She always stays composed in the face of difficulty."
+   ]
+  ],
+  "use": "Often before a verb with 地."
+ },
+ {
+  "w": "性感",
+  "pos": "adjective",
+  "m": "**Nature** you can **feel**: **sexy**.",
+  "ex": [
+   [
+    "她今天穿得很性感。",
+    "She's dressed very sexily today."
+   ],
+   [
+    "他的声音很性感。",
+    "He has a sexy voice."
+   ]
+  ],
+  "use": "Adjective in daily use."
+ },
+ {
+  "w": "拜年",
+  "pos": "verb",
+  "m": "**Bow** for the **New Year**: **to pay a New Year visit**.",
+  "ex": [
+   [
+    "我们去给爷爷拜年。",
+    "We're going to wish Grandpa a happy New Year."
+   ],
+   [
+    "春节时，大家互相拜年。",
+    "At Spring Festival, everyone exchanges New Year greetings."
+   ]
+  ],
+  "use": "Pattern: 给……拜年."
+ },
+ {
+  "w": "出息",
+  "pos": "noun",
+  "m": "What **comes out** of your **breath**: **good prospects**.",
+  "ex": [
+   [
+    "这孩子将来一定有出息。",
+    "This child will certainly do well in life."
+   ],
+   [
+    "你怎么这么没出息？",
+    "How can you be so useless?"
+   ]
+  ],
+  "use": "有出息, promising; 没出息, good-for-nothing."
+ },
+ {
+  "w": "寓言",
+  "pos": "noun",
+  "m": "**Words** in which a lesson **resides**: a **fable**.",
+  "ex": [
+   [
+    "这是一个有名的寓言。",
+    "This is a famous fable."
+   ],
+   [
+    "寓言故事常常告诉我们一个道理。",
+    "Fables often teach us a lesson."
+   ]
+  ],
+  "use": "Measure word 个 or 则."
+ },
+ {
+  "w": "践踏",
+  "pos": "verb",
+  "m": "**Tread** and **tread**: **to trample**.",
+  "ex": [
+   [
+    "请不要践踏草地。",
+    "Please keep off the grass."
+   ],
+   [
+    "这种做法践踏了人的尊严。",
+    "This kind of action tramples on human dignity."
+   ]
+  ],
+  "use": "Formal; also figurative for rights and laws."
+ },
+ {
+  "w": "开朗",
+  "pos": "adjective",
+  "m": "**Open** and **clear**: **cheerful**, open.",
+  "ex": [
+   [
+    "她性格很开朗。",
+    "She has a cheerful personality."
+   ],
+   [
+    "他是个开朗的人，朋友很多。",
+    "He's an outgoing person with lots of friends."
+   ]
+  ],
+  "use": "For personality; also for a wide view."
+ },
+ {
+  "w": "休养",
+  "pos": "verb",
+  "m": "**Rest** and **nourish**: **to recuperate**.",
+  "ex": [
+   [
+    "他在家里休养。",
+    "He's recuperating at home."
+   ],
+   [
+    "医生让她休养一个月。",
+    "The doctor told her to rest for a month."
+   ]
+  ],
+  "use": "Close to 休息, but longer and for recovery."
+ },
+ {
+  "w": "恼火",
+  "pos": "adjective",
+  "m": "**Angry** like **fire**: **annoyed**.",
+  "ex": [
+   [
+    "这件事让我很恼火。",
+    "This thing really annoys me."
+   ],
+   [
+    "他迟到了好几次，老板很恼火。",
+    "He's been late several times, and the boss is irritated."
+   ]
+  ],
+  "use": "Spoken; between 生气 and 愤怒."
+ },
+ {
+  "w": "没关系",
+  "pos": "phrase",
+  "m": "There is **no** **connection** to worry about: **it doesn't matter**.",
+  "ex": [
+   [
+    "“对不起。”“没关系。”",
+    "\"Sorry.\" \"That's all right.\""
+   ],
+   [
+    "没关系，我们明天再去。",
+    "It doesn't matter; we'll go tomorrow."
+   ]
+  ],
+  "use": "The standard reply to 对不起."
+ },
+ {
+  "w": "精简",
+  "pos": "verb",
+  "m": "Keep the **essence** and make it **simple**: **to streamline**.",
+  "ex": [
+   [
+    "公司要精简人员。",
+    "The company is going to cut staff."
+   ],
+   [
+    "请把这篇文章精简一下。",
+    "Please trim this article down a bit."
+   ]
+  ],
+  "use": "For staff, text and procedures."
+ },
+ {
+  "w": "英明",
+  "pos": "adjective",
+  "m": "A **hero**'s **bright** mind: **wise**, **brilliant**.",
+  "ex": [
+   [
+    "这是一个英明的决定。",
+    "This is a wise decision."
+   ],
+   [
+    "大家都说老板很英明。",
+    "Everyone says the boss is very wise."
+   ]
+  ],
+  "use": "Praise for leaders and decisions; can be ironic."
+ },
+ {
+  "w": "不见得",
+  "pos": "adverb",
+  "m": "You do **not** **see** it **get** there: **not necessarily**.",
+  "ex": [
+   [
+    "贵的东西不见得好。",
+    "Expensive things aren't necessarily good."
+   ],
+   [
+    "他说会来，可是不见得会来。",
+    "He said he would come, but he may not."
+   ]
+  ],
+  "use": "Spoken; softer than 不一定."
+ },
+ {
+  "w": "哎哟",
+  "pos": "particle",
+  "m": "**Hey** plus **oh**: **ouch!**, **oh!**",
+  "ex": [
+   [
+    "哎哟，好疼！",
+    "Ouch, that hurts!"
+   ],
+   [
+    "哎哟，我忘了带钥匙！",
+    "Oh no, I forgot my keys!"
+   ]
+  ],
+  "use": "An exclamation of pain, surprise or annoyance."
+ },
+ {
+  "w": "涂抹",
+  "pos": "verb",
+  "m": "**Apply** and **smear**: **to smear**, to paint on.",
+  "ex": [
+   [
+    "把药膏涂抹在伤口上。",
+    "Apply the ointment to the wound."
+   ],
+   [
+    "墙上被孩子涂抹得乱七八糟。",
+    "The kids scribbled all over the wall."
+   ]
+  ],
+  "use": "Written; spoken is 抹 or 涂."
+ },
+ {
+  "w": "挑剔",
+  "pos": "adjective / verb",
+  "m": "**Pick** and **scrape** at every bone: **picky**.",
+  "ex": [
+   [
+    "他吃东西很挑剔。",
+    "He's very fussy about food."
+   ],
+   [
+    "她总是挑剔别人的毛病。",
+    "She's always finding fault with others."
+   ]
+  ],
+  "use": "Pattern: 对……很挑剔."
+ },
+ {
+  "w": "过失",
+  "pos": "noun",
+  "m": "**Crossing** a line and **losing**: a **fault**, **error**.",
+  "ex": [
+   [
+    "这是我的过失。",
+    "This is my fault."
+   ],
+   [
+    "由于他的过失，公司损失了很多钱。",
+    "Due to his mistake, the company lost a lot of money."
+   ]
+  ],
+  "use": "Formal and legal."
+ },
+ {
+  "w": "鞭炮",
+  "pos": "noun",
+  "m": "**Whip**-like strings of little **cannons**: **firecrackers**.",
+  "ex": [
+   [
+    "过年的时候放鞭炮。",
+    "At New Year people set off firecrackers."
+   ],
+   [
+    "很多城市已经不让放鞭炮了。",
+    "Many cities no longer allow firecrackers."
+   ]
+  ],
+  "use": "Goes with 放."
+ },
+ {
+  "w": "壮烈",
+  "pos": "adjective",
+  "m": "**Strong** and **ardent**: **heroic**.",
+  "ex": [
+   [
+    "他壮烈地牺牲了。",
+    "He died a hero's death."
+   ],
+   [
+    "这是一个壮烈的故事。",
+    "This is a heroic and stirring story."
+   ]
+  ],
+  "use": "For heroic deaths and deeds."
+ },
+ {
+  "w": "本钱",
+  "pos": "noun",
+  "m": "The **root** **money**: **capital**, an **asset**.",
+  "ex": [
+   [
+    "做生意需要本钱。",
+    "You need capital to do business."
+   ],
+   [
+    "身体是工作的本钱。",
+    "Your health is your capital for work."
+   ]
+  ],
+  "use": "Also figurative: what you have to rely on."
+ },
+ {
+  "w": "心得",
+  "pos": "noun",
+  "m": "What the **heart** has **gained**: **insights**, what one has learned.",
+  "ex": [
+   [
+    "请谈谈你的学习心得。",
+    "Please share what you have learned."
+   ],
+   [
+    "读完这本书，我写了一篇心得。",
+    "After reading this book, I wrote up my thoughts."
+   ]
+  ],
+  "use": "Often 学习心得, 读书心得."
+ },
+ {
+  "w": "贫乏",
+  "pos": "adjective",
+  "m": "**Poor** and **short of**: **lacking**.",
+  "ex": [
+   [
+    "他的知识很贫乏。",
+    "His knowledge is very limited."
+   ],
+   [
+    "这个地区资源贫乏。",
+    "This area is poor in resources."
+   ]
+  ],
+  "use": "For knowledge, resources, experience."
+ },
+ {
+  "w": "通货",
+  "pos": "noun",
+  "m": "**Goods** that **go through** all hands: **currency**.",
+  "ex": [
+   [
+    "通货膨胀让物价上涨了。",
+    "Inflation has made prices go up."
+   ],
+   [
+    "这个国家的通货是什么？",
+    "What is this country's currency?"
+   ]
+  ],
+  "use": "Mostly in 通货膨胀, inflation."
+ },
+ {
+  "w": "杂技",
+  "pos": "noun",
+  "m": "**Mixed** **skills**: **acrobatics**.",
+  "ex": [
+   [
+    "我们去看杂技表演吧。",
+    "Let's go and see an acrobatics show."
+   ],
+   [
+    "中国杂技在世界上很有名。",
+    "Chinese acrobatics are famous around the world."
+   ]
+  ],
+  "use": "杂技团, acrobatic troupe."
+ },
+ {
+  "w": "摄取",
+  "pos": "verb",
+  "m": "**Take in** and **take**: **to absorb**.",
+  "ex": [
+   [
+    "我们每天要摄取足够的营养。",
+    "We need to take in enough nutrients every day."
+   ],
+   [
+    "少摄取糖对身体有好处。",
+    "Taking in less sugar is good for your health."
+   ]
+  ],
+  "use": "Formal; for nutrients and calories."
+ },
+ {
+  "w": "亭子",
+  "pos": "noun",
+  "m": "A **pavilion**: **pavilion**.",
+  "ex": [
+   [
+    "公园里有一个亭子。",
+    "There's a pavilion in the park."
+   ],
+   [
+    "下雨了，我们去亭子里避雨吧。",
+    "It's raining; let's shelter in the pavilion."
+   ]
+  ],
+  "use": "Measure word 座 or 个."
+ },
+ {
+  "w": "报销",
+  "pos": "verb",
+  "m": "**Report** and **melt away** the cost: **to claim expenses**.",
+  "ex": [
+   [
+    "出差的费用可以报销。",
+    "Business trip costs can be claimed back."
+   ],
+   [
+    "这张发票不能报销。",
+    "This receipt can't be reimbursed."
+   ]
+  ],
+  "use": "Needs 发票, a receipt."
+ },
+ {
+  "w": "害羞",
+  "pos": "adjective",
+  "m": "**Harmed** by being **shy**: **shy**.",
+  "ex": [
+   [
+    "她很害羞，不爱说话。",
+    "She is very shy and doesn't like to talk."
+   ],
+   [
+    "别害羞，大声说出来。",
+    "Don't be shy; say it out loud."
+   ]
+  ],
+  "use": "Close to 不好意思."
+ },
+ {
+  "w": "兴隆",
+  "pos": "adjective",
+  "m": "**Rising** and **grand**: **prosperous**.",
+  "ex": [
+   [
+    "祝您生意兴隆！",
+    "May your business prosper!"
+   ],
+   [
+    "这家店生意一直很兴隆。",
+    "This shop's business has always been brisk."
+   ]
+  ],
+  "use": "Mostly in 生意兴隆, a common greeting."
+ },
+ {
+  "w": "姑且",
+  "pos": "adverb",
+  "m": "**For now** **and** for the moment: **tentatively**.",
+  "ex": [
+   [
+    "我们姑且试一试。",
+    "Let's give it a try for now."
+   ],
+   [
+    "这个问题姑且不谈。",
+    "Let's set this question aside for now."
+   ]
+  ],
+  "use": "Written; before a verb."
+ },
+ {
+  "w": "手套",
+  "pos": "noun",
+  "m": "A **cover** for the **hand**: a **glove**.",
+  "ex": [
+   [
+    "天冷了，戴上手套吧。",
+    "It's cold now; put on your gloves."
+   ],
+   [
+    "我的手套丢了一只。",
+    "I've lost one of my gloves."
+   ]
+  ],
+  "use": "Measure word 双 for a pair, 只 for one."
+ },
+ {
+  "w": "迷失",
+  "pos": "verb",
+  "m": "**Bewildered** and **lost**: **to lose one's way**.",
+  "ex": [
+   [
+    "他们在森林里迷失了方向。",
+    "They lost their way in the forest."
+   ],
+   [
+    "在大城市里，很多年轻人迷失了自己。",
+    "In the big city, many young people lose themselves."
+   ]
+  ],
+  "use": "Often 迷失方向, to get lost."
+ },
+ {
+  "w": "鼠标",
+  "pos": "noun",
+  "m": "The **rat**-shaped **marker**: a computer **mouse**.",
+  "ex": [
+   [
+    "我的鼠标没电了。",
+    "My mouse has run out of battery."
+   ],
+   [
+    "用鼠标点一下这个按钮。",
+    "Click this button with the mouse."
+   ]
+  ],
+  "use": "Measure word 个."
+ },
+ {
+  "w": "品行",
+  "pos": "noun",
+  "m": "The **article** of how you **walk** in life: **conduct**.",
+  "ex": [
+   [
+    "这个学生品行很好。",
+    "This student is of good character."
+   ],
+   [
+    "找工作时，品行也很重要。",
+    "When looking for work, character also matters."
+   ]
+  ],
+  "use": "Formal; about moral behaviour."
+ },
+ {
+  "w": "就近",
+  "pos": "adverb",
+  "m": "Go to what is **near**: **nearby**, at a place close at hand.",
+  "ex": [
+   [
+    "你可以就近找个医院。",
+    "You can find a hospital nearby."
+   ],
+   [
+    "孩子们一般就近上学。",
+    "Children usually go to a school near home."
+   ]
+  ],
+  "use": "Before a verb."
+ },
+ {
+  "w": "请假",
+  "pos": "verb",
+  "m": "**Ask** for a **break**: **to ask for leave**.",
+  "ex": [
+   [
+    "我明天想请假。",
+    "I'd like to take tomorrow off."
+   ],
+   [
+    "他生病了，向老师请假。",
+    "He's ill and asked the teacher for leave."
+   ]
+  ],
+  "use": "Pattern: 向……请假; 请病假, sick leave."
+ },
+ {
+  "w": "多亏",
+  "pos": "adverb / verb",
+  "m": "**Much** is owed and you'd have **lost** without it: **thanks to**.",
+  "ex": [
+   [
+    "多亏你帮我。",
+    "Thank goodness you helped me."
+   ],
+   [
+    "多亏了医生，他的病好了。",
+    "Thanks to the doctor, he recovered."
+   ]
+  ],
+  "use": "Followed by the helper; shows relief."
+ },
+ {
+  "w": "狭隘",
+  "pos": "adjective",
+  "m": "**Narrow** and **narrow**: **narrow-minded**.",
+  "ex": [
+   [
+    "他的心胸太狭隘了。",
+    "He's too narrow-minded."
+   ],
+   [
+    "不要用狭隘的眼光看问题。",
+    "Don't look at problems in a narrow way."
+   ]
+  ],
+  "use": "Mostly figurative for minds and views."
+ },
+ {
+  "w": "急躁",
+  "pos": "adjective",
+  "m": "**Urgent** and **impatient**: **impetuous**.",
+  "ex": [
+   [
+    "他做事太急躁了。",
+    "He's too hasty in how he does things."
+   ],
+   [
+    "别急躁，慢慢来。",
+    "Don't be impatient; take it slowly."
+   ]
+  ],
+  "use": "Character trait; close to 着急."
+ },
+ {
+  "w": "公证",
+  "pos": "verb / noun",
+  "m": "A **public** **certificate**: **notarization**.",
+  "ex": [
+   [
+    "这份文件需要公证。",
+    "This document needs to be notarized."
+   ],
+   [
+    "我们去公证处办手续。",
+    "We're going to the notary office to do the paperwork."
+   ]
+  ],
+  "use": "公证处, notary office."
+ },
+ {
+  "w": "巴结",
+  "pos": "verb",
+  "m": "**Long for** favours and tie a **knot** to the boss: **to suck up to**.",
+  "ex": [
+   [
+    "他总是巴结领导。",
+    "He's always sucking up to the leaders."
+   ],
+   [
+    "我不喜欢巴结别人。",
+    "I don't like flattering people."
+   ]
+  ],
+  "use": "Negative and spoken."
+ },
+ {
+  "w": "准时",
+  "pos": "adjective",
+  "m": "At the **accurate** **hour**: **on time**.",
+  "ex": [
+   [
+    "请准时到。",
+    "Please arrive on time."
+   ],
+   [
+    "火车准时出发了。",
+    "The train left on time."
+   ]
+  ],
+  "use": "Opposite: 迟到 or 晚点."
+ },
+ {
+  "w": "丑恶",
+  "pos": "adjective",
+  "m": "**Shameful** and **evil**: **ugly**, **hideous** in nature.",
+  "ex": [
+   [
+    "这是社会上丑恶的现象。",
+    "This is an ugly side of society."
+   ],
+   [
+    "他终于看清了那个人丑恶的嘴脸。",
+    "He finally saw that person's true ugly face."
+   ]
+  ],
+  "use": "Moral ugliness, not looks (难看)."
+ },
+ {
+  "w": "愚昧",
+  "pos": "adjective",
+  "m": "**Stupid** and **concealed** in darkness: **ignorant**.",
+  "ex": [
+   [
+    "那是一个愚昧的时代。",
+    "That was an age of ignorance."
+   ],
+   [
+    "我们要用科学战胜愚昧。",
+    "We must defeat ignorance with science."
+   ]
+  ],
+  "use": "Formal; for societies and old beliefs."
+ },
+ {
+  "w": "毅力",
+  "pos": "noun",
+  "m": "**Resolute** **power**: **willpower**.",
+  "ex": [
+   [
+    "学外语需要毅力。",
+    "Learning a foreign language takes perseverance."
+   ],
+   [
+    "他靠毅力完成了比赛。",
+    "He finished the race through sheer willpower."
+   ]
+  ],
+  "use": "有毅力, persevering."
+ },
+ {
+  "w": "争气",
+  "pos": "verb",
+  "m": "**Strive** with your **spirit**: **to do one well**, to live up to hopes.",
+  "ex": [
+   [
+    "这孩子真争气，考上了大学。",
+    "This kid has done us proud and got into university."
+   ],
+   [
+    "你要争气，别让父母失望。",
+    "You must try hard and not let your parents down."
+   ]
+  ],
+  "use": "Opposite: 不争气, disappointing."
+ },
+ {
+  "w": "糟蹋",
+  "pos": "verb",
+  "m": "Turn to **dregs** and **step on** them: **to waste**, **to ruin**.",
+  "ex": [
+   [
+    "别糟蹋粮食。",
+    "Don't waste food."
+   ],
+   [
+    "这么好的东西，被他糟蹋了。",
+    "Such a good thing, and he ruined it."
+   ]
+  ],
+  "use": "Spoken; for food, money, things."
+ },
+ {
+  "w": "虐待",
+  "pos": "verb",
+  "m": "Treat **brutally**: **to mistreat**.",
+  "ex": [
+   [
+    "不要虐待动物。",
+    "Don't mistreat animals."
+   ],
+   [
+    "他因为虐待孩子被抓了。",
+    "He was arrested for abusing a child."
+   ]
+  ],
+  "use": "Strong; often legal."
+ },
+ {
+  "w": "噪音",
+  "pos": "noun",
+  "m": "**Cacophonous** **sound**: **noise**.",
+  "ex": [
+   [
+    "外面的噪音太大了。",
+    "The noise outside is too loud."
+   ],
+   [
+    "长时间听噪音对耳朵不好。",
+    "Listening to noise for long periods is bad for your ears."
+   ]
+  ],
+  "use": "Also 噪声 in science."
+ },
+ {
+  "w": "孝顺",
+  "pos": "adjective / verb",
+  "m": "**Filial** and **obedient**: **dutiful to parents**.",
+  "ex": [
+   [
+    "他是一个孝顺的儿子。",
+    "He is a devoted son."
+   ],
+   [
+    "我们要孝顺父母。",
+    "We should be good to our parents."
+   ]
+  ],
+  "use": "A core Chinese value."
+ },
+ {
+  "w": "斯文",
+  "pos": "adjective",
+  "m": "A **gentle** **cultured** air: **refined**, **gentle**.",
+  "ex": [
+   [
+    "他说话很斯文。",
+    "He speaks in a very refined way."
+   ],
+   [
+    "这个男孩看起来很斯文。",
+    "This boy looks very gentle and well-mannered."
+   ]
+  ],
+  "use": "Spoken; can mean gentle-looking."
+ },
+ {
+  "w": "共鸣",
+  "pos": "noun / verb",
+  "m": "Sounds that **cry** in **common**: **resonance**, **sympathy**.",
+  "ex": [
+   [
+    "这本书引起了读者的共鸣。",
+    "This book struck a chord with readers."
+   ],
+   [
+    "他的话让我产生了共鸣。",
+    "His words resonated with me."
+   ]
+  ],
+  "use": "Often 引起共鸣."
+ },
+ {
+  "w": "分红",
+  "pos": "verb / noun",
+  "m": "**Divide** up the **red**, lucky profits: **to pay a dividend**.",
+  "ex": [
+   [
+    "公司年底给员工分红。",
+    "The company pays staff a bonus at year's end."
+   ],
+   [
+    "今年的分红比去年多。",
+    "This year's dividend is higher than last year's."
+   ]
+  ],
+  "use": "Business word."
+ },
+ {
+  "w": "责怪",
+  "pos": "verb",
+  "m": "Treat as one's **duty** and find it **odd**: **to blame**.",
+  "ex": [
+   [
+    "别责怪自己。",
+    "Don't blame yourself."
+   ],
+   [
+    "妈妈没有责怪我，反而安慰了我。",
+    "Mum didn't blame me; instead she comforted me."
+   ]
+  ],
+  "use": "Softer than 批评."
+ },
+ {
+  "w": "坦白",
+  "pos": "adjective / verb",
+  "m": "**Flat** and **white**, hiding nothing: **frank**, **to confess**.",
+  "ex": [
+   [
+    "我坦白告诉你吧。",
+    "Let me be frank with you."
+   ],
+   [
+    "他向警察坦白了一切。",
+    "He confessed everything to the police."
+   ]
+  ],
+  "use": "坦白说 means frankly speaking."
+ },
+ {
+  "w": "寒暄",
+  "pos": "verb",
+  "m": "Talk about **cold** and **warm** weather: **to exchange pleasantries**.",
+  "ex": [
+   [
+    "他们寒暄了几句。",
+    "They exchanged a few pleasantries."
+   ],
+   [
+    "寒暄过后，我们开始谈工作。",
+    "After the small talk, we began to discuss work."
+   ]
+  ],
+  "use": "Formal; small talk on meeting."
+ },
+ {
+  "w": "玩弄",
+  "pos": "verb",
+  "m": "**Play** and **do** things with: **to toy with**.",
+  "ex": [
+   [
+    "他玩弄了她的感情。",
+    "He toyed with her feelings."
+   ],
+   [
+    "别玩弄小聪明。",
+    "Don't play clever tricks."
+   ]
+  ],
+  "use": "Usually negative: 玩弄感情, 玩弄手段."
+ },
+ {
+  "w": "闭塞",
+  "pos": "adjective",
+  "m": "**Closed** and **plugged**: **isolated**, out of touch.",
+  "ex": [
+   [
+    "那个山村交通闭塞。",
+    "That mountain village has poor transport links."
+   ],
+   [
+    "他住的地方很闭塞，消息很少。",
+    "Where he lives is cut off, and little news gets through."
+   ]
+  ],
+  "use": "For remote places and closed minds."
+ },
+ {
+  "w": "凑合",
+  "pos": "verb",
+  "m": "**Gather** and **close** things up: **to make do**.",
+  "ex": [
+   [
+    "这件衣服还能凑合穿。",
+    "This piece of clothing can still do."
+   ],
+   [
+    "没有好的，就凑合一下吧。",
+    "There's nothing good, so let's make do."
+   ]
+  ],
+  "use": "Spoken; also \"so-so\": 还凑合."
+ },
+ {
+  "w": "狠心",
+  "pos": "adjective",
+  "m": "A **ruthless** **heart**: **heartless**.",
+  "ex": [
+   [
+    "你怎么这么狠心？",
+    "How can you be so heartless?"
+   ],
+   [
+    "她狠心离开了家。",
+    "She steeled herself and left home."
+   ]
+  ],
+  "use": "Also means to make a hard decision."
+ },
+ {
+  "w": "窗帘",
+  "pos": "noun",
+  "m": "A **curtain** for the **window**: **curtains**.",
+  "ex": [
+   [
+    "请把窗帘拉上。",
+    "Please draw the curtains."
+   ],
+   [
+    "早上我打开窗帘，阳光照了进来。",
+    "In the morning I opened the curtains and sunlight came in."
+   ]
+  ],
+  "use": "Goes with 拉上 and 拉开."
+ },
+ {
+  "w": "靠拢",
+  "pos": "verb",
+  "m": "**Lean** in and **gather together**: **to draw close**.",
+  "ex": [
+   [
+    "请大家向中间靠拢。",
+    "Everyone, please move closer to the middle."
+   ],
+   [
+    "他们慢慢向我靠拢过来。",
+    "They slowly drew closer to me."
+   ]
+  ],
+  "use": "Pattern: 向……靠拢."
+ },
+ {
+  "w": "保重",
+  "pos": "verb",
+  "m": "**Defend** what is **heavy** and precious, your health: **to take care of oneself**.",
+  "ex": [
+   [
+    "你多保重！",
+    "Take good care of yourself!"
+   ],
+   [
+    "天冷了，请保重身体。",
+    "It's getting cold; please look after your health."
+   ]
+  ],
+  "use": "Said at partings or to the sick."
+ },
+ {
+  "w": "捆绑",
+  "pos": "verb",
+  "m": "**Bundle** and **tie**: **to bind**.",
+  "ex": [
+   [
+    "他的手被捆绑起来了。",
+    "His hands were tied up."
+   ],
+   [
+    "别把这两件事捆绑在一起。",
+    "Don't tie these two things together."
+   ]
+  ],
+  "use": "Also figurative: 捆绑销售, bundled sales."
+ },
+ {
+  "w": "大意",
+  "pos": "noun",
+  "m": "The **big** **idea**: the **main idea**, **gist**.",
+  "ex": [
+   [
+    "请说说这篇课文的大意。",
+    "Please give the gist of this text."
+   ],
+   [
+    "我听懂了他说话的大意。",
+    "I understood the general idea of what he said."
+   ]
+  ],
+  "use": "Read dàyi, it means careless: 粗心大意."
+ },
+ {
+  "w": "机灵",
+  "pos": "adjective",
+  "m": "**Machine**-fast and **quick**: **clever**, **alert**.",
+  "ex": [
+   [
+    "这个孩子很机灵。",
+    "This child is very clever."
+   ],
+   [
+    "小狗很机灵，一叫就来。",
+    "The puppy is smart; it comes as soon as you call."
+   ]
+  ],
+  "use": "Spoken; for kids and animals."
+ },
+ {
+  "w": "流利",
+  "pos": "adjective",
+  "m": "**Flowing** and **sharp**: **fluent**.",
+  "ex": [
+   [
+    "她的英语很流利。",
+    "Her English is very fluent."
+   ],
+   [
+    "他能说一口流利的汉语。",
+    "He speaks fluent Chinese."
+   ]
+  ],
+  "use": "For speech and writing."
+ },
+ {
+  "w": "胸怀",
+  "pos": "noun",
+  "m": "The **chest** and **bosom**: one's **heart**, **mind**.",
+  "ex": [
+   [
+    "他胸怀宽广。",
+    "He is broad-minded."
+   ],
+   [
+    "我们要有开阔的胸怀。",
+    "We should have an open mind."
+   ]
+  ],
+  "use": "Figurative; also a verb: 胸怀大志."
+ },
+ {
+  "w": "备忘录",
+  "pos": "noun",
+  "m": "A **record** **prepared** so you won't **forget**: a **memo**.",
+  "ex": [
+   [
+    "我把这件事写进了备忘录。",
+    "I wrote this down in my memo."
+   ],
+   [
+    "两国签订了合作备忘录。",
+    "The two countries signed a memorandum of cooperation."
+   ]
+  ],
+  "use": "Also the notes app on a phone."
+ },
+ {
+  "w": "权衡",
+  "pos": "verb",
+  "m": "Weigh with **authority** and a **balance**: **to weigh up**.",
+  "ex": [
+   [
+    "他权衡了利弊，决定留下。",
+    "He weighed the pros and cons and decided to stay."
+   ],
+   [
+    "这件事你要好好权衡一下。",
+    "You need to weigh this up carefully."
+   ]
+  ],
+  "use": "Often 权衡利弊."
+ },
+ {
+  "w": "孤单",
+  "pos": "adjective",
+  "m": "**Lone** and **single**: **lonely**.",
+  "ex": [
+   [
+    "一个人在国外很孤单。",
+    "Being abroad on your own is lonely."
+   ],
+   [
+    "有了小狗，奶奶不再孤单了。",
+    "With the puppy, Grandma isn't lonely any more."
+   ]
+  ],
+  "use": "Close to 孤独; 孤单 is more about being alone."
+ },
+ {
+  "w": "排球",
+  "pos": "noun",
+  "m": "A **ball** game played in **rows**: **volleyball**.",
+  "ex": [
+   [
+    "我们学校有排球队。",
+    "Our school has a volleyball team."
+   ],
+   [
+    "下午我们去打排球吧。",
+    "Let's play volleyball this afternoon."
+   ]
+  ],
+  "use": "Goes with 打."
+ },
+ {
+  "w": "短促",
+  "pos": "adjective",
+  "m": "**Short** and **brief**: **fleeting**.",
+  "ex": [
+   [
+    "他的呼吸很短促。",
+    "His breathing is short and quick."
+   ],
+   [
+    "人生短促，要珍惜时间。",
+    "Life is short; treasure your time."
+   ]
+  ],
+  "use": "For breathing, sounds and time."
+ },
+ {
+  "w": "兴致勃勃",
+  "pos": "idiom",
+  "m": "**Mood** **caused** to be **flourishing**, **flourishing**: **full of enthusiasm**.",
+  "ex": [
+   [
+    "孩子们兴致勃勃地看表演。",
+    "The children watched the show with great interest."
+   ],
+   [
+    "他兴致勃勃地给我们讲他的旅行。",
+    "He eagerly told us about his trip."
+   ]
+  ],
+  "use": "Before a verb with 地."
+ },
+ {
+  "w": "裁缝",
+  "pos": "noun",
+  "m": "One who **cuts out** cloth and **sews seams**: a **tailor**.",
+  "ex": [
+   [
+    "我请裁缝做了一件衣服。",
+    "I had a tailor make me some clothes."
+   ],
+   [
+    "她妈妈是个裁缝。",
+    "Her mother is a dressmaker."
+   ]
+  ],
+  "use": "Read cáifeng for the person."
+ },
+ {
+  "w": "理直气壮",
+  "pos": "idiom",
+  "m": "**Reason** is **straight** and **spirit** **strong**: **confident in being right**.",
+  "ex": [
+   [
+    "他理直气壮地说：“不是我。”",
+    "He said boldly, \"It wasn't me.\""
+   ],
+   [
+    "你做错了，还这么理直气壮？",
+    "You did wrong, and you're still so self-assured?"
+   ]
+  ],
+  "use": "Can be ironic for someone wrong."
+ },
+ {
+  "w": "蔑视",
+  "pos": "verb",
+  "m": "**Belittle** in how you **look**: **to despise**.",
+  "ex": [
+   [
+    "他蔑视地看了我一眼。",
+    "He gave me a scornful look."
+   ],
+   [
+    "我们不应该蔑视任何人。",
+    "We shouldn't look down on anyone."
+   ]
+  ],
+  "use": "Formal and strong."
+ },
+ {
+  "w": "豪迈",
+  "pos": "adjective",
+  "m": "**Grand** **strides**: **bold and generous**.",
+  "ex": [
+   [
+    "他说话很豪迈。",
+    "He speaks in a bold, heroic way."
+   ],
+   [
+    "他们唱着豪迈的歌向前走。",
+    "They marched forward singing a rousing song."
+   ]
+  ],
+  "use": "For spirit, words and songs."
+ },
+ {
+  "w": "不言而喻",
+  "pos": "idiom",
+  "m": "**Not** needing **words** **and** already **described**: **self-evident**.",
+  "ex": [
+   [
+    "健康的重要性不言而喻。",
+    "The importance of health goes without saying."
+   ],
+   [
+    "他的意思不言而喻。",
+    "His meaning is obvious."
+   ]
+  ],
+  "use": "Formal."
+ },
+ {
+  "w": "廉洁",
+  "pos": "adjective",
+  "m": "**Incorruptible** and **clean**: **honest** in office.",
+  "ex": [
+   [
+    "他是一位廉洁的官员。",
+    "He is an honest official."
+   ],
+   [
+    "政府要廉洁，人民才会信任。",
+    "Government must be clean for the people to trust it."
+   ]
+  ],
+  "use": "For officials; opposite 腐败."
+ },
+ {
+  "w": "留恋",
+  "pos": "verb",
+  "m": "**Stay** because you **feel attached**: **reluctant to leave**.",
+  "ex": [
+   [
+    "我很留恋大学生活。",
+    "I really miss university life."
+   ],
+   [
+    "假期结束了，孩子们还留恋着海边。",
+    "The holiday is over, but the children still don't want to leave the seaside."
+   ]
+  ],
+  "use": "Close to 舍不得."
+ },
+ {
+  "w": "真挚",
+  "pos": "adjective",
+  "m": "**Truly** **sincere**: **sincere**.",
+  "ex": [
+   [
+    "他们之间有真挚的友谊。",
+    "They share a sincere friendship."
+   ],
+   [
+    "谢谢你真挚的祝福。",
+    "Thank you for your sincere good wishes."
+   ]
+  ],
+  "use": "Written; for feelings and words."
+ },
+ {
+  "w": "霸道",
+  "pos": "adjective",
+  "m": "The **road** of the **tyrant**: **bossy**, **domineering**.",
+  "ex": [
+   [
+    "他太霸道了。",
+    "He's too domineering."
+   ],
+   [
+    "你不能这么霸道，别人也有权利说话。",
+    "You can't be so bossy; others have a right to speak too."
+   ]
+  ],
+  "use": "Read bàdao in speech."
+ },
+ {
+  "w": "书架",
+  "pos": "noun",
+  "m": "A **frame** for **books**: a **bookshelf**.",
+  "ex": [
+   [
+    "书架上有很多书。",
+    "There are lots of books on the bookshelf."
+   ],
+   [
+    "请把这本书放回书架。",
+    "Please put this book back on the shelf."
+   ]
+  ],
+  "use": "Measure word 个."
+ },
+ {
+  "w": "管子",
+  "pos": "noun",
+  "m": "A **tube** to **take care of** flow: a **pipe**, **tube**.",
+  "ex": [
+   [
+    "这根管子漏水了。",
+    "This pipe is leaking."
+   ],
+   [
+    "他用管子给花浇水。",
+    "He waters the flowers with a hose."
+   ]
+  ],
+  "use": "Measure word 根; also the name of an ancient book."
+ },
+ {
+  "w": "一如既往",
+  "pos": "idiom",
+  "m": "**Just** **as** it has **already** **gone** before: **as always**.",
+  "ex": [
+   [
+    "我们会一如既往地支持你。",
+    "We'll support you as always."
+   ],
+   [
+    "他一如既往地早起跑步。",
+    "As usual, he got up early to go running."
+   ]
+  ],
+  "use": "Formal; before a verb with 地."
+ },
+ {
+  "w": "举足轻重",
+  "pos": "idiom",
+  "m": "**Lift** a **foot** and the scale goes **light** or **heavy**: **highly influential**.",
+  "ex": [
+   [
+    "他在公司里举足轻重。",
+    "He carries a lot of weight in the company."
+   ],
+   [
+    "这是一个举足轻重的决定。",
+    "This is a decision of great importance."
+   ]
+  ],
+  "use": "For people and roles."
+ },
+ {
+  "w": "气魄",
+  "pos": "noun",
+  "m": "**Spirit** and **soul**: **boldness**, **daring**.",
+  "ex": [
+   [
+    "他做事很有气魄。",
+    "He does things boldly."
+   ],
+   [
+    "这座大桥的设计很有气魄。",
+    "The design of this bridge is grand and imposing."
+   ]
+  ],
+  "use": "For people and grand works."
+ },
+ {
+  "w": "交际",
+  "pos": "noun / verb",
+  "m": "**Hand over** across the **border**: **socializing**.",
+  "ex": [
+   [
+    "她很会交际。",
+    "She's very sociable."
+   ],
+   [
+    "交际能力在工作中很重要。",
+    "Social skills are important at work."
+   ]
+  ],
+  "use": "More formal than 交朋友."
+ },
+ {
+  "w": "过问",
+  "pos": "verb",
+  "m": "**Cross** over and **ask**: **to take an interest in**, to get involved.",
+  "ex": [
+   [
+    "这件事你别过问了。",
+    "Don't concern yourself with this."
+   ],
+   [
+    "领导亲自过问了这个案子。",
+    "The leader personally looked into this case."
+   ]
+  ],
+  "use": "Often negative: 不过问."
+ },
+ {
+  "w": "酱油",
+  "pos": "noun",
+  "m": "**Fermented paste** **oil**: **soy sauce**.",
+  "ex": [
+   [
+    "菜里再放一点酱油。",
+    "Put a little more soy sauce in the dish."
+   ],
+   [
+    "我去楼下买瓶酱油。",
+    "I'm going downstairs to buy a bottle of soy sauce."
+   ]
+  ],
+  "use": "Measure word 瓶."
+ },
+ {
+  "w": "内科",
+  "pos": "noun",
+  "m": "The **inside** **branch** of medicine: **internal medicine**.",
+  "ex": [
+   [
+    "你应该去看内科。",
+    "You should see the internal medicine department."
+   ],
+   [
+    "她是内科医生。",
+    "She's a physician in internal medicine."
+   ]
+  ],
+  "use": "Opposite: 外科, surgery."
+ },
+ {
+  "w": "仁慈",
+  "pos": "adjective",
+  "m": "**Humane** and **compassionate**: **kind**, **merciful**.",
+  "ex": [
+   [
+    "他是一个仁慈的老人。",
+    "He is a kind old man."
+   ],
+   [
+    "请你仁慈一点，放过它吧。",
+    "Please be merciful and let it go."
+   ]
+  ],
+  "use": "Formal; for people and rulers."
+ },
+ {
+  "w": "作弊",
+  "pos": "verb",
+  "m": "**Do** **wrong** on purpose: **to cheat**.",
+  "ex": [
+   [
+    "考试不能作弊。",
+    "You can't cheat in exams."
+   ],
+   [
+    "他因为作弊被抓住了。",
+    "He was caught cheating."
+   ]
+  ],
+  "use": "Mostly for exams and games."
+ },
+ {
+  "w": "宠物",
+  "pos": "noun",
+  "m": "A **thing** you **dote** on: a **pet**.",
+  "ex": [
+   [
+    "你养宠物吗？",
+    "Do you have a pet?"
+   ],
+   [
+    "她的宠物是一只小白狗。",
+    "Her pet is a little white dog."
+   ]
+  ],
+  "use": "养宠物, to keep a pet."
+ },
+ {
+  "w": "洗衣机",
+  "pos": "noun",
+  "m": "A **machine** that **washes** **clothes**: a **washing machine**.",
+  "ex": [
+   [
+    "洗衣机坏了。",
+    "The washing machine is broken."
+   ],
+   [
+    "把脏衣服放进洗衣机吧。",
+    "Put the dirty clothes in the washing machine."
+   ]
+  ],
+  "use": "Measure word 台."
+ },
+ {
+  "w": "熏陶",
+  "pos": "verb",
+  "m": "**Fragrance** working into **pottery**: **to influence** gradually.",
+  "ex": [
+   [
+    "她从小受到音乐的熏陶。",
+    "She grew up steeped in music."
+   ],
+   [
+    "在父母的熏陶下，他也爱上了读书。",
+    "Under his parents' influence, he also came to love reading."
+   ]
+  ],
+  "use": "Often 受到……的熏陶; positive."
+ },
+ {
+  "w": "话筒",
+  "pos": "noun",
+  "m": "A **tube** for **speech**: a **microphone**.",
+  "ex": [
+   [
+    "请把话筒给我。",
+    "Please pass me the microphone."
+   ],
+   [
+    "他拿起话筒开始唱歌。",
+    "He picked up the mic and started singing."
+   ]
+  ],
+  "use": "Also the receiver of a phone."
+ },
+ {
+  "w": "饼干",
+  "pos": "noun",
+  "m": "A **flat cake** that is **dry**: a **biscuit**, **cookie**.",
+  "ex": [
+   [
+    "我饿了，想吃饼干。",
+    "I'm hungry; I'd like some biscuits."
+   ],
+   [
+    "这盒饼干是巧克力味的。",
+    "This box of biscuits is chocolate flavour."
+   ]
+  ],
+  "use": "Measure word 块 or 包."
+ },
+ {
+  "w": "诈骗",
+  "pos": "verb",
+  "m": "**Cheat** and **cheat**: **to swindle**.",
+  "ex": [
+   [
+    "他因为诈骗被抓了。",
+    "He was arrested for fraud."
+   ],
+   [
+    "接到诈骗电话，千万别给钱。",
+    "If you get a scam call, don't send any money."
+   ]
+  ],
+  "use": "诈骗电话, scam call."
+ },
+ {
+  "w": "黄瓜",
+  "pos": "noun",
+  "m": "A **yellow** **melon**: a **cucumber**.",
+  "ex": [
+   [
+    "我喜欢吃凉拌黄瓜。",
+    "I like cucumber salad."
+   ],
+   [
+    "妈妈在菜市场买了两根黄瓜。",
+    "Mum bought two cucumbers at the market."
+   ]
+  ],
+  "use": "Measure word 根 or 条."
+ },
+ {
+  "w": "太极拳",
+  "pos": "noun",
+  "m": "The **fist** of the **supreme** **ultimate**: **tai chi**.",
+  "ex": [
+   [
+    "爷爷每天早上打太极拳。",
+    "Grandpa does tai chi every morning."
+   ],
+   [
+    "公园里有很多人在练太极拳。",
+    "Lots of people are practising tai chi in the park."
+   ]
+  ],
+  "use": "Goes with 打 or 练."
+ },
+ {
+  "w": "推论",
+  "pos": "verb / noun",
+  "m": "**Push** an **opinion** forward: **to infer**, an **inference**.",
+  "ex": [
+   [
+    "你的推论不对。",
+    "Your inference is wrong."
+   ],
+   [
+    "从这些事实可以推论出他没说谎。",
+    "From these facts we can infer that he didn't lie."
+   ]
+  ],
+  "use": "Formal and logical."
+ },
+ {
+  "w": "邮局",
+  "pos": "noun",
+  "m": "A **post** **office**: **post office**.",
+  "ex": [
+   [
+    "我去邮局寄信。",
+    "I'm going to the post office to send a letter."
+   ],
+   [
+    "邮局几点关门？",
+    "What time does the post office close?"
+   ]
+  ],
+  "use": "Measure word 家."
+ },
+ {
+  "w": "劲头",
+  "pos": "noun",
+  "m": "The **strength** at the **head**: **zeal**, **energy**.",
+  "ex": [
+   [
+    "他学习的劲头很大。",
+    "He's very keen on studying."
+   ],
+   [
+    "年轻人干活有劲头。",
+    "Young people work with energy."
+   ]
+  ],
+  "use": "Spoken; 劲头十足, full of energy."
+ },
+ {
+  "w": "歪曲",
+  "pos": "verb",
+  "m": "**Askew** and **bent**: **to distort**.",
+  "ex": [
+   [
+    "你歪曲了我的意思。",
+    "You twisted my meaning."
+   ],
+   [
+    "这篇报道歪曲了事实。",
+    "This report distorts the facts."
+   ]
+  ],
+  "use": "For facts, meanings and history."
+ },
+ {
+  "w": "仓促",
+  "pos": "adjective",
+  "m": "Running to the **barn** in a **short** time: **hurried**.",
+  "ex": [
+   [
+    "时间太仓促了。",
+    "Time is too short."
+   ],
+   [
+    "他仓促地离开了家。",
+    "He left home in a hurry."
+   ]
+  ],
+  "use": "Also written 仓猝."
+ },
+ {
+  "w": "吹牛",
+  "pos": "verb",
+  "m": "**Blow** up an **ox**: **to brag**.",
+  "ex": [
+   [
+    "别吹牛了！",
+    "Stop bragging!"
+   ],
+   [
+    "他总爱吹牛，说自己认识很多名人。",
+    "He loves to boast that he knows lots of famous people."
+   ]
+  ],
+  "use": "Spoken; 吹牛皮 is the long form."
+ },
+ {
+  "w": "恰到好处",
+  "pos": "idiom",
+  "m": "**Exactly** **reaching** the **good** **place**: **just right**.",
+  "ex": [
+   [
+    "菜的味道恰到好处。",
+    "The dish is seasoned just right."
+   ],
+   [
+    "她的打扮恰到好处。",
+    "Her outfit is just perfect."
+   ]
+  ],
+  "use": "Praise for something exactly right."
+ },
+ {
+  "w": "全力以赴",
+  "pos": "idiom",
+  "m": "With **all** **power**, **using** it all to **go**: **to go all out**.",
+  "ex": [
+   [
+    "我们会全力以赴。",
+    "We will go all out."
+   ],
+   [
+    "为了这次比赛，队员们全力以赴。",
+    "The players gave it everything for this match."
+   ]
+  ],
+  "use": "Formal and positive."
+ },
+ {
+  "w": "轻而易举",
+  "pos": "idiom",
+  "m": "**Light** **and** **easy** to **lift**: **effortless**.",
+  "ex": [
+   [
+    "这个问题他轻而易举地解决了。",
+    "He solved this problem with ease."
+   ],
+   [
+    "赢这场比赛不是轻而易举的事。",
+    "Winning this match is no easy thing."
+   ]
+  ],
+  "use": "Often 轻而易举地 + verb."
+ },
+ {
+  "w": "恰巧",
+  "pos": "adverb",
+  "m": "**Exactly** and **opportunely**: **by chance**.",
+  "ex": [
+   [
+    "我恰巧也在那儿。",
+    "I happened to be there too."
+   ],
+   [
+    "那天恰巧下雨，我们没出去。",
+    "It happened to rain that day, so we didn't go out."
+   ]
+  ],
+  "use": "Close to 正好 and 碰巧."
+ },
+ {
+  "w": "情理",
+  "pos": "noun",
+  "m": "**Feelings** and **reason**: **common sense**, what is reasonable.",
+  "ex": [
+   [
+    "这样做不合情理。",
+    "Doing it this way isn't reasonable."
+   ],
+   [
+    "他生气是在情理之中的。",
+    "It's understandable that he's angry."
+   ]
+  ],
+  "use": "情理之中, understandable."
+ },
+ {
+  "w": "提纲",
+  "pos": "noun",
+  "m": "**Lift** the **head rope** of the net and all follows: an **outline**.",
+  "ex": [
+   [
+    "写文章前先写提纲。",
+    "Write an outline before writing an essay."
+   ],
+   [
+    "老师给了我们一份复习提纲。",
+    "The teacher gave us a revision outline."
+   ]
+  ],
+  "use": "Measure word 份."
+ },
+ {
+  "w": "片断",
+  "pos": "noun",
+  "m": "A **thin piece** **broken** off: a **fragment**, excerpt.",
+  "ex": [
+   [
+    "我只记得一些片断。",
+    "I only remember a few fragments."
+   ],
+   [
+    "他给我们看了电影的几个片断。",
+    "He showed us a few clips from the film."
+   ]
+  ],
+  "use": "Also written 片段."
+ },
+ {
+  "w": "华裔",
+  "pos": "noun",
+  "m": "A **descendant** of **China**: a **person of Chinese descent**.",
+  "ex": [
+   [
+    "他是美籍华裔。",
+    "He's a Chinese American."
+   ],
+   [
+    "很多华裔孩子周末学中文。",
+    "Many children of Chinese descent study Chinese at weekends."
+   ]
+  ],
+  "use": "For foreign citizens of Chinese ancestry."
+ },
+ {
+  "w": "斩钉截铁",
+  "pos": "idiom",
+  "m": "**Chop** a **nail** and **cut** **iron**: **firm and decisive**.",
+  "ex": [
+   [
+    "他斩钉截铁地说：“不行！”",
+    "He said flatly, \"No way!\""
+   ],
+   [
+    "她的回答斩钉截铁，没有商量的余地。",
+    "Her answer was decisive, with no room for discussion."
+   ]
+  ],
+  "use": "For firm, resolute speech."
+ },
+ {
+  "w": "枯燥",
+  "pos": "adjective",
+  "m": "**Withered** and **dry**: **dull**.",
+  "ex": [
+   [
+    "这本书太枯燥了。",
+    "This book is too dull."
+   ],
+   [
+    "每天做同样的工作很枯燥。",
+    "Doing the same work every day is tedious."
+   ]
+  ],
+  "use": "枯燥无味, dull and tasteless."
+ },
+ {
+  "w": "滞留",
+  "pos": "verb",
+  "m": "**Sluggish** and **left** behind: **to be stranded**.",
+  "ex": [
+   [
+    "大雪让很多旅客滞留在机场。",
+    "Heavy snow left many travellers stranded at the airport."
+   ],
+   [
+    "他在国外滞留了三个月。",
+    "He was stuck abroad for three months."
+   ]
+  ],
+  "use": "For people kept somewhere against their plans."
+ },
+ {
+  "w": "粗鲁",
+  "pos": "adjective",
+  "m": "**Coarse** and **crass**: **rude**.",
+  "ex": [
+   [
+    "他说话很粗鲁。",
+    "He speaks very rudely."
+   ],
+   [
+    "别对服务员那么粗鲁。",
+    "Don't be so rude to the waiter."
+   ]
+  ],
+  "use": "Opposite: 斯文, 礼貌."
+ },
+ {
+  "w": "起哄",
+  "pos": "verb",
+  "m": "**Rise** up in **roars of laughter**: **to jeer**, **to make a fuss**.",
+  "ex": [
+   [
+    "大家都在起哄。",
+    "Everyone was jeering."
+   ],
+   [
+    "别起哄了，让他说完。",
+    "Stop heckling; let him finish."
+   ]
+  ],
+  "use": "Also playful teasing at weddings or parties."
+ },
+ {
+  "w": "做主",
+  "pos": "verb",
+  "m": "**Make** yourself the **owner**: **to decide**, to have the final say.",
+  "ex": [
+   [
+    "这件事由你做主。",
+    "You decide on this matter."
+   ],
+   [
+    "你自己做主吧。",
+    "You decide for yourself."
+   ]
+  ],
+  "use": "Pattern: 为……做主, to stand up for someone."
+ },
+ {
+  "w": "茂盛",
+  "pos": "adjective",
+  "m": "**Luxuriant** and **flourishing**: **lush**.",
+  "ex": [
+   [
+    "院子里的草长得很茂盛。",
+    "The grass in the yard is growing thickly."
+   ],
+   [
+    "夏天，树叶茂盛。",
+    "In summer, the trees are full of leaves."
+   ]
+  ],
+  "use": "For plants."
+ },
+ {
+  "w": "专长",
+  "pos": "noun",
+  "m": "A **chief** skill for a **particular** field: a **specialty**.",
+  "ex": [
+   [
+    "你的专长是什么？",
+    "What's your speciality?"
+   ],
+   [
+    "他的专长是电脑。",
+    "His area of expertise is computers."
+   ]
+  ],
+  "use": "Close to 特长."
+ },
+ {
+  "w": "表格",
+  "pos": "noun",
+  "m": "**Squares** on a **surface**: a **form**, **table**.",
+  "ex": [
+   [
+    "请填一下这张表格。",
+    "Please fill in this form."
+   ],
+   [
+    "我做了一个表格，列出了所有的数据。",
+    "I made a table listing all the data."
+   ]
+  ],
+  "use": "Measure word 张 or 份; 填表格, fill in a form."
+ },
+ {
+  "w": "魄力",
+  "pos": "noun",
+  "m": "**Soul** **power**: **boldness**, **drive**.",
+  "ex": [
+   [
+    "他做事很有魄力。",
+    "He acts with real drive."
+   ],
+   [
+    "新校长很有魄力，改变了很多事情。",
+    "The new headteacher is bold and has changed a lot of things."
+   ]
+  ],
+  "use": "Positive; for decisive leaders."
+ },
+ {
+  "w": "挥霍",
+  "pos": "verb",
+  "m": "**Wave** money away **suddenly**: **to squander**.",
+  "ex": [
+   [
+    "他把钱都挥霍光了。",
+    "He squandered all his money."
+   ],
+   [
+    "别挥霍你的青春。",
+    "Don't waste your youth."
+   ]
+  ],
+  "use": "Strongly negative."
+ },
+ {
+  "w": "沉闷",
+  "pos": "adjective",
+  "m": "**Sunk** and **stuffy**: **oppressive**, **dull**.",
+  "ex": [
+   [
+    "今天的天气很沉闷。",
+    "The weather today is close and oppressive."
+   ],
+   [
+    "会议的气氛很沉闷。",
+    "The atmosphere at the meeting was heavy."
+   ]
+  ],
+  "use": "For weather, mood and atmosphere."
+ },
+ {
+  "w": "滑冰",
+  "pos": "verb / noun",
+  "m": "**Slip** across the **ice**: **to skate**.",
+  "ex": [
+   [
+    "冬天我们去滑冰。",
+    "In winter we go skating."
+   ],
+   [
+    "她滑冰滑得很好。",
+    "She skates very well."
+   ]
+  ],
+  "use": "滑冰场, ice rink; 滑雪, to ski."
+ },
+ {
+  "w": "苏醒",
+  "pos": "verb",
+  "m": "**Revive** and **wake up**: **to come to**.",
+  "ex": [
+   [
+    "病人终于苏醒了。",
+    "The patient finally came round."
+   ],
+   [
+    "春天到了，大地苏醒了。",
+    "Spring has come and the earth has woken up."
+   ]
+  ],
+  "use": "More formal than 醒."
+ },
+ {
+  "w": "自卑",
+  "pos": "adjective",
+  "m": "Feeling your**self** **low**: **lacking self-esteem**.",
+  "ex": [
+   [
+    "他因为个子矮很自卑。",
+    "He feels inferior because he's short."
+   ],
+   [
+    "不要自卑，你有很多优点。",
+    "Don't put yourself down; you have many strengths."
+   ]
+  ],
+  "use": "Opposite: 自信."
+ },
+ {
+  "w": "敌视",
+  "pos": "verb",
+  "m": "**Look** at as an **enemy**: **to be hostile to**.",
+  "ex": [
+   [
+    "他们互相敌视。",
+    "They are hostile towards each other."
+   ],
+   [
+    "不要敌视和你意见不同的人。",
+    "Don't be hostile to people who disagree with you."
+   ]
+  ],
+  "use": "Formal."
+ },
+ {
+  "w": "丢人",
+  "pos": "adjective / verb",
+  "m": "**Lose** your **person**, your face: **to be embarrassing**.",
+  "ex": [
+   [
+    "真丢人！",
+    "How embarrassing!"
+   ],
+   [
+    "你别在这儿丢人了。",
+    "Stop embarrassing yourself here."
+   ]
+  ],
+  "use": "Spoken; same as 丢脸."
+ },
+ {
+  "w": "别致",
+  "pos": "adjective",
+  "m": "**Apart** from others and **causing** notice: **unique**, **stylish**.",
+  "ex": [
+   [
+    "这个小房子很别致。",
+    "This little house is very charming."
+   ],
+   [
+    "她的耳环设计得很别致。",
+    "Her earrings have an unusual design."
+   ]
+  ],
+  "use": "Positive; for designs and objects."
+ },
+ {
+  "w": "果汁",
+  "pos": "noun",
+  "m": "**Fruit** **juice**: **juice**.",
+  "ex": [
+   [
+    "我要一杯果汁。",
+    "I'd like a glass of juice."
+   ],
+   [
+    "早上喝杯果汁对身体好。",
+    "A glass of juice in the morning is good for you."
+   ]
+  ],
+  "use": "Measure word 杯 or 瓶."
+ },
+ {
+  "w": "滔滔不绝",
+  "pos": "idiom",
+  "m": "**Flooding**, **flooding**, and **never** **cut short**: **talking on and on**.",
+  "ex": [
+   [
+    "他一说起足球就滔滔不绝。",
+    "When he starts talking about football, he never stops."
+   ],
+   [
+    "她滔滔不绝地讲了一个小时。",
+    "She talked non-stop for an hour."
+   ]
+  ],
+  "use": "Before or after a verb of speaking."
+ },
+ {
+  "w": "西红柿",
+  "pos": "noun",
+  "m": "A **red** **persimmon** from the **west**: a **tomato**.",
+  "ex": [
+   [
+    "我想吃西红柿炒鸡蛋。",
+    "I want stir-fried tomato and egg."
+   ],
+   [
+    "这些西红柿很新鲜。",
+    "These tomatoes are very fresh."
+   ]
+  ],
+  "use": "Southern Chinese say 番茄."
+ },
+ {
+  "w": "反问",
+  "pos": "verb",
+  "m": "**Ask** back, **contrary** to the question: **to ask in reply**.",
+  "ex": [
+   [
+    "他没回答，反问了我一句。",
+    "He didn't answer; he asked me a question back."
+   ],
+   [
+    "“你说呢？”她反问道。",
+    "\"What do you think?\" she asked in return."
+   ]
+  ],
+  "use": "反问句, a rhetorical question."
+ },
+ {
+  "w": "攀登",
+  "pos": "verb",
+  "m": "**Climb** and **scale**: **to climb**.",
+  "ex": [
+   [
+    "他们攀登了那座高山。",
+    "They climbed that high mountain."
+   ],
+   [
+    "在科学的路上，我们要不断攀登。",
+    "On the road of science, we must keep climbing higher."
+   ]
+  ],
+  "use": "Formal; also figurative."
+ },
+ {
+  "w": "枯竭",
+  "pos": "verb / adjective",
+  "m": "**Withered** and **exhausted**: **dried up**.",
+  "ex": [
+   [
+    "这条河已经枯竭了。",
+    "This river has dried up."
+   ],
+   [
+    "地球上的石油总有一天会枯竭。",
+    "One day the Earth's oil will run out."
+   ]
+  ],
+  "use": "For resources, water, ideas."
+ },
+ {
+  "w": "项链",
+  "pos": "noun",
+  "m": "A **chain** for the **back of the neck**: a **necklace**.",
+  "ex": [
+   [
+    "她戴着一条金项链。",
+    "She's wearing a gold necklace."
+   ],
+   [
+    "这条项链是妈妈送给我的。",
+    "My mother gave me this necklace."
+   ]
+  ],
+  "use": "Measure word 条."
+ },
+ {
+  "w": "打折",
+  "pos": "verb",
+  "m": "**Strike** off a **break**: **to give a discount**.",
+  "ex": [
+   [
+    "这件衣服打折吗？",
+    "Is this piece of clothing discounted?"
+   ],
+   [
+    "商场周末打折，人特别多。",
+    "The mall has a sale this weekend, so it's very crowded."
+   ]
+  ],
+  "use": "打八折 means 20% off: you pay 80%."
+ },
+ {
+  "w": "过期",
+  "pos": "verb",
+  "m": "**Cross** past the **period**: **to expire**.",
+  "ex": [
+   [
+    "这瓶牛奶过期了。",
+    "This bottle of milk is past its date."
+   ],
+   [
+    "我的护照快过期了。",
+    "My passport is about to expire."
+   ]
+  ],
+  "use": "For food, documents and tickets."
+ },
+ {
+  "w": "团圆",
+  "pos": "verb",
+  "m": "**Round** like a **circle**: **to be reunited**.",
+  "ex": [
+   [
+    "中秋节是家人团圆的日子。",
+    "Mid-Autumn Festival is a day for families to get together."
+   ],
+   [
+    "过年的时候，全家人团圆在一起。",
+    "At New Year the whole family is reunited."
+   ]
+  ],
+  "use": "Usually family reunions at festivals."
+ },
+ {
+  "w": "志气",
+  "pos": "noun",
+  "m": "**Aspiration** and **spirit**: **ambition**, **backbone**.",
+  "ex": [
+   [
+    "这孩子很有志气。",
+    "This child has real ambition."
+   ],
+   [
+    "人穷志不穷，要有志气。",
+    "Even if poor, keep your spirit and ambition."
+   ]
+  ],
+  "use": "有志气, determined to do well."
+ },
+ {
+  "w": "爱戴",
+  "pos": "verb",
+  "m": "**Love** and **wear** someone on your head: **to love and respect**.",
+  "ex": [
+   [
+    "这位老师深受学生爱戴。",
+    "This teacher is deeply loved by students."
+   ],
+   [
+    "他是一位受人爱戴的领导。",
+    "He is a much-loved leader."
+   ]
+  ],
+  "use": "For respected leaders and teachers."
+ },
+ {
+  "w": "服气",
+  "pos": "verb",
+  "m": "Your **spirit** **submits**: **to accept**, to be convinced.",
+  "ex": [
+   [
+    "你说得对，我服气了。",
+    "You're right; I accept that."
+   ],
+   [
+    "输了比赛，他心里不服气。",
+    "He lost the match but wouldn't accept it."
+   ]
+  ],
+  "use": "Usually 不服气, unwilling to accept."
+ },
+ {
+  "w": "硬币",
+  "pos": "noun",
+  "m": "**Hard** **money**: a **coin**.",
+  "ex": [
+   [
+    "我有几个硬币。",
+    "I have a few coins."
+   ],
+   [
+    "这台机器只收硬币。",
+    "This machine only takes coins."
+   ]
+  ],
+  "use": "Measure word 个 or 枚."
+ },
+ {
+  "w": "讨价还价",
+  "pos": "idiom",
+  "m": "**Ask** a **price** and **still** give a **price** back: **to haggle**.",
+  "ex": [
+   [
+    "在市场买东西可以讨价还价。",
+    "At the market you can bargain."
+   ],
+   [
+    "别跟我讨价还价了，就这样吧。",
+    "Stop haggling with me; let's settle it like this."
+   ]
+  ],
+  "use": "Also for bargaining over tasks."
+ },
+ {
+  "w": "气功",
+  "pos": "noun",
+  "m": "**Merit** won through **breath**: **qigong**.",
+  "ex": [
+   [
+    "他每天早上练气功。",
+    "He practises qigong every morning."
+   ],
+   [
+    "有人说气功对身体有好处。",
+    "Some say qigong is good for your health."
+   ]
+  ],
+  "use": "Goes with 练."
+ },
+ {
+  "w": "小偷",
+  "pos": "noun",
+  "m": "A **small** one who **steals**: a **thief**.",
+  "ex": [
+   [
+    "小心小偷！",
+    "Watch out for thieves!"
+   ],
+   [
+    "我的钱包被小偷偷了。",
+    "My wallet was stolen by a thief."
+   ]
+  ],
+  "use": "Measure word 个."
+ },
+ {
+  "w": "照常",
+  "pos": "adverb",
+  "m": "**According to** what is **always** done: **as usual**.",
+  "ex": [
+   [
+    "明天照常上课。",
+    "Classes go ahead as usual tomorrow."
+   ],
+   [
+    "虽然下雨了，比赛还是照常进行。",
+    "Although it rained, the match went ahead as normal."
+   ]
+  ],
+  "use": "Before a verb."
+ },
+ {
+  "w": "简要",
+  "pos": "adjective",
+  "m": "**Simple** and **essential**: **brief**.",
+  "ex": [
+   [
+    "请简要地说明一下。",
+    "Please explain briefly."
+   ],
+   [
+    "这是会议的简要内容。",
+    "This is a summary of the meeting."
+   ]
+  ],
+  "use": "Formal."
+ },
+ {
+  "w": "支票",
+  "pos": "noun",
+  "m": "A **ticket** that **supports** a payment: a **cheque**.",
+  "ex": [
+   [
+    "我可以用支票付款吗？",
+    "Can I pay by cheque?"
+   ],
+   [
+    "他开了一张支票给我。",
+    "He wrote me a cheque."
+   ]
+  ],
+  "use": "Measure word 张; 开支票, to write a cheque."
+ },
+ {
+  "w": "绑架",
+  "pos": "verb",
+  "m": "**Tie** someone up and carry them on a **frame**: **to kidnap**.",
+  "ex": [
+   [
+    "那个孩子被绑架了。",
+    "That child was kidnapped."
+   ],
+   [
+    "警察抓到了绑架他的人。",
+    "The police caught the people who kidnapped him."
+   ]
+  ],
+  "use": "Strong legal word."
+ },
+ {
+  "w": "象棋",
+  "pos": "noun",
+  "m": "**Chess** with **elephant** pieces: **Chinese chess**.",
+  "ex": [
+   [
+    "你会下象棋吗？",
+    "Can you play Chinese chess?"
+   ],
+   [
+    "爷爷常常和邻居下象棋。",
+    "Grandpa often plays Chinese chess with the neighbours."
+   ]
+  ],
+  "use": "Goes with 下; 国际象棋 is Western chess."
+ },
+ {
+  "w": "大不了",
+  "pos": "adverb / adjective",
+  "m": "At the most it's **big**, but **not** the **end**: **at worst**.",
+  "ex": [
+   [
+    "大不了重新来。",
+    "At worst we'll start again."
+   ],
+   [
+    "这没什么大不了的。",
+    "It's no big deal."
+   ]
+  ],
+  "use": "没什么大不了 means no big deal."
+ },
+ {
+  "w": "复印",
+  "pos": "verb",
+  "m": "**Return** and **print** again: **to photocopy**.",
+  "ex": [
+   [
+    "请把这份文件复印一下。",
+    "Please photocopy this document."
+   ],
+   [
+    "我要复印三份。",
+    "I need three copies."
+   ]
+  ],
+  "use": "复印机, photocopier."
+ },
+ {
+  "w": "晴朗",
+  "pos": "adjective",
+  "m": "**Clear** and **clear**: **sunny and cloudless**.",
+  "ex": [
+   [
+    "今天天气晴朗。",
+    "It's clear and sunny today."
+   ],
+   [
+    "晴朗的夜空中有很多星星。",
+    "There are many stars in the clear night sky."
+   ]
+  ],
+  "use": "For skies and weather."
+ },
+ {
+  "w": "尺子",
+  "pos": "noun",
+  "m": "A Chinese **foot**: a **ruler**.",
+  "ex": [
+   [
+    "借我一把尺子。",
+    "Lend me a ruler."
+   ],
+   [
+    "用尺子量一下这张桌子有多长。",
+    "Use a ruler to measure how long this table is."
+   ]
+  ],
+  "use": "Measure word 把."
+ },
+ {
+  "w": "慈祥",
+  "pos": "adjective",
+  "m": "**Compassionate** and **auspicious**: **kindly**.",
+  "ex": [
+   [
+    "奶奶的笑容很慈祥。",
+    "Grandma has a kind smile."
+   ],
+   [
+    "一位慈祥的老人给我指了路。",
+    "A kindly old man showed me the way."
+   ]
+  ],
+  "use": "For older people's faces and manners."
+ }
+]
