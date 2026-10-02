@@ -1542,8 +1542,13 @@ async function pageSearch(q) {
   let words = [];
   try {
     await optional(need.words());
-    const s = q.toLowerCase(), bare = s.replace(/[0-5\s]/g, '');
-    words = HZ.words.filter(w => w[0] === q || w[1] === q || w[4] === bare ||
+    // pinyin: "gaosu" matches 告诉 whatever its tones, "gao4su" only that way
+    // (a neutral tone may be left out); v or ü for ü
+    const s = q.toLowerCase();
+    const spelt = x => x.replace(/[\s:5]/g, '').replace(/[üv]/g, 'u');
+    const pin = /^[a-zü:\s1-5]+$/.test(s) ? (/[1-4]/.test(s) ? spelt : x => spelt(x).replace(/[1-4]/g, '')) : null;
+    const want = pin && pin(s);
+    words = HZ.words.filter(w => w[0] === q || w[1] === q || (want && pin(w[4]) === want) ||
       (han.length > 1 && w[0].includes(q)) ||
       (s.length > 2 && w[3].toLowerCase().includes(s))).slice(0, 60);
   } catch (e) { /* word index is optional */ }

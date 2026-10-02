@@ -48,6 +48,10 @@
   const COUNTER = NUMERAL + '几这那哪每半某整';
   const PRONOUN = new Set('我 你 您 他 她 它 我们 你们 他们 她们 它们 咱们 大家 自己 别人 人家'.split(' '));
   const VEHICLE = /^(车|公交车|公共汽车|汽车|出租车|地铁|火车|飞机|船|高铁|电车|车子)$/;
+  // one-character verbs that take 为 wéi "as" (选为, 评为, 改为)
+  const WEI_AFTER = /^(选|评|列|定|译|誉|划|转|改|分|变|化|视|称|推|封|立|尊|奉|聘|任|升|降|拜|认|作|成|当选)$/;
+  // degree words: 很好学, 非常好客
+  const DEGREE = /^(很|非常|十分|特别|挺|太|最|更|真|多么|比较|不)$/;
 
   /* ---------------------------------------------------------------- data */
 
@@ -485,6 +489,8 @@
     '来': x => x.verb(x.prev) ? ['lái', '(after a verb) here; toward me'] : ['lái', 'to come'],
     '到': x => x.verb(x.prev) ? ['dào', '(after a verb) to; reaching'] : ['dào', 'to arrive; to; until'],
     '好': x => {
+      // 很好学 "eager to learn", 非常好客 "hospitable": hào, fond of, after a degree word
+      if (/^(学|客|动|胜|奇)$/.test(x.next || '') && DEGREE.test(x.prev || '')) return ['hào', 'to be fond of; keen on'];
       if (x.verb(x.prev)) return ['hǎo', '(after a verb) done; properly'];
       if (!x.prev && x.end) return ['hǎo', 'OK; all right'];
       return ['hǎo', 'good; well'];
@@ -515,7 +521,10 @@
       if (x.prev === '的' || x.prev === '后') return ['bèi', 'back (of the body)'];
       return ['bèi', 'to learn by heart; back', [['bēi', 'to carry on one\'s back']]];
     },
-    '为': x => x.verb(x.prev) ? ['wéi', 'as; to be'] : ['wèi', 'for; because of'],
+    // wéi after a verb (选为 "chosen as", 改为, 分为: jieba's tags miss some of these
+    // verbs) and in 以 … 为 "to take … as"; otherwise wèi "for" (是为了, 是为你)
+    '为': x => (x.verb(x.prev) && x.prev !== '是') || WEI_AFTER.test(x.prev || '') || x.before.slice(-4).includes('以')
+      ? ['wéi', 'as; to be'] : ['wèi', 'for; because of'],
     // 考中, 猜中, 射中: after a one-character verb it means hitting the mark
     '中': x => x.prev && [...x.prev].length === 1 && x.verb(x.prev)
       ? ['zhòng', '(after a verb) to hit; to get it (猜中 = guess right)']

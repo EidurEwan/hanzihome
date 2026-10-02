@@ -190,6 +190,7 @@ build/readingorder.py   orders each character's readings and meanings most-used 
 build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded reader)
 build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> site/data/readings.js
                         data/raw/{cedict,jieba_dict}.txt -> site/data/readerwords.js
+build/word_readings.py  everyday readings (build/everyday_readings.txt) into words.js, hsk.js, c/*.js
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
 test/accuracy.js        scores textstory.js against the hand-glossed stories
@@ -198,8 +199,9 @@ sync/mock-server.js     runs Code.gs locally for testing, no Google account need
 server.py               optional: serves the same database over HTTP instead
 ```
 
-Rebuild with `python build/build.py && python build/export_static.py` (stop `server.py`
-first if it is running — it holds the database file open).
+Rebuild with `python build/build.py && python build/export_static.py && python
+build/export_reader.py && python build/word_readings.py` (stop `server.py` first if it is
+running — it holds the database file open).
 
 Character detail is split into 64 buckets by codepoint, so opening a character pulls in
 about 300 KB rather than the whole corpus. The word index (6.7 MB) only loads when you
@@ -289,8 +291,12 @@ level is held out while rules are written. On 2026-09-28:
 `--tune` searches the segmentation parameters. Most remaining meaning "errors" are wording
 (mama vs mum, frequently vs often).
 
-`words.js` itself still has the one-reading problem, so site search shows 告诉 as gào sù "to
-press charges". Fixing it means a full `build.py` rebuild with all six sources in `data/raw/`.
+`words.js` keeps one reading per word, which for some words was the rarer one (告诉 gào sù "to
+press charges"). [`build/word_readings.py`](build/word_readings.py) gives the words listed in
+`build/everyday_readings.txt`, checked by hand, their everyday reading and its meanings first,
+in search, the HSK lists and the character pages' example words: 告诉 gào su "to tell", 东西
+dōng xi "thing", 便宜 pián yi "cheap". The list is by hand because "a neutral tone first" is
+right for those and wrong for others (女人 nǚ rén, 土地 tǔ dì).
 
 ### Phonetic relationships
 
@@ -350,8 +356,9 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 * **More characters** — 15,450 indexed against their ~6,800, so "component in N characters"
   runs slightly higher.
 * **No limits and no account.** The original caps tracked characters and full history on
-  the free tier; there is nothing to upgrade here. The trade-off is that progress lives in
-  one browser rather than syncing across devices — use Settings → Export JSON to move it.
+  the free tier; there is nothing to upgrade here. Progress lives in the browser, and moves
+  between devices through your own Google Sheet (see "Syncing between devices") or an
+  exported JSON file instead of an account.
 
 ## Typography and colour
 
