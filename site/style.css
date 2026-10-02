@@ -8,7 +8,8 @@
  * License) so the page needs no network. Chinese uses a sans CJK stack,
  * because they serve a Noto Sans subset rather than a serif.
  *
- * Light theme only. */
+ * Light by default; dark when the device prefers it (or Settings → Appearance says
+ * so): the colours at the end of this file. */
 
 @font-face { font-family: Nunito; font-style: normal; font-weight: 400;
   font-display: swap; src: url(fonts/nunito-400.woff2) format('woff2'); }
@@ -40,6 +41,9 @@
   --side: #1f2937;
   --side-ink: #ffffff;
   --side-muted: #8a919a;
+  --hover: #f3f4f6;
+  --tile-rim: #f1f2f5;
+  --word-hover: #fdf0c8;
   --radius: 12px;
   --shadow: 0 1px 2px rgba(17, 24, 39, .04), 0 1px 3px rgba(17, 24, 39, .06);
   --topbar-h: 56px;
@@ -585,7 +589,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .tile.learned:hover,
 .tile.learning:hover {
   box-shadow: none;
-  background: #f3f4f6;
+  background: var(--hover);
 }
 
 /* the hero glyph carries a heavier rim to match */
@@ -637,7 +641,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 }
 
 /* unmarked cards get their own rim colour; learned/learning keep theirs */
-.tilegrid .tile:not(.learned):not(.learning) { border-color: #f1f2f5; }
+.tilegrid .tile:not(.learned):not(.learning) { border-color: var(--tile-rim); }
 
 
 /* The 30px card padding exists to frame the character list. Applying it to the
@@ -684,7 +688,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
   text-align: center;
 }
 
-.tile.hot { box-shadow: none; background: #f3f4f6; }
+.tile.hot { box-shadow: none; background: var(--hover); }
 
 /* ---------- reader: story library ----------
    Cards read off the reference: 2 columns with a 16px gutter, 20px padding,
@@ -756,7 +760,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .reading-pane .w { padding: 1px 1px; border-radius: 3px; cursor: pointer; }
 .reading-pane .w.learned { background: var(--green-soft); }
 .reading-pane .w.learning { background: var(--blue-soft); }
-.reading-pane .w:hover { background: #fdf0c8; }
+.reading-pane .w:hover { background: var(--word-hover); }
 .reading-pane.hide-learned .w.learned { background: transparent; }
 .reading-pane.hide-learning .w.learning { background: transparent; }
 .reading-pane.hide-new .w.new { background: transparent; }
@@ -1370,3 +1374,89 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 .rv-write-msg { min-height: 1.5em; margin: 6px 0 0; color: var(--ink-2); }
 .rv-enter { position: absolute; left: -9999px; }
 .lx-right { color: #15803d; font-weight: 600; }
+
+/* ---------- dark ----------
+   When the device prefers it, unless Settings → Appearance says light; or when
+   Appearance says dark. app.js sets data-theme on <html> from that setting. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+  --bg: #0f1216;
+  --panel: #171b21;
+  --panel-2: #1c2129;
+  --ink: #e6e8eb;
+  --ink-2: #a2a9b4;
+  --ink-3: #737b87;
+  --line: #2a303a;
+  --line-2: #3a414d;
+  --accent: #d64f5e;
+  --accent-dark: #b83a4a;
+  --accent-soft: #35191d;
+  --blue: #5b9cf6;
+  --blue-soft: #16243a;
+  --green: #2fbf62;
+  --green-soft: #12291a;
+  --green-ink: #4ade80;
+  --purple: #a78bfa;
+  --amber: #d9aa52;
+  --side: #0b0d11;
+  --side-muted: #7d8590;
+  --hover: #222832;
+  --tile-rim: #262c35;
+  --hl-learned: #15412a;
+  --hl-learning: #1b335a;
+  --hl-hover: #5a4a14;
+  --word-hover: #4a3f1a;
+  --lx-char: #8e1c38;
+  --lx-word: #53209f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+  }
+  :root:not([data-theme="light"]) .status-btn, :root:not([data-theme="light"]) .seg button.on, :root:not([data-theme="light"]) .seg3 button.on.learned { background: #15803d; border-color: #15803d; }
+  :root:not([data-theme="light"]) .status-btn:hover { background: #166534; border-color: #166534; }
+  :root:not([data-theme="light"]) .lx-right, :root:not([data-theme="light"]) .st-saved, :root:not([data-theme="light"]) .rs-stats .ok b, :root:not([data-theme="light"]) .rs-move small.up { color: #4ade80; }
+  :root:not([data-theme="light"]) .rs-grade.g2 { color: #eab308; border-color: #eab308; }
+  :root:not([data-theme="light"]) .rs-grade.g3 { color: #4ade80; border-color: #4ade80; }
+  :root:not([data-theme="light"]) .rs-grade.g4 { color: #60a5fa; border-color: #60a5fa; }
+  :root:not([data-theme="light"]) .rv-practice { color: #a78bfa; }
+  :root:not([data-theme="light"]) .rv-wrapping { color: #22d3ee; }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1216;
+  --panel: #171b21;
+  --panel-2: #1c2129;
+  --ink: #e6e8eb;
+  --ink-2: #a2a9b4;
+  --ink-3: #737b87;
+  --line: #2a303a;
+  --line-2: #3a414d;
+  --accent: #d64f5e;
+  --accent-dark: #b83a4a;
+  --accent-soft: #35191d;
+  --blue: #5b9cf6;
+  --blue-soft: #16243a;
+  --green: #2fbf62;
+  --green-soft: #12291a;
+  --green-ink: #4ade80;
+  --purple: #a78bfa;
+  --amber: #d9aa52;
+  --side: #0b0d11;
+  --side-muted: #7d8590;
+  --hover: #222832;
+  --tile-rim: #262c35;
+  --hl-learned: #15412a;
+  --hl-learning: #1b335a;
+  --hl-hover: #5a4a14;
+  --word-hover: #4a3f1a;
+  --lx-char: #8e1c38;
+  --lx-word: #53209f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+:root[data-theme="dark"] .status-btn, :root[data-theme="dark"] .seg button.on, :root[data-theme="dark"] .seg3 button.on.learned { background: #15803d; border-color: #15803d; }
+:root[data-theme="dark"] .status-btn:hover { background: #166534; border-color: #166534; }
+:root[data-theme="dark"] .lx-right, :root[data-theme="dark"] .st-saved, :root[data-theme="dark"] .rs-stats .ok b, :root[data-theme="dark"] .rs-move small.up { color: #4ade80; }
+:root[data-theme="dark"] .rs-grade.g2 { color: #eab308; border-color: #eab308; }
+:root[data-theme="dark"] .rs-grade.g3 { color: #4ade80; border-color: #4ade80; }
+:root[data-theme="dark"] .rs-grade.g4 { color: #60a5fa; border-color: #60a5fa; }
+:root[data-theme="dark"] .rv-practice { color: #a78bfa; }
+:root[data-theme="dark"] .rv-wrapping { color: #22d3ee; }

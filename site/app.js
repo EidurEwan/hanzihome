@@ -2218,6 +2218,13 @@ function pageSettings() {
   const d = Store.load();
   app.innerHTML = '<h1 class="page-title">Settings</h1>' + withRail(`
     ${window.hanzihomeDesktop ? '<section class="card" id="desktop-card"><h2>Desktop app</h2></section>' : ''}
+    <section class="card">
+      <h2>Appearance</h2>
+      <div class="st-field"><div class="st-label">Theme</div>
+        <select class="st-select" id="theme">${[['system', 'Same as this device'], ['light', 'Light'], ['dark', 'Dark']]
+          .map(([v, l]) => `<option value="${v}"${theme() === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <p class="st-note">Kept on this device only, so a phone can be dark and a laptop light.</p></div>
+    </section>
     <section class="card" id="study-card"></section>
     <section class="card">
       <h2>Learning goal</h2>
@@ -2291,6 +2298,7 @@ function pageSettings() {
       localStorage.removeItem(Store.key); Store.data = null; Store.load(); Store.save(); render();
     }
   });
+  document.getElementById('theme').addEventListener('change', e => { setTheme(e.target.value); render(true); });
   wireSyncCard();
   paintStudySettings();
   paintRail();
@@ -2521,6 +2529,22 @@ function wireSyncCard() {
   }
   Sync.paint();
 }
+
+/* ============================ appearance ============================
+   Light or dark: the device's preference unless Settings says otherwise. The
+   choice is this device's own (localStorage, not the synced store); index.html
+   applies it before the page draws, so a dark page never flashes white. */
+const THEME_KEY = 'hanzihome.theme';
+function theme() {
+  try { const t = localStorage.getItem(THEME_KEY); return t === 'light' || t === 'dark' ? t : 'system'; } catch (e) { return 'system'; }
+}
+function setTheme(t) {
+  try { t === 'system' ? localStorage.removeItem(THEME_KEY) : localStorage.setItem(THEME_KEY, t); } catch (e) { /* this visit only */ }
+  if (t === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+}
+// a page drawn with the theme's colours (stroke order) follows the device switching
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (theme() === 'system') render(true); });
 
 /* ============================ dispatch ============================ */
 

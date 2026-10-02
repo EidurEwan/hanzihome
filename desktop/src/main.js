@@ -34,7 +34,7 @@
 const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, net, protocol, powerMonitor, shell, clipboard } = require('electron');
+const { app, BrowserWindow, Menu, Tray, nativeImage, nativeTheme, ipcMain, net, protocol, powerMonitor, shell, clipboard } = require('electron');
 const { OcrHelper } = require('./ocr');
 const { repair } = require('./ocrfix');
 const { loadHZ } = require('./data');
@@ -113,7 +113,8 @@ function icon(size) {
 function createWindow() {
   win = new BrowserWindow({
     width: 1320, height: 880, minWidth: 420, minHeight: 500,
-    show: false, title: 'HanziHome', icon: icon(256), backgroundColor: '#ffffff',
+    // the page's own background, light or dark as Windows is, so it never flashes the other
+    show: false, title: 'HanziHome', icon: icon(256), backgroundColor: nativeTheme.shouldUseDarkColors ? '#0f1216' : '#ffffff',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, sandbox: true, nodeIntegration: false,

@@ -4,9 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HanziHome — Chinese character dictionary</title>
-<link rel="stylesheet" href="style.css?v=76">
+<link rel="stylesheet" href="style.css?v=77">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <script>
+/* Settings → Appearance: light or dark whatever the device prefers (app.js setTheme) */
+try { var _t = localStorage.getItem('hanzihome.theme'); if (_t === 'light' || _t === 'dark') document.documentElement.dataset.theme = _t; } catch (e) {}
 /* Globals the data files assign into. Everything is loaded with <script>
    tags rather than fetch(), so the site works straight off the filesystem. */
 var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
@@ -57,6 +59,6 @@ var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radica
 <script src="data/radicalmap.js?v=6"></script>
 <script src="learn.js?v=6"></script>
 <script src="study.js?v=16"></script>
-<script src="app.js?v=81"></script>
+<script src="app.js?v=82"></script>
 </body>
 </html>
