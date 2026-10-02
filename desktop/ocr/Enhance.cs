@@ -111,19 +111,25 @@ namespace HanziOcr
 
             // Nearer backgrounds: the colour of the nearest flat patch (page, panel,
             // highlight box: anywhere the colour holds steady 6 pixels around, which
-            // inside a stroke of text it doesn't). Spread out from those patches
-            // up to Near pixels; past that the tiles' background stands.
+            // inside a stroke of text it doesn't; for the page's own colour 2 pixels
+            // will do, so a thin strip of page between a line and a box is page).
+            // Spread out from those patches up to Near pixels; past that the tiles'
+            // background stands.
             var near = new int[w * h];
             var steps = new byte[w * h];
             var queue = new int[w * h];
             int head = 0, tail = 0;
             for (int i = 0; i < near.Length; i++) near[i] = -1;
             for (int y = 6; y < h - 6; y++)
+            {
+                int ty = Math.Min(th - 1, y / Tile);
                 for (int x = 6; x < w - 6; x++)
                 {
                     int i = y * w + x;
-                    if (Flat(px, i, w)) { near[i] = px[i] & 0xffffff; queue[tail++] = i; }
+                    bool page = Close(px[i], bg[ty * tw + Math.Min(tw - 1, x / Tile)]);
+                    if (page ? Flat2(px, i, w) : Flat(px, i, w)) { near[i] = px[i] & 0xffffff; queue[tail++] = i; }
                 }
+            }
             while (head < tail)
             {
                 int i = queue[head++];
@@ -152,9 +158,9 @@ namespace HanziOcr
                     double ax = Math.Max(0, Math.Min(1, fx - tx0));
                     double d = Dist(p, bg[ty0 * tw + tx0]) * (1 - ax) * (1 - ay) + Dist(p, bg[ty0 * tw + tx1]) * ax * (1 - ay)
                              + Dist(p, bg[ty1 * tw + tx0]) * (1 - ax) * ay + Dist(p, bg[ty1 * tw + tx1]) * ax * ay;
-                    // ...or the nearest flat patch, whichever the pixel is closer to: page
-                    // showing between a line and the box below it stays page
-                    if (near[i] >= 0) d = Math.Min(d, Dist(p, near[i]));
+                    // ...or, nearer, the nearest flat patch: white text in a dark box is
+                    // measured against the box
+                    if (near[i] >= 0) d = Dist(p, near[i]);
                     int v = 255 - Clamp((int)((d - Quiet) * 255 / (Full - Quiet)), 0, 255);
                     outPx[i] = unchecked((int)0xff000000) | (v << 16) | (v << 8) | v;
                 }
@@ -167,8 +173,9 @@ namespace HanziOcr
         }
 
         // Is a second look worth its time? Only when some of the picture differs from
-        // its surroundings by colour more than by brightness: colourful text the
-        // engine may not see. Share of such pixels, sampled every other row and column.
+        // its surroundings by colour more than by brightness, away from any dark or
+        // light stroke: colourful text the engine may not see, not the coloured edges
+        // ClearType gives black text. Share of such pixels, every other row and column.
         public static double ColourShare(Bitmap bmp)
         {
             int w = bmp.Width, h = bmp.Height;
@@ -181,7 +188,8 @@ namespace HanziOcr
                     n++;
                     // against the pixels two to the left and two above: a change of
                     // colour with little change of brightness
-                    if (ColourEdge(p, px[y * w + x - 2]) || ColourEdge(p, px[(y - 2) * w + x])) hit++;
+                    int i = y * w + x;
+                    if ((ColourEdge(p, px[i - 2]) || ColourEdge(p, px[i - 2 * w])) && !NearCore(px, i, w)) hit++;
                 }
             return n == 0 ? 0 : (double)hit / n;
         }
@@ -193,6 +201,13 @@ namespace HanziOcr
                 && Close(p, px[i - 4 * w - 4]) && Close(p, px[i - 4 * w + 4]) && Close(p, px[i + 4 * w - 4]) && Close(p, px[i + 4 * w + 4])
                 && Close(p, px[i - 2]) && Close(p, px[i + 2]) && Close(p, px[i - 2 * w]) && Close(p, px[i + 2 * w])
                 && Close(p, px[i - 6]) && Close(p, px[i + 6]) && Close(p, px[i - 6 * w]) && Close(p, px[i + 6 * w]);
+        }
+
+        static bool Flat2(int[] px, int i, int w)
+        {
+            int p = px[i];
+            return Close(p, px[i - 2]) && Close(p, px[i + 2]) && Close(p, px[i - 2 * w]) && Close(p, px[i + 2 * w])
+                && Close(p, px[i - 2 * w - 2]) && Close(p, px[i - 2 * w + 2]) && Close(p, px[i + 2 * w - 2]) && Close(p, px[i + 2 * w + 2]);
         }
 
         static bool Close(int p, int q)
@@ -207,6 +222,16 @@ namespace HanziOcr
             near[to] = near[from];
             steps[to] = (byte)(steps[from] + 1);
             queue[tail++] = to;
+        }
+
+        // Next to a stroke much brighter or darker than itself: the coloured fringe
+        // ClearType gives black or white text, which the engine reads well anyway.
+        static bool NearCore(int[] px, int i, int w)
+        {
+            double l = Luma(px[i]);
+            foreach (int o in new[] { -1, 1, -2, 2, -w, w, -2 * w, 2 * w })
+                if (Math.Abs(Luma(px[i + o]) - l) > 90) return true;
+            return false;
         }
 
         static bool ColourEdge(int p, int o)

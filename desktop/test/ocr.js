@@ -27,6 +27,9 @@ const { OcrHelper } = require('../src/ocr');
 const { loadHZ } = require('../src/data');
 const ocrfix = require('../src/ocrfix');
 const { repair } = ocrfix;
+const { paragraphs } = require('../src/layout');
+// what the app reads: the lines in reading order, as layout.js puts them in paragraphs
+const readText = lines => paragraphs(lines).join('');
 
 const ROOT = path.join(__dirname, '..', '..');
 const OUT = path.join(__dirname, 'out');
@@ -53,10 +56,12 @@ const STYLES = [
   { name: 'light colours 20px', font: YAHEI, size: 20, style: 'rich', hard: true, runs: [
     { n: 3, fg: '#f9a825' }, { n: 4, fg: '#4fc3f7' }, { n: 3, fg: '#81c784' }, { n: 2, fg: '#f48fb1' },
     { n: 4, fg: '#9e9e9e' }, { n: 3, fg: '#ffb74d' }] },
-  { name: 'highlights 20px', font: YAHEI, size: 20, style: 'rich', hard: true, runs: [
+  { name: 'light highlights 20px', font: YAHEI, size: 20, style: 'rich', hard: true, runs: [
+    { n: 6, fg: '#222222' }, { n: 4, fg: '#222222', bg: '#fff176' }, { n: 5, fg: '#222222' },
+    { n: 3, fg: '#1b5e20', bg: '#c8e6c9' }, { n: 4, fg: '#222222' }, { n: 4, fg: '#0d47a1', bg: '#bbdefb' }] },
+  { name: 'dark highlights 20px', font: YAHEI, size: 20, style: 'rich', hard: true, runs: [
     { n: 6, fg: '#222222' }, { n: 4, fg: '#ffffff', bg: '#1565c0' }, { n: 5, fg: '#222222' },
-    { n: 3, fg: '#222222', bg: '#fff176' }, { n: 4, fg: '#222222' }, { n: 4, fg: '#ffffff', bg: '#c62828' },
-    { n: 5, fg: '#222222' }, { n: 3, fg: '#1b5e20', bg: '#c8e6c9' }] },
+    { n: 4, fg: '#ffffff', bg: '#c62828' }, { n: 4, fg: '#222222' }, { n: 3, fg: '#ffffff', bg: '#424242' }] },
   { name: 'colour on colour 22px', font: YAHEI, size: 22, style: 'rich', bg: '#2e7d32', hard: true, runs: [
     { n: 4, fg: '#ffffff' }, { n: 3, fg: '#ff5252' }, { n: 4, fg: '#ffeb3b' }, { n: 3, fg: '#90caf9' },
     { n: 2, fg: '#ff8a80' }] },
@@ -178,13 +183,13 @@ async function accuracy() {
       for (const job of mine) {
         const r = await ocr.request('file', { path: job.out, scale: col.scale, enhance: col.enhance });
         const want = han(job.text);
-        dist += align(want, han(r.lines.map(l => l.text).join(''))).dist;
+        dist += align(want, han(readText(r.lines))).dist;
         len += want.length; ms += r.ms;
         if (col.enhance === 'auto') {
           colour += (r.colour || 0) / mine.length;
           second += r.second || 0;
           read.push({ want, lines: r.lines });
-          fixed += align(want, han(repair(r.lines, HZ).lines.map(l => l.text).join(''))).dist;
+          fixed += align(want, han(readText(repair(r.lines, HZ).lines))).dist;
           fixedLen += want.length;
         }
       }
@@ -220,7 +225,7 @@ async function accuracy() {
   for (const m of [2, 4, 6, 8, 10]) {
     ocrfix.params.MARGIN = m;
     let dist = 0, len = 0;
-    for (const r of read) { dist += align(r.want, han(repair(r.lines, HZ).lines.map(l => l.text).join(''))).dist; len += r.want.length; }
+    for (const r of read) { dist += align(r.want, han(readText(repair(r.lines, HZ).lines))).dist; len += r.want.length; }
     const harm = repair(clean, HZ).fixes;
     console.log(`  ${String(m).padStart(2)}${m === keep ? ' (used)' : '       '}  ${pct(dist, len)} | ${harm.length} changed` +
       (harm.length ? ': ' + [...new Set(harm)].slice(0, 12).join(' ') : ''));
@@ -229,7 +234,7 @@ async function accuracy() {
 
   const mixups = {};
   for (const r of read) {
-    for (const s of align(r.want, han(repair(r.lines, HZ).lines.map(l => l.text).join(''))).subs) mixups[s] = (mixups[s] || 0) + 1;
+    for (const s of align(r.want, han(readText(repair(r.lines, HZ).lines))).subs) mixups[s] = (mixups[s] || 0) + 1;
   }
   const top = Object.entries(mixups).sort((a, b) => b[1] - a[1]).slice(0, 30);
   console.log(`\nmix-ups left after repair at ×${DEFAULT}, all styles (expected→read, ∅ = nothing):`);
