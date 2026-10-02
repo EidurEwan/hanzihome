@@ -16,7 +16,9 @@
 //   {"id":2,"cmd":"monitors"}                    monitors and the foreground window
 //   {"id":3,"cmd":"file","path":"a.png","scale":1.5}
 //        optional "enhance": "auto" (the default), "always" or "off": whether to take
-//        a second look at colourful text (Enhance.cs); the reply says if it did
+//        a second look at colourful text (Enhance.cs); the reply says if it did;
+//        "best": true tries other enlargements too when the reading looks poor (a
+//        hard font), and keeps the one that looks most like Chinese
 //   {"id":4,"cmd":"screen","monitor":0,"scale":1.5,"incremental":true}
 //        optional "x","y","w","h" read a region instead of a whole monitor;
 //        without "monitor", the monitor under the foreground window;
@@ -118,7 +120,7 @@ namespace HanziOcr
             if (args.Length > 0)
             {
                 if (engine == null) { output.WriteLine("Chinese OCR is not installed."); return 1; }
-                var r = ReadFile(args[0], args.Length > 1 ? double.Parse(args[1]) : DefaultScale, "auto", null);
+                var r = ReadFile(args[0], args.Length > 1 ? double.Parse(args[1]) : DefaultScale, "auto", null, true);
                 foreach (var line in r) output.WriteLine(line.Text);
                 return 0;
             }
@@ -170,7 +172,7 @@ namespace HanziOcr
                     {
                         var sw = Stopwatch.StartNew();
                         var r = new Dictionary<string, object>();
-                        var lines = ReadFile(Str(req, "path"), Num(req, "scale", DefaultScale), Mode(req), r);
+                        var lines = ReadFile(Str(req, "path"), Num(req, "scale", DefaultScale), Mode(req), r, Best(req));
                         r["lines"] = LinesJson(lines);
                         r["ms"] = sw.ElapsedMilliseconds;
                         return r;
@@ -268,11 +270,45 @@ namespace HanziOcr
 
         // ------------------------------------------------------------- reading
 
-        static List<Line> ReadFile(string path, double scale, string mode, Dictionary<string, object> info)
+        static List<Line> ReadFile(string path, double scale, string mode, Dictionary<string, object> info, bool best)
         {
             using (var bmp = new Bitmap(path))
             using (var argb = To32(bmp))
-                return Read(argb, scale, 0, 0, mode, info);
+                return best ? ReadBest(argb, scale, 0, 0, mode, info) : Read(argb, scale, 0, 0, mode, info);
+        }
+
+        // Read, and if that looks poor, read at other enlargements and the contrast copy
+        // too, keeping whichever reading looks most like Chinese. For small pictures
+        // (the strip around the pointer), where the extra reads are quick.
+        static List<Line> ReadBest(Bitmap bmp, double scale, int offX, int offY, string mode, Dictionary<string, object> info)
+        {
+            var lines = Read(bmp, scale, offX, offY, mode, info);
+            if (Enhance.PerChar(lines) >= GoodEnough) return lines;
+            double best = Enhance.Total(lines);
+            string took = "";
+            foreach (double s in new[] { scale * 4 / 3, scale * 2 / 3 })
+            {
+                var other = Recognize(bmp, s, offX, offY);
+                double t = Enhance.Total(other);
+                if (t > best) { best = t; lines = other; took = "x" + Math.Round(s, 2); }
+            }
+            using (var map = Enhance.ContrastMap(bmp))
+            {
+                var other = Recognize(map, scale, offX, offY);
+                double t = Enhance.Total(other);
+                if (t > best) { best = t; lines = other; took = "contrast"; }
+            }
+            if (info != null) info["best"] = took;
+            return lines;
+        }
+
+        // a reading this good (Enhance.PerChar: about 0.75 for ordinary text) is kept
+        // as it is; a poorer one, with "best", is read again at other enlargements
+        const double GoodEnough = 0.6;
+
+        static bool Best(Dictionary<string, object> req)
+        {
+            return req.ContainsKey("best") && req["best"] is bool && (bool)req["best"];
         }
 
         static string Mode(Dictionary<string, object> req)
@@ -353,6 +389,7 @@ namespace HanziOcr
             bool incremental = !req.ContainsKey("incremental") || (bool)req["incremental"];
             bool text = stand == null && req.ContainsKey("text") && (bool)req["text"];
             string mode = Mode(req);
+            bool best = Best(req);
             string key = rect.X + "," + rect.Y + "," + rect.Width + "," + rect.Height;
 
             using (var bmp = stand ?? new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
@@ -401,7 +438,7 @@ namespace HanziOcr
                 List<Line> lines;
                 if (full)
                 {
-                    lines = Read(bmp, scale, rect.X, rect.Y, mode, null);
+                    lines = best ? ReadBest(bmp, scale, rect.X, rect.Y, mode, null) : Read(bmp, scale, rect.X, rect.Y, mode, null);
                     bands = new List<int[]> { new[] { 0, rect.Height } };
                 }
                 else

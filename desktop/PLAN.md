@@ -116,6 +116,18 @@ a picture, a game) is read as before. The tray also has "Read copied text".
      KaiTi 20–24px), 98% (dark mode), 99% (subtitles; big text reads best at ×1). A whole
      1920×1080 screen: 0.28 s at ×1, 0.56 s at ×2; an unchanged screen: ~40 ms. One
      paragraph changed on a page: 21% of it re-read, in 60 ms instead of 270.
+   * **A second look at colour** (`desktop/ocr/Enhance.cs`, 2026-10-02). Windows' OCR sees
+     brightness only, so text close in brightness to its background (red on green, yellow
+     on white), and white text in dark boxes among ordinary lines (tags, buttons, a
+     selection), read poorly. Rows with colour edges, or with boxes of their own colour, are
+     read again from a copy redrawn dark-on-white by each pixel's colour distance from its
+     background: the nearest flat patch, the box it is in, or the page. Each line keeps the
+     reading that looks more like Chinese (common characters for, rare ones and stray
+     symbols against). ClearType's coloured edges on black text don't count as colour, so
+     plain text is read once. `desktop/test/ocr.js` measures it on coloured words, light
+     colours, light and dark highlights, colour on colour, gradients, shadows, hollow text
+     and five unusual fonts (calligraphy, handwriting, display), on Windows in CI
+     (`.github/workflows/desktop-tests.yml`, which installs the Chinese OCR language).
 2. **OCR repair** (`desktop/src/ocrfix.js`). Merges a character read as its two halves
    (亻尔 → 你: a narrow part plus a neighbour about one character wide, looked up in
    `desktop/data/ocrpairs.json` from the character breakdowns), turns 丿+b back into 儿,

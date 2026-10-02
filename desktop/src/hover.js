@@ -177,8 +177,10 @@ class Hover {
       const d = screen.getDisplayNearestPoint(pt);
       const top = Math.max(d.bounds.y, pt.y - STRIP), bottom = Math.min(d.bounds.y + d.bounds.height, pt.y + STRIP);
       const phys = screen.dipToScreenRect(null, { x: d.bounds.x, y: top, width: d.bounds.width, height: bottom - top });
+      // best: a strip is small, so a poor reading (a hard font) is worth trying again
+      // at other enlargements
       const r = await this.o.ocr().request('screen',
-        { x: phys.x, y: phys.y, w: phys.width, h: phys.height, incremental: false });
+        { x: phys.x, y: phys.y, w: phys.width, h: phys.height, incremental: false, best: true });
       const toGlobal = w => {
         const dip = screen.screenToDipRect(null, { x: w.x, y: w.y, width: w.w, height: w.h });
         return { x: dip.x, y: dip.y, w: dip.width, h: dip.height };
