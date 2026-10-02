@@ -1598,7 +1598,8 @@ async function pageCharacter(ch) {
     </div>
 
     ${HZ.cmnem && HZ.cmnem[ch] ? `<h2 class="sec-h">Mnemonic</h2>
-    <div class="decomp-box pad"><p class="mn">${mnHtml(HZ.cmnem[ch][1])}</p>
+    <div class="decomp-box pad"><p class="small muted">Learn it first as <b>${esc(HZ.cmnem[ch][0])}</b>,
+      <b>${esc(HZ.cmnem[ch][2] || (HZ.index[ch] || [])[2] || '')}</b>.</p><p class="mn">${mnHtml(HZ.cmnem[ch][1])}</p>
       ${HZ.cnames && HZ.cnames[ch] ? `<p class="small muted">As a part of other characters it is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p>` : ''}</div>`
       : HZ.cnames && HZ.cnames[ch] ? `<h2 class="sec-h">Picture name</h2>
     <div class="decomp-box pad"><p>As a part of other characters this is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p></div>` : ''}

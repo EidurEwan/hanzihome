@@ -1,6 +1,6 @@
 /* Turns the agents' output (build/mnemonics/out/, see BRIEF.md) into the site's data:
  *   site/data/cnames.js   HZ.cnames = {component: [picture name, why]}
- *   site/data/cmnem.js    HZ.cmnem  = {character: [keyword, mnemonic]}
+ *   site/data/cmnem.js    HZ.cmnem  = {character: [keyword, mnemonic, reading if not the index's]}
  *   site/data/winfo.js    HZ.winfo  = {word: [part of speech, mnemonic, examples, note]}
  * Each example is ['我|的|电脑|…', 'wǒ|de|diàn nǎo|…', 'English']: the sentence cut into
  * words by textstory.js, the reader's own segmenter, with each word's pinyin as it reads
@@ -30,6 +30,15 @@ const cmnem = {};
 for (const f of files.filter(f => f.startsWith('chars-'))) for (const x of read(f) || []) {
   if (x.c && x.key && /\*\*[^*]+\*\*/.test(x.m || '')) cmnem[x.c] = [x.key, x.m.trim()];
   else skipped.push(x.c);
+}
+// the reviewed keys (out/review-*.json): the sense a learner needs first, and its reading
+// when that isn't the index's (HZ.cmnem[c][2])
+for (const f of files.filter(f => f.startsWith('review-'))) for (const x of read(f) || []) {
+  if (!x.c || !x.key || !/\*\*[^*]+\*\*/.test(x.m || '') || !cmnem[x.c]) { skipped.push('review ' + x.c); continue; }
+  const pins = (HZ.readings[x.c] || []).map(r => r[0]);
+  if (x.pin && !pins.includes(x.pin)) { skipped.push(`review ${x.c} (${x.pin}?)`); continue; }
+  cmnem[x.c] = [x.key, x.m.trim()];
+  if (x.pin && x.pin !== HZ.index[x.c][2]) cmnem[x.c].push(x.pin);
 }
 write('cmnem.js', 'cmnem', cmnem);
 

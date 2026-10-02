@@ -204,6 +204,16 @@ async function itemFacts(k, it) {
         if (!it.alts.length) it.alts = r[2].slice(0, 6);
         if (!it.mean || /…$/.test(it.mean)) it.mean = r[2].slice(0, 2).join('; ');   // (the index's are cut short)
       }
+      // A lesson not taken yet teaches the sense a learner needs first, HanziHome's key
+      // (data/cmnem.js), in the reading that goes with it (长 cháng "long", not zhǎng
+      // "chief", the dictionary's first) - unless it came from a sentence, where the
+      // reading it had there wins.
+      const cm = HZ.cmnem && HZ.cmnem[k];
+      if (cm && !it.stage && !(it.ex && it.ex.text)) {
+        const row = cm[2] && cm[2] !== it.pin && (d.rd || []).find(x => x[1] === cm[2]);
+        if (row) { it.pin = row[1]; it.alts = row[2].slice(0, 6); it.mean = row[2].slice(0, 2).join('; '); }
+        if (!String(it.mean).toLowerCase().startsWith(cm[0].toLowerCase())) it.mean = cm[0] + '; ' + it.mean;
+      }
     }
   } else {
     f.parts = [...k].filter(isHan).map(c => [c, partGloss(c)]);
