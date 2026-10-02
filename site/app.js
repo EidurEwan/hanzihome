@@ -95,6 +95,11 @@ const need = {
   prodchars: () => HZ.productiveCharacters ? Promise.resolve() : loadScript('data/prodchars.js'),
   phon: d => HZ.phoneticSets[d] ? Promise.resolve() : loadScript('data/phon' + d + '.js'),
   stories: () => HZ.stories ? Promise.resolve() : loadScript('data/stories.js'),
+  // written for HanziHome (build/mnemonics/): components' picture names, the characters'
+  // mnemonics, and the words' mnemonics, examples and notes
+  cnames: () => HZ.cnames ? Promise.resolve() : loadScript('data/cnames.js'),
+  cmnem: () => HZ.cmnem ? Promise.resolve() : loadScript('data/cmnem.js'),
+  winfo: () => HZ.winfo ? Promise.resolve() : loadScript('data/winfo.js'),
   // the reader for pasted text: the engine, every character's readings, and the
   // word list with frequencies (~9 MB, so only when someone reads their own text)
   textStory: () => Promise.all([
@@ -103,6 +108,17 @@ const need = {
     HZ.rwords ? null : loadScript('data/readerwords.js'),
   ]),
 };
+
+/* every character that is a part of another (the decompositions, when loaded, and the
+   radicals and productive components when those are) */
+function compSet() {
+  const s = new Set();
+  if (HZ.comps) for (const ps of Object.values(HZ.comps)) for (const p of ps) s.add(p);
+  if (HZ.productiveComponents) for (const r of HZ.productiveComponents) s.add(r[1]);
+  if (HZ.radicals) for (const r of HZ.radicals) { s.add(r[1]); r[2].forEach(v => s.add(v)); }
+  if (HZ.radicalMap) for (const k of Object.keys(HZ.radicalMap)) s.add(k);
+  return s;
+}
 
 let _byRank = null;
 function byRank() {
@@ -125,6 +141,7 @@ const Store = {
     d.status = d.status || {}; d.comps = d.comps || {}; d.lists = d.lists || [];
     d.notes = d.notes || {}; d.history = d.history || []; d.items = d.items || {};
     d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT; d.study = d.study || {};
+    d.wstatus = d.wstatus || {};      // words: 'learning' | 'learned', as status is for characters
     // The old Study flashcards (srs) gave way to lessons and reviews: a character
     // that was marked Learning joins the reviews at Novice I, due when it was due.
     for (const c of Object.keys(d.srs || {})) {
@@ -182,14 +199,46 @@ const Store = {
   },
   chars(s) { const d = this.load(); return Object.keys(d.status).filter(c => d.status[c] === s); },
 
-  compKnown(c) { const d = this.load(); return !!d.comps[c] || d.status[c] === 'learned'; },
+  /* words have a status of their own, kept apart from the characters' */
+  wstatus(w) { return this.load().wstatus[w] || null; },
+  setWStatus(w, s, info) {
+    const d = this.load();
+    if (s) d.wstatus[w] = s; else delete d.wstatus[w];
+    // marked learned: in the reviews at Journeyman I, first review a month on (as characters)
+    if (s === 'learned') {
+      const it = d.items[w], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
+      if (!it) d.items[w] = Learn.known('word', info || wordInfo(w), now, wait);
+      else if (it.stage < Learn.LEARNED_FROM) {
+        Learn.adopt(it);
+        it.S = Math.max(it.S || 0, Learn.STAGES[Learn.LEARNED_FROM][1]);
+        it.D = it.D || Learn.initD(3);
+        it.stage = Learn.stageFor(it.S);
+        it.due = now + wait;
+        if (!it.learnt) it.joined = now;
+      }
+    }
+    this.touch();
+  },
+  words(s) { const d = this.load(); return Object.keys(d.wstatus).filter(w => d.wstatus[w] === s); },
+
+  /* a component is known when ticked, or when it is a character marked learned (unless
+     unticked since: comps[c] = 0) */
+  compKnown(c) { const d = this.load(); return d.comps[c] === 0 ? false : !!d.comps[c] || d.status[c] === 'learned'; },
   toggleComp(c) {
     const d = this.load();
-    d.comps[c] ? delete d.comps[c] : (d.comps[c] = 1);
+    if (this.compKnown(c)) { if (d.status[c] === 'learned') d.comps[c] = 0; else delete d.comps[c]; }
+    else if (d.status[c] === 'learned') delete d.comps[c];
+    else d.comps[c] = 1;
     this.touch();
-    return !!d.comps[c];
+    return this.compKnown(c);
   },
-  knownComps() { return Object.keys(this.load().comps); },
+  /* the components known: ticked ones, and learned characters that are components */
+  knownComps() {
+    const d = this.load(), out = new Set(Object.keys(d.comps).filter(c => d.comps[c]));
+    const isComp = c => (HZ.compSet || (HZ.compSet = compSet())).has(c);
+    for (const c of Object.keys(d.status)) if (d.status[c] === 'learned' && d.comps[c] !== 0 && isComp(c)) out.add(c);
+    return [...out];
+  },
 
   note(ch, t) { const d = this.load(); t && t.trim() ? (d.notes[ch] = t.trim()) : delete d.notes[ch]; this.save(); },
 
@@ -247,9 +296,9 @@ const Store = {
   /* after a lesson or review: a character's stage decides its status on the rest of the site */
   learnSaved(k) {
     const d = this.load(), it = d.items[k];
-    if (it && it.kind === 'char') {
+    if (it) {
       const s = Learn.statusFor(it);
-      if (s) d.status[k] = s;
+      if (s) (it.kind === 'char' ? d.status : d.wstatus)[k] = s;
     }
     this.touch();
   },
@@ -315,7 +364,7 @@ function heft(d) {
   if (!d || typeof d !== 'object') return 0;
   const n = o => (o && typeof o === 'object' ? Object.keys(o).length : 0);
   const lists = Array.isArray(d.lists) ? d.lists.reduce((t, l) => t + ((l && l.chars) || []).length, 0) : 0;
-  return n(d.status) + n(d.items) + n(d.comps) + n(d.notes) + lists;
+  return n(d.status) + n(d.wstatus) + n(d.items) + n(d.comps) + n(d.notes) + lists;
 }
 /* would going from one copy to the other lose most of it? */
 const shrinks = (from, to) => heft(from) >= 20 && heft(to) < heft(from) / 2;
@@ -780,7 +829,7 @@ function merge3(base, local, remote) {
   new Set([...Object.keys(b), ...Object.keys(local), ...Object.keys(remote)]).forEach(k => {
     // (items: each character or word learnt changes on its own; study: each setting;
     //  srs is the old flashcards)
-    if (['status', 'comps', 'notes', 'srs', 'items', 'study'].includes(k)) out[k] = map(b[k], local[k], remote[k]);
+    if (['status', 'wstatus', 'comps', 'notes', 'srs', 'items', 'study'].includes(k)) out[k] = map(b[k], local[k], remote[k]);
     else if (k === 'lists') out[k] = lists();
     else if (k === 'history') out[k] = history();
     else if (k === 'days') out[k] = days();
@@ -1072,9 +1121,16 @@ function railHtml() {
     <h3>Character progress</h3>
     <div class="quad">
       <div><b>${num(d.history.length)}</b><span>Searched</span><a href="#/history">View history →</a></div>
-      <div><b class="pu">${num(Store.knownComps().length)}</b><span>Components Learned</span><a href="#/productive-components">Browse →</a></div>
+      <div><b class="pu" id="rail-comps">${num(Store.knownComps().length)}</b><span>Components Learned</span><a href="#/productive-components">Browse →</a></div>
       <div><b class="bl">${learning.length}</b><span>Learning</span><a href="#/study">Study these →</a></div>
       <div><b class="g">${learned.length}</b><span>Learned</span><a href="#/lists">View list →</a></div>
+    </div>
+  </section>
+  <section class="card">
+    <h3>Word progress</h3>
+    <div class="quad two">
+      <div><b class="bl">${num(Store.words('learning').length)}</b><span>Words learning</span><a href="#/words/mine/learning">View →</a></div>
+      <div><b class="g">${num(Store.words('learned').length)}</b><span>Words learned</span><a href="#/words">Browse words →</a></div>
     </div>
   </section>
   <section class="card">
@@ -1107,6 +1163,11 @@ async function paintRail() {
   const box = document.getElementById('study-next');
   if (!box) return;
   await optional(need.comps());
+  // the components counter counts learned characters that are components: those are
+  // known once the decompositions are here
+  HZ.compSet = null;
+  const rc = document.getElementById('rail-comps');
+  if (rc) rc.textContent = num(Store.knownComps().length);
   const pool = suggestPool();
   const pages = Math.max(1, Math.ceil(pool.length / SUGGEST_PER_PAGE));
   if (suggestPage >= pages) suggestPage = 0;
@@ -1127,9 +1188,12 @@ async function paintRail() {
         <div class="why">${esc(p.why)}</div></div>
       <button class="btn add-next" data-c="${esc(p.c)}">Add</button></div>`).join('')
     : '<p class="empty small">Nothing to suggest right now.</p>';
+  // Add puts the character in the lesson queue; it becomes Learning once its lesson is done
   box.querySelectorAll('.add-next').forEach(b => b.addEventListener('click', () => {
-    Store.setStatus(b.dataset.c, 'learning');
-    applyStateChange(b.dataset.c);
+    Store.learnAdd(b.dataset.c, 'char', charInfo(b.dataset.c));
+    Store.save();
+    markNav(currentPath());
+    paintRail();
   }));
 }
 
@@ -1144,7 +1208,7 @@ let suggestPage = 0;
 function suggestPool() {
   const decodable = [], plain = [];
   for (const c of byRank()) {                    // already in frequency order
-    if (Store.status(c)) continue;
+    if (Store.status(c) || Store.item(c)) continue;      // marked, or already in the lessons
     const e = HZ.index[c];
     const parts = (HZ.comps && HZ.comps[c]) || [];
     if (parts.length >= 2 && parts.every(p => Store.compKnown(p))) {
@@ -1377,7 +1441,7 @@ const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 
 // [simplified, traditional or '', pinyin]: the one chosen first, the other in brackets
 const wordChip = w => { const [a, b] = scriptMode() === 'trad' && w[1] ? [w[1], w[0]] : [w[0], w[1]];
-  return `<a class="word" href="#/search/${encodeURIComponent(w[0])}">
+  return `<a class="word ${Store.wstatus(w[0]) || ''}" href="#/word/${encodeURIComponent(w[0])}">
   <span class="w">${esc(a)}</span>${b ? ` <span class="t">(${esc(b)})</span>` : ''}
   <span class="p">${esc(w[2])}</span></a>`; };
 
@@ -1424,7 +1488,7 @@ function writeQuiz(writer, memory, say, done) {
 
 async function pageCharacter(ch) {
   app.innerHTML = '<p class="muted">Loading…</p>';
-  const d = await charData(ch);
+  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem())]);
   if (!d) {
     app.innerHTML = withRail(`<div class="card"><h1>${esc(ch)}</h1>
       <p class="empty">No data for this character.</p></div>`);
@@ -1523,7 +1587,7 @@ async function pageCharacter(ch) {
         <div class="decomp-label"><span class="n">2</span> Components <i class="info-i" title="The named building blocks this character is made of">i</i></div>
         <div class="decomp-body glyphs"><span class="gbox han ${Store.compKnown(ch) ? 'known' : ''}">${esc(ch)}</span><span class="arrow">→</span>
           ${d.cm.map(c => `<button class="gbox comp-btn ${Store.compKnown(c) ? 'known' : ''}" data-c="${esc(c)}">
-              <span class="han">${esc(c)}</span><small>${esc(glossOf(c) || 'N/A')}</small></button>`).join('')
+              <span class="han">${esc(c)}</span><small title="${esc((HZ.cnames && HZ.cnames[c] && HZ.cnames[c][1]) || '')}">${esc(compName(c) || 'N/A')}</small></button>`).join('')
             || '<span class="empty">Atomic — no components.</span>'}</div>
       </div>
       <div class="decomp-row">
@@ -1532,6 +1596,12 @@ async function pageCharacter(ch) {
           ${d.gr.map(g => `<span class="gbox han stroke">${esc(g)}</span>`).join('')}</div>
       </div>
     </div>
+
+    ${HZ.cmnem && HZ.cmnem[ch] ? `<h2 class="sec-h">Mnemonic</h2>
+    <div class="decomp-box pad"><p class="mn">${mnHtml(HZ.cmnem[ch][1])}</p>
+      ${HZ.cnames && HZ.cnames[ch] ? `<p class="small muted">As a part of other characters it is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p>` : ''}</div>`
+      : HZ.cnames && HZ.cnames[ch] ? `<h2 class="sec-h">Picture name</h2>
+    <div class="decomp-box pad"><p>As a part of other characters this is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p></div>` : ''}
 
     <h2 class="sec-h">Pinyin &amp; Meaning</h2>
     <div class="decomp-box pad">
@@ -1687,7 +1757,7 @@ async function pageSearch(q) {
       </tbody></table></section>` : ''}
     ${words.length ? `<section class="card"><h2>Words</h2><table><tbody>
       ${words.map(w => `<tr>
-        <td class="g">${wordLinks(w[0], w[1])}</td>
+        <td class="g"><a class="han" href="#/word/${encodeURIComponent(w[0])}">${zh(scriptMode() === 'trad' && w[1] ? w[1] : w[0])}</a></td>
         <td class="num">${esc(scriptMode() === 'trad' ? (w[1] ? w[0] : '') : w[1] || '')}</td>
         <td><b>${esc(w[2])}</b><br><span class="muted">${esc(w[3])}</span></td></tr>`).join('')}
       </tbody></table></section>` : ''}
@@ -1880,6 +1950,10 @@ function pageIncoming() {
 function wordState(w) {
   const cs = [...w].filter(c => isHan(c) && HZ.index[c]);
   if (!cs.length) return '';
+  if (cs.length > 1) {                       // a word marked (or reviewed) as a word says so itself
+    const own = Store.wstatus(learnKey(w));
+    if (own) return own;
+  }
   if (cs.every(c => Store.status(c) === 'learned')) return 'learned';
   if (cs.some(c => Store.status(c))) return 'learning';
   return 'new';
@@ -2094,6 +2168,14 @@ function wordPop() {
       });
       return;
     }
+    const ws = e.target.closest('button[data-ws]');
+    if (ws) {
+      Store.setWStatus(ws.dataset.w, ws.dataset.ws || null);
+      paintStory();
+      if (_wpAnchor && document.body.contains(_wpAnchor)) showWordPop(_wpAnchor);
+      markNav(currentPath());
+      return;
+    }
     const b = e.target.closest('button[data-s]');
     if (!b) return;
     Store.setStatus(b.dataset.c, b.dataset.s || null);
@@ -2138,7 +2220,9 @@ function showWordPop(el) {
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
     <p class="wp-learn">${Store.item(learnKey(w))
       ? `<a href="#/study">✓ ${esc(Store.item(learnKey(w)).stage ? Learn.stageName(Store.item(learnKey(w)).stage) : 'In lessons')}</a>`
-      : `<button type="button" data-learn="${esc(w)}">＋ Add to lessons</button>`}</p>
+      : `<button type="button" data-learn="${esc(w)}">＋ Add to lessons</button>`}
+      ${multi ? `<a class="wp-card" href="#/word/${encodeURIComponent(learnKey(w))}">Word card →</a>` : ''}</p>
+    ${multi ? `<div class="wp-word"><span class="small muted">The word</span>${wordSeg(learnKey(w))}</div>` : ''}
     ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
   pop.hidden = false;
 
@@ -2195,29 +2279,32 @@ async function pageHsk(level) {
       <h2>HSK ${level} vocabulary <span class="muted">(${num(words.length)})</span></h2>
       <div class="bar accent"><i style="width:${words.length ? readable.length / words.length * 100 : 0}%"></i></div>
       <p class="small muted">${readable.length} of ${words.length} words use only characters
-         you have marked as learned</p>
-      <table><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th></tr></thead><tbody>
+         you have marked as learned; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
+         of the words. <a href="#/words/hsk${level}">Words page →</a></p>
+      <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead><tbody>
         ${words.map(w => `<tr>
-          <td class="g">${wordLinks(w[0])}</td>
-          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td></tr>`).join('')}
+          <td class="g"><a class="han" href="#/word/${encodeURIComponent(w[0])}">${zh(w[0])}</a></td>
+          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td><td>${wordSeg(w[0])}</td></tr>`).join('')}
       </tbody></table>
     </section>`);
+  wireWordSegs(app);
   if (chars.length) wireTileBoard('hsk', chars, { band: 100, label: c => (HZ.index[c] || [])[0] || '' });
   paintRail();
 }
 
 async function pageRadicals() {
   app.innerHTML = '<p class="muted">Loading…</p>';
-  await optional(need.radicals());
+  await Promise.all([optional(need.radicals()), optional(need.cnames())]);
   app.innerHTML = '<h1 class="page-title">The 214 Kangxi radicals</h1>' + withRail(`
     <p class="lede">Every character is filed under one of these. Tick the ones you know —
        they count towards your component knowledge.</p>
     <section class="card"><table>
-      <thead><tr><th>#</th><th>Radical</th><th>Variants</th><th>Meaning</th>
+      <thead><tr><th>#</th><th>Radical</th><th>Variants</th><th>Picture name</th><th>Meaning</th>
         <th>Pinyin</th><th>Characters</th><th>Known</th></tr></thead>
       <tbody>${HZ.radicals.map(r => `<tr>
         <td class="num">${r[0]}</td><td class="g">${charLink(r[1])}</td>
         <td class="g" style="font-size:19px">${r[2].map(v => charLink(v)).join(' ')}</td>
+        <td><b>${esc((HZ.cnames && HZ.cnames[r[1]] && HZ.cnames[r[1]][0]) || '')}</b></td>
         <td>${esc(r[3])}</td><td class="muted">${esc(r[5] || '')}</td>
         <td class="num">${num(r[4])}</td>
         <td><input type="checkbox" class="comp-known" data-c="${esc(r[1])}"
@@ -2260,7 +2347,7 @@ async function pagePhonetic(degree, page) {
 async function pageProdComponents(page) {
   page = page || 1;
   app.innerHTML = '<p class="muted">Loading…</p>';
-  await optional(need.components());
+  await Promise.all([optional(need.components()), optional(need.cnames())]);
   const all = HZ.productiveComponents, per = 100;
   const rows = all.slice((page - 1) * per, page * per);
   app.innerHTML = '<h1 class="page-title">Productive components</h1>' + withRail(`
@@ -2268,10 +2355,11 @@ async function pageProdComponents(page) {
        for every character a component appears in, so parts used in common characters
        outrank ones buried in rare ones. Tick what you already know.</p>
     <section class="card"><table>
-      <thead><tr><th>#</th><th>Part</th><th>Meaning</th><th>Pinyin</th>
+      <thead><tr><th>#</th><th>Part</th><th>Picture name</th><th>Meaning</th><th>Pinyin</th>
         <th>In characters</th><th>Score</th><th>Known</th></tr></thead>
       <tbody>${rows.map(r => `<tr>
         <td class="num">${r[0]}</td><td class="g">${charLink(r[1])}</td>
+        <td title="${esc((HZ.cnames && HZ.cnames[r[1]] && HZ.cnames[r[1]][1]) || '')}"><b>${esc((HZ.cnames && HZ.cnames[r[1]] && HZ.cnames[r[1]][0]) || '')}</b></td>
         <td>${esc(r[2] || '—')}</td><td class="muted">${esc(r[3] || '')}</td>
         <td class="num">${num(r[4])}</td><td class="num">${r[5].toFixed(4)}</td>
         <td><input type="checkbox" class="comp-known" data-c="${esc(r[1])}"
@@ -2705,7 +2793,7 @@ function offlineFiles() {
   const hex = n => ('0' + n.toString(16)).slice(-2);
   const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
-    'stories', 'readings', 'readerwords', 's2t'].map(f => `data/${f}.js`)
+    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
       ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
     .map(f => f + '?v=' + DATA_VERSION);
@@ -2785,6 +2873,8 @@ function render(keepScroll) {
   if (path === '/' || seg[0] === 'dashboard') return pageDashboard();
   if (seg[0] === 'character') return pageCharacter(seg.slice(1).join('/'));
   if (seg[0] === 'search') return pageSearch(seg.slice(1).join('/'));
+  if (seg[0] === 'word') return pageWord(seg.slice(1).join('/'));
+  if (seg[0] === 'words') return pageWords(seg[1], seg[2], n(3));
   if (seg[0] === 'study') return pageStudy();
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'reviews') return pageReviews();

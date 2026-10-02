@@ -185,11 +185,16 @@ const others = it => Learn.meanings(it).filter(m => m !== primary(it).toLowerCas
 /* what a page needs about an item beyond what is stored: its parts, the words it is
    in, and (for items added before they were known) its meanings */
 async function itemFacts(k, it) {
-  const f = { parts: [], comps: [], words: [], sound: null };
+  const f = { parts: [], comps: [], words: [], sound: null, mn: '', ex: [] };
+  // HanziHome's own mnemonics and the components' picture names (data/c*.js, data/winfo.js)
+  await Promise.all([optional(need.cnames()), optional(it.kind === 'char' ? need.cmnem() : need.winfo())]);
+  f.mn = builtinMnemonic(k);
+  if (it.kind === 'word' && HZ.winfo && HZ.winfo[k]) f.ex = HZ.winfo[k][2];
   if (it.kind === 'char') {
     const d = await charData(k);
     if (d) {
-      f.comps = (d.cm || []).map(c => [c, partGloss(c)]);
+      // a component goes by its picture name, the name the mnemonics use
+      f.comps = (d.cm || []).map(c => [c, compName(c)]);
       f.words = (d.w || []).slice(0, 6).map(w => [w[0], w[2]]);
       const ph = (d.ph || []).find(p => p.r <= 2);
       if (ph) f.sound = [ph.c, ph.t];
@@ -629,7 +634,9 @@ async function pageLessons() {
     body = `<h3>Mnemonic</h3>
       <p class="muted">${scaffold ? scaffold + ' → ' : ''}<b class="han">${esc(k)}</b> ${esc(primary(it))}
         · sounds <b>${esc(it.pin)}</b></p>
-      <textarea id="lx-mn" rows="4" placeholder="Make up a little story that joins the parts, the meaning and the sound…">${esc(it.mnemonic || '')}</textarea>
+      ${f.mn ? `<p class="mn lx-mn-builtin">${mnHtml(f.mn)}</p>
+        <p class="small muted">Picture it for a moment. Or write a story of your own, which is shown instead:</p>` : ''}
+      <textarea id="lx-mn" rows="${f.mn ? 2 : 4}" placeholder="${f.mn ? 'Your own mnemonic (optional)…' : 'Make up a little story that joins the parts, the meaning and the sound…'}">${esc(it.mnemonic || '')}</textarea>
       <p class="small muted" id="lx-mn-state">Saved as you type.</p>
       <h3>Meaning</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
@@ -640,9 +647,12 @@ async function pageLessons() {
   } else if (s.tab === 2) {
     body = `<h3>Examples</h3>
       ${it.ex && it.ex.text ? `<p class="muted">Where you found it:</p>${foundIn(k, it)}` : ''}
+      ${f.ex.length ? `<p class="muted">How it is used:</p>${f.ex.map(ex => `<div class="example">${exampleHtml(ex, k)}</div>`).join('')}
+        ${HZ.winfo[k][3] ? `<p class="word-use"><b>Good to know:</b> ${esc(HZ.winfo[k][3])}</p>` : ''}` : ''}
       ${f.words.length ? `<p class="muted">Words it is in:</p>
-        <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
-      ${!(it.ex && it.ex.text) && !f.words.length ? '<p class="muted">No examples yet.</p>' : ''}`;
+        <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/word/' + encodeURIComponent(w))).join('')}</div>` : ''}
+      ${!(it.ex && it.ex.text) && !f.words.length && !f.ex.length ? '<p class="muted">No examples yet.</p>' : ''}
+      ${it.kind === 'word' ? `<p><a class="small" href="#/word/${encodeURIComponent(k)}" target="_blank">The word's card →</a></p>` : ''}`;
   } else {
     // the pronunciation first; the meaning only once that is right
     const pinDone = s.pinOk === k;
@@ -1071,16 +1081,17 @@ function infoPanel(k, it, q) {
           spellcheck="false" autocapitalize="off" lang="en"><button class="btn quiet">Add</button></form></dd></dl>`,
       !(q === 'pinyin' && pending('meaning')))}
     ${sec('Mnemonic', s.edit === 'mnemonic' ? editing('mnemonic', it.mnemonic || '', 'A little story that joins the parts, the meaning and the sound…')
-      : `${it.mnemonic ? `<p class="rv-text">${esc(it.mnemonic)}</p>` : '<p class="muted">No mnemonic yet.</p>'}
-        <p><button class="btn quiet" data-edit="mnemonic">Edit</button></p>`, true)}
+      : `${it.mnemonic ? `<p class="rv-text">${esc(it.mnemonic)}</p>` : f.mn ? `<p class="rv-text mn">${mnHtml(f.mn)}</p>` : '<p class="muted">No mnemonic yet.</p>'}
+        <p><button class="btn quiet" data-edit="mnemonic">${it.mnemonic ? 'Edit' : 'Write your own'}</button></p>`, true)}
     ${sec('Notes', s.edit === 'note' ? editing('note', note, 'Anything to remember about it…')
       : `${note ? `<p class="rv-text">${esc(note)}</p>` : ''}
         <p><button class="btn quiet" data-edit="note">${note ? 'Edit' : 'Add a note'}</button></p>`, true)}
     ${sec('Memory', memoryPanel(it), false)}
     ${sec('Usage', `${it.ex && it.ex.text ? `<p class="muted small">Where you found it:</p>${foundIn(k, it)}` : ''}
+      ${(f.ex || []).map(ex => `<div class="example">${exampleHtml(ex, k)}</div>`).join('')}
       ${f.words.length ? `<p class="muted small">Words it is in:</p><div class="lx-chips">${f.words.map(([w, p]) =>
-        lxChip(w, p, '#/search/' + encodeURIComponent(w))).join('')}</div>` : ''}
-      ${!(it.ex && it.ex.text) && !f.words.length ? '<p class="muted">No examples yet.</p>' : ''}`, false)}`;
+        lxChip(w, p, '#/word/' + encodeURIComponent(w))).join('')}</div>` : ''}
+      ${!(it.ex && it.ex.text) && !f.words.length && !(f.ex || []).length ? '<p class="muted">No examples yet.</p>' : ''}`, false)}`;
 }
 
 function wireReviewPanel(k) {
