@@ -177,13 +177,16 @@ the pinyin and the meaning (you can change them), shows what it found, and adds 
 your lessons, or to your reviews at Journeyman if you already know them. Traditional decks are
 kept under their simplified form, and the dictionary's readings are used where it has the word.
 
-**Reader** — 24 original graded stories, four per HSK level, each at least 250 characters
+**Reader** — 30 original graded stories, five per HSK level, each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and
 simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
 a word shows the reading and meaning it has *in that sentence* — 还 is "to give back" in one
 line and "also" in the next — plus what each of its characters contributes, with buttons to
 mark them and to add the word to your lessons. Text you paste in opens in the same reader, glossed automatically (see "Reading
-any text" below); when context can't settle a meaning, the popup names the other one too.
+any text" below), and so do books: open an EPUB or a text file (UTF-8 or GB18030) and it is read a
+page at a time, remembering your place (`site/books.js`, kept in the browser's IndexedDB). On the
+live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)
+sends any web page you are on, or the part you selected, to the reader; when context can't settle a meaning, the popup names the other one too.
 
 **Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
 productive components, productive characters, the full frequency list, plus your own
@@ -282,7 +285,8 @@ never change meaning (我, 学校) sit in `lexicon.txt`; context-dependent ones 
 are refused there. `chars.txt` says what a character means inside a word (面 in 面包 is
 "flour", not "face").
 
-`python build/build_stories.py --report report.txt` checks every story has at least 250
+`python build/build_stories.py --report report.txt` (it works without `data/raw/` too, taking
+the dictionary and HSK lists from `site/data/`, when its level report is rougher) checks every story has at least 250
 characters and a meaning for every word, that pinyin has one syllable per character, lists
 vocabulary above the story's HSK level (HSK 2.0 and 3.0 lists), flags words missing from
 CC-CEDICT as likely typos, and reports character meanings that fell back to the dictionary.
@@ -308,16 +312,17 @@ gào sù "to press charges", 东西 dōng xi "thing" before dōng xī "east and 
 
 `node test/accuracy.js` puts each story's text back together without the spaces, runs it
 through the engine and compares the result with the hand-made glossary. The last story of each
-level is held out while rules are written. On 2026-09-28:
+level is held out while rules are written, and the six written later (s25–s30) were written
+after the rules, so they test them afresh. On 2026-10-02:
 
-| | dev (18 stories) | held out (6) |
-| --- | --- | --- |
-| words split as by hand | 93.5% | 93.9% |
-| words cut through the middle | 0.2% | 0.0% |
-| pinyin per character | 99.4% | 99.2% |
-| meaning shares a content word with the hand gloss | 87.2% | 85.8% |
-| … for words not in `lexicon.txt` | 78.0% | 75.9% |
-| … for context-dependent characters (了, 还, 得 …) | 83.0% | 79.9% |
+| | dev (18 stories) | held out (6) | written later (6) |
+| --- | --- | --- | --- |
+| words split as by hand | 93.5% | 93.9% | 92.2% |
+| words cut through the middle | 0.2% | 0.0% | 0.1% |
+| pinyin per character | 99.4% | 99.5% | 99.3% |
+| meaning shares a content word with the hand gloss | 87.3% | 85.9% | 87.0% |
+| … for words not in `lexicon.txt` | 78.2% | 76.1% | 79.3% |
+| … for context-dependent characters (了, 还, 得 …) | 83.4% | 80.2% | 81.0% |
 
 `--errors` lists the mistakes, `--show 上` prints every sentence a word appears in, and
 `--tune` searches the segmentation parameters. Most remaining meaning "errors" are wording

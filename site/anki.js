@@ -7,8 +7,8 @@
  *
  * Import: an Anki deck (.apkg, or .colpkg for a whole collection) or Anki's "Notes
  * in Plain Text" export (.txt). A deck is a zip holding the collection, a SQLite
- * database, which Anki 2.1.50 and later also compress with zstd: unzipped here with
- * the browser's own DecompressionStream, unpacked with fzstd and read with sql.js
+ * database, which Anki 2.1.50 and later also compress with zstd: unzipped by zip.js,
+ * unpacked with fzstd and read with sql.js
  * (both MIT, site/vendor/; sql.js's plain JavaScript build, since a page opened from
  * disk can't fetch WebAssembly). Which field holds the hanzi, the pinyin and the
  * meaning is guessed from the field names and what is in them, and can be changed.
@@ -84,10 +84,10 @@ const Anki = (() => {
   }
 
   async function readPackage(buf) {
-    const files = unzip(buf);
+    const files = Zip.files(buf);
     const pick = ['collection.anki21b', 'collection.anki21', 'collection.anki2'].find(n => files[n]);
     if (!pick) throw new Error("That file isn't an Anki deck: it has no collection in it.");
-    let db = await inflate(files[pick]);
+    let db = await Zip.read(files[pick]);
     if (pick.endsWith('b')) db = fzstd.decompress(db);
     if (!window.initSqlJs) await loadScript('vendor/sql-asm.js');
     const SQL = await initSqlJs();
@@ -118,37 +118,6 @@ const Anki = (() => {
   }
 
   const q = (d, sql) => { const r = d.exec(sql); return r.length ? r[0].values : []; };
-
-  /* a zip's files by name, from its central directory: {name: {method, data}} */
-  function unzip(buf) {
-    const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-    let eocd = -1;
-    for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65557); i--) {
-      if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-    }
-    if (eocd < 0) throw new Error("That file isn't a zip archive.");
-    const n = dv.getUint16(eocd + 10, true);
-    let p = dv.getUint32(eocd + 16, true);
-    const files = {};
-    for (let k = 0; k < n; k++) {
-      if (dv.getUint32(p, true) !== 0x02014b50) break;
-      const method = dv.getUint16(p + 10, true), size = dv.getUint32(p + 20, true);
-      const nameLen = dv.getUint16(p + 28, true), extra = dv.getUint16(p + 30, true), comment = dv.getUint16(p + 32, true);
-      const local = dv.getUint32(p + 42, true);
-      const name = new TextDecoder().decode(buf.subarray(p + 46, p + 46 + nameLen));
-      const start = local + 30 + dv.getUint16(local + 26, true) + dv.getUint16(local + 28, true);
-      files[name] = { method, data: buf.subarray(start, start + size) };
-      p += 46 + nameLen + extra + comment;
-    }
-    return files;
-  }
-
-  async function inflate(f) {
-    if (f.method === 0) return f.data;
-    if (f.method !== 8) throw new Error('That deck is packed in a way this page can\'t read (zip method ' + f.method + ').');
-    const stream = new Blob([f.data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-    return new Uint8Array(await new Response(stream).arrayBuffer());
-  }
 
   // ------------------------------------------------------------ which field
 
@@ -208,5 +177,5 @@ const Anki = (() => {
     }).join(' ');
   }
 
-  return { exportText, read, readText, splitLine, unzip, guess, items, strip, marks };
+  return { exportText, read, readText, splitLine, guess, items, strip, marks };
 })();

@@ -342,3 +342,86 @@ words:
 就 | jiù | then; right away
 晚 | wǎn | late
 发 | fā | to send
+
+=== s26
+level: 2
+tag: A day off sick
+zh: 生病
+en: Getting Sick
+text:
+上 个 星期 ， 我 生病 了@change 。 星期一 早上 ， 我 觉得 头 很 疼 ， 身体 也 很 热 。 妈妈 说 ： “ 你 发烧 了@change ， 今天 别 去 学校 了@stop ， 我们 去 医院 吧 。 ”
+
+医院 离 我 家 不 远 ， 走路 十五 分钟 就 到 了 。 因为 看病 的 人 很 多 ， 所以 我们 等 了 一 个 多@more 小时 。 我 一边 等 ， 一边 看 手机 。 妈妈 让 我 别 看 了@stop ， 说 ： “ 你 应该 休息 。 ”
+
+医生 是 一 位 很 年轻 的 女 医生 。 她 问 我 ： “ 你 是 从 什么 时候 开始 不 舒服 的@shi ？ ” 我 说 ： “ 从 昨天 晚上 开始 。 ” 她 看 了 看 我 的 嘴 ， 又 听 了 听 我 的 心 ， 说 ： “ 是 感冒 。 虽然 发烧 了@change ， 但是 不 要紧 。 你 要 多@more 喝 水 ， 多@more 睡觉 。 如果 三 天 以后 还 不 好 ， 就 再 来 。 ”
+
+回到 家 ， 我 吃 了 药 ， 睡 了 一 个 下午 。 晚上 ， 我 觉得 比 早上 好 多@more 了@change 。 妈妈 给 我 做 了 一 碗 热 汤 ， 我 喝 得 很 快 。
+
+第二 天 ， 我 的 身体 越来越 好 。 星期三 ， 我 已经 能 去 学校 了@change 。 同学们 问 我 ： “ 你 去 哪儿 了 ？ ” 我 说 ： “ 我 生病 了@change ， 在 家 躺 了 两 天 。 现在 好 了@change ！ ”
+words:
+上 | shàng | last (上个星期 = last week)
+生病 | shēng bìng | to get ill
+了@change | le | (a new situation: now)
+星期一 | xīng qī yī | Monday
+头 | tóu | head
+疼 | téng | to hurt
+热 | rè | hot
+发烧 | fā shāo | to have a fever
+别 | bié | don't
+去 | qù | to go
+了@stop | le | (别…了: don't … any more)
+医院 | yī yuàn | hospital
+吧 | ba | (let's …)
+离 | lí | (distance) from
+家 | jiā | home
+走路 | zǒu lù | to walk
+就 | jiù | only; then
+到 | dào | to arrive
+了 | le | (the action is done)
+看病 | kàn bìng | to see a doctor
+的 | de | 's; of; (links a description to a noun)
+多 | duō | many
+多@more | duō | more; over (一个多小时 = over an hour; 好多了 = much better)
+一 | yī | one; a
+一边 | yī biān | (一边…一边: while …)
+看 | kàn | to look (at)
+让 | ràng | to tell (someone to); to make
+应该 | yīng gāi | should
+休息 | xiū xi | to rest
+医生 | yī shēng | doctor
+女 | nǚ | woman; female
+从 | cóng | from
+什么 | shén me | what (什么时候 = when)
+舒服 | shū fu | comfortable; well
+的@shi | de | (是…的: says when or how)
+昨天 | zuó tiān | yesterday
+嘴 | zuǐ | mouth
+又 | yòu | then also
+听 | tīng | to listen (to)
+心 | xīn | heart
+感冒 | gǎn mào | a cold
+要紧 | yào jǐn | serious (不要紧 = nothing serious)
+要 | yào | to have to
+喝 | hē | to drink
+水 | shuǐ | water
+睡觉 | shuì jiào | to sleep
+天 | tiān | day
+还 | hái | still
+好 | hǎo | well; good
+再 | zài | again
+来 | lái | to come
+药 | yào | medicine
+睡 | shuì | to sleep
+给 | gěi | for (someone)
+做 | zuò | to make
+碗 | wǎn | bowl
+汤 | tāng | soup
+得 | de | (links a verb to how it is done)
+快 | kuài | fast
+第二 | dì èr | second (第二天 = the next day)
+越来越 | yuè lái yuè | more and more
+星期三 | xīng qī sān | Wednesday
+同学们 | tóng xué men | classmates
+哪儿 | nǎr | where
+在 | zài | at; in
+躺 | tǎng | to lie down

@@ -26,7 +26,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 6;
+const DATA_VERSION = 7;
 
 const _loading = {};
 function loadScript(src) {
@@ -1760,14 +1760,117 @@ async function pageReader() {
         The meanings are worked out from the dictionary, so now and then one will be off.</p>
       <textarea id="reader-text" placeholder="把中文放在这里…">${esc(readerText())}</textarea>
       <p class="row" style="margin-top:10px"><button class="btn" id="do-read">Read it</button></p>
-    </div>`);
+    </div>
+
+    <h2 class="sec-h">Books</h2>
+    <div class="decomp-box pad">
+      <p class="muted small">A book (EPUB) or a long text file opens here a page at a time, and remembers where you
+        are. Books stay in this browser.</p>
+      <div id="book-list"></div>
+      <p class="row"><label class="btn quiet book-pick">Open a book or text file…<input type="file" id="book-file"
+        accept=".epub,.txt,text/plain,application/epub+zip" hidden></label><span class="small" id="book-msg"></span></p>
+    </div>
+
+    ${/^https?:$/.test(location.protocol) ? `<h2 class="sec-h">From any web page</h2>
+    <div class="decomp-box pad">
+      <p class="muted small">Drag this button to your bookmarks bar. On a page in Chinese, click it to read the page here
+        (or select a part first, to read just that).</p>
+      <p><a class="btn quiet bookmarklet" href="${esc(bookmarklet())}" onclick="return false"
+        title="Drag me to the bookmarks bar">📖 Read in HanziHome</a></p>
+      <p class="small muted">In the desktop app, Read the screen does this for anything on screen.</p>
+    </div>` : ''}`);
   document.getElementById('do-read').addEventListener('click', () => {
     const t = document.getElementById('reader-text').value;
     if (!t.trim()) return;
     setReaderText(t);
     go('/reader/text');
   });
+  paintBooks();
+  document.getElementById('book-file').addEventListener('change', async e => {
+    const f = e.target.files[0], msg = document.getElementById('book-msg');
+    e.target.value = '';
+    if (!f) return;
+    msg.textContent = 'Opening…'; msg.classList.remove('sync-err');
+    try {
+      await needBooks();
+      const book = await Books.open(f);
+      go('/reader/book/' + book.id);
+    } catch (err) {
+      msg.textContent = err.message || String(err); msg.classList.add('sync-err');
+    }
+  });
   paintRail();
+}
+
+/* ---- books (books.js): kept in this browser, read a page at a time ---- */
+const needBooks = () => Promise.all([loadScript('zip.js'), loadScript('books.js')]);
+
+async function paintBooks() {
+  const box = document.getElementById('book-list');
+  if (!box) return;
+  let list = [];
+  try { await needBooks(); list = await Books.list(); } catch (e) { /* no IndexedDB: nothing kept */ }
+  box.innerHTML = list.length ? `<ul class="books">${list.map(b => `<li>
+      <a href="#/reader/book/${esc(b.id)}"><b class="han">${zhOne(b.title)}</b>${b.author ? ` <span class="muted">${esc(b.author)}</span>` : ''}</a>
+      <span class="small muted">page ${b.at + 1} of ${b.pages}</span>
+      <i class="book-bar"><i style="width:${Math.round(100 * (b.at + 1) / b.pages)}%"></i></i>
+      <button class="btn quiet" data-unbook="${esc(b.id)}" aria-label="Remove ${esc(b.title)}">×</button></li>`).join('')}</ul>` : '';
+  box.querySelectorAll('[data-unbook]').forEach(btn => btn.addEventListener('click', async () => {
+    if (!confirm('Remove this book from this browser?')) return;
+    await Books.remove(btn.dataset.unbook);
+    paintBooks();
+  }));
+}
+
+async function pageBook(id, n) {
+  app.innerHTML = '<p class="muted">Loading…</p>';
+  await needBooks();
+  const book = await optional(Books.get(id));
+  if (!book) { app.innerHTML = '<div class="card"><p class="empty">That book isn\'t in this browser.</p></div>'; return; }
+  const at = Math.max(0, Math.min(book.pages.length - 1, isNaN(n) ? book.at || 0 : n));
+  await need.textStory();
+  const page = book.pages[at];
+  const st = TextStory.textToStory(page.text, HZ);
+  st.zh = book.title;
+  st.en = `${page.ch ? page.ch + ' · ' : ''}page ${at + 1} of ${book.pages.length}`;
+  const link = (k, label) => k >= 0 && k < book.pages.length
+    ? `<a class="btn quiet" href="#/reader/book/${esc(id)}/${k}">${label}</a>` : `<span class="btn quiet" aria-disabled="true">${label}</span>`;
+  showStory(st, 'Back to the reader', `<p class="book-nav">${link(at - 1, '← Previous page')}
+    <span class="small muted">${at + 1} / ${book.pages.length}</span>${link(at + 1, 'Next page →')}</p>`);
+  Books.seen(id, at).catch(() => {});
+}
+
+/* the bookmarklet: run on any page, it opens #/reader/incoming here and hands it the
+   page's text (the selection, else the part of the page with the most Chinese) */
+function bookmarklet() {
+  const here = location.href.split('#')[0] + '#/reader/incoming';
+  return 'javascript:' + encodeURIComponent(`(function(){var s=String(getSelection()).trim(),best=document.body,n=0;
+if(!s){[].forEach.call(document.querySelectorAll('article,main,[role=main],#content,.content,.article,.post'),function(e){
+var k=(e.innerText.match(/[\u4e00-\u9fff]/g)||[]).length;if(k>n){n=k;best=e}})}
+var w=window.open(${JSON.stringify(here)});if(!w){alert('HanziHome: allow pop-ups on this site');return}
+var m={hanzihome:'read',title:document.title,text:(s||best.innerText).slice(0,200000)};
+addEventListener('message',function f(e){if(e.source===w&&e.data&&e.data.hanzihome==='ready'){w.postMessage(m,'*');removeEventListener('message',f)}})})()`
+    .replace(/\n/g, ''));
+}
+
+/* where the bookmarklet opens: say it's ready, take the text, read it */
+function pageIncoming() {
+  app.innerHTML = '<div class="card"><p class="empty">Waiting for the page’s text…</p></div>';
+  const take = e => {
+    const d = e.data;
+    if (!d || d.hanzihome !== 'read' || typeof d.text !== 'string') return;
+    removeEventListener('message', take);
+    setReaderText(d.text.slice(0, 200000), String(d.title || '').slice(0, 80));
+    go('/reader/text');
+  };
+  addEventListener('message', take);
+  if (window.opener) window.opener.postMessage({ hanzihome: 'ready' }, '*');
+  setTimeout(() => {
+    if (currentPath() === '/reader/incoming') {
+      removeEventListener('message', take);
+      app.innerHTML = '<div class="card"><p class="empty">Nothing arrived. Use the Read in HanziHome button from a page in Chinese.</p></div>';
+    }
+  }, 8000);
 }
 
 /* A word is learned only when every character in it is; if any character is
@@ -1828,7 +1931,7 @@ function pageScreen() {
   window.hanzihomeDesktop.readScreen();
 }
 
-function showStory(st, back) {
+function showStory(st, back, nav) {
   _story = st;
   app.innerHTML = `
     <p class="crumb"><a href="#/reader">← ${esc(back)}</a></p>
@@ -1846,7 +1949,9 @@ function showStory(st, back) {
       <div class="readmain">
         <h1 class="storytitle han">${zhOne(st.zh)}</h1>
         <p class="storysub">${esc(st.en)}</p>
+        ${nav || ''}
         <div class="reading-pane" id="pane"></div>
+        ${nav || ''}
       </div>
     </div>`;
 
@@ -2600,7 +2705,7 @@ function offlineFiles() {
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
     'stories', 'readings', 'readerwords', 's2t'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
-      ['textstory.js', 'anki.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
+      ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
     .map(f => f + '?v=' + DATA_VERSION);
 }
 async function offlineStatus() {
@@ -2682,6 +2787,8 @@ function render(keepScroll) {
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'reviews') return pageReviews();
   if (seg[0] === 'calibrate') return pageCalibrate();
+  if (seg[0] === 'reader' && seg[1] === 'book') return pageBook(seg[2], parseInt(seg[3], 10));
+  if (seg[0] === 'reader' && seg[1] === 'incoming') return pageIncoming();
   if (seg[0] === 'reader') return seg[1] ? pageStory(seg[1]) : pageReader();
   if (seg[0] === 'screen') return pageScreen();
   if (seg[0] === 'frequency') return pageFrequency();

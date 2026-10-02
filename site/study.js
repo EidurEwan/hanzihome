@@ -351,7 +351,8 @@ function sentenceAround(el, w) {
 // --------------------------------------------------------------------- Anki
 
 const needAnki = () => Promise.all([
-  window.Anki ? null : loadScript('anki.js'),
+  loadScript('zip.js'),
+  loadScript('anki.js'),
   window.fzstd ? null : loadScript('vendor/fzstd.js'),
   need.textStory(),                                // learnKey's traditional → simplified, the words' readings
 ]);

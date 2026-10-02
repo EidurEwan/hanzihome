@@ -1471,3 +1471,16 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 .anki-cols label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
 .anki-table { margin: 4px 0 12px; }
 .anki-table td { padding: 4px 12px 4px 0; }
+
+/* the reader's books, and the bookmarklet */
+.book-pick { cursor: pointer; }
+.books { list-style: none; padding: 0; margin: 0 0 10px; }
+.books li { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 12px;
+  padding: 8px 0; border-bottom: 1px solid var(--line); }
+.books li a { text-decoration: none; color: var(--ink); min-width: 0; }
+.book-bar { display: block; width: 80px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.book-bar i { display: block; height: 100%; background: var(--green); }
+.books .btn { padding: 2px 9px; }
+.book-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 14px; }
+.book-nav [aria-disabled] { opacity: .45; pointer-events: none; }
+.bookmarklet { cursor: grab; }

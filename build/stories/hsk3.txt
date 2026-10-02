@@ -403,3 +403,96 @@ words:
 和 | hé | and
 才 | cái | only then
 那么 | nà me | so (much)
+
+=== s27
+level: 3
+tag: Lost and found
+zh: 丢了的钱包
+en: The Lost Wallet
+text:
+那 天 下班 以后 ， 我 坐 地铁 回家 。 地铁 上 人 特别 多 ， 我 连 手 都 动 不 了@liao 。 到 了 家 门口 ， 我 一@once 摸 口袋 ， 才 发现 钱包 不见 了@change 。
+
+钱包 里 除了 钱 以外 ， 还有 我 的 身份证 和 银行卡 。 我 越 想 越 着急 ： 钱包 是 被 人 偷 走 的 ， 还是 我 自己 把 它 丢 在 地铁 上 了@change ？ 我 马上 给 银行 打 电话 ， 把 卡 停 了 。
+
+为了 找到 钱包 ， 我 又 回到 了 地铁站 。 工作人员 问 我 ： “ 你 是 几 点 坐 的@shi 车 ？ 坐 的@shi 是 哪 条 线 ？ ” 我 想 了 半天 ， 才 想 起来 。 他 说 ： “ 只要 有 人 把 钱包 交 上来 ， 我们 就 给 你 打 电话 。 ”
+
+回家 的 路 上 ， 我 一直 很 难过 。 那 个 钱包 不 贵 ， 可是 是 我 奶奶 送 给 我 的 。
+
+第二 天 中午 ， 我 的 手机 终于 响 了@change 。 一 个 中学生 在 地铁 的 座位 下面 看见 了 我 的 钱包 ， 把 它 交 给 了 工作人员 。 原来 钱包 不 是 被 人 偷 的 ， 而是 从 我 的 口袋 里 掉 出来 了@change 。 我 去 拿 钱包 的 时候 ， 打开 一@once 看 ， 里面 的 东西 一 样 都 没 少 。 其实 ， 好人 比 我们 想 的 多 。
+words:
+那 | nà | that
+天 | tiān | day
+坐 | zuò | to take (a train); to ride
+地铁 | dì tiě | the underground; subway
+上 | shang | on
+特别 | tè bié | especially
+多 | duō | many; a lot
+连 | lián | even (连…都)
+都 | dōu | (连…都: even …; 一样都没少: not a thing)
+动 | dòng | to move
+了@liao | liǎo | (不了: can't manage to)
+了 | le | (the action is done)
+到 | dào | to arrive at
+家 | jiā | home
+一 | yī | one; a
+一@once | yī | (一 + verb: as soon as; at a glance)
+摸 | mō | to feel
+口袋 | kǒu dai | pocket
+才 | cái | only then
+钱包 | qián bāo | wallet
+不见 | bù jiàn | to be gone
+了@change | le | (a new situation: now)
+里 | li | in
+除了 | chú le | apart from
+以外 | yǐ wài | (除了…以外: apart from …)
+的 | de | 's; of; (the one that …)
+身份证 | shēn fèn zhèng | ID card
+和 | hé | and
+银行卡 | yín háng kǎ | bank card
+越 | yuè | (越…越: the more … the more)
+想 | xiǎng | to think
+着急 | zháo jí | worried
+被 | bèi | (passive: by)
+偷 | tōu | to steal
+走 | zǒu | away (偷走 = to steal)
+还是 | hái shi | or
+把 | bǎ | (把 + object + verb)
+丢 | diū | to lose; to leave behind
+在 | zài | at; on
+给 | gěi | to (someone)
+银行 | yín háng | bank
+打 | dǎ | to make (a phone call)
+卡 | kǎ | card
+停 | tíng | to stop
+又 | yòu | again
+地铁站 | dì tiě zhàn | subway station
+工作人员 | gōng zuò rén yuán | member of staff
+几 | jǐ | what (几点 = what time)
+点 | diǎn | o'clock
+的@shi | de | (是…的: says when or how)
+车 | chē | train
+哪 | nǎ | which
+条 | tiáo | (measure word for lines)
+线 | xiàn | (subway) line
+半天 | bàn tiān | a long time
+起来 | qi lai | (想起来: to remember)
+交 | jiāo | to hand in
+上来 | shang lai | (交上来: to hand in, to the office)
+就 | jiù | then
+一直 | yī zhí | the whole time
+难过 | nán guò | sad
+贵 | guì | expensive
+送 | sòng | to give (as a present)
+第二 | dì èr | second (第二天 = the next day)
+中学生 | zhōng xué shēng | secondary school pupil
+座位 | zuò wèi | seat
+下面 | xià mian | under
+从 | cóng | out of
+出来 | chu lai | out (掉出来 = to fall out)
+去 | qù | to go
+看 | kàn | to look
+里面 | lǐ mian | inside
+样 | yàng | kind; thing (一样都没少 = nothing was missing)
+没 | méi | not (did not)
+少 | shǎo | to be missing
+好人 | hǎo rén | good people

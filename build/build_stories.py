@@ -218,10 +218,23 @@ XREF = re.compile(r"^((old|unofficial|archaic|Japanese)\s+)*(variant of|see |use
                   r"abbr\. for|CL:|Taiwan pr\.|surname |also written)", re.I)
 
 
+def site_data(name):
+    """The first value a site/data/*.js file assigns (HZ.x = {...};)."""
+    text = io.open(os.path.join(ROOT, "site", "data", name), encoding="utf-8").read()
+    return json.JSONDecoder().raw_decode(text, text.index("=") + 1)[0]
+
+
+# Without data/raw/ and the database (they are rebuilt from downloads, see the
+# README), the same facts come from what the site already has: readerwords.js
+# holds every CC-CEDICT word, readings.js every character's readings, hsk.js the
+# HSK vocabulary.
+
 def load_cedict_words():
     """Every headword in CC-CEDICT, to catch mistyped words in the sources."""
     words = set()
     path = os.path.join(ROOT, "data", "raw", "cedict.txt")
+    if not os.path.exists(path):
+        return set(site_data("readerwords.js"))
     for line in io.open(path, encoding="utf-8"):
         if not line.startswith("#"):
             parts = line.split(" ", 2)
@@ -232,6 +245,9 @@ def load_cedict_words():
 
 
 def load_dictionary():
+    if not os.path.exists(DB_PATH):
+        return {ch: [(toned, "/".join(defs)) for toned, defs in rs]
+                for ch, rs in site_data("readings.js").items()}
     db = sqlite3.connect(DB_PATH)
     readings = {}
     for ch, toned, defs in db.execute(
@@ -264,6 +280,15 @@ def dictionary_gloss(readings, ch, syl):
 
 def load_hsk_levels():
     level = {}
+    if not os.path.exists(HSK_PATH):
+        # (hsk.js leaves out many one-character words; the characters' own lists have them)
+        for lv, rows in site_data("hsk.js").items():
+            for row in rows:
+                level[row[0]] = min(int(lv), level.get(row[0], 9))
+        for lv, chars in site_data("hskchars.js").items():
+            for c in chars:
+                level[c] = min(int(lv), level.get(c, 9))
+        return level
     for item in json.load(io.open(HSK_PATH, encoding="utf-8")):
         for tag in item.get("level") or []:
             if tag.startswith("old-") or tag.startswith("new-"):

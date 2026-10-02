@@ -709,3 +709,172 @@ words:
 总 | zǒng | always
 忘 | wàng | to forget
 妈 | mā | mum
+
+=== s30
+level: 6
+tag: An umbrella maker
+zh: 老街的伞铺
+en: The Umbrella Shop
+text:
+老街 的 尽头 有 一 家 伞铺 ， 自 民国 年间 开张 至今 ， 已 有 近 百 年 。 店主 姓 陈 ， 年过六旬 ， 以 手工 制作 油纸伞 为生 。 如今 街上 鲜有 人 撑 油纸伞 ， 店 里 往往 一 整 天 均 无 人 光顾 。
+
+此番 我 回 老家 ， 正 赶上 连日 阴雨 。 我 躲进 伞铺 避雨 ， 只 见 陈 师傅 坐 在 窗前 ， 一丝不苟 地 给 伞面 刷 桐油 。 我 问 他 ： “ 倘若 没 人 买 ， 您 何必 还 做 呢 ？ ” 他 半晌 没有 作声 ， 待 刷 完 最后 一 笔 ， 才 抬起头 来 。
+
+“ 于 你们 年轻人 而言 ， 伞 不过 是 挡雨 的 东西 ， ” 他 说 ， “ 坏 了 就 扔 ， 何尝 想过 它 是 怎么 做 出来 的 ？ 一 把@mw 伞 要 经过 七十 多 道 工序 ， 我 父亲 教 了 我 整整 十 年 。 与其 说 我 在 做 伞 ， 不如 说 我 在 守 着 他 留下 的 手艺 。 ”
+
+他 告诉 我 ， 前 几 年 生意 冷清 ， 以至于 他 一度 想 关门 。 直至 去年 有 个 大学生 把 他 做 伞 的 视频 发 到 网上 为止 ， 伞铺 才 渐渐 有 了 来自 各地 的 订单 。 所谓 “ 酒香 不 怕 巷子 深 ” ， 大概 就是 这个 道理 。
+
+临走 时 ， 我 买 了 一 把@mw 青色 的 油纸伞 。 撑开 的 那 一刻 ， 雨 打 在 伞面 上 ， 声音 清脆 ， 我 不禁 想起 小时候 外婆 撑 着 伞 送 我 上学 的 情景 。 慢 一些 ， 未尝 不是 一 种 幸福 ； 而 守住 一 门 手艺 ， 亦 是 守住 一 段 记忆 。
+words:
+老街 | lǎo jiē | old street
+的 | de | 's; of; (links a description to a noun)
+尽头 | jìn tóu | end
+一 | yī | one; a
+家 | jiā | (measure word for shops)
+伞铺 | sǎn pù | umbrella shop
+自 | zì | from (自…至今: from … until now)
+民国 | Mín guó | the Republic (of China, 1912–49)
+年间 | nián jiān | years; time
+开张 | kāi zhāng | to open (of a shop)
+至今 | zhì jīn | until now
+已 | yǐ | already
+近 | jìn | nearly
+百 | bǎi | hundred
+店主 | diàn zhǔ | shopkeeper
+姓 | xìng | to be surnamed
+陈 | Chén | Chen (surname)
+年过六旬 | nián guò liù xún | past sixty (years old)
+以 | yǐ | (以…为生: to live by …)
+手工 | shǒu gōng | by hand
+制作 | zhì zuò | to make
+油纸伞 | yóu zhǐ sǎn | oil-paper umbrella
+为生 | wéi shēng | to make a living (以…为生)
+街上 | jiē shang | in the street
+鲜有 | xiǎn yǒu | few; rarely
+撑 | chēng | to hold up (an umbrella)
+里 | li | in
+往往 | wǎng wǎng | often
+整 | zhěng | whole
+天 | tiān | day
+均 | jūn | all; throughout
+无 | wú | no (无人 = no one)
+光顾 | guāng gù | to come in (as a customer)
+此番 | cǐ fān | this time
+回 | huí | to go back to
+老家 | lǎo jiā | hometown
+正 | zhèng | just
+赶上 | gǎn shàng | to run into (正赶上 = to arrive just in time for)
+连日 | lián rì | for days on end
+阴雨 | yīn yǔ | grey, rainy weather
+躲进 | duǒ jìn | to take shelter in
+避雨 | bì yǔ | to get out of the rain
+只 | zhǐ | only (只见: all I saw was)
+见 | jiàn | to see
+师傅 | shī fu | master craftsman
+坐 | zuò | to sit
+在 | zài | at; on
+窗前 | chuāng qián | by the window
+一丝不苟 | yī sī bù gǒu | meticulously (not a thread out of place)
+地 | de | (links a description to the verb: …ly)
+给 | gěi | (to) (给伞面刷桐油 = to brush oil on the canopy)
+伞面 | sǎn miàn | canopy (of an umbrella)
+刷 | shuā | to brush on
+桐油 | tóng yóu | tung oil
+倘若 | tǎng ruò | if
+没 | méi | no (没人: no one)
+何必 | hé bì | why bother
+还 | hái | still
+做 | zuò | to make
+呢 | ne | (in questions: then)
+半晌 | bàn shǎng | for a long while
+没有 | méi yǒu | did not
+作声 | zuò shēng | to say anything
+待 | dài | once; not until
+完 | wán | (刷完: to finish brushing)
+最后 | zuì hòu | last
+笔 | bǐ | stroke (of the brush)
+才 | cái | only then
+抬起头 | tái qǐ tóu | to raise one's head
+来 | lai | (抬起头来: up)
+于 | yú | (于…而言: for …)
+年轻人 | nián qīng rén | young people
+而言 | ér yán | (于…而言: as far as … goes)
+伞 | sǎn | umbrella
+不过 | bù guò | only; no more than
+挡雨 | dǎng yǔ | to keep off the rain
+坏 | huài | broken
+了 | le | (the action is done)
+就 | jiù | then; just
+扔 | rēng | to throw away
+何尝 | hé cháng | (何尝…: when have you ever …)
+想过 | xiǎng guo | to have thought about
+怎么 | zěn me | how
+出来 | chu lai | (做出来: to make, to produce)
+把@mw | bǎ | (measure word for things with a handle)
+把 | bǎ | (把 + object + verb)
+要 | yào | to take; to need
+经过 | jīng guò | to go through
+多 | duō | more than (七十多 = over seventy)
+道 | dào | (measure word for steps)
+工序 | gōng xù | step (in making something)
+父亲 | fù qīn | father
+教 | jiāo | to teach
+整整 | zhěng zhěng | a whole; fully
+与其 | yǔ qí | (与其说…不如说: rather than say … better say)
+不如 | bù rú | it would be better to
+守 | shǒu | to keep; to guard
+着 | zhe | (going on: -ing)
+留下 | liú xià | to leave behind
+手艺 | shǒu yì | craft
+前 | qián | (前几年: a few years ago)
+几 | jǐ | a few
+生意 | shēng yi | business
+冷清 | lěng qīng | quiet; deserted
+以至于 | yǐ zhì yú | so much that
+一度 | yī dù | at one time
+想 | xiǎng | to think of (doing)
+关门 | guān mén | to close down
+直至 | zhí zhì | until (直至…为止)
+大学生 | dà xué shēng | university student
+视频 | shì pín | video
+发 | fā | to post (online)
+到 | dào | to; onto
+为止 | wéi zhǐ | (直至…为止: until …)
+渐渐 | jiàn jiàn | gradually
+来自 | lái zì | to come from
+各地 | gè dì | all over
+订单 | dìng dān | order (for goods)
+所谓 | suǒ wèi | what is called; as the saying goes
+酒香 | jiǔ xiāng | the scent of good wine
+怕 | pà | to fear
+巷子 | xiàng zi | alley
+深 | shēn | deep
+大概 | dà gài | probably
+就是 | jiù shì | is exactly
+这个 | zhè ge | this
+道理 | dào li | truth; reason
+临走 | lín zǒu | as I was leaving
+青色 | qīng sè | blue-green
+撑开 | chēng kāi | to open (an umbrella)
+那 | nà | that
+一刻 | yī kè | moment
+雨 | yǔ | rain
+打 | dǎ | to beat (on)
+上 | shang | on
+清脆 | qīng cuì | clear and crisp
+不禁 | bù jīn | can't help (doing)
+想起 | xiǎng qǐ | to recall
+外婆 | wài pó | grandmother (mother's mother)
+送 | sòng | to take (someone somewhere)
+上学 | shàng xué | to go to school
+情景 | qíng jǐng | scene
+未尝 | wèi cháng | (未尝不是: may well be)
+不是 | bù shì | is not
+种 | zhǒng | kind; sort
+幸福 | xìng fú | happiness
+而 | ér | and; while
+守住 | shǒu zhù | to hold on to
+亦 | yì | also (literary)
+段 | duàn | (measure word for periods, memories)
+门 | mén | (measure word for crafts, subjects)
+一些 | yī xiē | a little (慢一些 = a bit slower)
