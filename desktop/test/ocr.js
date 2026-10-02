@@ -161,8 +161,8 @@ async function accuracy() {
   const pct = (dist, len) => `${(100 * (1 - dist / len)).toFixed(1)}%`;
   console.log('Chinese characters read correctly, by style and enlargement (ms per picture). The');
   console.log(`enlargements read once; "auto" and "always" read at ×${DEFAULT} and take a second look at`);
-  console.log('a colour-contrast copy (ocr/Enhance.cs) when the picture is colourful or has boxes of');
-  console.log('their own colour, or always; "colour" and "boxes" are the shares that decide it, "lines"');
+  console.log('a colour-contrast copy (ocr/Enhance.cs) of the rows that are colourful or have boxes of');
+  console.log('their own colour, or of everything; "colour" and "boxes" are their shares, "lines"');
   console.log('the lines taken from the second look. "repaired" runs "auto" through desktop/src/ocrfix.js,');
   console.log('as the app does.\n');
   const COLS = SCALES.map(s => ({ head: `×${s}`, scale: s, enhance: 'off' }))

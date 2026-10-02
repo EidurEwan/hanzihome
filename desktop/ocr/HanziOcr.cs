@@ -96,12 +96,8 @@ namespace HanziOcr
         const double DefaultScale = 1.5;
         const int Strip = 16;                 // rows compared as one unit
         const double FullReadShare = 0.6;     // this much changed: read the whole thing
-        // a second look (Enhance.cs) when at least this share of a picture is colour
-        // edges the engine may not see; desktop/test/ocr.js prints the shares it meets
-        const double ColourMin = 0.002;
-        // or when at least this share of it is boxes of their own colour (highlights,
-        // tags, buttons: light text on dark, or dark on light, in the same lines)
-        const double BoxMin = 0.01;
+        // (a second look, Enhance.cs, goes where rows hold colour edges or boxes of their
+        // own colour: Enhance.Look; desktop/test/ocr.js prints the shares it meets)
 
         static OcrEngine engine;
         static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
@@ -285,20 +281,34 @@ namespace HanziOcr
             return m == "always" || m == "off" ? m : "auto";
         }
 
-        // Recognize, and when the picture has colourful parts (or always, or never,
-        // as mode says) a second look at it redrawn by colour contrast, keeping the
-        // better reading of each line. info, when given, says what happened.
+        // Recognize, and where the picture has colourful parts or boxes of their own
+        // colour (or all of it, or nowhere, as mode says) a second look at those bands
+        // redrawn by colour contrast, keeping the better reading of each line. info,
+        // when given, says what happened.
         static List<Line> Read(Bitmap bmp, double scale, int offX, int offY, string mode, Dictionary<string, object> info)
         {
             var lines = Recognize(bmp, scale, offX, offY);
             if (mode == "off") return lines;
-            double share = Enhance.ColourShare(bmp);
-            double boxes = share < ColourMin ? Enhance.BoxShareOf(bmp) : 0;
-            if (info != null) { info["colour"] = Math.Round(share, 4); info["boxes"] = Math.Round(boxes, 4); }
-            if (mode == "auto" && share < ColourMin && boxes < BoxMin) return lines;
+            var look = Enhance.Look(bmp);
+            var bands = mode == "always" ? new List<int[]> { new[] { 0, bmp.Height } } : look.Bands;
+            if (info != null)
+            {
+                info["colour"] = Math.Round(look.Colour, 4);
+                info["boxes"] = Math.Round(look.Boxes, 4);
+                int rows = 0;
+                foreach (var b in look.Bands) rows += b[1] - b[0];
+                info["looked"] = Math.Round((double)rows / Math.Max(1, bmp.Height), 3);   // share of rows looked at again
+            }
+            if (bands.Count == 0) return lines;
             using (var map = Enhance.ContrastMap(bmp))
             {
-                var second = Recognize(map, scale, offX, offY);
+                var second = new List<Line>();
+                foreach (var b in bands)
+                {
+                    if (b[1] - b[0] < 8) continue;
+                    using (var part = map.Clone(new Rectangle(0, b[0], map.Width, b[1] - b[0]), PixelFormat.Format32bppArgb))
+                        second.AddRange(Recognize(part, scale, offX, offY + b[0]));
+                }
                 var chosen = Enhance.Choose(lines, second);
                 if (info != null)
                 {

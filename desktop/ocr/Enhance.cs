@@ -222,6 +222,56 @@ namespace HanziOcr
             return fw * fh == 0 ? 0 : (double)boxes / (fw * fh);
         }
 
+        // Where a second look is worth its time, row by row: bands of the picture
+        // (tile rows, a row either side) with colour edges (ColourShare's kind) or
+        // boxes of their own colour (BoxShareOf's), and both shares over the whole.
+        public class Survey { public double Colour, Boxes; public List<int[]> Bands = new List<int[]>(); public double[] RowColours, RowBoxes; }
+        const double RowColour = 0.012;   // a row's share of colour edges (plain ClearType text: up to ~0.006)...
+        const double RowBoxes = 0.02;     // ...or of box tiles, that takes it
+
+        public static Survey Look(Bitmap bmp)
+        {
+            int w = bmp.Width, h = bmp.Height;
+            int[] px = Pixels(bmp);
+            int th = (h + Tile - 1) / Tile, tw = (w + Tile - 1) / Tile;
+            var hits = new int[th]; var seen = new int[th];
+            for (int y = 2; y < h - 2; y += 2)
+                for (int x = 2; x < w - 2; x += 2)
+                {
+                    int i = y * w + x, p = px[i];
+                    seen[y / Tile]++;
+                    if ((ColourEdge(p, px[i - 2]) || ColourEdge(p, px[i - 2 * w])) && !NearCore(px, i, w)) hits[y / Tile]++;
+                }
+            double[] share, fineShare;
+            var bg = TileModes(px, w, h, Tile, Reach, out share);
+            var fine = TileModes(px, w, h, Fine, 1, out fineShare);
+            int fw = (w + Fine - 1) / Fine, fh = (h + Fine - 1) / Fine;
+            var boxes = new int[th]; var tiles = new int[th];
+            for (int fy = 0; fy < fh; fy++)
+                for (int fx = 0; fx < fw; fx++)
+                {
+                    int f = fy * fw + fx, r = Clamp(fy * Fine / Tile, 0, th - 1), t = r * tw + Clamp(fx * Fine / Tile, 0, tw - 1);
+                    tiles[r]++;
+                    if (fineShare[f] >= BoxShare && Dist(fine[f], bg[t]) > BoxApart) boxes[r]++;
+                }
+            var s = new Survey { RowColours = new double[th], RowBoxes = new double[th] };
+            int allHits = 0, allSeen = 0, allBoxes = 0, allTiles = 0;
+            for (int r = 0; r < th; r++)
+            {
+                allHits += hits[r]; allSeen += seen[r]; allBoxes += boxes[r]; allTiles += tiles[r];
+                s.RowColours[r] = seen[r] > 0 ? (double)hits[r] / seen[r] : 0;
+                s.RowBoxes[r] = tiles[r] > 0 ? (double)boxes[r] / tiles[r] : 0;
+                bool take = (seen[r] > 0 && (double)hits[r] / seen[r] >= RowColour) || (tiles[r] > 0 && (double)boxes[r] / tiles[r] >= RowBoxes);
+                if (!take) continue;
+                int y0 = Math.Max(0, (r - 1) * Tile), y1 = Math.Min(h, (r + 2) * Tile);
+                if (s.Bands.Count > 0 && y0 <= s.Bands[s.Bands.Count - 1][1]) s.Bands[s.Bands.Count - 1][1] = y1;
+                else s.Bands.Add(new[] { y0, y1 });
+            }
+            s.Colour = allSeen == 0 ? 0 : (double)allHits / allSeen;
+            s.Boxes = allTiles == 0 ? 0 : (double)allBoxes / allTiles;
+            return s;
+        }
+
         public static double ColourShare(Bitmap bmp)
         {
             int w = bmp.Width, h = bmp.Height;
