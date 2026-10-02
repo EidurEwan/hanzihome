@@ -16,6 +16,13 @@ datasets, so this is a reimplementation of the idea with its own data pipeline.
 no build step, no network. Data files load through `<script>` tags rather than `fetch()`,
 which is what lets it work from a plain `file://` URL.
 
+**On a phone, or offline:** opened from the live address, the site keeps every file it has
+used ([`site/sw.js`](site/sw.js), a service worker), so pages you have opened open again without
+a connection, and **Settings → Use offline → Keep everything** fetches the rest (about 70 MB).
+Add it to the home screen from the browser's menu and it opens like an app
+([`site/manifest.webmanifest`](site/manifest.webmanifest)). A new version shows as soon as the
+page is loaded with a connection.
+
 Everything you mark is kept in that browser's `localStorage`. Settings → Export JSON gives
 you a copy to back up or move to another machine, or turn on sync (below).
 

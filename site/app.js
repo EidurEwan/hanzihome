@@ -2226,6 +2226,7 @@ function pageSettings() {
         <p class="st-note">Kept on this device only, so a phone can be dark and a laptop light.</p></div>
     </section>
     <section class="card" id="study-card"></section>
+    ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
     <section class="card">
       <h2>Learning goal</h2>
       <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
@@ -2300,6 +2301,7 @@ function pageSettings() {
   });
   document.getElementById('theme').addEventListener('change', e => { setTheme(e.target.value); render(true); });
   wireSyncCard();
+  if (offlineCan()) paintOffline();
   paintStudySettings();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
@@ -2528,6 +2530,69 @@ function wireSyncCard() {
     });
   }
   Sync.paint();
+}
+
+/* ============================ offline ============================
+   Served from a web address (GitHub Pages), the site installs a service worker
+   (sw.js) that keeps each file once used, so what you have opened opens again
+   without a connection, and Settings → Use offline can fetch the rest. Opened
+   from disk or in the desktop app, everything is already local. */
+const offlineCan = () => 'serviceWorker' in navigator && 'caches' in window && !window.hanzihomeDesktop
+  && (location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
+if (offlineCan()) navigator.serviceWorker.register('sw.js').catch(e => console.warn('offline:', e));
+
+/* every file the site can load on demand, as loadScript asks for it */
+function offlineFiles() {
+  const hex = n => ('0' + n.toString(16)).slice(-2);
+  const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
+  return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
+    'stories', 'readings', 'readerwords'].map(f => `data/${f}.js`)
+    .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
+      ['textstory.js', 'vendor/hanzi-writer.min.js'])
+    .map(f => f + '?v=' + DATA_VERSION);
+}
+async function offlineStatus() {
+  const cache = await caches.open('hanzihome');
+  const have = new Set((await cache.keys()).map(r => new URL(r.url).pathname + new URL(r.url).search));
+  const base = new URL('.', location.href).pathname;
+  const files = offlineFiles();
+  return { files, kept: files.filter(f => have.has(base + f)).length };
+}
+/* fetch whatever isn't kept yet, four at a time; progress(done, total) */
+async function offlineAll(progress) {
+  const cache = await caches.open('hanzihome');
+  const { files } = await offlineStatus();
+  let done = 0, failed = 0;
+  const queue = files.slice();
+  const worker = async () => {
+    while (queue.length) {
+      const f = queue.shift();
+      try { if (!(await cache.match(f))) await cache.add(f); } catch (e) { failed++; }
+      progress(++done, files.length);
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  return failed;
+}
+async function paintOffline() {
+  const box = document.getElementById('offline-card');
+  if (!box) return;
+  const { files, kept } = await offlineStatus();
+  const all = kept === files.length;
+  box.innerHTML = `<h2>Use offline</h2>
+    <p class="muted small">${all ? 'Everything is kept on this device: HanziHome works without a connection.'
+      : `Pages you have opened work without a connection. ${kept} of ${files.length} data files are kept; the rest
+        (stroke order, example words, the reader's dictionary) load the first time you need them.`}
+      On a phone, add it to the home screen (the browser's Share or ⋮ menu) to open it like an app.</p>
+    ${all ? '' : '<div class="row"><button class="btn" id="offline-all">Keep everything (about 70 MB)</button><span class="small muted" id="offline-msg"></span></div>'}`;
+  const btn = document.getElementById('offline-all');
+  if (btn) btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const msg = document.getElementById('offline-msg');
+    const failed = await offlineAll((d, n) => { msg.textContent = `${d} of ${n}…`; });
+    if (failed) msg.textContent = `${failed} files couldn't be fetched. Try again with a connection.`;
+    else paintOffline();
+  });
 }
 
 /* ============================ appearance ============================
