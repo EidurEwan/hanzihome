@@ -1858,6 +1858,8 @@ function pageIncoming() {
   app.innerHTML = '<div class="card"><p class="empty">Waiting for the page’s text…</p></div>';
   const take = e => {
     const d = e.data;
+    // only from the page the button was pressed on, the one that opened this tab
+    if (!window.opener || e.source !== window.opener) return;
     if (!d || d.hanzihome !== 'read' || typeof d.text !== 'string') return;
     removeEventListener('message', take);
     setReaderText(d.text.slice(0, 200000), String(d.title || '').slice(0, 80));
