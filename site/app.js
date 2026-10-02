@@ -289,12 +289,15 @@ function tellDesktop() {
    asking (shrinks()): an emptied copy from an older version of the site did
    exactly that. Syncing pauses (cfg.held) until you choose which to keep. A
    deliberate Reset everything says so (cfg.reset), and the script (version 5)
-   refuses the same kind of upload from any device, and keeps earlier copies. */
+   refuses the same kind of upload from any device, and keeps earlier copies.
+
+   A passphrase (script version 6) locks the script: set from Settings, kept here
+   beside the URL and sent with every request. */
 
 const REDEPLOY = 'Paste the current sync/Code.gs into the Apps Script editor, save, then Deploy → '
   + 'Manage deployments → Edit (pencil) → Version: New version → Deploy.';
 const OLD_SCRIPT = 'Your deployment is still running the old script, which asks for a sync key. ' + REDEPLOY;
-const SCRIPT_VERSION = 5;           // sync/Code.gs's VERSION
+const SCRIPT_VERSION = 6;           // sync/Code.gs's VERSION
 
 /* how much a copy of the store holds: statuses, review items, known components,
    notes and list entries */
@@ -308,7 +311,7 @@ function heft(d) {
 const shrinks = (from, to) => heft(from) >= 20 && heft(to) < heft(from) / 2;
 
 const Sync = {
-  cfgKey: 'hanzihome.sync',          // {url, rev, dirty, lastSync}
+  cfgKey: 'hanzihome.sync',          // {url, key, rev, dirty, lastSync}
   baseKey: 'hanzihome.sync.base',    // the store as of the last successful sync
   timer: null, busy: null, again: false, error: '', lastRun: 0, retries: 0,
 
@@ -344,7 +347,7 @@ const Sync = {
       res = await fetch(c.url, {
         method: 'POST', redirect: 'follow',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(c.key ? Object.assign({ key: c.key }, body) : body),
       });
     } catch (e) {
       // Google's own error pages carry no CORS header, so a wrong URL, an access
@@ -357,6 +360,16 @@ const Sync = {
     let j;
     try { j = await res.json(); }
     catch (e) { throw new Error("That URL didn't answer like the HanziHome script. Use the web app URL ending in /exec."); }
+    if (!j.ok && /^(locked|wrong-passphrase|slow-down)$/.test(j.error)) {
+      const err = new Error({
+        'locked': 'This sync is locked with a passphrase, and this device needs it.',
+        'wrong-passphrase': "That passphrase doesn't match the one this sync is locked with.",
+        'slow-down': `Too many wrong passphrases: the script refuses everything for ${j.minutes || 15} minutes.`,
+      }[j.error]);
+      err.code = 'locked';
+      throw err;
+    }
+    if (typeof j.locked === 'boolean') this.locked = j.locked;
     if (!j.ok && !j.conflict && soft) return j;
     if (!j.ok && j.error === 'shrink') {
       const err = new Error('held');
@@ -376,6 +389,7 @@ const Sync = {
         'script-error': `The script ran but failed: ${j.message}`,
         'busy': 'The sheet was busy. Try again in a moment.',
         'too-large': 'Your data is too large for the script to accept.',
+        'short-passphrase': `A passphrase needs at least ${j.min || 6} characters.`,
       }[j.error] || `The script refused the request (${j.error || 'unknown error'}).`);
     }
     return j;
@@ -538,6 +552,8 @@ const Sync = {
     this.scriptChecked = true;
     fetch(this.cfg().url, { redirect: 'follow' }).then(r => r.json()).then(info => {
       this.oldScript = !!(info && info.app === 'HanziHome sync' && (info.version || 0) < SCRIPT_VERSION);
+      this.scriptVersion = info && info.version || 0;
+      if (info && typeof info.locked === 'boolean') this.locked = info.locked;
       this.paint();
     }).catch(() => {});
   },
@@ -559,15 +575,29 @@ const Sync = {
     else markNav(currentPath());
   },
 
-  async connect(url) {
-    const trial = { url };
+  async connect(url, key) {
+    const trial = key ? { url, key } : { url };
     this.errorCode = '';
-    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL
+    await this.post({ action: 'pull' }, trial);   // fails loudly on a wrong URL or passphrase
     // rev 0 and dirty: the first cycle merges this browser's data with the sheet's
-    this.setCfg({ url, rev: 0, dirty: true, lastSync: 0 });
+    this.setCfg(Object.assign({ url, rev: 0, dirty: true, lastSync: 0 }, key ? { key } : {}));
     this.scriptChecked = false;                  // a new deployment: check its script again
     this.setBase(null);
     this.error = '';
+    return this.run();
+  },
+
+  /* lock the script with a passphrase, change it, or ('' ) remove it */
+  async lock(newKey) {
+    const j = await this.post({ action: 'lock', newKey });
+    this.update({ key: newKey || undefined });
+    this.locked = j.locked;
+    this.paint();
+  },
+  /* this device's passphrase, after another device locked the sync */
+  unlock(key) {
+    this.update({ key });
+    this.error = ''; this.errorCode = '';
     return this.run();
   },
 
@@ -611,10 +641,52 @@ const Sync = {
       if (help) {
         help.innerHTML = c && this.errorCode === 'unreachable' ? syncTroubleHtml(c.url)
           : c && this.oldScript ? `<p class="small sync-err">Your deployment runs an older sync script. Updating it
-            makes syncing quicker and safer (a sync can no longer catch a save half-way): ${esc(REDEPLOY)}</p>` : '';
+            makes syncing quicker and safer, and lets you lock it with a passphrase: ${esc(REDEPLOY)}</p>` : '';
       }
+      this.paintLock(c);
     }
   },
+};
+
+/* the passphrase part of the sync card: drawn again only when what it shows changes,
+   so typing into it is never wiped */
+Sync.paintLock = function (c) {
+  const box = document.getElementById('sync-lock-box');
+  if (!box) return;
+  const state = !c ? '' : this.errorCode === 'locked' ? 'needs' : this.locked === true ? 'locked'
+    : this.locked === false && !this.oldScript ? 'open' : '';
+  if (box.dataset.state === state) return;
+  box.dataset.state = state;
+  box.innerHTML = {
+    needs: `<div class="row"><input id="sync-key" class="sync-key" type="password" autocomplete="off"
+        placeholder="Passphrase"><button class="btn" id="sync-unlock">Unlock</button></div>`,
+    open: `<p class="small muted">Anyone who has the URL can read and change your synced progress. Lock it with a
+        passphrase, which each device asks for once:</p>
+      <div class="row"><input id="sync-key" class="sync-key" type="password" autocomplete="new-password"
+        placeholder="New passphrase (6+ characters)"><button class="btn quiet" id="sync-lock">Lock</button></div>`,
+    locked: `<p class="small muted">Locked with a passphrase: a device needs it as well as the URL.</p>
+      <details class="sync-help"><summary>Change or remove the passphrase</summary>
+        <div class="row"><input id="sync-key" class="sync-key" type="password" autocomplete="new-password"
+          placeholder="New passphrase"><button class="btn quiet" id="sync-lock">Change</button>
+          <button class="btn quiet" id="sync-unlock-all">Remove</button></div>
+        <p class="small muted">Other devices then ask for the new one. Forgotten it everywhere? In the Apps Script
+          editor, Project Settings → Script properties: delete <code>lockHash</code>.</p></details>`,
+  }[state] || '';
+  const $ = id => document.getElementById(id);
+  const say = (e) => { box.insertAdjacentHTML('beforeend', `<p class="small sync-err">${esc(e.message)}</p>`); };
+  if ($('sync-unlock')) {
+    const go = () => { const k = $('sync-key').value; if (k) this.unlock(k); };
+    $('sync-unlock').addEventListener('click', go);
+    $('sync-key').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  }
+  if ($('sync-lock')) $('sync-lock').addEventListener('click', () => {
+    const k = $('sync-key').value;
+    if (k.length < 6) return say(new Error('A passphrase needs at least 6 characters.'));
+    this.lock(k).catch(say);
+  });
+  if ($('sync-unlock-all')) $('sync-unlock-all').addEventListener('click', () => {
+    if (confirm('Remove the passphrase? Anyone with the URL can then read and change your synced progress.')) this.lock('').catch(say);
+  });
 };
 
 function ago(t) {
@@ -2209,7 +2281,7 @@ function syncCardBody() {
       </ol>
       <p class="small muted">The script can only open the one Sheet it is attached to. "Anyone" lets
         your browsers reach it without signing in, so anyone with the URL can read and change your
-        synced progress. Keep the URL to yourself.
+        synced progress. Keep the URL to yourself, and lock it with a passphrase once connected.
         After editing the script later, deploy a new version of the same deployment so the URL stays the same.</p>
     </details>`;
   if (c) {
@@ -2226,6 +2298,7 @@ function syncCardBody() {
           device doesn't. The synced copy's earlier versions are below, if the script keeps them.</p>
       </div>
       <div id="sync-help-box"></div>
+      <div id="sync-lock-box"></div>
       <div class="row">
         <button class="btn" id="sync-now">Sync now</button>
         <button class="btn quiet" id="sync-backups">Earlier copies…</button>
@@ -2240,6 +2313,8 @@ function syncCardBody() {
     <div class="sync-form">
       <label>Web app URL<input id="sync-url" type="url" spellcheck="false" autocomplete="off"
         placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <label>Passphrase <span class="muted">(only if you locked it)</span><input id="sync-key-new" type="password"
+        autocomplete="off"></label>
       <div class="row"><button class="btn" id="sync-connect">Connect</button>
         <span class="small" id="sync-msg"></span></div>
       <div id="sync-help-box"></div>
@@ -2293,7 +2368,7 @@ function wireSyncCard() {
       $('sync-connect').disabled = true;
       msg.textContent = 'Connecting…';
       try {
-        await Sync.connect(url);
+        await Sync.connect(url, $('sync-key-new').value);
         if (Sync.error) throw new Error(Sync.error);
         render(true);
       } catch (e) {

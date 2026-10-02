@@ -30,12 +30,17 @@ Google Sheet you own. Every browser connected to it stays in step.
 3. In HanziHome, **Settings → Sync with Google Sheets**: paste the URL. Repeat in each browser.
 
 The script is marked `@OnlyCurrentDoc`, so it can only open the Sheet it is attached to.
-"Anyone" means browsers can reach it without a Google sign-in. There is no password, so anyone
-who has the `/exec` URL can read and replace your synced progress: keep the URL private. After
-changing the script, use **Manage deployments → Edit → New version** so the URL stays the same.
+"Anyone" means browsers can reach it without a Google sign-in, so anyone who has the `/exec` URL
+can read and replace your synced progress: keep the URL private, and lock it with a passphrase
+(**Settings → Sync**, once connected). A locked script refuses every request without the
+passphrase, and stops answering for a quarter of an hour after 10 wrong ones. Each device asks
+for it once and keeps it beside the URL; the script keeps only a salted hash, in its script
+properties. Forgotten it? In the Apps Script editor, **Project Settings → Script properties**,
+delete `lockHash`. After changing the script, use **Manage deployments → Edit → New version**
+so the URL stays the same.
 
 To check a deployment, open the `/exec` URL in a **private window** (the site is not signed in to
-Google, so that is what it sees). A working one shows `"version":5` and `"sheet":"ok"`. A
+Google, so that is what it sees). A working one shows `"version":6` and `"sheet":"ok"`. A
 sign-in page means *Execute as* is not *Me* or access is not *Anyone*. A `"problem"` names what
 stops the script opening its Sheet.
 

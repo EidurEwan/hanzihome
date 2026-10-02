@@ -1019,7 +1019,13 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
   font: inherit; font-weight: 400; color: var(--ink); padding: 8px 12px;
   border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); min-width: 0;
 }
-.sync-form input:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.sync-form input:focus, .sync-key:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.sync-key {
+  font: inherit; color: var(--ink); padding: 7px 12px; flex: 1 1 200px; max-width: 320px;
+  border: 1px solid var(--line-2); border-radius: 8px; background: var(--panel); min-width: 0;
+}
+#sync-lock-box { margin-bottom: 12px; }
+#sync-lock-box:empty { display: none; }
 .sync-line { margin: 4px 0 12px; color: var(--ink-2); }
 .sync-err { color: var(--accent) !important; }
 .sync-help { margin-top: 14px; font-size: 13.5px; }
