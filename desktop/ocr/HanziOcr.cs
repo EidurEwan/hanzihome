@@ -15,10 +15,13 @@
 //   {"id":1,"cmd":"hello"}
 //   {"id":2,"cmd":"monitors"}                    monitors and the foreground window
 //   {"id":3,"cmd":"file","path":"a.png","scale":1.5}
+//        optional "enhance": "auto" (the default), "always" or "off": whether to take
+//        a second look at colourful text (Enhance.cs); the reply says if it did
 //   {"id":4,"cmd":"screen","monitor":0,"scale":1.5,"incremental":true}
 //        optional "x","y","w","h" read a region instead of a whole monitor;
 //        without "monitor", the monitor under the foreground window;
-//        "picture":"a.png" reads that file as if it were the screen (for tests)
+//        "picture":"a.png" reads that file as if it were the screen (for tests);
+//        "enhance" as for "file"
 //   {"id":5,"cmd":"forget"}                      drop remembered frames
 //   {"id":7,"cmd":"color","x":0,"y":0,"w":40,"h":40}   average colour there (tests)
 //   {"id":8,"cmd":"foreground"}                  {"process":"notepad"}: the program in front
@@ -87,12 +90,15 @@ namespace HanziOcr
 
     static class Program
     {
-        const int Version = 2;
+        const int Version = 3;
         // Enlargement before OCR. desktop/test/ocr.js measured ×1.5 as the best single
         // setting (~97.6% of characters on its test pictures, against ~94% at ×1).
         const double DefaultScale = 1.5;
         const int Strip = 16;                 // rows compared as one unit
         const double FullReadShare = 0.6;     // this much changed: read the whole thing
+        // a second look (Enhance.cs) when at least this share of a picture is colour
+        // edges the engine may not see; desktop/test/ocr.js prints the shares it meets
+        const double ColourMin = 0.002;
 
         static OcrEngine engine;
         static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
@@ -105,6 +111,7 @@ namespace HanziOcr
             // physical pixels everywhere, whatever the display scaling
             Native.SetProcessDpiAwarenessContext(new IntPtr(-4));   // PER_MONITOR_AWARE_V2
             engine = OcrEngine.TryCreateFromLanguage(new Windows.Globalization.Language("zh-Hans-CN"));
+            Enhance.LoadRanks(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "common.txt"));
             output = new StreamWriter(Console.OpenStandardOutput(), new UTF8Encoding(false));
             output.AutoFlush = true;
 
@@ -112,7 +119,7 @@ namespace HanziOcr
             if (args.Length > 0)
             {
                 if (engine == null) { output.WriteLine("Chinese OCR is not installed."); return 1; }
-                var r = ReadFile(args[0], args.Length > 1 ? double.Parse(args[1]) : DefaultScale);
+                var r = ReadFile(args[0], args.Length > 1 ? double.Parse(args[1]) : DefaultScale, "auto", null);
                 foreach (var line in r) output.WriteLine(line.Text);
                 return 0;
             }
@@ -163,8 +170,8 @@ namespace HanziOcr
                 case "file":
                     {
                         var sw = Stopwatch.StartNew();
-                        var lines = ReadFile(Str(req, "path"), Num(req, "scale", DefaultScale));
                         var r = new Dictionary<string, object>();
+                        var lines = ReadFile(Str(req, "path"), Num(req, "scale", DefaultScale), Mode(req), r);
                         r["lines"] = LinesJson(lines);
                         r["ms"] = sw.ElapsedMilliseconds;
                         return r;
@@ -191,6 +198,7 @@ namespace HanziOcr
             r["languages"] = langs;
             r["maxSide"] = (int)OcrEngine.MaxImageDimension;
             r["text"] = true;                                   // text-at, read-text, "screen" with "text"
+            r["enhance"] = true;                                // "enhance" on "file" and "screen"
             return r;
         }
 
@@ -261,11 +269,41 @@ namespace HanziOcr
 
         // ------------------------------------------------------------- reading
 
-        static List<Line> ReadFile(string path, double scale)
+        static List<Line> ReadFile(string path, double scale, string mode, Dictionary<string, object> info)
         {
             using (var bmp = new Bitmap(path))
             using (var argb = To32(bmp))
-                return Recognize(argb, scale, 0, 0);
+                return Read(argb, scale, 0, 0, mode, info);
+        }
+
+        static string Mode(Dictionary<string, object> req)
+        {
+            string m = Str(req, "enhance");
+            return m == "always" || m == "off" ? m : "auto";
+        }
+
+        // Recognize, and when the picture has colourful parts (or always, or never,
+        // as mode says) a second look at it redrawn by colour contrast, keeping the
+        // better reading of each line. info, when given, says what happened.
+        static List<Line> Read(Bitmap bmp, double scale, int offX, int offY, string mode, Dictionary<string, object> info)
+        {
+            var lines = Recognize(bmp, scale, offX, offY);
+            if (mode == "off") return lines;
+            double share = Enhance.ColourShare(bmp);
+            if (info != null) info["colour"] = Math.Round(share, 4);
+            if (mode == "auto" && share < ColourMin) return lines;
+            using (var map = Enhance.ContrastMap(bmp))
+            {
+                var second = Recognize(map, scale, offX, offY);
+                var chosen = Enhance.Choose(lines, second);
+                if (info != null)
+                {
+                    int kept = 0;
+                    foreach (var l in chosen) if (second.Contains(l)) kept++;
+                    info["second"] = kept;                      // lines taken from the second look
+                }
+                return chosen;
+            }
         }
 
         static Bitmap To32(Bitmap src)
@@ -300,6 +338,7 @@ namespace HanziOcr
             double scale = Num(req, "scale", DefaultScale);
             bool incremental = !req.ContainsKey("incremental") || (bool)req["incremental"];
             bool text = stand == null && req.ContainsKey("text") && (bool)req["text"];
+            string mode = Mode(req);
             string key = rect.X + "," + rect.Y + "," + rect.Width + "," + rect.Height;
 
             using (var bmp = stand ?? new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
@@ -348,7 +387,7 @@ namespace HanziOcr
                 List<Line> lines;
                 if (full)
                 {
-                    lines = Recognize(bmp, scale, rect.X, rect.Y);
+                    lines = Read(bmp, scale, rect.X, rect.Y, mode, null);
                     bands = new List<int[]> { new[] { 0, rect.Height } };
                 }
                 else
@@ -359,7 +398,7 @@ namespace HanziOcr
                         if (!Touches(bands, line.Y - rect.Y, line.Bottom - rect.Y)) lines.Add(line);
                     foreach (var b in bands)
                         using (var part = bmp.Clone(new Rectangle(0, b[0], rect.Width, b[1] - b[0]), PixelFormat.Format32bppArgb))
-                            lines.AddRange(Recognize(part, scale, rect.X, rect.Y + b[0]));
+                            lines.AddRange(Read(part, scale, rect.X, rect.Y + b[0], mode, null));
                     lines.Sort(delegate(Line a, Line c) { return a.Y != c.Y ? a.Y.CompareTo(c.Y) : a.X.CompareTo(c.X); });
                 }
                 times["ocr"] = sw.ElapsedMilliseconds;

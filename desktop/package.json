@@ -33,7 +33,8 @@
       "src/**",
       "assets/**",
       "data/**",
-      "ocr/bin/hanzi-ocr.exe"
+      "ocr/bin/hanzi-ocr.exe",
+      "ocr/bin/common.txt"
     ],
     "asarUnpack": [
       "ocr/bin/**"
