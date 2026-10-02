@@ -416,22 +416,6 @@ namespace HanziOcr
             return s;
         }
 
-        // How much a reading looks like Chinese, all its lines together; and per
-        // character, which tells a good reading (most characters common) from a poor one.
-        public static double Total(List<Line> lines)
-        {
-            double t = 0;
-            foreach (var l in lines) t += Score(l);
-            return t;
-        }
-
-        public static double PerChar(List<Line> lines)
-        {
-            int n = 0;
-            foreach (var l in lines) n += Program.CodePoints(l.Text).Count;
-            return n == 0 ? 0 : Total(lines) / n;
-        }
-
         // Put two readings of one picture together. Lines of both that sit on the same
         // row and overlap make a group; each group keeps the reading that scores
         // higher, the first one unless the second is clearly better. A line only the

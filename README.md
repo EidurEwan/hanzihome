@@ -370,6 +370,13 @@ in Chrome, looking a word up takes about 10 ms; checking an unchanged screen, ab
 switch in Settings → Desktop app turns this off. `npx electron test/text.js` (in `desktop/`)
 compares both ways with where the characters really are.
 
+Windows' OCR sees only brightness, so coloured text close in brightness to its background,
+and white text in dark boxes, is read a second time from a copy redrawn by colour, and each
+line keeps the reading that looks more like Chinese: dark highlights went from 38% to 62% of
+characters read right, colour on colour from 83% to 91%; plain text is read once, as before.
+Calligraphy, handwriting and display fonts are still read poorly (about a quarter right),
+as is text with a shadow. `desktop/test/ocr.js` measures all of these on Windows in CI.
+
 Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from
 here; `npm run dist` builds the installer. Ready-built installers are on the repo's
 [Releases](https://github.com/EidurEwan/hanzihome/releases) page, built on Windows by

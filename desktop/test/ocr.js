@@ -164,11 +164,9 @@ async function accuracy() {
   console.log('a colour-contrast copy (ocr/Enhance.cs) of the rows that are colourful or have boxes of');
   console.log('their own colour, or of everything; "colour" and "boxes" are their shares, "lines"');
   console.log('the lines taken from the second look. "repaired" runs "auto" through desktop/src/ocrfix.js,');
-  console.log('as the app does. "best" is what look-ups under the pointer get: when the reading looks');
-  console.log('poor (few common characters), ×2, ×1 and the contrast copy are tried too, the most Chinese kept.\n');
+  console.log('as the app does.\n');
   const COLS = SCALES.map(s => ({ head: `×${s}`, scale: s, enhance: 'off' }))
-    .concat([{ head: 'auto', scale: DEFAULT, enhance: 'auto' }, { head: 'always', scale: DEFAULT, enhance: 'always' },
-      { head: 'best', scale: DEFAULT, enhance: 'auto', best: true }]);
+    .concat([{ head: 'auto', scale: DEFAULT, enhance: 'auto' }, { head: 'always', scale: DEFAULT, enhance: 'always' }]);
   console.log('style'.padEnd(28) + COLS.map(c => c.head.padStart(14)).join('') + 'colour'.padStart(8) + 'boxes'.padStart(7) +
     'lines'.padStart(7) + 'repaired'.padStart(10));
   const totals = COLS.map(() => ({ dist: 0, len: 0, hardDist: 0, hardLen: 0 }));
@@ -184,11 +182,11 @@ async function accuracy() {
     for (const [ci, col] of COLS.entries()) {
       let dist = 0, len = 0, ms = 0;
       for (const job of mine) {
-        const r = await ocr.request('file', { path: job.out, scale: col.scale, enhance: col.enhance, best: !!col.best });
+        const r = await ocr.request('file', { path: job.out, scale: col.scale, enhance: col.enhance });
         const want = han(job.text);
         dist += align(want, han(readText(r.lines))).dist;
         len += want.length; ms += r.ms;
-        if (col.enhance === 'auto' && !col.best) {
+        if (col.enhance === 'auto') {
           colour += (r.colour || 0) / mine.length;
           boxes += (r.boxes || 0) / mine.length;
           second += r.second || 0;
