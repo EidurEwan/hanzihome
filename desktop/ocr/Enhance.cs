@@ -30,7 +30,8 @@ namespace HanziOcr
         const int Near = 20;          // how far a flat patch's colour reaches
         const int Fine = 8;           // the finer background: 8 px tiles, 24 px around
         const double BoxShare = 0.5;  // a box: its colour covers this much of the 24 px around...
-        const int BoxApart = 60;      // ...and is this far from the page's
+        const int BoxApart = 60;      // ...and is this far from the page's...
+        const double PageShare = 0.35; // ...where there is a page: one colour over this much of 120 px around
 
         // ---------------------------------------------------------------- the map
 
@@ -161,6 +162,37 @@ namespace HanziOcr
                 if (i + w < near.Length) Spread(near, steps, queue, ref tail, i, i + w);
             }
 
+            // The open page: page-coloured pixels joined to a steady patch of page through
+            // page colour. Page showing at a box's edge is that; white text inside a dark
+            // box, closed in by the box, is not, though it has the page's colour.
+            var open = new bool[w * h];
+            head = 0; tail = 0;
+            for (int y = 2; y < h - 2; y++)
+                for (int x = 2; x < w - 2; x++)
+                {
+                    int i = y * w + x;
+                    if (Close(px[i], bg[Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1)]) && Flat2(px, i, w)) { open[i] = true; queue[tail++] = i; }
+                }
+            while (head < tail)
+            {
+                int i = queue[head++], x = i % w, y = i / w;
+                int page = bg[Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1)];
+                if (x > 0 && !open[i - 1] && Close(px[i - 1], page)) { open[i - 1] = true; queue[tail++] = i - 1; }
+                if (x < w - 1 && !open[i + 1] && Close(px[i + 1], page)) { open[i + 1] = true; queue[tail++] = i + 1; }
+                if (i >= w && !open[i - w] && Close(px[i - w], page)) { open[i - w] = true; queue[tail++] = i - w; }
+                if (i + w < open.Length && !open[i + w] && Close(px[i + w], page)) { open[i + w] = true; queue[tail++] = i + w; }
+            }
+
+            // which fine tiles are boxes (a colour of their own, most of the 24 px around, on a page)
+            int fh = (h + Fine - 1) / Fine;
+            var isBox = new bool[fw * fh];
+            for (int fy = 0; fy < fh; fy++)
+                for (int fx = 0; fx < fw; fx++)
+                {
+                    int f = fy * fw + fx, pg = Clamp(fy * Fine / Tile, 0, th - 1) * tw + Clamp(fx * Fine / Tile, 0, tw - 1);
+                    isBox[f] = fineShare[f] >= BoxShare && share[pg] >= PageShare && Dist(fine[f], bg[pg]) > BoxApart;
+                }
+
             // the map: a pixel's distance from its background
             var outPx = new int[w * h];
             for (int y = 0; y < h; y++)
@@ -181,12 +213,23 @@ namespace HanziOcr
                     // ...or, nearer, the nearest flat patch...
                     if (near[i] >= 0) d = Dist(p, near[i]);
                     // ...or, inside a box (where the fine background is a colour of its own,
-                    // covering most of the 24 px around), the box: white text in a dark box
-                    // comes out dark. Not steady page showing through (a strip between lines).
-                    int f = (y / Fine) * fw + x / Fine;
-                    if (fineShare[f] >= BoxShare && Dist(fine[f], bg[Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1)]) > BoxApart
-                        && !(near[i] >= 0 && steps[i] == 0 && Close(p, bg[Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1)])))
-                        d = Dist(p, fine[f]);
+                    // covering most of the 24 px around, on a page), the box: white text in a
+                    // dark box comes out dark. Not the open page at the box's edge.
+                    int fx0 = x / Fine, fy0 = y / Fine, f = fy0 * fw + fx0;
+                    int pg = Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1);
+                    if (isBox[f]) d = open[i] ? Dist(p, bg[pg]) : Dist(p, fine[f]);
+                    else
+                    {
+                        // the rim of a box, in a tile the page mostly fills: the box's colour is background too
+                        for (int dy = -1; dy <= 1; dy++)
+                            for (int dx = -1; dx <= 1; dx++)
+                            {
+                                int nx = fx0 + dx, ny = fy0 + dy;
+                                if (nx < 0 || ny < 0 || nx >= fw || ny >= fh) continue;
+                                int g = ny * fw + nx;
+                                if (isBox[g] && Close(p, fine[g])) d = Math.Min(d, Dist(p, fine[g]));
+                            }
+                    }
                     int v = 255 - Clamp((int)((d - Quiet) * 255 / (Full - Quiet)), 0, 255);
                     outPx[i] = unchecked((int)0xff000000) | (v << 16) | (v << 8) | v;
                 }
@@ -217,7 +260,7 @@ namespace HanziOcr
                 for (int fx = 0; fx < fw; fx++)
                 {
                     int f = fy * fw + fx, t = Clamp(fy * Fine / Tile, 0, th - 1) * tw + Clamp(fx * Fine / Tile, 0, tw - 1);
-                    if (fineShare[f] >= BoxShare && Dist(fine[f], bg[t]) > BoxApart) boxes++;
+                    if (fineShare[f] >= BoxShare && share[t] >= PageShare && Dist(fine[f], bg[t]) > BoxApart) boxes++;
                 }
             return fw * fh == 0 ? 0 : (double)boxes / (fw * fh);
         }
@@ -252,7 +295,7 @@ namespace HanziOcr
                 {
                     int f = fy * fw + fx, r = Clamp(fy * Fine / Tile, 0, th - 1), t = r * tw + Clamp(fx * Fine / Tile, 0, tw - 1);
                     tiles[r]++;
-                    if (fineShare[f] >= BoxShare && Dist(fine[f], bg[t]) > BoxApart) boxes[r]++;
+                    if (fineShare[f] >= BoxShare && share[t] >= PageShare && Dist(fine[f], bg[t]) > BoxApart) boxes[r]++;
                 }
             var s = new Survey { RowColours = new double[th], RowBoxes = new double[th] };
             int allHits = 0, allSeen = 0, allBoxes = 0, allTiles = 0;

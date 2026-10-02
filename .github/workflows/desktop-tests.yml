@@ -36,6 +36,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # first, so a mistake in the C# shows in seconds, not after the language install
+      - run: node ocr/build.js render
       # Windows OCR reads Chinese only once the Chinese OCR language is installed.
       - name: Install the Chinese OCR language
         shell: powershell
@@ -44,7 +46,6 @@ jobs:
           $cap | Format-Table Name, State
           if ($cap -and $cap.State -ne 'Installed') { Add-WindowsCapability -Online -Name $cap.Name | Out-Null }
           Get-WindowsCapability -Online | Where-Object Name -like 'Language.OCR*' | Where-Object State -eq 'Installed' | Format-Table Name
-      - run: node ocr/build.js render
       - run: node test/ocr.js
       - uses: actions/upload-artifact@v4
         if: always()
