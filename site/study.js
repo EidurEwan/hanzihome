@@ -348,6 +348,113 @@ function sentenceAround(el, w) {
   return hit.trim().slice(0, 160);
 }
 
+// --------------------------------------------------------------------- Anki
+
+const needAnki = () => Promise.all([
+  window.Anki ? null : loadScript('anki.js'),
+  window.fzstd ? null : loadScript('vendor/fzstd.js'),
+  need.textStory(),                                // learnKey's traditional → simplified, the words' readings
+]);
+
+function wireAnki(redraw) {
+  const exp = document.getElementById('anki-export'), file = document.getElementById('anki-file');
+  if (!exp || !file) return;
+  exp.addEventListener('click', async () => {
+    await needAnki();
+    const blob = new Blob([Anki.exportText(Store.load().items)], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `hanzihome-anki-${today()}.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  file.addEventListener('change', async () => {
+    const box = document.getElementById('anki-import');
+    const f = file.files[0];
+    file.value = '';
+    if (!f) return;
+    box.innerHTML = '<p class="small muted">Reading the deck…</p>';
+    try {
+      await needAnki();
+      const deck = await Anki.read(f);
+      if (!deck.notes.length) throw new Error('That deck has no notes in it.');
+      ankiPreview(box, f.name, deck, Anki.guess(deck.names, deck.notes), redraw);
+    } catch (e) {
+      box.innerHTML = `<p class="small sync-err">${esc(e.message || String(e))}</p>`;
+    }
+  });
+}
+
+/* what an imported note becomes: the dictionary's pinyin and meanings where it has
+   the character or word (so answers are checked the usual way), the deck's meaning
+   first when it has one */
+function ankiInfo(x) {
+  let info;
+  if (x.kind === 'char') info = charInfo(x.k);
+  else {
+    const e = HZ.rwords && HZ.rwords[x.k], rs = (e && e[2]) || [];
+    info = { pin: rs[0] ? rs[0][0] : '', mean: rs[0] ? rs[0][1] : '', alts: rs.map(r => r[1]) };
+  }
+  if (!info.pin) info.pin = Anki.marks(x.pin);
+  if (x.mean) {
+    info.alts = [...new Set([info.mean].concat(info.alts || []).filter(Boolean))];
+    info.mean = x.mean.length > 80 ? x.mean.slice(0, 79) + '…' : x.mean;
+  }
+  return info;
+}
+
+function ankiPreview(box, name, deck, cols, redraw) {
+  const d = Store.load();
+  const list = cols.hanzi >= 0 ? Anki.items(deck.notes, cols) : [];
+  const fresh = list.filter(x => !d.items[x.k]);
+  const label = i => esc(deck.names[i] || `Field ${i + 1}`) + (deck.notes[0] && deck.notes[0].fields[i]
+    ? ` (${esc(deck.notes[0].fields[i].slice(0, 18))})` : '');
+  const pick = (id, at, none) => `<select class="st-select" data-col="${id}">${none ? `<option value="-1">${none}</option>` : ''}${
+    Array.from({ length: cols.fields }, (_, i) => `<option value="${i}"${i === at ? ' selected' : ''}>${label(i)}</option>`).join('')}</select>`;
+  box.innerHTML = `<div class="anki-prev">
+    <p class="small"><b>${esc(name)}</b>: ${deck.notes.length} notes, ${list.length} with Chinese in them,
+      <b>${fresh.length} new</b> to HanziHome${list.length - fresh.length ? `, ${list.length - fresh.length} already here` : ''}.</p>
+    <div class="anki-cols">
+      <label>Hanzi ${pick('hanzi', cols.hanzi)}</label>
+      <label>Pinyin ${pick('pinyin', cols.pinyin, 'none (from the dictionary)')}</label>
+      <label>Meaning ${pick('meaning', cols.meaning, 'none (from the dictionary)')}</label>
+    </div>
+    ${list.length ? `<table class="anki-table"><tbody>${list.slice(0, 6).map(x => `<tr>
+      <td class="han">${zhOne(x.k)}</td><td>${esc(x.pin)}</td><td class="muted">${esc(x.mean.slice(0, 60))}</td></tr>`).join('')}
+      </tbody></table>` : '<p class="small sync-err">No field holds just Chinese characters: choose the hanzi field above.</p>'}
+    ${fresh.length ? `<div class="row">
+      <button class="btn" id="anki-lessons">Add ${fresh.length} to lessons</button>
+      <button class="btn quiet" id="anki-known">I know these: add ${fresh.length} to reviews</button></div>
+      <p class="small muted">To lessons: each is taught before it's reviewed, within your daily limits. Known: they join the
+        reviews at Journeyman, the first ones spread over the next month (20 a day at most), and a calibration test can
+        sort them.</p>` : ''}
+  </div>`;
+  box.querySelectorAll('[data-col]').forEach(sel => sel.addEventListener('change', () => {
+    ankiPreview(box, name, deck, Object.assign({}, cols, { [sel.dataset.col]: +sel.value }), redraw);
+  }));
+  const before = Object.keys(d.items).length;
+  const done = n => {
+    Store.save(); redraw();
+    const more = Object.keys(Store.load().items).length - before - n;   // characters a word brought along
+    document.getElementById('anki-import').innerHTML = `<p class="small">Added ${n} from ${esc(name)}${more > 0
+      ? `, and ${more} character${more === 1 ? '' : 's'} in those words, ahead of them` : ''}.</p>`;
+  };
+  const lessons = document.getElementById('anki-lessons');
+  if (lessons) lessons.addEventListener('click', () => {
+    for (const x of fresh) Store.learnAdd(x.k, x.kind, ankiInfo(x));
+    done(fresh.length);
+  });
+  const known = document.getElementById('anki-known');
+  if (known) known.addEventListener('click', () => {
+    const now = Date.now(), span = Math.max(30, Math.ceil(fresh.length / 20)) * Learn.DAY;
+    fresh.forEach((x, i) => {
+      d.items[x.k] = Learn.known(x.kind, ankiInfo(x), now, Math.round(span * i / fresh.length));
+      if (x.kind === 'char') d.status[x.k] = 'learned';
+    });
+    done(fresh.length);
+  });
+}
+
 // ---------------------------------------------------------------------- hub
 
 function pageStudy() {
@@ -442,6 +549,16 @@ function drawStudy() {
         Apprentice from a week, Journeyman from a month (learned, on the rest of the site), Expert from
         4 months, Master from 2 years. Characters you mark learned join at Journeyman; a
         <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.</p>
+    </section>
+    <section class="card" id="anki-card">
+      <h2 class="caps">Anki</h2>
+      <p class="small muted">Take your lessons and reviews to Anki, or bring an Anki deck here.</p>
+      <div class="row">
+        <button class="btn quiet" id="anki-export"${items.length ? '' : ' disabled'}>Export for Anki</button>
+        <label class="btn quiet anki-pick">Import a deck…<input type="file" id="anki-file"
+          accept=".apkg,.colpkg,.txt,.tsv,.csv" hidden></label>
+      </div>
+      <div id="anki-import"></div>
     </section>`, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { Store.learnRemove(b.dataset.rm); redraw(); }));
@@ -450,6 +567,7 @@ function drawStudy() {
   if (mis) mis.addEventListener('click', () => startPractice(mistakes));
   const back = document.getElementById('lx-back');
   if (back) back.addEventListener('click', () => { Store.vacation(false); redraw(); });
+  wireAnki(redraw);
   const add = document.getElementById('lx-addmissing');
   if (add) add.addEventListener('click', () => {
     for (const c of missing) { Store.learnAdd(c, 'char', charInfo(c)).prio = true; }

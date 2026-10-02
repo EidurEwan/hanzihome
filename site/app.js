@@ -2600,7 +2600,7 @@ function offlineFiles() {
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
     'stories', 'readings', 'readerwords', 's2t'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
-      ['textstory.js', 'vendor/hanzi-writer.min.js'])
+      ['textstory.js', 'anki.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
     .map(f => f + '?v=' + DATA_VERSION);
 }
 async function offlineStatus() {

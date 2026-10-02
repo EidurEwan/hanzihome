@@ -1463,3 +1463,11 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 
 /* both kinds of characters: the traditional form beside the simplified one */
 .trad { font-size: .6em; margin-left: .12em; opacity: .75; }
+
+/* the Study page's Anki card */
+.anki-pick { cursor: pointer; }
+.anki-prev { margin-top: 12px; }
+.anki-cols { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 8px 0 10px; }
+.anki-cols label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.anki-table { margin: 4px 0 12px; }
+.anki-table td { padding: 4px 12px 4px 0; }

@@ -169,6 +169,14 @@ word skipping have no counterpart here: every item is one you added, and nothing
 The rules are in [`site/learn.js`](site/learn.js), checked by `node test/learn.js`; characters
 that were being learned with the old flashcards start at Novice I.
 
+**Anki** — the Study page's Anki card exports your lessons and reviews as a file Anki imports
+as it is (hanzi, pinyin, meaning, the sentence you found it in, your mnemonic, tags for kind and
+stage), and imports an Anki deck: a `.apkg` (old or new format, read in the page with sql.js and
+fzstd from `site/vendor/`) or Anki's plain-text export. It guesses which field is the hanzi,
+the pinyin and the meaning (you can change them), shows what it found, and adds the new ones to
+your lessons, or to your reviews at Journeyman if you already know them. Traditional decks are
+kept under their simplified form, and the dictionary's readings are used where it has the word.
+
 **Reader** — 24 original graded stories, four per HSK level, each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and
 simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
@@ -202,6 +210,7 @@ Appearance too, or follows the device.
 | [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) | HSK levels | MIT |
 | [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) (Make Me a Hanzi's graphics) | stroke order, writing practice | Arphic Public License |
 | [Hanzi Writer](https://github.com/chanind/hanzi-writer) (`site/vendor/`) | drawing strokes and checking written ones | MIT |
+| [sql.js](https://github.com/sql-js/sql.js), [fzstd](https://github.com/101arrowz/fzstd) (`site/vendor/`) | reading Anki decks | MIT |
 
 ```
 build/build.py          data/raw/*  ->  data/hanzicraft.db   (SQLite, ~28 MB)
