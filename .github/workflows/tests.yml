@@ -1,7 +1,5 @@
-# Runs the tests on every push and pull request.
-#   site     the study schedule, sync, the reader's readings and accuracy (Node only)
-#   desktop  builds the OCR helper on Windows, measures how well it reads test pictures,
-#            and builds the installer (kept with the run, under Artifacts)
+# Runs the site's tests on every push and pull request: the study schedule, sync, the
+# reader's readings and accuracy (Node only). The desktop app's are in desktop-tests.yml.
 name: Tests
 
 on:
@@ -30,39 +28,3 @@ jobs:
       - run: node test/polyphones.js
       - run: node test/polyphones.js --heldout
       - run: node test/accuracy.js
-
-  desktop:
-    runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: desktop
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      # Windows OCR reads Chinese only once the Chinese OCR language is installed.
-      - name: Install the Chinese OCR language
-        shell: powershell
-        run: |
-          $cap = Get-WindowsCapability -Online | Where-Object Name -like 'Language.OCR~~~zh-CN*'
-          $cap | Format-Table Name, State
-          if ($cap -and $cap.State -ne 'Installed') { Add-WindowsCapability -Online -Name $cap.Name | Out-Null }
-          Get-WindowsCapability -Online | Where-Object Name -like 'Language.OCR*' | Where-Object State -eq 'Installed' | Format-Table Name
-      - run: node ocr/build.js render
-      - run: node test/ocr.js
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ocr-test-pictures
-          path: desktop/test/out/*.png
-          if-no-files-found: ignore
-      # the installer, as a release would build it, kept with the run for trying a branch
-      - run: npm ci
-      - run: npm run dist -- --publish never
-      - uses: actions/upload-artifact@v4
-        with:
-          name: HanziHome-installer
-          path: |
-            desktop/dist/*.exe
-            desktop/dist/latest.yml
