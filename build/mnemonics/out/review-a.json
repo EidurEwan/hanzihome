@@ -1,0 +1,512 @@
+[
+ {
+  "c": "得",
+  "pin": "dé",
+  "key": "to get",
+  "m": "Your *footsteps* go out at *sunrise* and your *thumb* presses the deal: you **get** what you came for."
+ },
+ {
+  "c": "后",
+  "pin": "hòu",
+  "key": "after",
+  "m": "Under the *leaning cliff* a *covered mouth* waits until everyone has gone, and speaks only **after**."
+ },
+ {
+  "c": "成",
+  "pin": "chéng",
+  "key": "to become",
+  "m": "A *swarm* charges, but one *halberd* holds them off; the lone guard **becomes** a hero."
+ },
+ {
+  "c": "方",
+  "pin": "fāng",
+  "key": "direction",
+  "m": "A *lid* sits on a compass box, and its needle swings to show the **direction**."
+ },
+ {
+  "c": "法",
+  "pin": "fǎ",
+  "key": "method",
+  "m": "*Water drops* flow over the *soil*, and an *elbow* steers them into the field: a clever farming **method**."
+ },
+ {
+  "c": "如",
+  "pin": "rú",
+  "key": "if",
+  "m": "A *woman* opens her *mouth* to bargain: \"**If** you lower the price, I'll buy.\""
+ },
+ {
+  "c": "现",
+  "pin": "xiàn",
+  "key": "now",
+  "m": "The *watcher* cries out as the *king* suddenly appears: he is here, right **now**."
+ },
+ {
+  "c": "天",
+  "pin": "tiān",
+  "key": "day",
+  "m": "A *big man* lifts the *plank* of the shutter: the sky is light, a new **day** has begun."
+ },
+ {
+  "c": "进",
+  "pin": "jìn",
+  "key": "to enter",
+  "m": "Laying *two planks* over the muddy *road* to the door, you step across and **enter**."
+ },
+ {
+  "c": "部",
+  "pin": "bù",
+  "key": "part",
+  "m": "From a *podium* on the *hillside*, a *mouth* gives orders, and each **part** of the army moves."
+ },
+ {
+  "c": "样",
+  "pin": "yàng",
+  "key": "appearance",
+  "m": "A *sheep* grazing under a *tree*: you know it by its woolly **appearance**, the way it looks."
+ },
+ {
+  "c": "长",
+  "pin": "cháng",
+  "key": "long",
+  "m": "Hair streams down past the end of the *plank*, on and on: very **long**."
+ },
+ {
+  "c": "被",
+  "pin": "bèi",
+  "key": "by (passive)",
+  "m": "A *shirt* sewn from a soft *hide* is thrown over you: you are covered, acted on **by** someone else."
+ },
+ {
+  "c": "利",
+  "pin": "lì",
+  "key": "benefit",
+  "m": "A *standing knife* cuts the *grain stalk* in one stroke: a fast harvest, a real **benefit**."
+ },
+ {
+  "c": "代",
+  "pin": "dài",
+  "key": "generation",
+  "m": "A *standing person* hands the *tethered arrow* to his son: the bow passes to the next **generation**."
+ },
+ {
+  "c": "信",
+  "pin": "xìn",
+  "key": "to believe",
+  "m": "A *standing person* stands by his *speech bubble*: his word is good, so you **believe** him."
+ },
+ {
+  "c": "表",
+  "pin": "biǎo",
+  "key": "to show",
+  "m": "A *seedling top* stitched on a *robe hem*, worn on the outside to **show** everyone."
+ },
+ {
+  "c": "次",
+  "pin": "cì",
+  "key": "time (occurrence)",
+  "m": "*Icicles* make the queue *yawn* in the cold, again and again: the third **time** this week."
+ },
+ {
+  "c": "度",
+  "pin": "dù",
+  "key": "degree",
+  "m": "A *right hand* turns the thermometer and reads the mark: how many **degrees**."
+ },
+ {
+  "c": "解",
+  "pin": "jiě",
+  "key": "to solve",
+  "m": "The butcher finds the joint below the *ox horn* and the whole ox comes apart: the puzzle is **solved**."
+ },
+ {
+  "c": "义",
+  "pin": "yì",
+  "key": "meaning",
+  "m": "*Scissors* cut a *drop* of ink out of the sentence, and its **meaning** changes."
+ },
+ {
+  "c": "题",
+  "pin": "tí",
+  "key": "question",
+  "m": "Under the *sun*, at the *foot stop*, you read the *page* of the exam: the first **question**."
+ },
+ {
+  "c": "别",
+  "pin": "bié",
+  "key": "don't",
+  "m": "A *mouth* shouts, a *strong arm* grabs the *standing knife* away: \"**Don't**!\""
+ },
+ {
+  "c": "才",
+  "pin": "cái",
+  "key": "only then",
+  "m": "A *left hand* tries the *slide* again and again, and lands it **only then**, at the very end."
+ },
+ {
+  "c": "程",
+  "pin": "chéng",
+  "key": "process",
+  "m": "*Grain stalk* first, then the *mouth*, then the *king*: food passes step by step through the **process**."
+ },
+ {
+  "c": "张",
+  "pin": "zhāng",
+  "key": "sheet (measure)",
+  "m": "Draw the *bow*, and *long hair* flies over a flat page: one **sheet** of paper."
+ },
+ {
+  "c": "领",
+  "pin": "lǐng",
+  "key": "to lead",
+  "m": "In the *teepee*, an *elbow* nudges the *page* forward: \"Follow me,\" and he **leads** the way."
+ },
+ {
+  "c": "确",
+  "pin": "què",
+  "key": "certain",
+  "m": "A *stone* as hard as an *ox horn*: nothing can crack it, you can be **certain**."
+ },
+ {
+  "c": "切",
+  "pin": "qiē",
+  "key": "to cut",
+  "m": "A *knife* slices clean through the *bent cross* in one stroke: **cut**."
+ },
+ {
+  "c": "候",
+  "pin": "hòu",
+  "key": "time (when)",
+  "m": "A man stands by the post, leaning on his bow, waiting for the right **time**."
+ },
+ {
+  "c": "带",
+  "pin": "dài",
+  "key": "to bring",
+  "m": "A *picket fence* of buckles on your belt: hang your things on it and **bring** them along."
+ },
+ {
+  "c": "干",
+  "pin": "gàn",
+  "key": "to do",
+  "m": "A *plank* nailed on a *cross*: someone's hard at work. What are you **doing**?"
+ },
+ {
+  "c": "英",
+  "pin": "yīng",
+  "key": "British",
+  "m": "A *big man* stands on the *grass* under an *archway* of roses, sipping tea: very **British**."
+ },
+ {
+  "c": "布",
+  "pin": "bù",
+  "key": "cloth",
+  "m": "A *left hand* spreads a *towel* on the table: a piece of **cloth**."
+ },
+ {
+  "c": "叫",
+  "pin": "jiào",
+  "key": "to call",
+  "m": "A *mouth* tangled in a *twisted vine* **calls** out your name."
+ },
+ {
+  "c": "单",
+  "pin": "dān",
+  "key": "single",
+  "m": "*Horns* on top of one long pole: only a **single** animal left."
+ },
+ {
+  "c": "影",
+  "pin": "yǐng",
+  "key": "image",
+  "m": "The *sun* lights *crumbs* and *bristles*, and each casts its **image** on the wall, like a film."
+ },
+ {
+  "c": "质",
+  "pin": "zhì",
+  "key": "quality",
+  "m": "Under a *leaning cliff*, a *cross* is scratched on a *shell* to test its **quality**."
+ },
+ {
+  "c": "团",
+  "pin": "tuán",
+  "key": "group",
+  "m": "A *green shoot* in a *fence*: the gardeners gather round it as one **group**."
+ },
+ {
+  "c": "亚",
+  "pin": "yà",
+  "key": "Asia",
+  "m": "A *plank* under the *scaffold* of a great temple: the vast continent of **Asia**."
+ },
+ {
+  "c": "际",
+  "pin": "jì",
+  "key": "between",
+  "m": "An *altar* stands on the *hillside* at the border, **between** two countries."
+ },
+ {
+  "c": "息",
+  "pin": "xī",
+  "key": "to rest",
+  "m": "Air in through the *nose*, down to the *heart*: breathe slowly and **rest**."
+ },
+ {
+  "c": "线",
+  "pin": "xiàn",
+  "key": "line",
+  "m": "*Twin blades* snip the *silk thread* and stretch it tight: a straight **line**."
+ },
+ {
+  "c": "越",
+  "pin": "yuè",
+  "key": "the more",
+  "m": "A *runner* jumps the *open crate*, then a *halberd*: the higher he goes, **the more** he jumps."
+ },
+ {
+  "c": "照",
+  "pin": "zhào",
+  "key": "to shine",
+  "m": "The *sun* blazes on a *knife* and a *mouth* above the *embers*: everything **shines**."
+ },
+ {
+  "c": "研",
+  "pin": "yán",
+  "key": "to research",
+  "m": "A *stone* rolls back and forth under the *door bar*: grind away at a problem, **research** it."
+ },
+ {
+  "c": "称",
+  "pin": "chēng",
+  "key": "to name",
+  "m": "A *grain stalk* is cut with a *bent knife* and the *crumbs* are labelled: give each one a **name**."
+ },
+ {
+  "c": "企",
+  "pin": "qǐ",
+  "key": "enterprise",
+  "m": "A *person* at the *stop sign* looks ahead, planning a business: an **enterprise**."
+ },
+ {
+  "c": "突",
+  "pin": "tū",
+  "key": "sudden",
+  "m": "A *dog* dashes out of the *cave*: so **sudden**!"
+ },
+ {
+  "c": "号",
+  "pin": "hào",
+  "key": "number",
+  "m": "A *mouth* blows a *puff of breath* and calls out your ticket **number**."
+ },
+ {
+  "c": "周",
+  "pin": "zhōu",
+  "key": "week",
+  "m": "A *mouth* in a *rice field* shouts as the farmer walks his round, seven days a **week**."
+ },
+ {
+  "c": "注",
+  "pin": "zhù",
+  "key": "to focus",
+  "m": "*Water drops* pour onto the *candle* flame, and you watch closely: **focus**."
+ },
+ {
+  "c": "节",
+  "pin": "jié",
+  "key": "festival",
+  "m": "*Grass* stems with knots marking each section of the year, and at each knot a holiday: a **festival**."
+ },
+ {
+  "c": "划",
+  "pin": "huà",
+  "key": "to plan",
+  "m": "A *halberd* and a *standing knife* scratch lines on the ground before battle: drawing up the **plan**."
+ },
+ {
+  "c": "态",
+  "pin": "tài",
+  "key": "attitude",
+  "m": "A *giant* with a gentle *heart*: kindness shows in his whole **attitude**."
+ },
+ {
+  "c": "型",
+  "pin": "xíng",
+  "key": "type",
+  "m": "A *door bar* and a *standing knife* press shapes into the *soil*: each mould makes one **type**."
+ },
+ {
+  "c": "故",
+  "pin": "gù",
+  "key": "reason",
+  "m": "A *cross* over a *mouth*, a *cane* raised: the teacher demands the **reason** for the mischief."
+ },
+ {
+  "c": "境",
+  "pin": "jìng",
+  "key": "surroundings",
+  "m": "*Music* plays as *legs* walk over the *soil*, taking in everything around them: the **surroundings**."
+ },
+ {
+  "c": "纪",
+  "pin": "jì",
+  "key": "era",
+  "m": "A *silk thread* wound into a long *coiled rope*, one loop per year: the record of an **era**."
+ },
+ {
+  "c": "密",
+  "pin": "mì",
+  "key": "secret",
+  "m": "Under a *roof* on the *mountain*, a *pinned heart* hides what no one may know: a **secret**."
+ },
+ {
+  "c": "诉",
+  "pin": "sù",
+  "key": "to tell",
+  "m": "A *small speech bubble* rises over the *chipped axe*: he **tells** you what happened to it."
+ },
+ {
+  "c": "热",
+  "pin": "rè",
+  "key": "hot",
+  "m": "A *helping hand* drops a *pill* of charcoal onto the *embers* and blows: the pot gets **hot**."
+ },
+ {
+  "c": "属",
+  "pin": "shǔ",
+  "key": "to belong to",
+  "m": "A *lying man* under an *archway* sorts every *beetle* into trays, each where it **belongs**."
+ },
+ {
+  "c": "甚",
+  "pin": "shèn",
+  "key": "even",
+  "m": "A child with *legs* dangling sits on an *open crate* of *candy* and eats it all, **even** the wrappers."
+ },
+ {
+  "c": "股",
+  "pin": "gǔ",
+  "key": "stock (share)",
+  "m": "Under the *moon* a trader bangs his *war club* on the desk as his **stock** shares soar."
+ },
+ {
+  "c": "素",
+  "pin": "sù",
+  "key": "plain",
+  "m": "A *seedling top* sprouts beside a *silk skein* still pale and undyed: simple and **plain**."
+ },
+ {
+  "c": "警",
+  "pin": "jǐng",
+  "key": "police",
+  "m": "In the *grass* a guard under a *blanket* hears a noise, bangs his *cane*, and his *mouth* and *speech bubble* call the **police**."
+ },
+ {
+  "c": "获",
+  "pin": "huò",
+  "key": "to obtain",
+  "m": "A *prowling dog* and a big *dog* chase through the *grass* and come back with the prize: **obtained**."
+ },
+ {
+  "c": "卡",
+  "pin": "kǎ",
+  "key": "card",
+  "m": "Something stuck *upstairs*, a *fortune stick* jammed in the lock: slide your **card** to open it."
+ },
+ {
+  "c": "差",
+  "pin": "chà",
+  "key": "short of",
+  "m": "A *sheep* climbs onto the *workbench* and eats one plank: now the work is one **short**."
+ },
+ {
+  "c": "读",
+  "pin": "dú",
+  "key": "to read",
+  "m": "A *small speech bubble* rises over a *shopping basket* of books marked with a *cross*: the child **reads** them one by one."
+ },
+ {
+  "c": "佛",
+  "pin": "fó",
+  "key": "Buddha",
+  "m": "A *standing person* sits so still, his *bow* laid aside, calm and smiling: the **Buddha**."
+ },
+ {
+  "c": "著",
+  "pin": "zhù",
+  "key": "famous",
+  "m": "In the *grass* a man with *grey hair* writes in the *sun*; his book makes him **famous**."
+ },
+ {
+  "c": "穿",
+  "pin": "chuān",
+  "key": "to wear",
+  "m": "In the *cave*, a *fang* pokes a hole in the hide so your head goes through: now you can **wear** it."
+ },
+ {
+  "c": "款",
+  "pin": "kuǎn",
+  "key": "funds",
+  "m": "Someone *yawns* as the clerk counts out the money, bill by bill: the **funds** for the project."
+ },
+ {
+  "c": "版",
+  "pin": "bǎn",
+  "key": "edition",
+  "m": "A *right hand* carves a *wood slice* by a *leaning cliff* and prints from it: the first **edition**."
+ },
+ {
+  "c": "露",
+  "pin": "lù",
+  "key": "to reveal",
+  "m": "*Rain* washes the path; a *kicking foot* and *trudging feet* splash, and a *mouth* gasps as the buried box is **revealed**."
+ },
+ {
+  "c": "席",
+  "pin": "xí",
+  "key": "seat",
+  "m": "A *towel* spread on the floor of the shed: your **seat** at the meeting."
+ },
+ {
+  "c": "忽",
+  "pin": "hū",
+  "key": "suddenly",
+  "m": "You doze under the *blanket*, then your *heart* jumps: **suddenly**, the kettle screams."
+ },
+ {
+  "c": "析",
+  "pin": "xī",
+  "key": "to analyze",
+  "m": "A *tree* trunk split open by an *axe* so you can study its rings: you **analyze** it."
+ },
+ {
+  "c": "遍",
+  "pin": "biàn",
+  "key": "time (round)",
+  "m": "Down the *road*, past every *door* and *archway*, through the *grass*: one full **round**, from start to finish, one **time**."
+ },
+ {
+  "c": "累",
+  "pin": "lèi",
+  "key": "tired",
+  "m": "Weaving a *silk skein* after a day in the *rice field*: you are so **tired**."
+ },
+ {
+  "c": "辛",
+  "pin": "xīn",
+  "key": "toil",
+  "m": "Pick every *chili* in the field, haul it to the *podium*, mark each with a *cross*: hard, endless **toil**."
+ },
+ {
+  "c": "任",
+  "pin": "rèn",
+  "key": "responsibility",
+  "m": "A *standing person* is handed the *shoulder pole*: the load is now his **responsibility**."
+ },
+ {
+  "c": "市",
+  "pin": "shì",
+  "key": "city",
+  "m": "Under a *lid* of canopies, a *towel* for sale at every stall: the market that grew into a **city**."
+ }
+]
