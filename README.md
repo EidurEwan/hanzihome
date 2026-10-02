@@ -105,9 +105,25 @@ Components are clickable: mark one as known and it lights up green everywhere it
 **Study** — lessons and reviews in the style of [HanziHero](https://hanzihero.com). **Add to
 lessons** (on a character's page, or in the reader's word popup, here or on the desktop) puts a
 character or word in a queue, with the sentence you found it in. A lesson, five at a time, goes
-through its parts (a character's components and sound component, a word's characters), a
-mnemonic you write yourself on a scaffold of those parts, its meanings and pronunciation, and
-examples, then asks you to type its pinyin (tone numbers: `ren4shi`), then its meaning.
+through its parts (a character's components, by their picture names, and sound component, a
+word's characters), a mnemonic (HanziHome's own, or one you write on a scaffold of those parts),
+its meanings and pronunciation, and examples, then asks you to type its pinyin (tone numbers:
+`ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
+
+**Words** — a word has a status of its own (Not known, Learning, Learned), which its lessons and
+reviews set as they do a character's, and a card (`#/word/电脑`): its readings and meanings, part
+of speech, measure word, HSK level and frequency, a mnemonic, example sentences with pinyin and
+English, the sentences of the stories it is in, its characters with their mnemonics, and related
+words. The Words page lists the commonest 10,000, each HSK level, or yours, to mark them or add
+them to your lessons; the reader colours a word by its own status once it has one.
+
+**Mnemonics** — the components have picture names (氵 water drops, 勺 ladle, 丷 horns), and the
+3,000 commonest characters mnemonics built from them; the 7,000 commonest words (and every HSK
+word) have a mnemonic, two example sentences and a usage note. They were written for HanziHome
+by Claude agents, commonest first, to the brief in `build/mnemonics/BRIEF.md`:
+`build/mnemonics/make_inputs.js [chars] [words]` writes the next batches, `check.js` checks an
+agent's output, and `merge.js` makes `site/data/cnames.js`, `cmnem.js` and `winfo.js` (giving the
+example sentences their pinyin with the reader's own segmenter).
 
 Reviews are scheduled by [FSRS](https://github.com/open-spaced-repetition) (version 5, its
 default weights), checked against the reference implementation in `test/learn.js`. Each item

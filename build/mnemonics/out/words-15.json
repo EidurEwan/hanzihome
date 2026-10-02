@@ -1,0 +1,3202 @@
+[
+ {
+  "w": "锻炼",
+  "pos": "verb",
+  "m": "**Forge** and **refine** your body like hot metal: **exercise** and **toughen** up.",
+  "ex": [
+   [
+    "我每天早上都去公园锻炼。",
+    "I go to the park to exercise every morning."
+   ],
+   [
+    "这份工作很锻炼人。",
+    "This job really toughens a person up."
+   ]
+  ],
+  "use": "Used for physical exercise (锻炼身体) and for building character or skills."
+ },
+ {
+  "w": "队长",
+  "pos": "noun",
+  "m": "The **chief** of the **squadron**: the **team captain**.",
+  "ex": [
+   [
+    "他是我们足球队的队长。",
+    "He is the captain of our football team."
+   ],
+   [
+    "队长让大家先休息一下。",
+    "The team leader told everyone to take a short break."
+   ]
+  ],
+  "use": "For sports teams and small groups; a company boss is not 队长."
+ },
+ {
+  "w": "体验",
+  "pos": "verb / noun",
+  "m": "Your own **body** **examines** it: you **experience it for yourself**.",
+  "ex": [
+   [
+    "我想体验一下农村生活。",
+    "I'd like to experience country life for myself."
+   ],
+   [
+    "这次旅行是一次很好的体验。",
+    "This trip was a great experience."
+   ]
+  ],
+  "use": "Stresses first-hand experience; 经验 is experience as know-how you have built up."
+ },
+ {
+  "w": "垄断",
+  "pos": "verb / noun",
+  "m": "Put a **ridge** round the fields and **break** off everyone else's access: you **monopolize** it.",
+  "ex": [
+   [
+    "这家公司垄断了整个市场。",
+    "This company has monopolized the whole market."
+   ],
+   [
+    "政府要打破行业垄断。",
+    "The government wants to break up industry monopolies."
+   ]
+  ],
+  "use": "Mostly about markets and business; often 打破垄断, break a monopoly."
+ },
+ {
+  "w": "八戒",
+  "pos": "name / noun",
+  "m": "**Eight** things to **guard against**: the Buddhist **eight precepts**, and the name of the pig monk **Bajie**.",
+  "ex": [
+   [
+    "小朋友都喜欢猪八戒。",
+    "Children all love Zhu Bajie, the pig."
+   ],
+   [
+    "八戒在路上又饿了。",
+    "Bajie got hungry again on the road."
+   ]
+  ],
+  "use": "Usually the pig in Journey to the West, 猪八戒, known for being greedy and lazy."
+ },
+ {
+  "w": "称之为",
+  "pos": "phrase",
+  "m": "**Weigh** it up and name **it** **as**: you **call it** this.",
+  "ex": [
+   [
+    "人们把这里称之为美食街。",
+    "People call this place Food Street."
+   ],
+   [
+    "这种现象可以称之为文化冲突。",
+    "This kind of thing can be called a culture clash."
+   ]
+  ],
+  "use": "Written style; 之 means it. Often 把…称之为 or 被称之为."
+ },
+ {
+  "w": "履行",
+  "pos": "verb",
+  "m": "Put on your **shoes** and **walk** the path you promised: **fulfil** a duty.",
+  "ex": [
+   [
+    "每个人都应该履行自己的责任。",
+    "Everyone should fulfil their own responsibilities."
+   ],
+   [
+    "公司没有履行合同。",
+    "The company did not carry out the contract."
+   ]
+  ],
+  "use": "Formal; goes with 义务, 责任, 合同, 承诺."
+ },
+ {
+  "w": "工商",
+  "pos": "noun",
+  "m": "**Work** and **commerce** together: **industry and commerce**.",
+  "ex": [
+   [
+    "他在工商银行工作。",
+    "He works at the Industrial and Commercial Bank."
+   ],
+   [
+    "开店以前要先去工商局登记。",
+    "Before opening a shop you must register with the business administration office."
+   ]
+  ],
+  "use": "Common in names: 工商银行, 工商局 (business licensing office)."
+ },
+ {
+  "w": "城外",
+  "pos": "noun",
+  "m": "Beyond the **city walls**, **outside**: **outside the city**.",
+  "ex": [
+   [
+    "我们周末去城外爬山。",
+    "We go climbing in the hills outside the city at weekends."
+   ],
+   [
+    "城外的空气比城里好多了。",
+    "The air outside the city is much better than in town."
+   ]
+  ],
+  "use": "Opposite of 城里, in town."
+ },
+ {
+  "w": "小麦",
+  "pos": "noun",
+  "m": "A **small** grain that grows as **wheat**: **wheat**.",
+  "ex": [
+   [
+    "北方人种小麦比较多。",
+    "People in the north mostly grow wheat."
+   ],
+   [
+    "面包是用小麦做的。",
+    "Bread is made from wheat."
+   ]
+  ],
+  "use": "Measure word 粒 for grains; 面粉 is the flour made from it."
+ },
+ {
+  "w": "直径",
+  "pos": "noun",
+  "m": "A **straight** **path** right across the circle: the **diameter**.",
+  "ex": [
+   [
+    "这个圆的直径是十厘米。",
+    "The diameter of this circle is ten centimetres."
+   ],
+   [
+    "这棵树的直径有一米多。",
+    "This tree is more than a metre across."
+   ]
+  ],
+  "use": "Maths and measuring word; radius is 半径."
+ },
+ {
+  "w": "奋斗",
+  "pos": "verb",
+  "m": "**Exert yourself** and **fight** on: **strive** for something.",
+  "ex": [
+   [
+    "他为了梦想一直在奋斗。",
+    "He has kept striving for his dream."
+   ],
+   [
+    "年轻人应该努力奋斗。",
+    "Young people should work hard and strive."
+   ]
+  ],
+  "use": "Often 为…奋斗, strive for something; sounds earnest and positive."
+ },
+ {
+  "w": "西北部",
+  "pos": "noun",
+  "m": "The **west**-**north** **part**: the **northwest part** of a place.",
+  "ex": [
+   [
+    "新疆在中国的西北部。",
+    "Xinjiang is in the northwest of China."
+   ],
+   [
+    "这个国家的西北部有很多山。",
+    "There are many mountains in the northwest of this country."
+   ]
+  ],
+  "use": "Pattern: place + 的 + direction + 部, like 东南部."
+ },
+ {
+  "w": "道教",
+  "pos": "noun",
+  "m": "The religion that **teaches** the **Way**: **Taoism**.",
+  "ex": [
+   [
+    "道教是中国本土的宗教。",
+    "Taoism is a religion native to China."
+   ],
+   [
+    "这座山上有很多道教的庙。",
+    "There are many Taoist temples on this mountain."
+   ]
+  ],
+  "use": "Taoism as a religion; the philosophy is often called 道家."
+ },
+ {
+  "w": "化合物",
+  "pos": "noun",
+  "m": "Things **made into** one by **closing** together into a new **thing**: a **chemical compound**.",
+  "ex": [
+   [
+    "水是一种化合物。",
+    "Water is a compound."
+   ],
+   [
+    "这种化合物对人体有害。",
+    "This compound is harmful to the human body."
+   ]
+  ],
+  "use": "Chemistry term; measure word 种."
+ },
+ {
+  "w": "单纯",
+  "pos": "adjective",
+  "m": "A **single**, **pure** thing with nothing mixed in: **simple** and **pure**.",
+  "ex": [
+   [
+    "她是个很单纯的女孩。",
+    "She is a very innocent, simple-hearted girl."
+   ],
+   [
+    "事情没有你想的那么单纯。",
+    "Things aren't as simple as you think."
+   ]
+  ],
+  "use": "About people: naive or innocent; about matters: uncomplicated. 简单 is simple as in easy."
+ },
+ {
+  "w": "送给",
+  "pos": "verb",
+  "m": "**Send** something **to** someone: **give it as a present**.",
+  "ex": [
+   [
+    "这本书是送给你的。",
+    "This book is a present for you."
+   ],
+   [
+    "我把那束花送给了妈妈。",
+    "I gave that bunch of flowers to my mum."
+   ]
+  ],
+  "use": "Pattern: 送给 + person + thing, or 把 + thing + 送给 + person."
+ },
+ {
+  "w": "千克",
+  "pos": "noun / measure word",
+  "m": "A **thousand** grams, written with the sound of **克**: a **kilogram**.",
+  "ex": [
+   [
+    "这袋大米重十千克。",
+    "This bag of rice weighs ten kilograms."
+   ],
+   [
+    "我最近瘦了两千克。",
+    "I've lost two kilograms recently."
+   ]
+  ],
+  "use": "Formal unit; in speech people say 公斤. 斤 is half a kilo."
+ },
+ {
+  "w": "正面",
+  "pos": "noun / adjective",
+  "m": "The **straight**-on **face** of a thing: the **front**, the **positive side**.",
+  "ex": [
+   [
+    "请在信封的正面写地址。",
+    "Please write the address on the front of the envelope."
+   ],
+   [
+    "我们要多看事情的正面。",
+    "We should look more at the positive side of things."
+   ]
+  ],
+  "use": "Opposite 反面 or 背面; also means positive (正面影响) or head-on (正面回答)."
+ },
+ {
+  "w": "维修",
+  "pos": "verb / noun",
+  "m": "**Preserve** a machine and **fix it up**: **maintenance** and **repair**.",
+  "ex": [
+   [
+    "电梯正在维修，请走楼梯。",
+    "The lift is under repair, please take the stairs."
+   ],
+   [
+    "这台空调需要定期维修。",
+    "This air conditioner needs regular maintenance."
+   ]
+  ],
+  "use": "For machines, buildings, cars; 修理 is a plainer word for repair."
+ },
+ {
+  "w": "议论",
+  "pos": "verb / noun",
+  "m": "**Comment on** it and give **opinions**: people **talk about** it.",
+  "ex": [
+   [
+    "大家都在议论这件事。",
+    "Everyone is talking about this."
+   ],
+   [
+    "别在背后议论别人。",
+    "Don't talk about people behind their backs."
+   ]
+  ],
+  "use": "Often gossip or public discussion; 讨论 is a planned discussion."
+ },
+ {
+  "w": "警察",
+  "pos": "noun",
+  "m": "People who **alert** and **examine**: the **police**.",
+  "ex": [
+   [
+    "我的钱包丢了，快叫警察！",
+    "My wallet's gone, call the police!"
+   ],
+   [
+    "那个警察帮我找到了路。",
+    "That police officer helped me find the way."
+   ]
+  ],
+  "use": "Measure word 个 or 名; 警察局 is a police station."
+ },
+ {
+  "w": "宏观",
+  "pos": "adjective",
+  "m": "Take a **great** **look** at the whole: **macro**, the big picture.",
+  "ex": [
+   [
+    "我们要从宏观上看问题。",
+    "We need to look at the problem from the big picture."
+   ],
+   [
+    "宏观经济最近不太稳定。",
+    "The macroeconomy hasn't been very stable lately."
+   ]
+  ],
+  "use": "Opposite 微观, micro; common in economics and policy talk."
+ },
+ {
+  "w": "名义",
+  "pos": "noun",
+  "m": "A **name** carrying the **right** to act: in someone's **name**.",
+  "ex": [
+   [
+    "我以公司的名义邀请您。",
+    "I invite you on behalf of the company."
+   ],
+   [
+    "他只是名义上的老板。",
+    "He is only the boss in name."
+   ]
+  ],
+  "use": "Fixed patterns: 以…的名义 (in the name of), 名义上 (nominally)."
+ },
+ {
+  "w": "一一",
+  "pos": "adverb",
+  "m": "**One**, then **one** more: **one by one**.",
+  "ex": [
+   [
+    "老师一一回答了学生的问题。",
+    "The teacher answered the students' questions one by one."
+   ],
+   [
+    "请把名字一一写在表上。",
+    "Please write the names on the form one by one."
+   ]
+  ],
+  "use": "Written style; comes before the verb."
+ },
+ {
+  "w": "参数",
+  "pos": "noun",
+  "m": "The **numbers** that **take part** in a formula or machine: **parameters**.",
+  "ex": [
+   [
+    "这台电脑的参数很高。",
+    "This computer has high specs."
+   ],
+   [
+    "请先设置好这些参数。",
+    "Please set these parameters first."
+   ]
+  ],
+  "use": "Used for technical specs of phones, computers, cameras."
+ },
+ {
+  "w": "统帅",
+  "pos": "noun / verb",
+  "m": "The **commander-in-chief** who **gathers** all troops: **to command**, the **supreme commander**.",
+  "ex": [
+   [
+    "他是这支军队的最高统帅。",
+    "He is the supreme commander of this army."
+   ],
+   [
+    "国王亲自统帅大军出征。",
+    "The king personally led the great army to war."
+   ]
+  ],
+  "use": "Formal, military or historical."
+ },
+ {
+  "w": "区长",
+  "pos": "noun",
+  "m": "The **chief** of the **area**: a **district chief**.",
+  "ex": [
+   [
+    "区长今天来学校看了看。",
+    "The district head visited the school today."
+   ],
+   [
+    "他当了五年区长。",
+    "He was district chief for five years."
+   ]
+  ],
+  "use": "Head of a city district (区); compare 市长 mayor, 县长 county head."
+ },
+ {
+  "w": "格局",
+  "pos": "noun",
+  "m": "The **squares** on a board and how the **office** is laid out: a **pattern** or **structure**.",
+  "ex": [
+   [
+    "这套房子的格局很好。",
+    "This flat has a good layout."
+   ],
+   [
+    "世界经济的格局正在变化。",
+    "The pattern of the world economy is changing."
+   ]
+  ],
+  "use": "Used for room layouts and for big-picture setups; 有格局 also means broad-minded."
+ },
+ {
+  "w": "一手",
+  "pos": "noun",
+  "m": "**One** **hand** that can do it well: **a skill**, **mastery**.",
+  "ex": [
+   [
+    "他做菜很有一手。",
+    "He's really good at cooking."
+   ],
+   [
+    "这是我一手带大的孩子。",
+    "This is a child I raised single-handedly."
+   ]
+  ],
+  "use": "有一手 means be skilled at; 一手 before a verb means all by oneself."
+ },
+ {
+  "w": "教练",
+  "pos": "noun / verb",
+  "m": "Someone who **teaches** and makes you **practise**: a **coach**.",
+  "ex": [
+   [
+    "我们的游泳教练很严格。",
+    "Our swimming coach is very strict."
+   ],
+   [
+    "他在学校教练篮球队。",
+    "He coaches the basketball team at school."
+   ]
+  ],
+  "use": "Mostly a noun: 教练 for sports and driving (驾校教练)."
+ },
+ {
+  "w": "古城",
+  "pos": "noun",
+  "m": "**Ancient** **city walls**: an **ancient city**.",
+  "ex": [
+   [
+    "西安是一座有名的古城。",
+    "Xi'an is a famous ancient city."
+   ],
+   [
+    "我们在古城里走了一下午。",
+    "We walked around the old town all afternoon."
+   ]
+  ],
+  "use": "Measure word 座."
+ },
+ {
+  "w": "合格",
+  "pos": "adjective",
+  "m": "It **closes** neatly into the **square** marked for it: **qualified**, up to standard.",
+  "ex": [
+   [
+    "这些产品都合格了。",
+    "These products have all passed inspection."
+   ],
+   [
+    "他是一个合格的老师。",
+    "He is a qualified, capable teacher."
+   ]
+  ],
+  "use": "Opposite 不合格; 及格 is passing a test score."
+ },
+ {
+  "w": "娱乐",
+  "pos": "verb / noun",
+  "m": "**Amuse** people and make them **happy**: **entertainment**.",
+  "ex": [
+   [
+    "周末我喜欢在家看电视娱乐一下。",
+    "At weekends I like to relax at home watching TV."
+   ],
+   [
+    "这个城市的娱乐活动很多。",
+    "There's a lot of entertainment in this city."
+   ]
+  ],
+  "use": "Common as a noun: 娱乐节目, 娱乐圈 (showbiz)."
+ },
+ {
+  "w": "用力",
+  "pos": "verb",
+  "m": "**Use** your **power**: **push hard**, put effort in.",
+  "ex": [
+   [
+    "请用力推门。",
+    "Please push the door hard."
+   ],
+   [
+    "他用力地握了握我的手。",
+    "He shook my hand firmly."
+   ]
+  ],
+  "use": "Physical effort; 努力 is effort in work or study."
+ },
+ {
+  "w": "万历",
+  "pos": "name",
+  "m": "**Ten thousand** **experiences**, a hopeful reign name: **Wanli**, a Ming emperor.",
+  "ex": [
+   [
+    "万历皇帝在位四十多年。",
+    "The Wanli Emperor reigned for over forty years."
+   ],
+   [
+    "这个瓷碗是万历年间的。",
+    "This porcelain bowl is from the Wanli period."
+   ]
+  ],
+  "use": "A reign title (1573–1620); used with 年间 or 皇帝."
+ },
+ {
+  "w": "前景",
+  "pos": "noun",
+  "m": "The **scenery** **in front** of you: the **outlook** or **prospects**.",
+  "ex": [
+   [
+    "这个行业的前景很好。",
+    "This industry has good prospects."
+   ],
+   [
+    "我对未来的前景很乐观。",
+    "I'm optimistic about the outlook for the future."
+   ]
+  ],
+  "use": "Usually means prospects; also foreground in a picture."
+ },
+ {
+  "w": "天子",
+  "pos": "noun",
+  "m": "The **son** of **heaven**: the **emperor**.",
+  "ex": [
+   [
+    "古代的皇帝被称为天子。",
+    "Emperors in ancient times were called the Son of Heaven."
+   ],
+   [
+    "天子住在京城里。",
+    "The emperor lived in the capital."
+   ]
+  ],
+  "use": "Historical and literary; 子 here means son, not a noun suffix."
+ },
+ {
+  "w": "土家族",
+  "pos": "name",
+  "m": "**Earth** **home** **people**: the name of the **Tujia ethnic group**.",
+  "ex": [
+   [
+    "土家族主要住在湖南和湖北。",
+    "The Tujia live mainly in Hunan and Hubei."
+   ],
+   [
+    "她是土家族人。",
+    "She is Tujia."
+   ]
+  ],
+  "use": "One of China's 56 recognized ethnic groups; 族 marks an ethnic group."
+ },
+ {
+  "w": "依赖",
+  "pos": "verb",
+  "m": "**Depend on** and **depend on** again: to **rely on** heavily.",
+  "ex": [
+   [
+    "孩子不能总是依赖父母。",
+    "Children can't always depend on their parents."
+   ],
+   [
+    "我对手机的依赖越来越大。",
+    "I'm getting more and more dependent on my phone."
+   ]
+  ],
+  "use": "Often negative, over-reliance; 依靠 is neutral reliance."
+ },
+ {
+  "w": "少林",
+  "pos": "name",
+  "m": "**Few** trees in the **woods** on Mount Song: **Shaolin**, the famous monastery.",
+  "ex": [
+   [
+    "他去少林寺学过功夫。",
+    "He went to the Shaolin Temple to learn kung fu."
+   ],
+   [
+    "少林功夫在全世界都很有名。",
+    "Shaolin kung fu is famous all over the world."
+   ]
+  ],
+  "use": "Usually 少林寺 (the temple) or 少林功夫."
+ },
+ {
+  "w": "艰难",
+  "pos": "adjective",
+  "m": "**Difficult** and **difficult** again: **hard**, arduous.",
+  "ex": [
+   [
+    "那几年的生活很艰难。",
+    "Life was very hard in those years."
+   ],
+   [
+    "他艰难地站了起来。",
+    "He struggled to his feet."
+   ]
+  ],
+  "use": "Stronger and more written than 难 or 困难."
+ },
+ {
+  "w": "上前",
+  "pos": "verb",
+  "m": "Go **up** to the **front**: **step forward**.",
+  "ex": [
+   [
+    "他上前跟老人打招呼。",
+    "He stepped forward to greet the old man."
+   ],
+   [
+    "警察上前问了几个问题。",
+    "The police officer went up and asked a few questions."
+   ]
+  ],
+  "use": "Often followed by another verb: 上前问, 上前帮忙."
+ },
+ {
+  "w": "海底",
+  "pos": "noun",
+  "m": "The **bottom** of the **ocean**: the **seabed**.",
+  "ex": [
+   [
+    "海底有很多美丽的鱼。",
+    "There are many beautiful fish at the bottom of the sea."
+   ],
+   [
+    "这条隧道是从海底通过的。",
+    "This tunnel runs under the seabed."
+   ]
+  ],
+  "use": "Also in 海底捞, a well-known hotpot chain."
+ },
+ {
+  "w": "行政区域",
+  "pos": "noun",
+  "m": "An **area** and **field** where government **walks** its **political** work: an **administrative area**.",
+  "ex": [
+   [
+    "中国有很多不同的行政区域。",
+    "China has many different administrative areas."
+   ],
+   [
+    "这个镇属于哪个行政区域？",
+    "Which administrative area does this town belong to?"
+   ]
+  ],
+  "use": "Formal; often shortened to 行政区."
+ },
+ {
+  "w": "变为",
+  "pos": "verb",
+  "m": "**Change** and **become**: **change into**.",
+  "ex": [
+   [
+    "沙漠变为了绿洲。",
+    "The desert turned into an oasis."
+   ],
+   [
+    "冰在太阳下慢慢变为水。",
+    "Ice slowly turns into water in the sun."
+   ]
+  ],
+  "use": "Written style of 变成; 为 is read wéi here."
+ },
+ {
+  "w": "佳肴",
+  "pos": "noun",
+  "m": "**Beautiful** **meat dishes**: **fine food**, delicacies.",
+  "ex": [
+   [
+    "桌上摆满了美味佳肴。",
+    "The table was covered with delicious dishes."
+   ],
+   [
+    "这道菜是当地的一道佳肴。",
+    "This dish is a local delicacy."
+   ]
+  ],
+  "use": "Literary; usually 美味佳肴."
+ },
+ {
+  "w": "动员",
+  "pos": "verb / noun",
+  "m": "**Move** every **person** into action: to **mobilize**.",
+  "ex": [
+   [
+    "学校动员学生参加植树活动。",
+    "The school mobilized students to plant trees."
+   ],
+   [
+    "社区开了一次动员大会。",
+    "The community held a rally to get people involved."
+   ]
+  ],
+  "use": "Pattern: 动员 + someone + to do something."
+ },
+ {
+  "w": "大地",
+  "pos": "noun",
+  "m": "The **big** **earth** under the sky: **the earth**, the land.",
+  "ex": [
+   [
+    "春天来了，大地变绿了。",
+    "Spring has come and the land has turned green."
+   ],
+   [
+    "太阳照在大地上。",
+    "The sun shines on the earth."
+   ]
+  ],
+  "use": "Poetic and descriptive; 地球 is the planet Earth."
+ },
+ {
+  "w": "派遣",
+  "pos": "verb",
+  "m": "**Dispatch** a member of the **clique**: **send someone on a mission**.",
+  "ex": [
+   [
+    "公司派遣他去上海工作。",
+    "The company sent him to work in Shanghai."
+   ],
+   [
+    "政府派遣了医疗队去灾区。",
+    "The government dispatched a medical team to the disaster area."
+   ]
+  ],
+  "use": "Formal; in speech 派 alone is common."
+ },
+ {
+  "w": "直至",
+  "pos": "preposition",
+  "m": "Go **straight** on until you **arrive**: **up until**.",
+  "ex": [
+   [
+    "直至深夜，会议才结束。",
+    "The meeting didn't end until late at night."
+   ],
+   [
+    "他每天学习，直至考试结束。",
+    "He studied every day right up until the exam was over."
+   ]
+  ],
+  "use": "Written style of 直到; often 直至今日, to this day."
+ },
+ {
+  "w": "大体",
+  "pos": "adverb / noun",
+  "m": "The **big** **body** of it, not the details: **in general**, **roughly**.",
+  "ex": [
+   [
+    "你的想法大体上是对的。",
+    "Your idea is right on the whole."
+   ],
+   [
+    "我大体知道怎么走了。",
+    "I roughly know how to get there now."
+   ]
+  ],
+  "use": "Often 大体上; similar to 基本上."
+ },
+ {
+  "w": "适才",
+  "pos": "adverb",
+  "m": "Something **fit** just **now** happened: **just now**, a moment ago.",
+  "ex": [
+   [
+    "适才有人来找你。",
+    "Someone came looking for you just now."
+   ],
+   [
+    "适才的话请您别放在心上。",
+    "Please don't take what I said a moment ago to heart."
+   ]
+  ],
+  "use": "Old-fashioned and literary; everyday speech uses 刚才."
+ },
+ {
+  "w": "预期",
+  "pos": "verb / noun",
+  "m": "Set a **period of time** **in advance** in your mind: to **expect**, an **expectation**.",
+  "ex": [
+   [
+    "比赛结果跟我们预期的一样。",
+    "The result of the match was as we expected."
+   ],
+   [
+    "这次考试没有达到预期。",
+    "This exam fell short of expectations."
+   ]
+  ],
+  "use": "Common in 达到预期, 超出预期 (beyond expectations)."
+ },
+ {
+  "w": "党委",
+  "pos": "noun",
+  "m": "The group a **party** **entrusts** with power: a **Party committee**.",
+  "ex": [
+   [
+    "这件事要先报告党委。",
+    "This has to be reported to the Party committee first."
+   ],
+   [
+    "他是学校党委书记。",
+    "He is the Party secretary of the school."
+   ]
+  ],
+  "use": "Short for 党的委员会; 党委书记 is the Party secretary."
+ },
+ {
+  "w": "不易",
+  "pos": "adjective",
+  "m": "**Not** **easy**: hard to do.",
+  "ex": [
+   [
+    "在大城市买房很不易。",
+    "Buying a flat in a big city is not easy."
+   ],
+   [
+    "这个机会来之不易。",
+    "This opportunity didn't come easily."
+   ]
+  ],
+  "use": "More written than 不容易; fixed phrase 来之不易, hard-won."
+ },
+ {
+  "w": "大队",
+  "pos": "noun",
+  "m": "A **big** **squadron**: a **brigade**, a large group.",
+  "ex": [
+   [
+    "大队人马已经出发了。",
+    "The main body of people has already set off."
+   ],
+   [
+    "他是交警大队的队长。",
+    "He is the head of the traffic police brigade."
+   ]
+  ],
+  "use": "Used for police, army or old rural units; 大队人马, a large crowd."
+ },
+ {
+  "w": "世界杯",
+  "pos": "noun",
+  "m": "The **cup** for the whole **world** across every **boundary**: the **World Cup**.",
+  "ex": [
+   [
+    "我每四年都看世界杯。",
+    "I watch the World Cup every four years."
+   ],
+   [
+    "今年的世界杯在哪儿举行？",
+    "Where is this year's World Cup being held?"
+   ]
+  ],
+  "use": "Usually means the football World Cup."
+ },
+ {
+  "w": "招呼",
+  "pos": "verb",
+  "m": "**Beckon** someone and **call** out: to **greet** them or call to them.",
+  "ex": [
+   [
+    "他看见我就跟我打招呼。",
+    "He said hello as soon as he saw me."
+   ],
+   [
+    "有人在门口招呼你。",
+    "Someone is calling you at the door."
+   ]
+  ],
+  "use": "Very common as 打招呼, say hello; also 招呼客人, look after guests."
+ },
+ {
+  "w": "难得",
+  "pos": "adjective",
+  "m": "**Difficult** to **get**: **rare**, seldom.",
+  "ex": [
+   [
+    "这是一个难得的机会。",
+    "This is a rare opportunity."
+   ],
+   [
+    "你难得来一次，多住几天吧。",
+    "You so rarely come, stay a few more days."
+   ]
+  ],
+  "use": "Before a verb it means seldom: 难得见面, rarely meet."
+ },
+ {
+  "w": "丫头",
+  "pos": "noun",
+  "m": "A **head** of hair tied in a **forked** bun: a **girl**.",
+  "ex": [
+   [
+    "这个丫头真聪明。",
+    "This girl is really clever."
+   ],
+   [
+    "丫头，快来吃饭！",
+    "Come and eat, girl!"
+   ]
+  ],
+  "use": "Spoken and affectionate for a young girl or daughter; in old stories, a servant girl."
+ },
+ {
+  "w": "南湖",
+  "pos": "name",
+  "m": "**South** **lake**: **Nanhu**, the name of a lake and of districts.",
+  "ex": [
+   [
+    "我们在南湖边散步。",
+    "We took a walk by South Lake."
+   ],
+   [
+    "南湖公园晚上人很多。",
+    "Nanhu Park is crowded in the evening."
+   ]
+  ],
+  "use": "A place name used in several cities, such as Jiaxing and Wuhan."
+ },
+ {
+  "w": "小型",
+  "pos": "adjective",
+  "m": "A **small** **mould**: **small-scale**, small-sized.",
+  "ex": [
+   [
+    "我们开了一个小型会议。",
+    "We held a small meeting."
+   ],
+   [
+    "这是一家小型公司。",
+    "This is a small company."
+   ]
+  ],
+  "use": "Goes before nouns; opposite 大型, between them 中型."
+ },
+ {
+  "w": "江汉",
+  "pos": "name",
+  "m": "The **river** Yangtze and the **Han** River: **Jianghan**, a region and a district of Wuhan.",
+  "ex": [
+   [
+    "我住在武汉江汉区。",
+    "I live in Jianghan District, Wuhan."
+   ],
+   [
+    "江汉平原是重要的粮食产地。",
+    "The Jianghan Plain is an important grain-growing area."
+   ]
+  ],
+  "use": "Here 汉 is the Han River, not man."
+ },
+ {
+  "w": "不算",
+  "pos": "verb",
+  "m": "**Not** **counted**: **doesn't count**, not considered.",
+  "ex": [
+   [
+    "这次不算，我们再来一次。",
+    "This one doesn't count, let's go again."
+   ],
+   [
+    "今天不算太冷。",
+    "Today isn't really that cold."
+   ]
+  ],
+  "use": "不算 + adjective softens it: not exactly, not too."
+ },
+ {
+  "w": "手续",
+  "pos": "noun",
+  "m": "What your **hand** must **continue** filling in: the **procedure**, paperwork.",
+  "ex": [
+   [
+    "办签证的手续很麻烦。",
+    "The visa paperwork is a lot of hassle."
+   ],
+   [
+    "你先去前台办一下入住手续。",
+    "Go to the front desk and check in first."
+   ]
+  ],
+  "use": "Goes with 办: 办手续, do the formalities."
+ },
+ {
+  "w": "严肃",
+  "pos": "adjective",
+  "m": "**Tightly** sealed and **respectful**: **serious**, solemn.",
+  "ex": [
+   [
+    "老师的表情很严肃。",
+    "The teacher looked very serious."
+   ],
+   [
+    "这是一个严肃的问题。",
+    "This is a serious matter."
+   ]
+  ],
+  "use": "About manner or atmosphere; 严重 is serious as in bad."
+ },
+ {
+  "w": "定位",
+  "pos": "verb / noun",
+  "m": "**Fix** the **position**: to **locate**, to **position**.",
+  "ex": [
+   [
+    "手机可以给你定位。",
+    "Your phone can pinpoint your location."
+   ],
+   [
+    "这个产品的定位是年轻人。",
+    "This product is aimed at young people."
+   ]
+  ],
+  "use": "Means GPS location, and also positioning a product or role."
+ },
+ {
+  "w": "流传",
+  "pos": "verb",
+  "m": "**Flow** on and **pass on**: **spread**, be **handed down**.",
+  "ex": [
+   [
+    "这个故事流传了几百年。",
+    "This story has been handed down for hundreds of years."
+   ],
+   [
+    "网上流传着很多假消息。",
+    "Lots of fake news is circulating online."
+   ]
+  ],
+  "use": "For stories, songs and sayings spreading over time or space."
+ },
+ {
+  "w": "当代",
+  "pos": "noun",
+  "m": "The age we **are** in, **replacing** the last: the **present age**, contemporary.",
+  "ex": [
+   [
+    "她很喜欢当代艺术。",
+    "She loves contemporary art."
+   ],
+   [
+    "这是一本写当代中国的书。",
+    "This is a book about China today."
+   ]
+  ],
+  "use": "Goes before nouns: 当代文学, 当代社会."
+ },
+ {
+  "w": "东南亚",
+  "pos": "name",
+  "m": "**East**-**south** **Asia**: **Southeast Asia**.",
+  "ex": [
+   [
+    "我们打算去东南亚旅游。",
+    "We plan to go travelling in Southeast Asia."
+   ],
+   [
+    "东南亚的水果又多又便宜。",
+    "Fruit in Southeast Asia is plentiful and cheap."
+   ]
+  ],
+  "use": "亚 is short for 亚洲, Asia."
+ },
+ {
+  "w": "转换",
+  "pos": "verb",
+  "m": "**Turn** and **exchange**: **switch**, convert.",
+  "ex": [
+   [
+    "我们换个话题，转换一下心情。",
+    "Let's change the subject and lift the mood."
+   ],
+   [
+    "这个软件可以转换文件格式。",
+    "This app can convert file formats."
+   ]
+  ],
+  "use": "For formats, roles, ways of thinking; 换 alone is more everyday."
+ },
+ {
+  "w": "提起",
+  "pos": "verb",
+  "m": "**Lift** a subject and let it **rise**: **mention**, bring up.",
+  "ex": [
+   [
+    "他从来没提起过他的家人。",
+    "He has never mentioned his family."
+   ],
+   [
+    "一提起考试，我就紧张。",
+    "As soon as exams are mentioned, I get nervous."
+   ]
+  ],
+  "use": "Pattern 一提起…就…, whenever… comes up."
+ },
+ {
+  "w": "清政府",
+  "pos": "noun",
+  "m": "The **Qing** **political** **seat of government**: the **Qing government**.",
+  "ex": [
+   [
+    "清政府签了很多不平等条约。",
+    "The Qing government signed many unequal treaties."
+   ],
+   [
+    "一九一二年清政府结束了。",
+    "The Qing government came to an end in 1912."
+   ]
+  ],
+  "use": "Historical; 清 here is the Qing dynasty, not clear."
+ },
+ {
+  "w": "总司令",
+  "pos": "noun",
+  "m": "The **general** one who **takes charge** and gives **orders**: the **commander-in-chief**.",
+  "ex": [
+   [
+    "他是这支部队的总司令。",
+    "He is the commander-in-chief of this force."
+   ],
+   [
+    "总司令下令马上出发。",
+    "The commander-in-chief ordered them to set off at once."
+   ]
+  ],
+  "use": "Military title; 司令 alone is a commander."
+ },
+ {
+  "w": "非法",
+  "pos": "adjective",
+  "m": "**Not** within the **law**: **illegal**.",
+  "ex": [
+   [
+    "这种行为是非法的。",
+    "This kind of behaviour is illegal."
+   ],
+   [
+    "他因为非法停车被罚了钱。",
+    "He was fined for illegal parking."
+   ]
+  ],
+  "use": "Opposite 合法; often before nouns: 非法收入."
+ },
+ {
+  "w": "公平",
+  "pos": "adjective",
+  "m": "**Public** and **flat**, level for all: **fair**.",
+  "ex": [
+   [
+    "这样做对他不公平。",
+    "Doing this isn't fair to him."
+   ],
+   [
+    "比赛要公平进行。",
+    "The match must be played fairly."
+   ]
+  ],
+  "use": "Often 对…不公平, unfair to someone."
+ },
+ {
+  "w": "淡水鱼",
+  "pos": "noun",
+  "m": "**Fish** from **insipid**, unsalted **water**: **freshwater fish**.",
+  "ex": [
+   [
+    "这条河里有很多淡水鱼。",
+    "There are lots of freshwater fish in this river."
+   ],
+   [
+    "我更喜欢吃淡水鱼。",
+    "I prefer eating freshwater fish."
+   ]
+  ],
+  "use": "Measure word 条; 淡水 means fresh water, 海水鱼 is saltwater fish."
+ },
+ {
+  "w": "苏州",
+  "pos": "name",
+  "m": "**Perilla** herb **prefecture**: the name of **Suzhou**, the garden city.",
+  "ex": [
+   [
+    "苏州的园林非常有名。",
+    "Suzhou's gardens are very famous."
+   ],
+   [
+    "我下个月要去苏州出差。",
+    "I'm going to Suzhou on business next month."
+   ]
+  ],
+  "use": "City near Shanghai, known for gardens and canals."
+ },
+ {
+  "w": "袭击",
+  "pos": "verb / noun",
+  "m": "**Raid** and **hit**: a surprise **attack**.",
+  "ex": [
+   [
+    "敌人在夜里袭击了村子。",
+    "The enemy attacked the village at night."
+   ],
+   [
+    "台风袭击了沿海城市。",
+    "The typhoon hit the coastal cities."
+   ]
+  ],
+  "use": "Also for storms and diseases striking."
+ },
+ {
+  "w": "看出",
+  "pos": "verb",
+  "m": "**See** it come **out**: **make out**, notice.",
+  "ex": [
+   [
+    "我看出他不太高兴。",
+    "I could tell he wasn't very happy."
+   ],
+   [
+    "你从哪里看出来他在说谎？",
+    "How could you tell he was lying?"
+   ]
+  ],
+  "use": "Often 看出来; splits as 看得出 or 看不出, can or can't tell."
+ },
+ {
+  "w": "打死",
+  "pos": "verb",
+  "m": "**Hit** until it **dies**: to **kill**.",
+  "ex": [
+   [
+    "他一下就把蚊子打死了。",
+    "He killed the mosquito with one slap."
+   ],
+   [
+    "打死我也不去！",
+    "I won't go even if you kill me!"
+   ]
+  ],
+  "use": "打死也不 is a spoken way to say absolutely not."
+ },
+ {
+  "w": "数目",
+  "pos": "noun",
+  "m": "**Numbers** before your **eyes**: an **amount**, number.",
+  "ex": [
+   [
+    "这个数目不对。",
+    "This number isn't right."
+   ],
+   [
+    "这可不是一个小数目。",
+    "This is no small sum."
+   ]
+  ],
+  "use": "Often about money: 小数目, 大数目."
+ },
+ {
+  "w": "总产量",
+  "pos": "noun",
+  "m": "The **general** **capacity** **produced**: **total output**.",
+  "ex": [
+   [
+    "今年粮食总产量增加了。",
+    "Total grain output rose this year."
+   ],
+   [
+    "这家工厂的年总产量很高。",
+    "This factory's annual total output is very high."
+   ]
+  ],
+  "use": "Economics and farming word; 产量 alone is output."
+ },
+ {
+  "w": "愿望",
+  "pos": "noun",
+  "m": "A **wish** made under the **full moon**: a **wish**, desire.",
+  "ex": [
+   [
+    "我的愿望是去世界各地旅行。",
+    "My wish is to travel around the world."
+   ],
+   [
+    "希望你的愿望能实现。",
+    "I hope your wish comes true."
+   ]
+  ],
+  "use": "Goes with 实现 (come true) and 许 (make a wish)."
+ },
+ {
+  "w": "院士",
+  "pos": "noun",
+  "m": "A **scholar** of the **courtyard** of learning: a **member of a national academy**.",
+  "ex": [
+   [
+    "他是中国科学院的院士。",
+    "He is a member of the Chinese Academy of Sciences."
+   ],
+   [
+    "这位院士做了一个讲座。",
+    "The academician gave a lecture."
+   ]
+  ],
+  "use": "Top scientific honour in China; title used with the surname, 王院士."
+ },
+ {
+  "w": "花岗岩",
+  "pos": "noun",
+  "m": "**Flowery**, speckled rock from **hillocks** and **cliffs**: **granite**.",
+  "ex": [
+   [
+    "这座桥是用花岗岩建的。",
+    "This bridge is built of granite."
+   ],
+   [
+    "花岗岩非常坚硬。",
+    "Granite is very hard."
+   ]
+  ],
+  "use": "Measure word 块 for a piece."
+ },
+ {
+  "w": "小人",
+  "pos": "noun",
+  "m": "A **small** **person** inside: a **petty**, mean-spirited person.",
+  "ex": [
+   [
+    "他是个小人，别相信他。",
+    "He's a petty, two-faced person, don't trust him."
+   ],
+   [
+    "我们不要做背后说人坏话的小人。",
+    "Let's not be the kind of mean people who badmouth others behind their backs."
+   ]
+  ],
+  "use": "Usually means a mean or scheming person; opposite 君子."
+ },
+ {
+  "w": "父子",
+  "pos": "noun",
+  "m": "**Father** and **son**: **father and son**.",
+  "ex": [
+   [
+    "他们父子俩长得很像。",
+    "The father and son look very alike."
+   ],
+   [
+    "这对父子一起开了一家店。",
+    "This father and son opened a shop together."
+   ]
+  ],
+  "use": "Often 父子俩, the two of them; 母女 is mother and daughter."
+ },
+ {
+  "w": "跪下",
+  "pos": "verb",
+  "m": "**Kneel** **down**: **kneel down**.",
+  "ex": [
+   [
+    "他跪下来向她求婚。",
+    "He knelt down and proposed to her."
+   ],
+   [
+    "孩子们跪下给爷爷磕头。",
+    "The children knelt and kowtowed to their grandfather."
+   ]
+  ],
+  "use": "Often 跪下来; a strong sign of respect or pleading."
+ },
+ {
+  "w": "黄宗羲",
+  "pos": "name",
+  "m": "**Yellow**, **school**, and the old name **Xi**: **Huang Zongxi**, a Ming-Qing thinker.",
+  "ex": [
+   [
+    "黄宗羲是明末清初的思想家。",
+    "Huang Zongxi was a thinker of the late Ming and early Qing."
+   ],
+   [
+    "我们在课上读了黄宗羲的文章。",
+    "We read an essay by Huang Zongxi in class."
+   ]
+  ],
+  "use": "A personal name: surname 黄."
+ },
+ {
+  "w": "火炮",
+  "pos": "noun",
+  "m": "A **cannon** that shoots **fire**: **artillery**, cannon.",
+  "ex": [
+   [
+    "城墙上放着几门火炮。",
+    "Several cannons stand on the city wall."
+   ],
+   [
+    "古代火炮比现在的简单。",
+    "Ancient cannons were simpler than today's."
+   ]
+  ],
+  "use": "Measure word 门; military word."
+ },
+ {
+  "w": "两边",
+  "pos": "noun",
+  "m": "**Two** **sides**: **both sides**, either side.",
+  "ex": [
+   [
+    "马路两边都是树。",
+    "There are trees on both sides of the road."
+   ],
+   [
+    "他两边都不想得罪。",
+    "He doesn't want to offend either side."
+   ]
+  ],
+  "use": "Can mean two places or two parties in a dispute."
+ },
+ {
+  "w": "十四",
+  "pos": "number",
+  "m": "**Ten** plus **four**: **fourteen**.",
+  "ex": [
+   [
+    "我妹妹今年十四岁。",
+    "My little sister is fourteen this year."
+   ],
+   [
+    "我们班有十四个男生。",
+    "There are fourteen boys in our class."
+   ]
+  ],
+  "use": "Careful with tones: 十四 shísì and 四十 sìshí (forty) sound alike."
+ },
+ {
+  "w": "产卵",
+  "pos": "verb",
+  "m": "**Give birth** to **eggs**: **lay eggs**, spawn.",
+  "ex": [
+   [
+    "鸡每天产卵吗？",
+    "Do hens lay eggs every day?"
+   ],
+   [
+    "这种鱼到河里去产卵。",
+    "This kind of fish swims up rivers to spawn."
+   ]
+  ],
+  "use": "For animals in science and nature texts; hens 下蛋 in speech."
+ },
+ {
+  "w": "网友",
+  "pos": "noun",
+  "m": "A **friend** on the **net**: an **online friend**, internet user.",
+  "ex": [
+   [
+    "很多网友在网上留言。",
+    "Many netizens left comments online."
+   ],
+   [
+    "我昨天见了一个网友。",
+    "Yesterday I met a friend I'd made online."
+   ]
+  ],
+  "use": "Also used for internet users in general in news."
+ },
+ {
+  "w": "固然",
+  "pos": "conjunction",
+  "m": "**Firmly** **correct**, granted: **admittedly**, it's true that.",
+  "ex": [
+   [
+    "钱固然重要，但不是一切。",
+    "Money is admittedly important, but it isn't everything."
+   ],
+   [
+    "这个办法固然好，可是太贵了。",
+    "This method is good, of course, but it's too expensive."
+   ]
+  ],
+  "use": "Concedes a point, followed by 但是 or 可是."
+ },
+ {
+  "w": "装饰",
+  "pos": "verb / noun",
+  "m": "**Adorn** it with **decoration**: to **decorate**, decoration.",
+  "ex": [
+   [
+    "我们用气球装饰了房间。",
+    "We decorated the room with balloons."
+   ],
+   [
+    "这家店的装饰很漂亮。",
+    "This shop's decor is lovely."
+   ]
+  ],
+  "use": "装修 is renovating a home; 装饰 is the decorative touches."
+ },
+ {
+  "w": "西汉",
+  "pos": "name",
+  "m": "The **western** **Han** dynasty: **Western Han** (206 BC–AD 8).",
+  "ex": [
+   [
+    "西汉的首都是长安。",
+    "The capital of the Western Han was Chang'an."
+   ],
+   [
+    "这件文物来自西汉时期。",
+    "This relic dates from the Western Han period."
+   ]
+  ],
+  "use": "Followed by 东汉, Eastern Han."
+ },
+ {
+  "w": "中等",
+  "pos": "adjective",
+  "m": "**Within** the middle **grade**: **medium**, average.",
+  "ex": [
+   [
+    "他个子中等，不高也不矮。",
+    "He's of medium height, neither tall nor short."
+   ],
+   [
+    "她的成绩在班里属于中等。",
+    "Her grades are average for her class."
+   ]
+  ],
+  "use": "Goes before nouns: 中等城市, 中等收入."
+ },
+ {
+  "w": "外界",
+  "pos": "noun",
+  "m": "Everything **outside** your **boundary**: **the outside world**.",
+  "ex": [
+   [
+    "他很少跟外界联系。",
+    "He rarely has contact with the outside world."
+   ],
+   [
+    "不要太在意外界的看法。",
+    "Don't care too much about what others think."
+   ]
+  ],
+  "use": "Often 外界的看法 or 外界的影响."
+ },
+ {
+  "w": "海峡",
+  "pos": "noun",
+  "m": "An **ocean** squeezed through a **gorge**: a **strait**.",
+  "ex": [
+   [
+    "台湾海峡把大陆和台湾分开。",
+    "The Taiwan Strait separates the mainland and Taiwan."
+   ],
+   [
+    "这条海峡很窄，可以看到对岸。",
+    "This strait is so narrow you can see the other shore."
+   ]
+  ],
+  "use": "Also in 海峡两岸, both sides of the Taiwan Strait."
+ },
+ {
+  "w": "汉人",
+  "pos": "noun",
+  "m": "The **people** of **Han**: **Han Chinese** people.",
+  "ex": [
+   [
+    "这个地方汉人和少数民族一起生活。",
+    "Han Chinese and ethnic minorities live together here."
+   ],
+   [
+    "古时候北方有很多汉人。",
+    "In ancient times there were many Han people in the north."
+   ]
+  ],
+  "use": "Often in history; today 汉族 is the usual term."
+ },
+ {
+  "w": "巴西",
+  "pos": "name",
+  "m": "**Long for** the **west** and its sound: **Brazil**.",
+  "ex": [
+   [
+    "巴西的足球非常厉害。",
+    "Brazil is really strong at football."
+   ],
+   [
+    "我朋友是从巴西来的。",
+    "My friend is from Brazil."
+   ]
+  ],
+  "use": "Country name chosen for sound; 巴西人 is a Brazilian."
+ },
+ {
+  "w": "活跃",
+  "pos": "adjective / verb",
+  "m": "**Live** and **jump** about: **active**, lively.",
+  "ex": [
+   [
+    "她在班上很活跃。",
+    "She is very active in class."
+   ],
+   [
+    "他讲了个笑话，活跃了一下气氛。",
+    "He told a joke to liven up the atmosphere."
+   ]
+  ],
+  "use": "活跃气氛 is a set phrase: liven things up."
+ },
+ {
+  "w": "产物",
+  "pos": "noun",
+  "m": "The **thing** that is **born** from something: a **product** or **result**.",
+  "ex": [
+   [
+    "这是时代的产物。",
+    "This is a product of its time."
+   ],
+   [
+    "城市是经济发展的产物。",
+    "Cities are the result of economic development."
+   ]
+  ],
+  "use": "Abstract: a result of history or circumstances; goods are 产品."
+ },
+ {
+  "w": "思路",
+  "pos": "noun",
+  "m": "The **road** your **thinking** takes: **line of thought**.",
+  "ex": [
+   [
+    "你的思路很清楚。",
+    "Your line of thought is very clear."
+   ],
+   [
+    "电话一响，我的思路就断了。",
+    "When the phone rang, my train of thought broke."
+   ]
+  ],
+  "use": "Goes with 清楚, 打开 (open up), 断 (break)."
+ },
+ {
+  "w": "打听",
+  "pos": "verb",
+  "m": "**Do** some **listening** around: **ask about**, make inquiries.",
+  "ex": [
+   [
+    "我去打听一下他的消息。",
+    "I'll go and ask around about him."
+   ],
+   [
+    "你知道去火车站怎么走吗？我想打听一下。",
+    "Do you know how to get to the station? I'd like to ask."
+   ]
+  ],
+  "use": "Asking around for information; neutral, spoken."
+ },
+ {
+  "w": "水泥",
+  "pos": "noun",
+  "m": "**Water** mixed with grey **mud**: **cement**.",
+  "ex": [
+   [
+    "工人们正在搅拌水泥。",
+    "The workers are mixing cement."
+   ],
+   [
+    "这条路是水泥路。",
+    "This road is concrete."
+   ]
+  ],
+  "use": "Measure word 袋 (bag); 水泥地, a concrete floor."
+ },
+ {
+  "w": "交往",
+  "pos": "verb / noun",
+  "m": "**Hand over** and **go** back and forth: **associate with**, have contact.",
+  "ex": [
+   [
+    "我不太喜欢跟他交往。",
+    "I don't much like spending time with him."
+   ],
+   [
+    "他们交往了两年就结婚了。",
+    "They dated for two years and then got married."
+   ]
+  ],
+  "use": "Can mean friendship or dating; 跟…交往."
+ },
+ {
+  "w": "环节",
+  "pos": "noun",
+  "m": "A **ring** and a **joint** in a chain: a **link** or **stage** in a process.",
+  "ex": [
+   [
+    "这是整个计划中最重要的环节。",
+    "This is the most important stage of the whole plan."
+   ],
+   [
+    "每个环节都不能出错。",
+    "No step can go wrong."
+   ]
+  ],
+  "use": "Mostly a link or step in a process; the zoology sense is rare."
+ },
+ {
+  "w": "弟弟",
+  "pos": "noun",
+  "m": "**Younger brother**, said twice: **younger brother**.",
+  "ex": [
+   [
+    "我弟弟比我小三岁。",
+    "My younger brother is three years younger than me."
+   ],
+   [
+    "你有弟弟吗？",
+    "Do you have a younger brother?"
+   ]
+  ],
+  "use": "Older brother is 哥哥; measure word 个."
+ },
+ {
+  "w": "会长",
+  "pos": "noun",
+  "m": "The **chief** of the **association**: a **president** of a club or society.",
+  "ex": [
+   [
+    "他是我们学校书法协会的会长。",
+    "He is president of our school's calligraphy club."
+   ],
+   [
+    "会长明天要开会。",
+    "The president is holding a meeting tomorrow."
+   ]
+  ],
+  "use": "会 here means association, not can."
+ },
+ {
+  "w": "画像",
+  "pos": "noun / verb",
+  "m": "**Draw** someone so it **resembles** them: a **portrait**.",
+  "ex": [
+   [
+    "墙上挂着一幅画像。",
+    "A portrait hangs on the wall."
+   ],
+   [
+    "画家正在给她画像。",
+    "The artist is painting her portrait."
+   ]
+  ],
+  "use": "Measure word 幅 or 张."
+ },
+ {
+  "w": "王爷",
+  "pos": "noun",
+  "m": "The **king**'s family **grandpa**-figure: a **prince**.",
+  "ex": [
+   [
+    "王爷住在一座大院子里。",
+    "The prince lived in a large compound."
+   ],
+   [
+    "电视剧里的王爷都很有钱。",
+    "The princes in TV dramas are all very rich."
+   ]
+  ],
+  "use": "Historical, mostly Qing-dynasty dramas."
+ },
+ {
+  "w": "八国联军",
+  "pos": "name",
+  "m": "**Eight** **countries** **allied** in one **army**: the **Eight-Nation Alliance** of 1900.",
+  "ex": [
+   [
+    "八国联军在一九零零年进入北京。",
+    "The Eight-Nation Alliance entered Beijing in 1900."
+   ],
+   [
+    "圆明园被八国联军破坏了。",
+    "The Old Summer Palace was damaged by the Eight-Nation Alliance."
+   ]
+  ],
+  "use": "Historical term from Chinese history lessons."
+ },
+ {
+  "w": "持有",
+  "pos": "verb",
+  "m": "**Hold** and **have**: to **hold** a passport, shares, a view.",
+  "ex": [
+   [
+    "他持有中国护照。",
+    "He holds a Chinese passport."
+   ],
+   [
+    "我持有不同的看法。",
+    "I hold a different view."
+   ]
+  ],
+  "use": "Formal; used for documents, shares and opinions."
+ },
+ {
+  "w": "被捕",
+  "pos": "verb",
+  "m": "**Suffered** being **caught**: **arrested**.",
+  "ex": [
+   [
+    "小偷当天就被捕了。",
+    "The thief was arrested that same day."
+   ],
+   [
+    "他因为偷车被捕。",
+    "He was arrested for stealing a car."
+   ]
+  ],
+  "use": "Here 被 marks the passive, not quilt."
+ },
+ {
+  "w": "海岸",
+  "pos": "noun",
+  "m": "The **bank** of the **ocean**: the **coast**.",
+  "ex": [
+   [
+    "我们沿着海岸开车。",
+    "We drove along the coast."
+   ],
+   [
+    "这里的海岸线很长。",
+    "The coastline here is very long."
+   ]
+  ],
+  "use": "海岸线 is coastline; 海边 is the everyday seaside."
+ },
+ {
+  "w": "半年",
+  "pos": "noun",
+  "m": "**Half** a **year**: **six months**.",
+  "ex": [
+   [
+    "我学中文学了半年了。",
+    "I've been learning Chinese for half a year."
+   ],
+   [
+    "他半年没回家了。",
+    "He hasn't been home for six months."
+   ]
+  ],
+  "use": "No measure word needed: 半年, not 半个年."
+ },
+ {
+  "w": "说起",
+  "pos": "verb",
+  "m": "**Speak** and let a topic **rise**: **mention**, bring up.",
+  "ex": [
+   [
+    "说起这件事，我就生气。",
+    "Whenever this comes up, I get angry."
+   ],
+   [
+    "他跟我说起过你。",
+    "He has mentioned you to me."
+   ]
+  ],
+  "use": "Like 提起; 说起来 also means come to think of it."
+ },
+ {
+  "w": "阻止",
+  "pos": "verb",
+  "m": "**Hinder** and **stop**: **prevent**, block.",
+  "ex": [
+   [
+    "谁也阻止不了他。",
+    "No one can stop him."
+   ],
+   [
+    "警察阻止了一场打架。",
+    "The police stopped a fight."
+   ]
+  ],
+  "use": "Stops an action from happening; 防止 prevents something bad in advance."
+ },
+ {
+  "w": "一行",
+  "pos": "noun",
+  "m": "**One** group **walking** together: a **party**, delegation.",
+  "ex": [
+   [
+    "代表团一行十人到了北京。",
+    "The ten-member delegation arrived in Beijing."
+   ],
+   [
+    "我们一行人坐车去了海边。",
+    "Our group went to the seaside by car."
+   ]
+  ],
+  "use": "Read yìxíng here; yìháng is one line of text."
+ },
+ {
+  "w": "力学",
+  "pos": "noun",
+  "m": "The **study** of **force**: **mechanics** in physics.",
+  "ex": [
+   [
+    "他在大学学的是力学。",
+    "He studied mechanics at university."
+   ],
+   [
+    "这个问题要用力学知识来解释。",
+    "This problem needs knowledge of mechanics to explain."
+   ]
+  ],
+  "use": "Physics subject; 学 here means a field of study."
+ },
+ {
+  "w": "多半",
+  "pos": "adverb",
+  "m": "**More** than **half**: **mostly**, probably.",
+  "ex": [
+   [
+    "他多半不会来了。",
+    "He probably isn't coming."
+   ],
+   [
+    "来参加的多半是学生。",
+    "Most of the people who came were students."
+   ]
+  ],
+  "use": "Spoken; before a verb it means most likely."
+ },
+ {
+  "w": "头顶",
+  "pos": "noun",
+  "m": "The **apex** of your **head**: the **top of the head**, overhead.",
+  "ex": [
+   [
+    "一只鸟从我头顶飞过。",
+    "A bird flew over my head."
+   ],
+   [
+    "他头顶上的头发少了。",
+    "He's losing hair on top of his head."
+   ]
+  ],
+  "use": "Also overhead: 头顶上."
+ },
+ {
+  "w": "仍旧",
+  "pos": "adverb",
+  "m": "**Still** as **old**: **still**, as before.",
+  "ex": [
+   [
+    "十年过去了，他仍旧住在那里。",
+    "Ten years have passed and he still lives there."
+   ],
+   [
+    "我说了好几次，他仍旧不听。",
+    "I've told him several times, but he still won't listen."
+   ]
+  ],
+  "use": "Written style of 还是; like 仍然."
+ },
+ {
+  "w": "历时",
+  "pos": "verb",
+  "m": "**Experience** the **time**: **last**, take a period.",
+  "ex": [
+   [
+    "这个工程历时三年。",
+    "This project took three years."
+   ],
+   [
+    "比赛历时两个小时才结束。",
+    "The match lasted two hours before it ended."
+   ]
+  ],
+  "use": "Formal, followed by a length of time."
+ },
+ {
+  "w": "岛屿",
+  "pos": "noun",
+  "m": "**Islands** and **islets**: **islands**.",
+  "ex": [
+   [
+    "这片海上有很多岛屿。",
+    "There are many islands in this sea."
+   ],
+   [
+    "这个国家由几千个岛屿组成。",
+    "This country is made up of thousands of islands."
+   ]
+  ],
+  "use": "Collective and written; one island is 岛 or 小岛."
+ },
+ {
+  "w": "煤炭",
+  "pos": "noun",
+  "m": "**Coal** and **charcoal**: **coal**.",
+  "ex": [
+   [
+    "山西出产很多煤炭。",
+    "Shanxi produces a lot of coal."
+   ],
+   [
+    "以前冬天家家都烧煤炭取暖。",
+    "In the past every home burned coal in winter for heat."
+   ]
+  ],
+  "use": "General word for coal as a resource; 煤 alone in speech."
+ },
+ {
+  "w": "当天",
+  "pos": "noun",
+  "m": "The **day** it **was**: **that same day**.",
+  "ex": [
+   [
+    "我们当天去当天回。",
+    "We'll go and come back the same day."
+   ],
+   [
+    "你买的票只能当天用。",
+    "The ticket you bought is only valid for that day."
+   ]
+  ],
+  "use": "Read dàngtiān in many areas; compare 那天, that day."
+ },
+ {
+  "w": "精细",
+  "pos": "adjective",
+  "m": "**Essential** care and **thin**, fine work: **fine**, **meticulous**.",
+  "ex": [
+   [
+    "这件工艺品做得很精细。",
+    "This craft piece is very finely made."
+   ],
+   [
+    "他做事非常精细。",
+    "He does things very meticulously."
+   ]
+  ],
+  "use": "For craftsmanship and careful work; 仔细 is careful."
+ },
+ {
+  "w": "南阳",
+  "pos": "name",
+  "m": "**South** **sun**: **Nanyang**, a city in Henan.",
+  "ex": [
+   [
+    "南阳在河南省。",
+    "Nanyang is in Henan Province."
+   ],
+   [
+    "诸葛亮年轻时住在南阳。",
+    "Zhuge Liang lived in Nanyang when he was young."
+   ]
+  ],
+  "use": "City name; 阳 here means sunny side."
+ },
+ {
+  "w": "披露",
+  "pos": "verb",
+  "m": "**Drape** off the cover and let it lie like **dew** in the open: **reveal**, disclose.",
+  "ex": [
+   [
+    "报纸披露了这件事的真相。",
+    "The newspaper revealed the truth about the affair."
+   ],
+   [
+    "公司还没有披露具体数字。",
+    "The company hasn't disclosed the exact figures yet."
+   ]
+  ],
+  "use": "Formal, used in news and business."
+ },
+ {
+  "w": "心思",
+  "pos": "noun",
+  "m": "What the **heart** **thinks**: one's **thoughts**, mind.",
+  "ex": [
+   [
+    "我猜不到她的心思。",
+    "I can't guess what she's thinking."
+   ],
+   [
+    "他没有心思工作。",
+    "He's in no mood to work."
+   ]
+  ],
+  "use": "没心思 means not in the mood; 花心思 means put thought into."
+ },
+ {
+  "w": "情感",
+  "pos": "noun",
+  "m": "**Feelings** you **feel**: **emotion**, feeling.",
+  "ex": [
+   [
+    "这首歌表达了很深的情感。",
+    "This song expresses deep emotion."
+   ],
+   [
+    "他不太会表达自己的情感。",
+    "He isn't good at expressing his feelings."
+   ]
+  ],
+  "use": "More formal than 感情; often about emotional life in general."
+ },
+ {
+  "w": "庆祝",
+  "pos": "verb",
+  "m": "**Celebrate** and **pray for** good luck: **celebrate**.",
+  "ex": [
+   [
+    "我们一起庆祝你的生日吧。",
+    "Let's celebrate your birthday together."
+   ],
+   [
+    "全家人出去吃饭庆祝。",
+    "The whole family went out to eat to celebrate."
+   ]
+  ],
+  "use": "Takes an event as object: 庆祝新年."
+ },
+ {
+  "w": "击败",
+  "pos": "verb",
+  "m": "**Hit** them till they are **defeated**: **beat**, defeat.",
+  "ex": [
+   [
+    "我们队击败了对手。",
+    "Our team beat its rivals."
+   ],
+   [
+    "他在决赛中击败了世界冠军。",
+    "He defeated the world champion in the final."
+   ]
+  ],
+  "use": "Sports and battles; 打败 is more spoken."
+ },
+ {
+  "w": "伙伴",
+  "pos": "noun",
+  "m": "Someone you share **meals** with and **partner**: a **companion**, partner.",
+  "ex": [
+   [
+    "他是我小时候的伙伴。",
+    "He was my childhood companion."
+   ],
+   [
+    "这两家公司是合作伙伴。",
+    "These two companies are business partners."
+   ]
+  ],
+  "use": "合作伙伴 is a business partner."
+ },
+ {
+  "w": "大幅",
+  "pos": "adverb / adjective",
+  "m": "A **big** **width** of change: **substantially**; also large-format.",
+  "ex": [
+   [
+    "今年房价大幅上涨。",
+    "House prices rose sharply this year."
+   ],
+   [
+    "街上挂着一幅大幅广告。",
+    "A large banner advert hangs over the street."
+   ]
+  ],
+  "use": "Mostly before verbs of change: 大幅增加, 大幅下降."
+ },
+ {
+  "w": "汉语",
+  "pos": "noun",
+  "m": "The **language** of the **Han** people: **Chinese**.",
+  "ex": [
+   [
+    "我在大学学汉语。",
+    "I study Chinese at university."
+   ],
+   [
+    "你的汉语说得真好！",
+    "Your Chinese is really good!"
+   ]
+  ],
+  "use": "Same as 中文 in most uses; 汉语 is more about spoken language."
+ },
+ {
+  "w": "证实",
+  "pos": "verb",
+  "m": "Give a **certificate** that it is **real**: **confirm**, verify.",
+  "ex": [
+   [
+    "警方已经证实了这个消息。",
+    "The police have confirmed the news."
+   ],
+   [
+    "我的猜测被证实了。",
+    "My guess was proved right."
+   ]
+  ],
+  "use": "Confirm something is true; 证明 is prove."
+ },
+ {
+  "w": "同期",
+  "pos": "noun",
+  "m": "The **same** **period of time**: the **same period** last year, or concurrent.",
+  "ex": [
+   [
+    "今年的收入比去年同期高。",
+    "This year's income is higher than the same period last year."
+   ],
+   [
+    "他们是同期毕业的同学。",
+    "They were classmates who graduated at the same time."
+   ]
+  ],
+  "use": "Common in reports: 与去年同期相比."
+ },
+ {
+  "w": "单行",
+  "pos": "adjective / verb",
+  "m": "**Single** way to **walk**: **one-way**; to come singly.",
+  "ex": [
+   [
+    "这条路是单行道。",
+    "This road is one-way."
+   ],
+   [
+    "真是祸不单行，我又丢了钥匙。",
+    "Misfortunes never come singly: I've lost my keys too."
+   ]
+  ],
+  "use": "Mostly in 单行道 and the saying 祸不单行."
+ },
+ {
+  "w": "重量",
+  "pos": "noun",
+  "m": "How **heavy**, as a **capacity**: **weight**.",
+  "ex": [
+   [
+    "这个箱子的重量是多少？",
+    "What does this box weigh?"
+   ],
+   [
+    "行李超过了重量限制。",
+    "The luggage is over the weight limit."
+   ]
+  ],
+  "use": "Body weight is usually 体重."
+ },
+ {
+  "w": "待遇",
+  "pos": "noun",
+  "m": "How you are **waited** on when they **encounter** you: **treatment**, pay and benefits.",
+  "ex": [
+   [
+    "这家公司的待遇很好。",
+    "This company pays well."
+   ],
+   [
+    "我们在那里受到了很好的待遇。",
+    "We were treated very well there."
+   ]
+  ],
+  "use": "Often pay and perks at work: 工资待遇."
+ },
+ {
+  "w": "生涯",
+  "pos": "noun",
+  "m": "Your **growing** life up to its **border**: a **career**.",
+  "ex": [
+   [
+    "他的足球生涯很成功。",
+    "His football career was very successful."
+   ],
+   [
+    "她开始了教师生涯。",
+    "She began her career as a teacher."
+   ]
+  ],
+  "use": "Formal; pairs with a field: 演艺生涯, 职业生涯."
+ },
+ {
+  "w": "鄂州",
+  "pos": "name",
+  "m": "**Hubei** **prefecture**: **Ezhou**, a city in Hubei.",
+  "ex": [
+   [
+    "鄂州离武汉很近。",
+    "Ezhou is close to Wuhan."
+   ],
+   [
+    "他是湖北鄂州人。",
+    "He's from Ezhou in Hubei."
+   ]
+  ],
+  "use": "鄂 is the short name for Hubei."
+ },
+ {
+  "w": "不怕",
+  "pos": "verb",
+  "m": "**Not** **afraid**: **not afraid** of, fearless.",
+  "ex": [
+   [
+    "我不怕冷，冬天也穿得很少。",
+    "I don't mind the cold; I wear little even in winter."
+   ],
+   [
+    "不怕慢，就怕停。",
+    "Don't fear going slowly, only fear standing still."
+   ]
+  ],
+  "use": "Pattern 不怕…就怕…, it isn't A that matters but B."
+ },
+ {
+  "w": "以南",
+  "pos": "noun",
+  "m": "From this **using** point to the **south**: **south of**.",
+  "ex": [
+   [
+    "长江以南的冬天比较湿冷。",
+    "Winters south of the Yangtze are damp and cold."
+   ],
+   [
+    "这个城市在北京以南。",
+    "This city is south of Beijing."
+   ]
+  ],
+  "use": "Comes after a place: 长江以南; also 以北, 以东, 以西."
+ },
+ {
+  "w": "例子",
+  "pos": "noun",
+  "m": "An **example** made into a thing: an **example**, instance.",
+  "ex": [
+   [
+    "你能举个例子吗？",
+    "Can you give an example?"
+   ],
+   [
+    "这就是一个很好的例子。",
+    "This is a very good example."
+   ]
+  ],
+  "use": "Goes with 举: 举例子, give an example."
+ },
+ {
+  "w": "包围",
+  "pos": "verb",
+  "m": "**Cover** and **encircle**: **surround**.",
+  "ex": [
+   [
+    "房子被警察包围了。",
+    "The house was surrounded by police."
+   ],
+   [
+    "我们被一群孩子包围了。",
+    "We were surrounded by a crowd of children."
+   ]
+  ],
+  "use": "Often passive: 被…包围."
+ },
+ {
+  "w": "咸宁",
+  "pos": "name",
+  "m": "**All** **peaceful**: **Xianning**, a city in Hubei.",
+  "ex": [
+   [
+    "咸宁在湖北省南部。",
+    "Xianning is in southern Hubei."
+   ],
+   [
+    "咸宁的温泉很有名。",
+    "Xianning's hot springs are famous."
+   ]
+  ],
+  "use": "City name; 咸 here is the old sense all, not salty."
+ },
+ {
+  "w": "报名",
+  "pos": "verb",
+  "m": "**Report** your **name**: **sign up**, enter.",
+  "ex": [
+   [
+    "我报名参加了比赛。",
+    "I signed up for the competition."
+   ],
+   [
+    "你报名了吗？明天就截止了。",
+    "Have you signed up? It closes tomorrow."
+   ]
+  ],
+  "use": "Pattern 报名参加 + event; separable: 报了名."
+ },
+ {
+  "w": "温暖",
+  "pos": "adjective / verb",
+  "m": "**Warm** and **warm**: **warm**, cosy.",
+  "ex": [
+   [
+    "这个房间很温暖。",
+    "This room is very warm."
+   ],
+   [
+    "你的话温暖了我的心。",
+    "Your words warmed my heart."
+   ]
+  ],
+  "use": "Often for feelings; 暖和 is more for weather and rooms in speech."
+ },
+ {
+  "w": "激素",
+  "pos": "noun",
+  "m": "The **raw** element that **arouses** the body: a **hormone**.",
+  "ex": [
+   [
+    "这种药里有激素。",
+    "This medicine contains hormones."
+   ],
+   [
+    "激素会影响人的情绪。",
+    "Hormones can affect people's moods."
+   ]
+  ],
+  "use": "Medical and science word."
+ },
+ {
+  "w": "联邦",
+  "pos": "noun / adjective",
+  "m": "**Allied** **countries** under one government: a **federation**, federal.",
+  "ex": [
+   [
+    "美国是一个联邦国家。",
+    "The United States is a federal country."
+   ],
+   [
+    "他在联邦政府工作。",
+    "He works for the federal government."
+   ]
+  ],
+  "use": "Used for the US, Germany and similar states."
+ },
+ {
+  "w": "赛季",
+  "pos": "noun",
+  "m": "The **season** for **competing**: a **sports season**.",
+  "ex": [
+   [
+    "新赛季下个月开始。",
+    "The new season starts next month."
+   ],
+   [
+    "他这个赛季进了二十个球。",
+    "He scored twenty goals this season."
+   ]
+  ],
+  "use": "Sports only; a weather season is 季节."
+ },
+ {
+  "w": "婴儿",
+  "pos": "noun",
+  "m": "An **infant** **child**: a **baby**.",
+  "ex": [
+   [
+    "婴儿在床上睡着了。",
+    "The baby fell asleep on the bed."
+   ],
+   [
+    "这家商店卖婴儿用品。",
+    "This shop sells baby products."
+   ]
+  ],
+  "use": "More formal than 宝宝; 婴儿车 is a pram."
+ },
+ {
+  "w": "模范",
+  "pos": "noun / adjective",
+  "m": "A **pattern** worth **imitating**: a **model**, fine example.",
+  "ex": [
+   [
+    "他是我们公司的劳动模范。",
+    "He is a model worker at our company."
+   ],
+   [
+    "她是一位模范妈妈。",
+    "She is a model mother."
+   ]
+  ],
+  "use": "Often in praise: 模范作用, 劳动模范."
+ },
+ {
+  "w": "房地产",
+  "pos": "noun",
+  "m": "**Houses**, **land** and **property**: **real estate**.",
+  "ex": [
+   [
+    "他在一家房地产公司工作。",
+    "He works at a real estate company."
+   ],
+   [
+    "这几年房地产市场变化很大。",
+    "The property market has changed a lot in recent years."
+   ]
+  ],
+  "use": "Abbreviated 地产 in company names."
+ },
+ {
+  "w": "收集",
+  "pos": "verb",
+  "m": "**Receive** and **gather**: **collect**.",
+  "ex": [
+   [
+    "他喜欢收集邮票。",
+    "He likes collecting stamps."
+   ],
+   [
+    "我们正在收集大家的意见。",
+    "We are gathering everyone's opinions."
+   ]
+  ],
+  "use": "For hobbies and information; 收藏 is collecting valuables."
+ },
+ {
+  "w": "清晰",
+  "pos": "adjective",
+  "m": "**Clear** and **clear** again: **distinct**, sharp.",
+  "ex": [
+   [
+    "这张照片很清晰。",
+    "This photo is very sharp."
+   ],
+   [
+    "他说话很清晰。",
+    "He speaks very clearly."
+   ]
+  ],
+  "use": "For images, sounds and thinking; 清楚 is more everyday."
+ },
+ {
+  "w": "制约",
+  "pos": "verb / noun",
+  "m": "A **system** of **agreements** that holds you back: to **restrict**, constrain.",
+  "ex": [
+   [
+    "经济发展受到很多因素的制约。",
+    "Economic development is held back by many factors."
+   ],
+   [
+    "交通问题制约了城市的发展。",
+    "Traffic problems are limiting the city's growth."
+   ]
+  ],
+  "use": "Formal; often 受到…制约."
+ },
+ {
+  "w": "受命",
+  "pos": "verb",
+  "m": "**Receive** a **command**: be **appointed**, act on orders.",
+  "ex": [
+   [
+    "他受命去调查这件事。",
+    "He was ordered to investigate the matter."
+   ],
+   [
+    "她受命担任新的校长。",
+    "She was appointed as the new head teacher."
+   ]
+  ],
+  "use": "Formal and written."
+ },
+ {
+  "w": "事先",
+  "pos": "adverb",
+  "m": "**Before** the **matter**: **in advance**.",
+  "ex": [
+   [
+    "你应该事先告诉我。",
+    "You should have told me in advance."
+   ],
+   [
+    "我们事先没有准备。",
+    "We hadn't prepared beforehand."
+   ]
+  ],
+  "use": "Opposite 事后, afterwards; similar to 提前."
+ },
+ {
+  "w": "场面",
+  "pos": "noun",
+  "m": "The **face** a **place** shows: a **scene**, spectacle.",
+  "ex": [
+   [
+    "婚礼的场面非常热闹。",
+    "The wedding was a lively scene."
+   ],
+   [
+    "这部电影的打斗场面很精彩。",
+    "The fight scenes in this film are great."
+   ]
+  ],
+  "use": "Also means appearances: 讲场面, keep up appearances."
+ },
+ {
+  "w": "殖民地",
+  "pos": "noun",
+  "m": "**Land** where outsiders **grow** their **people**: a **colony**.",
+  "ex": [
+   [
+    "香港曾经是英国的殖民地。",
+    "Hong Kong was once a British colony."
+   ],
+   [
+    "很多国家以前都是殖民地。",
+    "Many countries used to be colonies."
+   ]
+  ],
+  "use": "History word; 殖民 means colonize."
+ },
+ {
+  "w": "客运",
+  "pos": "noun",
+  "m": "**Moving** **customers**: **passenger transport**.",
+  "ex": [
+   [
+    "汽车客运站在城东。",
+    "The coach station is on the east side of town."
+   ],
+   [
+    "春节期间客运量很大。",
+    "Passenger traffic is very heavy during Spring Festival."
+   ]
+  ],
+  "use": "Opposite 货运, freight; 客运站 is a bus or coach station."
+ },
+ {
+  "w": "壮丽",
+  "pos": "adjective",
+  "m": "**Strong** and **beautiful**: **magnificent**.",
+  "ex": [
+   [
+    "山上的风景非常壮丽。",
+    "The scenery in the mountains is magnificent."
+   ],
+   [
+    "我们看到了壮丽的日出。",
+    "We saw a magnificent sunrise."
+   ]
+  ],
+  "use": "For landscapes and grand sights."
+ },
+ {
+  "w": "规矩",
+  "pos": "noun / adjective",
+  "m": "The **compass** and the **carpenter's square**: **rules**, proper behaviour.",
+  "ex": [
+   [
+    "这是我们家的规矩。",
+    "That's the rule in our house."
+   ],
+   [
+    "这孩子很规矩。",
+    "This child is very well-behaved."
+   ]
+  ],
+  "use": "Often unwritten rules: 守规矩, 没规矩 (bad manners)."
+ },
+ {
+  "w": "棺材",
+  "pos": "noun",
+  "m": "**Coffin** **material** made into a box: a **coffin**.",
+  "ex": [
+   [
+    "老人早就准备好了棺材。",
+    "The old man had long since prepared his coffin."
+   ],
+   [
+    "他们把棺材抬上了山。",
+    "They carried the coffin up the hill."
+   ]
+  ],
+  "use": "Measure word 口 or 具; a sensitive topic."
+ },
+ {
+  "w": "紧密",
+  "pos": "adjective",
+  "m": "**Tight** and **dense**: **close**, inseparable.",
+  "ex": [
+   [
+    "两国的关系很紧密。",
+    "The two countries have close ties."
+   ],
+   [
+    "我们要紧密合作。",
+    "We need to work closely together."
+   ]
+  ],
+  "use": "For ties and cooperation; 亲密 is close in feelings."
+ },
+ {
+  "w": "半点",
+  "pos": "noun",
+  "m": "**Half** a **dot**: **the least bit**.",
+  "ex": [
+   [
+    "他半点也不担心。",
+    "He isn't the least bit worried."
+   ],
+   [
+    "这件事跟我没有半点关系。",
+    "This has nothing whatsoever to do with me."
+   ]
+  ],
+  "use": "Used with negatives: 半点也不, 没有半点."
+ },
+ {
+  "w": "去世",
+  "pos": "verb",
+  "m": "**Go** from this **life**: **pass away**.",
+  "ex": [
+   [
+    "他爷爷去年去世了。",
+    "His grandfather passed away last year."
+   ],
+   [
+    "听说那位作家去世了。",
+    "I heard that writer has died."
+   ]
+  ],
+  "use": "Polite way to say 死; takes no object."
+ },
+ {
+  "w": "检验",
+  "pos": "verb",
+  "m": "**Check** and **examine**: **inspect**, test.",
+  "ex": [
+   [
+    "这批产品要检验以后才能卖。",
+    "This batch must be inspected before it can be sold."
+   ],
+   [
+    "实践是检验真理的标准。",
+    "Practice is the test of truth."
+   ]
+  ],
+  "use": "For products and quality; 检查 is a general check-up."
+ },
+ {
+  "w": "海水",
+  "pos": "noun",
+  "m": "**Ocean** **water**: **seawater**.",
+  "ex": [
+   [
+    "海水是咸的。",
+    "Seawater is salty."
+   ],
+   [
+    "今天的海水很凉。",
+    "The sea is cold today."
+   ]
+  ],
+  "use": "海水 vs 淡水, fresh water."
+ },
+ {
+  "w": "配置",
+  "pos": "verb / noun",
+  "m": "**Join** and **install** the parts: **configure**, set-up.",
+  "ex": [
+   [
+    "这台电脑的配置很好。",
+    "This computer has a good spec."
+   ],
+   [
+    "公司重新配置了人员。",
+    "The company reassigned its staff."
+   ]
+  ],
+  "use": "Very common for computer and phone specs."
+ },
+ {
+  "w": "小孩",
+  "pos": "noun",
+  "m": "A **small** **child**: a **kid**.",
+  "ex": [
+   [
+    "那个小孩在哭。",
+    "That child is crying."
+   ],
+   [
+    "我家有两个小孩。",
+    "I have two kids."
+   ]
+  ],
+  "use": "Spoken; also 小孩子, 孩子."
+ },
+ {
+  "w": "杀死",
+  "pos": "verb",
+  "m": "**Kill** until it **dies**: to **kill**.",
+  "ex": [
+   [
+    "这种药可以杀死细菌。",
+    "This medicine can kill bacteria."
+   ],
+   [
+    "猎人杀死了一只狼。",
+    "The hunter killed a wolf."
+   ]
+  ],
+  "use": "Result verb: the killing succeeds; 杀 alone may not."
+ },
+ {
+  "w": "报考",
+  "pos": "verb",
+  "m": "**Report** your name for a **test**: **apply to sit an exam**.",
+  "ex": [
+   [
+    "他报考了北京大学。",
+    "He applied to sit the exam for Peking University."
+   ],
+   [
+    "今年报考公务员的人很多。",
+    "Many people signed up for the civil service exam this year."
+   ]
+  ],
+  "use": "Object is a school or an exam."
+ },
+ {
+  "w": "瑞士",
+  "pos": "name",
+  "m": "**Lucky** **scholar**, chosen for the sound: **Switzerland**.",
+  "ex": [
+   [
+    "瑞士的手表很有名。",
+    "Swiss watches are famous."
+   ],
+   [
+    "我们夏天去瑞士滑雪了。",
+    "We went skiing in Switzerland in the summer."
+   ]
+  ],
+  "use": "Don't mix up 瑞士 Switzerland and 瑞典 Sweden."
+ },
+ {
+  "w": "现行",
+  "pos": "adjective",
+  "m": "**Appearing** now and still **walking**: **current**, in force.",
+  "ex": [
+   [
+    "这是现行的法律。",
+    "This is the law currently in force."
+   ],
+   [
+    "现行的规定不太合理。",
+    "The current rules aren't very reasonable."
+   ]
+  ],
+  "use": "Formal; before nouns like 法律, 制度, 政策."
+ },
+ {
+  "w": "庞大",
+  "pos": "adjective",
+  "m": "**Huge** and **big**: **enormous**.",
+  "ex": [
+   [
+    "这是一个庞大的工程。",
+    "This is a huge project."
+   ],
+   [
+    "公司的组织非常庞大。",
+    "The company's organization is enormous."
+   ]
+  ],
+  "use": "Often for organizations, numbers, buildings; can sound unwieldy."
+ },
+ {
+  "w": "智慧",
+  "pos": "noun",
+  "m": "**Wise** and **intelligent**: **wisdom**.",
+  "ex": [
+   [
+    "老人很有智慧。",
+    "The old man is very wise."
+   ],
+   [
+    "这本书里有很多生活的智慧。",
+    "This book holds a lot of wisdom about life."
+   ]
+  ],
+  "use": "Also used for smart tech: 智慧城市."
+ },
+ {
+  "w": "人口数",
+  "pos": "noun",
+  "m": "The **number** of **people** and **mouths**: the **population** figure.",
+  "ex": [
+   [
+    "这个城市的人口数超过一千万。",
+    "This city's population is over ten million."
+   ],
+   [
+    "今年全国的人口数有所下降。",
+    "The national population has fallen somewhat this year."
+   ]
+  ],
+  "use": "Formal; 人口 alone is the usual word."
+ },
+ {
+  "w": "以致",
+  "pos": "conjunction",
+  "m": "**Using** this, it **caused**: **with the result that**.",
+  "ex": [
+   [
+    "他没有好好复习，以致考试没及格。",
+    "He didn't revise properly, so he failed the exam."
+   ],
+   [
+    "雨下得很大，以致很多航班取消了。",
+    "It rained so hard that many flights were cancelled."
+   ]
+  ],
+  "use": "Usually a bad result; written style."
+ },
+ {
+  "w": "冬季",
+  "pos": "noun",
+  "m": "The **winter** **season**: **winter**.",
+  "ex": [
+   [
+    "这里冬季很少下雪。",
+    "It rarely snows here in winter."
+   ],
+   [
+    "冬季运动会明年举行。",
+    "The Winter Games will be held next year."
+   ]
+  ],
+  "use": "More formal than 冬天."
+ },
+ {
+  "w": "北大",
+  "pos": "name",
+  "m": "**North** **big**: short for **Peking University**.",
+  "ex": [
+   [
+    "她考上了北大。",
+    "She got into Peking University."
+   ],
+   [
+    "北大的校园很漂亮。",
+    "Peking University's campus is beautiful."
+   ]
+  ],
+  "use": "Short for 北京大学."
+ },
+ {
+  "w": "远处",
+  "pos": "noun",
+  "m": "A **far** **place**: **the distance**.",
+  "ex": [
+   [
+    "远处有一座山。",
+    "There's a mountain in the distance."
+   ],
+   [
+    "他站在远处看着我们。",
+    "He stood in the distance watching us."
+   ]
+  ],
+  "use": "Often 从远处 or 在远处."
+ },
+ {
+  "w": "建制",
+  "pos": "noun",
+  "m": "The **system** **established** for an organization: its **structure**.",
+  "ex": [
+   [
+    "这支部队的建制很完整。",
+    "This unit's organizational structure is complete."
+   ],
+   [
+    "这个县的建制已经有几百年了。",
+    "This county has existed as an administrative unit for hundreds of years."
+   ]
+  ],
+  "use": "Formal; army or administrative units."
+ },
+ {
+  "w": "发掘",
+  "pos": "verb",
+  "m": "**Send out** diggers to **dig**: **excavate**, unearth.",
+  "ex": [
+   [
+    "考古学家发掘了一座古墓。",
+    "Archaeologists excavated an ancient tomb."
+   ],
+   [
+    "我们要发掘每个学生的潜力。",
+    "We need to bring out every student's potential."
+   ]
+  ],
+  "use": "Also used for talent: 发掘人才."
+ },
+ {
+  "w": "贡献者",
+  "pos": "noun",
+  "m": "**One who** **offers** **tribute** and gifts: a **contributor**.",
+  "ex": [
+   [
+    "他是这个项目最大的贡献者。",
+    "He is the biggest contributor to this project."
+   ],
+   [
+    "网站感谢所有的贡献者。",
+    "The website thanks all its contributors."
+   ]
+  ],
+  "use": "者 makes 贡献 into a person."
+ },
+ {
+  "w": "下游",
+  "pos": "noun",
+  "m": "**Down** where the river **flows**: the **lower reaches**.",
+  "ex": [
+   [
+    "这条河的下游很宽。",
+    "The river is very wide in its lower reaches."
+   ],
+   [
+    "上海在长江下游。",
+    "Shanghai is on the lower reaches of the Yangtze."
+   ]
+  ],
+  "use": "Opposite 上游, upper reaches; also used for supply chains."
+ },
+ {
+  "w": "和谐",
+  "pos": "adjective / noun",
+  "m": "Joined **and** **harmonious**: **harmony**.",
+  "ex": [
+   [
+    "他们一家人生活得很和谐。",
+    "Their family lives in harmony."
+   ],
+   [
+    "我们要建设和谐社会。",
+    "We should build a harmonious society."
+   ]
+  ],
+  "use": "Common in official slogans; also for colours and music."
+ },
+ {
+  "w": "王公",
+  "pos": "noun",
+  "m": "**Kings** and **dukes**: **princes and nobles**.",
+  "ex": [
+   [
+    "王公贵族住在城里最好的地方。",
+    "Princes and nobles lived in the best part of the city."
+   ],
+   [
+    "古代的王公生活很奢侈。",
+    "Ancient nobles lived in luxury."
+   ]
+  ],
+  "use": "Historical; often 王公贵族."
+ },
+ {
+  "w": "哈哈大笑",
+  "pos": "phrase",
+  "m": "**Ha** **ha** with a **big** **laugh**: to **roar with laughter**.",
+  "ex": [
+   [
+    "听了他的笑话，大家哈哈大笑。",
+    "Everyone roared with laughter at his joke."
+   ],
+   [
+    "他看着照片哈哈大笑起来。",
+    "He looked at the photo and burst out laughing."
+   ]
+  ],
+  "use": "Often followed by 起来."
+ },
+ {
+  "w": "黄州",
+  "pos": "name",
+  "m": "**Yellow** **prefecture**: **Huangzhou**, a district in Hubei.",
+  "ex": [
+   [
+    "苏东坡曾经住在黄州。",
+    "Su Dongpo once lived in Huangzhou."
+   ],
+   [
+    "黄州是一个历史悠久的地方。",
+    "Huangzhou is a place with a long history."
+   ]
+  ],
+  "use": "Place name in Huanggang, Hubei."
+ },
+ {
+  "w": "匆匆",
+  "pos": "adverb",
+  "m": "**Hurried**, **hurried**: **in a rush**.",
+  "ex": [
+   [
+    "他匆匆吃了几口饭就走了。",
+    "He gulped down a few mouthfuls and left."
+   ],
+   [
+    "时间过得匆匆。",
+    "Time passes in a rush."
+   ]
+  ],
+  "use": "Often 匆匆忙忙; describes hurried actions."
+ },
+ {
+  "w": "收回",
+  "pos": "verb",
+  "m": "**Receive** it **back**: **take back**, retrieve.",
+  "ex": [
+   [
+    "我收回刚才的话。",
+    "I take back what I just said."
+   ],
+   [
+    "银行收回了贷款。",
+    "The bank recalled the loan."
+   ]
+  ],
+  "use": "For words, money, land or decisions."
+ }
+]

@@ -1,0 +1,752 @@
+[
+ {
+  "c": "烧",
+  "key": "burn",
+  "m": "A *campfire* creeps up the legs of a *tall stool* until the whole stool starts to **burn**."
+ },
+ {
+  "c": "距",
+  "key": "distance",
+  "m": "A *kicking foot* boots an *open crate* far down the road: now there is a long **distance** between you."
+ },
+ {
+  "c": "裁",
+  "key": "cut out",
+  "m": "On the *soil*, a tailor swings a *halberd* through a bolt of cloth to **cut out** a new *robe*."
+ },
+ {
+  "c": "偏",
+  "key": "lean",
+  "m": "A *standing person* props a *door* against an *archway* on soft *grass*, and everything begins to **lean** to one side."
+ },
+ {
+  "c": "符",
+  "key": "sign",
+  "m": "A *standing person* presses a *thumb* into a strip of *bamboo*, leaving a mark that serves as a **sign**."
+ },
+ {
+  "c": "勇",
+  "key": "brave",
+  "m": "With an *elbow* up and a *strong arm* ready, a farmer faces the bull in his *rice field*: so **brave**."
+ },
+ {
+  "c": "触",
+  "key": "touch",
+  "m": "A tiny *bug* crawls onto an *ox horn* and the ox feels the light **touch**."
+ },
+ {
+  "c": "课",
+  "key": "lesson",
+  "m": "A *small speech bubble* floats over a *rice field* and a *tree*: the teacher gives an outdoor **lesson** on farming."
+ },
+ {
+  "c": "敬",
+  "key": "respect",
+  "m": "Kneel on the *grass*, fold a *blanket*, keep your *mouth* shut and lean on your *cane*: that is how you show **respect** to elders."
+ },
+ {
+  "c": "哭",
+  "key": "cry",
+  "m": "A *dog* opens one *mouth* and then another, howling loudly: it is starting to **cry**."
+ },
+ {
+  "c": "懂",
+  "key": "understand",
+  "m": "A *standing heart* walks through *grass* in a *village* full of a *thousand ants*, and at last begins to **understand** them."
+ },
+ {
+  "c": "墙",
+  "key": "wall",
+  "m": "Pile *soil* behind one *fence*, then another *fence*, and pack it hard: you have built a **wall**."
+ },
+ {
+  "c": "袭",
+  "key": "raid",
+  "m": "A *dragon* swoops down and snatches your *robe* in a surprise **raid**."
+ },
+ {
+  "c": "召",
+  "key": "summon",
+  "m": "Bang a *knife* on a pot and shout with your *mouth*: you **summon** everyone to dinner."
+ },
+ {
+  "c": "罚",
+  "key": "punish",
+  "m": "A cheating fisherman is caught in his own *fishing net* to **punish** him."
+ },
+ {
+  "c": "侠",
+  "key": "hero",
+  "m": "A *standing person* steps between a *person* in danger and a beast with *horns*, holding *two planks* as a shield: a true **hero**."
+ },
+ {
+  "c": "厅",
+  "key": "hall",
+  "m": "Under a *cliff*, someone hammers a *nail* to hang a lamp in the big **hall**."
+ },
+ {
+  "c": "拜",
+  "key": "bow",
+  "m": "Raise a *shading hand* over your eyes, then lower it and **bow** to the honoured guest."
+ },
+ {
+  "c": "巧",
+  "key": "skilful",
+  "m": "At the *workbench*, one careful *puff of breath* clears the dust from a tiny carving: how **skilful**."
+ },
+ {
+  "c": "侧",
+  "key": "side",
+  "m": "A *standing person* hides a *shell* and a *standing knife* at their **side**."
+ },
+ {
+  "c": "韩",
+  "key": "Korea",
+  "m": "Under the *sun*, two *crosses* mark a border tied with a *leather strap*: the gate to **Korea**."
+ },
+ {
+  "c": "冒",
+  "key": "emit",
+  "m": "Behind an *archway* stacked with *two planks*, an *eye* watches steam **emit** from a crack."
+ },
+ {
+  "c": "债",
+  "key": "debt",
+  "m": "A *standing person* buys a *seedling top* with a borrowed *shell* and now owes a **debt**."
+ },
+ {
+  "c": "曼",
+  "key": "graceful",
+  "m": "The *sun* rises slowly, long and **graceful** over the hills."
+ },
+ {
+  "c": "融",
+  "key": "melt",
+  "m": "A *bug* sits by a hot *cauldron* and watches the ice inside **melt**."
+ },
+ {
+  "c": "惯",
+  "key": "used to",
+  "m": "A *standing heart* behind a *fence* counts a *shell* at each *cross* on the road every day: it is **used to** the routine."
+ },
+ {
+  "c": "享",
+  "key": "enjoy",
+  "m": "A *child* lies in the sun with an ice cream, happy to **enjoy** the day."
+ },
+ {
+  "c": "戴",
+  "key": "wear",
+  "m": "A soldier in a *rice field* rests his *halberd* on the *soil*, jumps a *hurdle*, and pushes back the *curtains* to **wear** his helmet."
+ },
+ {
+  "c": "童",
+  "key": "child",
+  "m": "A small **child** climbs onto the *podium* in the *village* square and sings."
+ },
+ {
+  "c": "犹",
+  "key": "as if",
+  "m": "A *prowling dog* with a *wart* on its nose walks **as if** it were a lion."
+ },
+ {
+  "c": "乘",
+  "key": "ride",
+  "m": "Sit on a bundle of *grain stalk* and use two *spoons* as oars: you **ride** down the river."
+ },
+ {
+  "c": "挂",
+  "key": "hang",
+  "m": "A *helping hand* lifts two bags of *soil* onto a hook to **hang** them on the wall."
+ },
+ {
+  "c": "奖",
+  "key": "prize",
+  "m": "A *big man* raises a golden cup over his head: he has won the **prize**."
+ },
+ {
+  "c": "绍",
+  "key": "introduce",
+  "m": "Cut a *silk thread* with a *knife* and open your *mouth* to **introduce** the new shop."
+ },
+ {
+  "c": "厚",
+  "key": "thick",
+  "m": "A *child* wraps up under a blanket so **thick** you can hardly see him."
+ },
+ {
+  "c": "纵",
+  "key": "vertical",
+  "m": "A *silk thread* hangs straight down while one *person* climbs and another *person* follows: a **vertical** path."
+ },
+ {
+  "c": "障",
+  "key": "block",
+  "m": "On the *hillside*, a *podium* stands under the *sun* with a *cross* nailed across it to **block** the path."
+ },
+ {
+  "c": "讯",
+  "key": "news",
+  "m": "A *small speech bubble* flies off *swift* as a bird to carry the **news**."
+ },
+ {
+  "c": "涉",
+  "key": "wade",
+  "m": "Through *water drops*, past a *stop sign*, a *trailing foot* splashes as you **wade** across the stream."
+ },
+ {
+  "c": "彻",
+  "key": "thorough",
+  "m": "*Footsteps* lead to a *bent cross*, and a *knife* cuts all the way through it: a **thorough** job."
+ },
+ {
+  "c": "刊",
+  "key": "publish",
+  "m": "Pages hang on a *drying rack* and a *standing knife* trims them: ready to **publish** the magazine."
+ },
+ {
+  "c": "丈",
+  "key": "ten feet",
+  "m": "A *cross* and a pair of *scissors* measure out a rope **ten feet** long."
+ },
+ {
+  "c": "爆",
+  "key": "explode",
+  "m": "A *campfire* blazes under the hot *sun* until the firecrackers **explode**."
+ },
+ {
+  "c": "乌",
+  "key": "crow",
+  "m": "A black bird lands on a *plank* and caws: a **crow**."
+ },
+ {
+  "c": "役",
+  "key": "labour",
+  "m": "*Footsteps* trudge behind a guard with a *war club*, forced into hard **labour**."
+ },
+ {
+  "c": "描",
+  "key": "trace",
+  "m": "A *helping hand* lays paper over the *grass* in a *rice field* to **trace** its outline."
+ },
+ {
+  "c": "洗",
+  "key": "wash",
+  "m": "*Water drops* splash on a *cow head* and its *legs*: time to **wash** the cow."
+ },
+ {
+  "c": "玛",
+  "key": "agate",
+  "m": "A *king* rides a *horse* wearing a bright stone of **agate**."
+ },
+ {
+  "c": "患",
+  "key": "suffer",
+  "m": "An arrow hits one *bullseye*, then another *bullseye*, straight into the *heart*: you **suffer** greatly."
+ },
+ {
+  "c": "妙",
+  "key": "wonderful",
+  "m": "A *woman* adds a *pinch* of spice and the soup tastes **wonderful**."
+ },
+ {
+  "c": "镜",
+  "key": "mirror",
+  "m": "Polish *gold coins* until they shine, play *music*, and dance on your *legs* in front of the **mirror**."
+ },
+ {
+  "c": "唱",
+  "key": "sing",
+  "m": "An open *mouth* under one *sun* and then another *sun*: all day long you **sing**."
+ },
+ {
+  "c": "烦",
+  "key": "annoyed",
+  "m": "A *campfire* keeps burning every *page* you try to read, and you get very **annoyed**."
+ },
+ {
+  "c": "签",
+  "key": "sign",
+  "m": "Under a *tent*, write on a strip of *bamboo* to **sign** your name."
+ },
+ {
+  "c": "仙",
+  "key": "immortal",
+  "m": "A *standing person* lives high on a *mountain* for a thousand years: an **immortal**."
+ },
+ {
+  "c": "彼",
+  "key": "that",
+  "m": "*Footsteps* lead off to a *hide* far away: not this one, **that** one."
+ },
+ {
+  "c": "弗",
+  "key": "not",
+  "m": "Two strings tangled on a *bow*: it will **not** shoot."
+ },
+ {
+  "c": "症",
+  "key": "illness",
+  "m": "On a *sickbed* beside the *goal line*, the player lies with a strange **illness**."
+ },
+ {
+  "c": "仿",
+  "key": "imitate",
+  "m": "A *standing person* copies every move of a *square* dancer to **imitate** her."
+ },
+ {
+  "c": "倾",
+  "key": "tilt",
+  "m": "A *standing person* drops a *spoon* on a *page* and the whole table starts to **tilt**."
+ },
+ {
+  "c": "牌",
+  "key": "sign board",
+  "m": "A *wood slice* nailed to a *cross* by the road: a **sign board**."
+ },
+ {
+  "c": "陷",
+  "key": "trap",
+  "m": "On the *hillside*, a *bent knife* hides above a *mortar* sunk in the ground: a **trap**."
+ },
+ {
+  "c": "鸟",
+  "key": "bird",
+  "m": "A small creature perches on a *plank* and sings: a **bird**."
+ },
+ {
+  "c": "轰",
+  "key": "bang",
+  "m": "A *cart* crashes, and a *right hand* and another *right hand* clap over their ears at the **bang**."
+ },
+ {
+  "c": "咱",
+  "key": "we",
+  "m": "Your *mouth* speaks and your finger points to your *nose*, then to all of us: **we**."
+ },
+ {
+  "c": "菜",
+  "key": "vegetable",
+  "m": "A *claw* pulls something up from the *grass* under a *tree*: a fresh **vegetable**."
+ },
+ {
+  "c": "闭",
+  "key": "close",
+  "m": "A *green shoot* grows in the *gate*, so you **close** it carefully."
+ },
+ {
+  "c": "奋",
+  "key": "strive",
+  "m": "A *big man* digs all day in the *rice field*: he never stops trying to **strive**."
+ },
+ {
+  "c": "庆",
+  "key": "celebrate",
+  "m": "A *big man* throws a party in his *shed* to **celebrate** his birthday."
+ },
+ {
+  "c": "撤",
+  "key": "withdraw",
+  "m": "A *helping hand* waves the troops back: time to **withdraw**."
+ },
+ {
+  "c": "泪",
+  "key": "tears",
+  "m": "*Water drops* roll down from an *eye*: **tears**."
+ },
+ {
+  "c": "茶",
+  "key": "tea",
+  "m": "Leaves picked from the *grass* and steeped in hot water: **tea**."
+ },
+ {
+  "c": "疾",
+  "key": "disease",
+  "m": "On a *sickbed*, a patient feels an illness strike like an *arrow*: a sudden **disease**."
+ },
+ {
+  "c": "缘",
+  "key": "fate",
+  "m": "A *silk thread* ties a *pig snout* to a *blanket*: the odd link must be **fate**."
+ },
+ {
+  "c": "播",
+  "key": "sow",
+  "m": "A *helping hand* scatters seeds across a *rice field* full of *animal tracks*: time to **sow**."
+ },
+ {
+  "c": "朗",
+  "key": "bright",
+  "m": "A full *moon* shines clear and **bright** over the lake."
+ },
+ {
+  "c": "杜",
+  "key": "stop",
+  "m": "Pile *soil* around a *tree* trunk to **stop** the water."
+ },
+ {
+  "c": "奶",
+  "key": "milk",
+  "m": "A *woman* ties a *ribbon* on the jug and pours warm **milk**."
+ },
+ {
+  "c": "季",
+  "key": "season",
+  "m": "A *child* stands by a *grain stalk* taller than him: harvest **season**."
+ },
+ {
+  "c": "丹",
+  "key": "red",
+  "m": "Under an *archway*, a *lid* comes off a pot of bright **red** paint."
+ },
+ {
+  "c": "狗",
+  "key": "dog",
+  "m": "A *prowling dog* sleeps on a *blanket* with a bone in its *mouth*: a pet **dog**."
+ },
+ {
+  "c": "尾",
+  "key": "tail",
+  "m": "A *lying man* with *fur* growing out behind him: he has grown a **tail**."
+ },
+ {
+  "c": "仪",
+  "key": "ceremony",
+  "m": "A *standing person* bows before a *judge* in a solemn **ceremony**."
+ },
+ {
+  "c": "偷",
+  "key": "steal",
+  "m": "A *standing person* sneaks into a *tent* by the light of the *moon* with a *standing knife* to **steal**."
+ },
+ {
+  "c": "奔",
+  "key": "rush",
+  "m": "A *big man* runs over a *cross* and through the *grass*: he has to **rush**."
+ },
+ {
+  "c": "珠",
+  "key": "pearl",
+  "m": "A *king* wears a necklace of *red lacquer* beads and one shining **pearl**."
+ },
+ {
+  "c": "虫",
+  "key": "bug",
+  "m": "Something tiny crawls toward the *bullseye*: a **bug**."
+ },
+ {
+  "c": "驻",
+  "key": "station",
+  "m": "A *horse* stops by a *candle* at the inn, and the soldiers **station** there for the night."
+ },
+ {
+  "c": "孔",
+  "key": "hole",
+  "m": "A *child* on a *ski* falls through a **hole** in the ice."
+ },
+ {
+  "c": "宜",
+  "key": "suitable",
+  "m": "Put a *stepladder* under the *roof* to fix it: that is the **suitable** tool."
+ },
+ {
+  "c": "艾",
+  "key": "mugwort",
+  "m": "Cut a herb from the *grass* with *scissors*: fragrant **mugwort**."
+ },
+ {
+  "c": "桥",
+  "key": "bridge",
+  "m": "A *dancer* steps across a fallen *tree* over the river: a **bridge**."
+ },
+ {
+  "c": "淡",
+  "key": "bland",
+  "m": "Pour *water drops* on a *campfire* and another *campfire*: the soup cooks weak and **bland**."
+ },
+ {
+  "c": "翼",
+  "key": "wing",
+  "m": "*Feathers* flutter over a *rice field*, past a *hurdle* and *curtains*: a bird spreads its **wing**."
+ },
+ {
+  "c": "恨",
+  "key": "hate",
+  "m": "A *standing heart* gives a cold *glare*: full of **hate**."
+ },
+ {
+  "c": "繁",
+  "key": "numerous",
+  "m": "A *mother* in a *slanted cap* points her *cane* at a *silk skein* with too many knots: **numerous** tangles."
+ },
+ {
+  "c": "寒",
+  "key": "cold",
+  "m": "Wind howls under the *roof*: the house is bitterly **cold**."
+ },
+ {
+  "c": "伴",
+  "key": "companion",
+  "m": "A *standing person* walks beside a goat with *horns*: a loyal **companion**."
+ },
+ {
+  "c": "叹",
+  "key": "sigh",
+  "m": "A *right hand* covers your *mouth* as you let out a long **sigh**."
+ },
+ {
+  "c": "旦",
+  "key": "dawn",
+  "m": "The *sun* lifts over a *plank* on the horizon: **dawn**."
+ },
+ {
+  "c": "愈",
+  "key": "recover",
+  "m": "In a *tent* under the *moon*, a doctor sets down a *standing knife*, and the patient's *heart* begins to **recover**."
+ },
+ {
+  "c": "潮",
+  "key": "tide",
+  "m": "*Water drops* rise past one *cross* under the *sun* and another *cross* under the *moon*: the **tide** comes in."
+ },
+ {
+  "c": "粮",
+  "key": "grain",
+  "m": "Bags of *rice* waiting to become a *good meal*: the village's store of **grain**."
+ },
+ {
+  "c": "缩",
+  "key": "shrink",
+  "m": "A *silk thread* tied under the *roof*: a *standing person* pulls it and a *banknote* starts to **shrink**."
+ },
+ {
+  "c": "罢",
+  "key": "stop",
+  "m": "Throw a *fishing net* over the *soil* and push with your *elbow*: the runaway pig has to **stop**."
+ },
+ {
+  "c": "聚",
+  "key": "gather",
+  "m": "Cup an *ear* with your *right hand* to hear the *crowd* **gather** in the square."
+ },
+ {
+  "c": "径",
+  "key": "path",
+  "m": "*Footsteps* wear a narrow **path** through the field."
+ },
+ {
+  "c": "恰",
+  "key": "exactly",
+  "m": "A *standing heart* walks into the *tent* and the *mouth* inside says **exactly** what it hoped to hear."
+ },
+ {
+  "c": "挑",
+  "key": "choose",
+  "m": "A *helping hand* points while you walk on your *legs* along the stall to **choose** the best fruit."
+ },
+ {
+  "c": "袋",
+  "key": "bag",
+  "m": "A *standing person* folds a *tethered arrow* into a *robe* and ties it up as a **bag**."
+ },
+ {
+  "c": "灰",
+  "key": "ash",
+  "m": "A *left hand* stirs a dead *campfire*: nothing left but **ash**."
+ },
+ {
+  "c": "捕",
+  "key": "catch",
+  "m": "A *helping hand* swoops over the *seedbed* to **catch** a frog."
+ },
+ {
+  "c": "徐",
+  "key": "slowly",
+  "m": "*Footsteps* of an old *person* move along the road **slowly**."
+ },
+ {
+  "c": "珍",
+  "key": "treasure",
+  "m": "A *king* shows a *person* a jewel with shining *bristles* of light: his greatest **treasure**."
+ },
+ {
+  "c": "幕",
+  "key": "curtain",
+  "m": "Tall *grass* hangs down like a **curtain** at the stage."
+ },
+ {
+  "c": "映",
+  "key": "reflect",
+  "m": "The *sun* behind a *big man* under an *archway* makes his shadow **reflect** on the wall."
+ },
+ {
+  "c": "裂",
+  "key": "crack",
+  "m": "A *skeleton* slashes a *robe* with a *standing knife*, and the cloth starts to **crack** open."
+ },
+ {
+  "c": "泰",
+  "key": "peaceful",
+  "m": "*Wheat* sways behind *curtains* by *splashing water*: a calm, **peaceful** farm."
+ },
+ {
+  "c": "隔",
+  "key": "separate",
+  "m": "A *cauldron* rolled onto the *hillside* to **separate** two fields."
+ },
+ {
+  "c": "启",
+  "key": "open",
+  "m": "Knock on a *door* and call with your *mouth* until someone comes to **open** it."
+ },
+ {
+  "c": "尖",
+  "key": "sharp",
+  "m": "*Crumbs* on top, a *big man* below: thin at the top, wide at the bottom, like something **sharp**."
+ },
+ {
+  "c": "忠",
+  "key": "loyal",
+  "m": "A *heart* that always aims at the same *bullseye*: **loyal**."
+ },
+ {
+  "c": "累",
+  "key": "tired",
+  "m": "Weaving a *silk skein* after a day in the *rice field*: you are so **tired**."
+ },
+ {
+  "c": "炎",
+  "key": "inflammation",
+  "m": "A *blaze* burns hot as one *campfire* sits on another: painful **inflammation**."
+ },
+ {
+  "c": "暂",
+  "key": "temporary",
+  "m": "A *cart* and an *axe* left out under the *sun* for a day: a **temporary** camp."
+ },
+ {
+  "c": "估",
+  "key": "estimate",
+  "m": "A *standing person* looks at a *cross* on the map and opens their *mouth* to **estimate** the distance."
+ },
+ {
+  "c": "泛",
+  "key": "float",
+  "m": "*Water drops* lift a *flat tyre* so it can **float** down the river."
+ },
+ {
+  "c": "荒",
+  "key": "barren",
+  "m": "Only dry *grass* around a *tombstone*: the land is **barren**."
+ },
+ {
+  "c": "偿",
+  "key": "repay",
+  "m": "A *standing person* lays *two planks* under a *cloth cover* with *sprinkles* on top and nudges it over with an *elbow* to **repay** a friend."
+ },
+ {
+  "c": "横",
+  "key": "horizontal",
+  "m": "A *tree* falls across a road painted *yolk* yellow: **horizontal**."
+ },
+ {
+  "c": "拒",
+  "key": "refuse",
+  "m": "A *helping hand* slams the lid of an *open crate*: you **refuse** to take it."
+ },
+ {
+  "c": "瑞",
+  "key": "lucky",
+  "m": "A *king* with a long *beard* climbs a *mountain* and finds a golden stone: how **lucky**."
+ },
+ {
+  "c": "忆",
+  "key": "recall",
+  "m": "A *standing heart* watches a *swan* on the lake and starts to **recall** the past."
+ },
+ {
+  "c": "孤",
+  "key": "lonely",
+  "m": "A *child* sits by a single *melon* in an empty field: **lonely**."
+ },
+ {
+  "c": "鼻",
+  "key": "nose",
+  "m": "Above a *rice field* on a *pedestal* sits a huge *nose*: the statue's **nose**."
+ },
+ {
+  "c": "闹",
+  "key": "noisy",
+  "m": "Behind the *gate*, kids bang a *lid* and wave a *towel*: so **noisy**."
+ },
+ {
+  "c": "羊",
+  "key": "sheep",
+  "m": "Two *horns* on top of a woolly body: a **sheep**."
+ },
+ {
+  "c": "呆",
+  "key": "dull",
+  "m": "A *mouth* hangs open over a *tree* trunk with a *blank stare*: completely **dull**."
+ },
+ {
+  "c": "厉",
+  "key": "strict",
+  "m": "Under the *cliff*, one teacher keeps a whole *swarm* of kids in line: very **strict**."
+ },
+ {
+  "c": "衡",
+  "key": "weigh",
+  "m": "At the *crossroads*, a merchant hangs out scales to **weigh** goods."
+ },
+ {
+  "c": "胞",
+  "key": "womb",
+  "m": "Under the *moon*, a *cobra* curls up in a warm *blanket* like a baby in a **womb**."
+ },
+ {
+  "c": "零",
+  "key": "zero",
+  "m": "*Rain* soaks a *teepee* until an *elbow* pokes out of a hole. Dry spots left: **zero**."
+ },
+ {
+  "c": "穷",
+  "key": "poor",
+  "m": "Even with a *strong arm*, he lives in a *cave*: he is **poor**."
+ },
+ {
+  "c": "舍",
+  "key": "give up",
+  "m": "A *person* drops his heavy bag by the road: time to **give up**."
+ },
+ {
+  "c": "码",
+  "key": "number",
+  "m": "At the *horse* stall, a *stone* is carved with each horse's **number**."
+ },
+ {
+  "c": "赫",
+  "key": "impressive",
+  "m": "Two *red cheeks* glowing side by side: a bold, **impressive** blush."
+ },
+ {
+  "c": "婆",
+  "key": "granny",
+  "m": "A *woman* scrubs a *hide* with *water drops*: that is **granny** doing chores."
+ },
+ {
+  "c": "魂",
+  "key": "soul",
+  "m": "Over *two planks* and past an *elbow* floats a *ghost*: a wandering **soul**."
+ },
+ {
+  "c": "灾",
+  "key": "disaster",
+  "m": "A *campfire* catches the *roof*: a **disaster**."
+ },
+ {
+  "c": "洪",
+  "key": "flood",
+  "m": "*Water drops* pour over a *hurdle* and through the *curtains*: a **flood**."
+ }
+]

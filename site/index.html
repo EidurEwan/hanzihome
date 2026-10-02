@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HanziHome — Chinese character dictionary</title>
-<link rel="stylesheet" href="style.css?v=80">
+<link rel="stylesheet" href="style.css?v=81">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -35,6 +35,7 @@ var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radica
     <nav>
       <a href="#/dashboard" data-nav="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.4 12 3l9 7.4V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg> Dashboard</a>
       <a href="#/study" data-nav="/study"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.5 12 4l10 4.5-10 4.5zM6 11v4.6c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6V11"/></svg> Study <i id="due-badge" class="badge" hidden></i></a>
+      <a href="#/words" data-nav="/word"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5"/></svg> Words</a>
       <a href="#/reader" data-nav="/reader"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/></svg> Reader <em>beta</em></a>
       <a href="#/screen" data-nav="/screen" id="nav-screen" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M8 9.5h3M13 9.5h3M8 12.5h5"/></svg> On screen now</a>
       <a href="#/hsk-1" data-nav="/hsk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 8l-9 5-9-5zM3 12.5 12 17.5l9-5M3 17 12 22l9-5"/></svg> HSK</a>
@@ -61,7 +62,8 @@ var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radica
 <script src="data/index.js?v=7"></script>
 <script src="data/radicalmap.js?v=7"></script>
 <script src="learn.js?v=7"></script>
-<script src="study.js?v=19"></script>
-<script src="app.js?v=89"></script>
+<script src="study.js?v=21"></script>
+<script src="words.js?v=1"></script>
+<script src="app.js?v=91"></script>
 </body>
 </html>

@@ -1,0 +1,410 @@
+[
+ {
+  "c": "佩",
+  "pin": "pèi",
+  "key": "admire",
+  "m": "A *standing person* looks up at a hero's jade badge and bows: people **admire** him."
+ },
+ {
+  "c": "脏",
+  "pin": "zāng",
+  "key": "dirty",
+  "m": "Under the *moon*, a *shed* is full of *soil*: everything is **dirty**."
+ },
+ {
+  "c": "沈",
+  "pin": "shěn",
+  "key": "Shen",
+  "m": "*Water drops* soak the *pillow* of old Mr Shen, who sleeps by the river: the surname **Shen**."
+ },
+ {
+  "c": "澳",
+  "pin": "ào",
+  "key": "Australia",
+  "m": "*Water drops* splash around a *big man* paddling his canoe across the ocean to **Australia**."
+ },
+ {
+  "c": "赋",
+  "pin": "fù",
+  "key": "endow",
+  "m": "At the *stop sign*, a fairy hands every traveller a magic *shell*: gifts with which nature will **endow** you."
+ },
+ {
+  "c": "冠",
+  "pin": "guàn",
+  "key": "champion",
+  "m": "Lift the *cloth cover*: on *two planks* over a pair of *legs*, a *thumb* points to the gold cup of the **champion**."
+ },
+ {
+  "c": "菌",
+  "pin": "jūn",
+  "key": "bacteria",
+  "m": "Inside a *fence*, by a damp *grain stalk* in the *grass*, invisible germs multiply: **bacteria**."
+ },
+ {
+  "c": "旨",
+  "pin": "zhǐ",
+  "key": "aim",
+  "m": "Unroll the *edict scroll* under the *sun* and tap it with a *spoon*: here is our purpose, our **aim**."
+ },
+ {
+  "c": "韦",
+  "pin": "wéi",
+  "key": "Wei",
+  "m": "A *leather strap* wound around a *pole*: the badge of the Wei family, surname **Wei**."
+ },
+ {
+  "c": "鉴",
+  "pin": "jiàn",
+  "key": "examine",
+  "m": "Hold a piece of *gold* up to the light and turn it slowly, looking for fakes: **examine** it."
+ },
+ {
+  "c": "娜",
+  "pin": "nà",
+  "key": "female name",
+  "m": "A *woman* walks down the *hillside* called Anna, a pretty **female name**."
+ },
+ {
+  "c": "践",
+  "pin": "jiàn",
+  "key": "carry out",
+  "m": "A *kicking foot* steps over *twin blades*: stop talking, do it, **carry out** your plan."
+ },
+ {
+  "c": "戒",
+  "pin": "jiè",
+  "key": "give up",
+  "m": "Hold a *halberd* over the *grass* and chop your cigarettes: time to **give up** the habit."
+ },
+ {
+  "c": "昏",
+  "pin": "hūn",
+  "key": "faint",
+  "m": "The *sun* beats down on the *family tree*, and grandpa's head spins until he begins to **faint**."
+ },
+ {
+  "c": "贡",
+  "pin": "gòng",
+  "key": "contribute",
+  "m": "Carry a *shell* to the shared *workbench*: everyone must **contribute** something."
+ },
+ {
+  "c": "媒",
+  "pin": "méi",
+  "key": "media",
+  "m": "A *woman* hands out *candy* under a *tree* while broadcasting the news to everyone: the **media**."
+ },
+ {
+  "c": "烂",
+  "pin": "làn",
+  "key": "rotten",
+  "m": "A *campfire* is left out, a goat with *horns* lies on *three planks* for weeks: the meat is **rotten**."
+ },
+ {
+  "c": "捷",
+  "pin": "jié",
+  "key": "quick",
+  "m": "A *helping hand* grabs the runner by the *ankle*, but he slips free: too **quick**!"
+ },
+ {
+  "c": "削",
+  "pin": "xiāo",
+  "key": "peel",
+  "m": "*Sprinkles* of skin fly in the *moon*light as a *standing knife* starts to **peel** an apple."
+ },
+ {
+  "c": "晃",
+  "pin": "huàng",
+  "key": "sway",
+  "m": "*Sun* glints on *sprinkles* of glitter as a *tall stool* rocks back and forth: watch it **sway**."
+ },
+ {
+  "c": "履",
+  "pin": "lǚ",
+  "key": "fulfil",
+  "m": "A *lying man* gets up, puts on his *slanted cap* and sets off, his *footsteps* keeping every promise: he will **fulfil** his duty."
+ },
+ {
+  "c": "拨",
+  "pin": "bō",
+  "key": "dial",
+  "m": "A *helping hand* and a *right hand* turn the old rotary phone, finger in each hole: **dial** the number."
+ },
+ {
+  "c": "郭",
+  "pin": "guō",
+  "key": "Guo",
+  "m": "A *child* climbs the *hillside* to the city wall where the Guo family lives: the surname **Guo**."
+ },
+ {
+  "c": "酷",
+  "pin": "kù",
+  "key": "cool",
+  "m": "A *wine jug* balanced on a *cow head*, sunglasses on, a toothpick in its *mouth*: so **cool**."
+ },
+ {
+  "c": "帅",
+  "pin": "shuài",
+  "key": "handsome",
+  "m": "A *towel* tied round his neck like a scarf, he waves it at the girls: so **handsome**."
+ },
+ {
+  "c": "萧",
+  "pin": "xiāo",
+  "key": "Xiao",
+  "m": "Dry *grass* and an old *brush handle* lie in Mr Xiao's empty yard: the surname **Xiao**."
+ },
+ {
+  "c": "哦",
+  "pin": "ò",
+  "key": "oh",
+  "m": "A *mouth* gasps as the *hand* drops its *halberd*: **oh**, now I see!"
+ },
+ {
+  "c": "郁",
+  "pin": "yù",
+  "key": "gloomy",
+  "m": "A *left hand* waves at the *moon* from a dark *hillside*, alone and sad: so **gloomy**."
+ },
+ {
+  "c": "糟",
+  "pin": "zāo",
+  "key": "messy",
+  "m": "*Rice* left in the *sun* rots, spills and stinks: what a **messy** disaster."
+ },
+ {
+  "c": "忌",
+  "pin": "jì",
+  "key": "avoid",
+  "m": "A *coiled rope* lies near your *heart*: it looks like a snake, so you step around it, **avoid** it."
+ },
+ {
+  "c": "薛",
+  "pin": "xuē",
+  "key": "Xue",
+  "m": "A bitter *grass* grows in front of the Xue family's gate: the surname **Xue**."
+ },
+ {
+  "c": "挣",
+  "pin": "zhèng",
+  "key": "earn",
+  "m": "A *helping hand* sharpens a *bent knife* all day for a few coins: that is how to **earn** money."
+ },
+ {
+  "c": "驳",
+  "pin": "bó",
+  "key": "refute",
+  "m": "A *horse* kicks the *lattice* of your argument to pieces: it rises up to **refute** you."
+ },
+ {
+  "c": "潘",
+  "pin": "pān",
+  "key": "Pan",
+  "m": "*Water drops* wash *animal tracks* off the *rice field* of farmer Pan: the surname **Pan**."
+ },
+ {
+  "c": "歧",
+  "pin": "qí",
+  "key": "diverge",
+  "m": "At the *stop sign* the road splits like a *branch*: here the two paths **diverge**."
+ },
+ {
+  "c": "逮",
+  "pin": "dǎi",
+  "key": "catch",
+  "m": "Down the *road*, the *servant* runs after the thief and **catches** him."
+ },
+ {
+  "c": "挽",
+  "pin": "wǎn",
+  "key": "pull back",
+  "m": "A *helping hand* hooks a *bent knife* round the falling man's belt at the edge: **pull back**!"
+ },
+ {
+  "c": "陌",
+  "pin": "mò",
+  "key": "unfamiliar",
+  "m": "A *banknote* blows along a *hillside* path you have never walked: everything here is **unfamiliar**."
+ },
+ {
+  "c": "刹",
+  "pin": "shā",
+  "key": "brake",
+  "m": "Old *scissors* and a *standing knife* fly off the cart, *crumbs* scatter, it skids at the *cross*roads: slam the **brake**!"
+ },
+ {
+  "c": "塑",
+  "pin": "sù",
+  "key": "plastic",
+  "m": "Shape melted *soil* into a stag with *antlers* nibbling a *sprout* under the *moon*: a cheap toy made of **plastic**."
+ },
+ {
+  "c": "硕",
+  "pin": "shuò",
+  "key": "master's degree",
+  "m": "A *stone* as heavy as every *page* of her thesis: after years of study she earns a **master's degree**."
+ },
+ {
+  "c": "姚",
+  "pin": "yáo",
+  "key": "Yao",
+  "m": "A *woman* with very long *legs*, like the basketball star Yao Ming: the surname **Yao**."
+ },
+ {
+  "c": "弊",
+  "pin": "bì",
+  "key": "drawback",
+  "m": "A *towel* hides in the *grass*, and the *cane* trips on it: every plan has a **drawback**."
+ },
+ {
+  "c": "擅",
+  "pin": "shàn",
+  "key": "be good at",
+  "m": "A *helping hand* lifts the *lid* off a tricky puzzle box in a second: some people just **be good at** it."
+ },
+ {
+  "c": "哇",
+  "pin": "wā",
+  "key": "wow",
+  "m": "Your *mouth* falls open at *soil* piled on *soil*, a mountain of golden earth: **wow**!"
+ },
+ {
+  "c": "塘",
+  "pin": "táng",
+  "key": "pond",
+  "m": "Dig out the *soil* behind the *shed* and let the rain fill the hole: now ducks swim on a **pond**."
+ },
+ {
+  "c": "阎",
+  "pin": "yán",
+  "key": "Yan",
+  "m": "By the *gate* stands a *mortar* with a *bent knife* in it, the crest of the Yan family: surname **Yan**."
+ },
+ {
+  "c": "鄙",
+  "pin": "bǐ",
+  "key": "despise",
+  "m": "Out on the far *hillside*, a snobbish *mouth* sneers at the farmers: how they **despise** them."
+ },
+ {
+  "c": "哄",
+  "pin": "hǒng",
+  "key": "coax",
+  "m": "A child sulks behind a *hurdle* by the *curtains*, and every sweet-talking *mouth* tries to **coax** him out."
+ },
+ {
+  "c": "颖",
+  "pin": "yǐng",
+  "key": "clever",
+  "m": "On the *page*, a fresh new idea, sharp as the tip of a wheat ear: how **clever**."
+ },
+ {
+  "c": "崔",
+  "pin": "cuī",
+  "key": "Cui",
+  "m": "A *sparrow* perches on the *mountain* where the Cui family lives: the surname **Cui**."
+ },
+ {
+  "c": "幢",
+  "pin": "zhuàng",
+  "key": "building counter",
+  "m": "A *towel* hangs from each roof by the *podium* in the *village*: count them, one, two, three, with the **building counter**."
+ },
+ {
+  "c": "魅",
+  "pin": "mèi",
+  "key": "charm",
+  "m": "A *ghost* hides inside a *sapling*, so lovely that travellers cannot look away: its magic **charm**."
+ },
+ {
+  "c": "芯",
+  "pin": "xīn",
+  "key": "core",
+  "m": "Peel back the *grass* and find the *heart* inside: the innermost **core**."
+ },
+ {
+  "c": "聂",
+  "pin": "niè",
+  "key": "Nie",
+  "m": "Two *right hands* cup round an *ear* as the Nie family whisper their name: surname **Nie**."
+ },
+ {
+  "c": "咋",
+  "pin": "zǎ",
+  "key": "how",
+  "m": "A *mouth* stares at *two planks* that will not fit together: **how** on earth?"
+ },
+ {
+  "c": "沮",
+  "pin": "jǔ",
+  "key": "dejected",
+  "m": "*Water drops* rain on a broken *stepladder*: the builder slumps beside it, utterly **dejected**."
+ },
+ {
+  "c": "尹",
+  "pin": "yǐn",
+  "key": "Yin",
+  "m": "A *magistrate* holds a *long comb* and a *pole* of office, and his family name is Yin: surname **Yin**."
+ },
+ {
+  "c": "帖",
+  "pin": "tiě",
+  "key": "notice",
+  "m": "A *towel* and a *little fortune stick* pinned up beside the shop's *mouth*: read the **notice**."
+ },
+ {
+  "c": "琢",
+  "pin": "zhuó",
+  "key": "carve",
+  "m": "The *king* shapes jade into a *shackled pig*, thinking hard over every cut: he **carves** it."
+ },
+ {
+  "c": "浏",
+  "pin": "liú",
+  "key": "browse",
+  "m": "*Water drops* trickle past a diver's *tattoo* and *standing knife* as he drifts along, glancing at everything: **browse**."
+ },
+ {
+  "c": "畅",
+  "pin": "chàng",
+  "key": "smooth",
+  "m": "*Sun rays* shoot straight through the holes of a *skewer* with nothing in the way: everything runs **smooth**."
+ },
+ {
+  "c": "瞬",
+  "pin": "shùn",
+  "key": "blink",
+  "m": "An *eye* snaps shut as a *claw* swipes past: over in the **blink** of an eye."
+ },
+ {
+  "c": "嘱",
+  "pin": "zhǔ",
+  "key": "instruct",
+  "m": "A *lying man* in the *archway* points at a *beetle*, and his *mouth* carefully tells you what to do: he **instructs** you."
+ },
+ {
+  "c": "胳",
+  "pin": "gē",
+  "key": "arm",
+  "m": "Weary *trudging feet* march under the *moon*, and a *mouth* yawns as you stretch each tired **arm**."
+ },
+ {
+  "c": "棕",
+  "pin": "zōng",
+  "key": "brown",
+  "m": "A *tree* trunk, a wooden *roof* and an old *altar*, all the colour of earth: **brown**."
+ },
+ {
+  "c": "饶",
+  "pin": "ráo",
+  "key": "spare",
+  "m": "The thief begs, pushing his *side dish* across the *tall stool*: please, **spare** me!"
+ },
+ {
+  "c": "孟",
+  "pin": "mèng",
+  "key": "Meng",
+  "m": "The *child* who gets the biggest *dish* grows up to be the sage Mencius: the surname **Meng**."
+ }
+]

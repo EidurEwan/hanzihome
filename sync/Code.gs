@@ -220,7 +220,7 @@ function heft_(d) {
   var n = function (o) { return o && typeof o === 'object' ? Object.keys(o).length : 0; };
   var lists = 0;
   if (Array.isArray(d.lists)) d.lists.forEach(function (l) { lists += ((l && l.chars) || []).length; });
-  return n(d.status) + n(d.items) + n(d.comps) + n(d.notes) + lists;
+  return n(d.status) + n(d.wstatus) + n(d.items) + n(d.comps) + n(d.notes) + lists;
 }
 
 /* the current copy's heft: kept beside it, or (saved by an older script) counted once */
