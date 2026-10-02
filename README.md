@@ -89,8 +89,9 @@ All / Not known / Learning / Learned. A right-hand rail follows you across every
 * **Study next** — suggestions picked because *you already know both parts* of a character,
   or because it buys the most reading coverage.
 
-**Character pages** — breakdown tree, glossed components, full stroke expansion, every
-CC-CEDICT reading, phonetic-component clues, "appears in", example words split into
+**Character pages** — stroke order (played stroke by stroke, the radical's strokes in red,
+with practice tracing over it or writing it from memory, checked stroke by stroke), breakdown
+tree, glossed components, full stroke expansion, every CC-CEDICT reading, phonetic-component clues, "appears in", example words split into
 common / uncommon / rare, frequency facts, stroke count, radical, and a private note field.
 Components are clickable: mark one as known and it lights up green everywhere it occurs.
 
@@ -122,7 +123,11 @@ to add one), your mnemonic and notes to edit, usage; a section that would give a
 other question starts closed), play the pronunciation (P), quiz settings (Q), reveal the answer
 (Ctrl+Enter, counted as missed), open the item in a new tab (O; a second window in the desktop
 app), wrap up (W: finish the items already started, leave the rest for next time) and undo
-(Ctrl+Z: the answer doesn't count and the question comes again later). Tabs and windows open on
+(Ctrl+Z: the answer doesn't count and the question comes again later). Two more questions can be
+turned on in Settings: **Listening** asks an item's meaning from its sound alone, before you see
+it, and counts like the others; **Writing** asks you to draw a character, stroke by stroke, from
+its pinyin and meaning (after three misses on a stroke its outline shows, and needing it makes
+the review hard, never forgotten). Tabs and windows open on
 the site follow each other's changes. The summary after a session shows the share right first
 time, what was reviewed, right and missed and how long it took, a tile per item with the stage
 it moved to (and from), the rating the app gave it, its stability and difficulty, and what you
@@ -181,6 +186,8 @@ custom lists, notes and search history.
 | [jieba](https://github.com/fxsjy/jieba) dictionary | word frequency, common/uncommon/rare tiers | MIT |
 | [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) | stroke counts, radicals | LGPL / Arphic |
 | [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) | HSK levels | MIT |
+| [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) (Make Me a Hanzi's graphics) | stroke order, writing practice | Arphic Public License |
+| [Hanzi Writer](https://github.com/chanind/hanzi-writer) (`site/vendor/`) | drawing strokes and checking written ones | MIT |
 
 ```
 build/build.py          data/raw/*  ->  data/hanzicraft.db   (SQLite, ~28 MB)
@@ -191,6 +198,7 @@ build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded 
 build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> site/data/readings.js
                         data/raw/{cedict,jieba_dict}.txt -> site/data/readerwords.js
 build/word_readings.py  everyday readings (build/everyday_readings.txt) into words.js, hsk.js, c/*.js
+build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the same 64 buckets)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
 test/accuracy.js        scores textstory.js against the hand-glossed stories

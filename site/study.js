@@ -216,6 +216,64 @@ function band(k, it, show) {
   </div>`;
 }
 
+/* a listening question: only the sound, played as it opens (▶ or P plays it again) */
+function listenBand(it) {
+  return `<div class="lx-band ${it.kind}">
+    <div class="lx-pin">&nbsp;</div>
+    <button type="button" class="lx-listen" data-tool="sound" aria-label="Play it again (P)" title="Play it again (P)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12L7.5 14.5H4zM16.5 9.5a4 4 0 0 1 0 5M19 7a7.5 7.5 0 0 1 0 10"/></svg></button>
+    <span class="lx-kind">Listen</span>
+  </div>`;
+}
+
+/* a writing question: the pinyin and meaning as the cue, and a square to write in */
+function writeBand(it, shown) {
+  return `<div class="lx-band ${it.kind} lx-write">
+    <div class="lx-pin">${esc(it.pin)}</div>
+    ${writerBox('rv-writer', 240)}
+    <div class="lx-mean">${esc(primary(it))}</div>
+    <span class="lx-kind">${shown ? kindName(it) : 'Write it'}</span>
+  </div>`;
+}
+
+/* The writing question's quiz, or once answered the character as it is written. No
+   strokes for this character (a rare one): the question is skipped. */
+async function reviewWriting(k, shown) {
+  const s = reviewState;
+  const writer = await makeWriter('rv-writer', k, 240, shown
+    ? { showCharacter: true, showOutline: true } : { showCharacter: false, showOutline: false });
+  if (s !== reviewState || !s.queue[s.i] || s.queue[s.i].k !== k || s.queue[s.i].q !== 'write') return;
+  if (!writer) {
+    (s.answered[k] = s.answered[k] || {}).write = true;
+    s.shown = { ok: true, answer: '' };
+    return nextQuestion();
+  }
+  if (shown) { if (shown.revealed) writer.animateCharacter(); return; }
+  const msg = document.getElementById('rv-write-msg');
+  let hinted = 0;
+  writer.quiz({
+    showHintAfterMisses: 3, leniency: 1.1,
+    onMistake: m => {
+      if (m.mistakesOnStroke === 3) hinted++;
+      msg.textContent = m.mistakesOnStroke >= 3 ? `Stroke ${m.strokeNum + 1}: follow its outline.` : `Not quite: stroke ${m.strokeNum + 1} again.`;
+    },
+    onCorrectStroke: m => { msg.textContent = m.strokesRemaining ? `${m.strokesRemaining} more.` : ''; },
+    onComplete: m => {
+      if (s !== reviewState) return;
+      const f = s.first[k] = s.first[k] || {};
+      // writing is a skill of its own: needing the outline makes the review hard, never forgotten
+      if (!f.write) f.write = { ok: true, near: hinted > 0, ms: 0 };
+      s.shown = { ok: !hinted, answer: '', slips: m.totalMistakes, hinted };
+      if (hinted) {
+        s.misses[k] = (s.misses[k] || 0) + 1;
+        (s.typed[k] = s.typed[k] || []).push({ q: 'write', answer: '' });
+        s.queue.push({ k, q: 'write' });
+      } else Sound.ding();
+      setTimeout(() => { if (s === reviewState && s.shown) pageReviews(); }, 700);
+    },
+  });
+}
+
 /* targeted sentence reviews: the band shows the word in a sentence */
 function sentenceBand(it, sent) {
   const parts = sent.text.split(sent.w);
@@ -594,15 +652,27 @@ const toolIcon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentCo
 
 /* a session over these items: 'review'; 'practice', which leaves the schedule alone;
    or 'calibrate' (the calibration test) */
+/* the questions an item is asked: its meaning from its sound alone (Listening, when
+   this device can speak Chinese), its pronunciation and meaning, and writing it (for
+   a character, with Writing on) */
+function questionsFor(it, cfg) {
+  const qs = ['pinyin', 'meaning'];
+  if (cfg.listen && Sound.voices().length) qs.unshift('listen');
+  if (cfg.write && it && it.kind !== 'word') qs.push('write');
+  return qs;
+}
+
 function newSession(keys, mode = 'review') {
   // Item question order: pronunciation then meaning, in pairs or shuffled (a meaning
-  // still waits for its pronunciation: see deferMeaning)
+  // still waits for its pronunciation, listening comes first and writing last: see
+  // deferQuestion)
+  const cfg = Store.cfg(), d = Store.load();
+  const need = Object.fromEntries(keys.map(k => [k, questionsFor(d.items[k], cfg)]));
   let queue = [];
-  keys.forEach(k => queue.push({ k, q: 'pinyin' }, { k, q: 'meaning' }));
-  if (Store.cfg().questionOrder === 'random') queue = shuffle(queue);
-  const d = Store.load();
+  keys.forEach(k => need[k].forEach(q => queue.push({ k, q })));
+  if (cfg.questionOrder === 'random') queue = shuffle(queue);
   return {
-    queue, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, sent: {}, facts: {},
+    queue, need, i: 0, answered: {}, misses: {}, right: [], wrong: [], shown: null, sent: {}, facts: {},
     panel: null,        // 'info' | 'settings'
     secs: {},           // info sections opened or closed by hand, for this question
     edit: null,         // 'mnemonic' | 'note', being edited in the info panel
@@ -635,7 +705,7 @@ async function pageReviews() {
   }
   const s = reviewState;
   if (s.i >= s.queue.length) return reviewsDone();
-  for (let n = 0; n < s.queue.length && deferMeaning(s); n++);
+  for (let n = 0; n < s.queue.length && deferQuestion(s); n++);
   const { k, q } = s.queue[s.i], it = Store.item(k);
   if (!it) { s.i++; return pageReviews(); }
   if (!it.alts.length || !it.pin) await itemFacts(k, it);
@@ -646,7 +716,7 @@ async function pageReviews() {
   const total = new Set(s.queue.map(x => x.k)).size, finished = s.right.length + s.wrong.length;
   const pct = finished ? Math.round(100 * s.right.length / finished) : 100;
   const shown = s.shown;
-  const can = { info: !!shown, sound: !!shown && Sound.voices().length > 0, settings: true, reveal: !shown,
+  const can = { info: !!shown, sound: (!!shown || q === 'listen') && Sound.voices().length > 0, settings: true, reveal: !shown,
     open: !!shown, wrap: true, undo: !!shown };
   const labels = { info: 'Item info (I)', sound: 'Play the pronunciation (P)', settings: 'Quiz settings (Q)',
     reveal: 'Reveal the answer (Ctrl+Enter)', open: 'Open in a new tab (O)',
@@ -658,19 +728,26 @@ async function pageReviews() {
       ${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
       ${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
-    ${cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
-    <div class="rv-prompt">${kindName(it)} <b>${q === 'pinyin' ? 'Pronunciation' : 'Meaning'}?</b></div>
-    <form id="rv-form" autocomplete="off">
+    ${q === 'listen' && !shown ? listenBand(it) : q === 'write' ? writeBand(it, shown)
+      : cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
+    <div class="rv-prompt">${kindName(it)} <b>${{ pinyin: 'Pronunciation', write: 'Write it' }[q] || 'Meaning'}?</b>
+      ${q === 'listen' ? '<span class="muted">from its sound</span>' : ''}</div>
+    <form id="rv-form" autocomplete="off"${q === 'write' ? ' class="rv-writing"' : ''}>
+      ${q === 'write' ? `<p class="rv-write-msg" id="rv-write-msg">${shown ? '' : 'Draw each stroke in order. After three misses on a stroke, its outline shows.'}</p>
+        <button class="rv-enter" ${shown ? '' : 'hidden'}>Next</button>` : `
       <input id="rv-in" class="rv-input ${shown ? (shown.ok ? 'ok' : 'bad') : ''}"
         placeholder="${q === 'pinyin' ? 'pin1yin1' : 'Meaning…'}" spellcheck="false" autocapitalize="off" lang="en"
         ${shown ? 'readonly' : ''} value="${shown ? esc(shown.answer) : ''}">
-      <p class="rv-hint" id="rv-hint" hidden>That isn't pinyin. Check it and try again.</p>
+      <p class="rv-hint" id="rv-hint" hidden>That isn't pinyin. Check it and try again.</p>`}
     </form>
     ${shown ? `<div class="rv-after">
-      ${shown.ok ? '' : `<p class="lx-wrong">${q === 'pinyin'
+      ${q === 'write' ? `<p class="${shown.ok ? 'lx-right' : 'lx-wrong'}">${shown.revealed ? 'Here is how it is written: it comes again later.'
+        : shown.ok ? (shown.slips ? `Written, with ${shown.slips} ${shown.slips === 1 ? 'slip' : 'slips'}.` : 'Written without a slip.')
+        : `${shown.hinted} ${shown.hinted === 1 ? 'stroke' : 'strokes'} needed the outline: it comes again later.`}</p>`
+      : shown.ok ? '' : `<p class="lx-wrong">${q === 'pinyin'
         ? `It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}).` : `It means <b>${esc(primary(it))}</b>.`}</p>`}
       <p class="row">
-        ${!shown.ok && q === 'meaning' && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
+        ${!shown.ok && (q === 'meaning' || q === 'listen') && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
         <span class="small muted">Enter for the next one</span></p>
     </div>` : ''}
     <div class="rv-tools">${TOOLS.map(t => `<button type="button" class="rv-tool${s.panel === t || (t === 'wrap' && s.wrap) ? ' on' : ''}"
@@ -678,18 +755,22 @@ async function pageReviews() {
     ${s.panel === 'settings' ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('settings')}">${quizSettings(cfg)}</div>` : ''}
     ${s.panel === 'info' && shown ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('info')}">${infoPanel(k, Store.item(k), q)}</div>` : ''}`;
 
-  const input = document.getElementById('rv-in');
-  if (s.asked !== s.i) { s.asked = s.i; s.askedAt = Date.now(); s.keyAt = 0; }
-  input.addEventListener('input', () => { if (!s.keyAt) s.keyAt = Date.now(); });
+  const input = document.getElementById('rv-in') || document.querySelector('#rv-form .rv-enter');
+  const fresh = s.asked !== s.i;
+  if (fresh) { s.asked = s.i; s.askedAt = Date.now(); s.keyAt = 0; }
+  if (fresh && q === 'listen') Sound.say(k, true);
+  if (q !== 'write') input.addEventListener('input', () => { if (!s.keyAt) s.keyAt = Date.now(); });
   const edit = document.getElementById('rv-edit');
   if (edit) edit.focus();
   else if (s.focus === 'syn' && document.getElementById('rv-synin')) document.getElementById('rv-synin').focus();
-  else input.focus();
+  else if (q !== 'write' || shown) input.focus();
   s.focus = null;
+  if (q === 'write') reviewWriting(k, shown);
 
   document.getElementById('rv-form').addEventListener('submit', e => {
     e.preventDefault();
     if (s.shown) return nextQuestion();
+    if (q === 'write') return;                     // answered by writing
     const answer = input.value;
     if (!answer.trim()) return;
     // pinyin answer validation: not pinyin at all is a typo to fix, not a wrong answer
@@ -700,7 +781,7 @@ async function pageReviews() {
       document.getElementById('rv-hint').hidden = false;
       return;
     }
-    const ok = q === 'pinyin' ? Learn.checkPinyin(answer, it.pin) : Learn.checkMeaning(answer, it);
+    const ok = q === 'pinyin' ? Learn.checkPinyin(answer, it.pin) : Learn.checkMeaning(answer, it);   // (listen: the meaning)
     if (ok) {
       Sound.ding();
       if (q === 'pinyin') Sound.say(k);
@@ -736,16 +817,25 @@ async function pageReviews() {
   paintRail();
 }
 
-/* An item's meaning is only asked once its pronunciation is right: a meaning question
-   whose pronunciation is still to come (missed, undone, or shuffled ahead of it) moves
-   to just after it. True when it moved one. */
-function deferMeaning(s) {
+/* What a question waits for. An item's meaning is only asked once its pronunciation
+   is right; listening comes before anything shows the item (it would give the sound
+   away), and writing after its pronunciation and meaning have been asked (its cue
+   shows them). A question whose turn hasn't come (missed, undone, or shuffled ahead)
+   moves to just after the last question it waits for. True when it moved one. */
+const WAITS = { meaning: [['pinyin', 'right'], ['listen', 'asked']], pinyin: [['listen', 'asked']],
+  write: [['pinyin', 'asked'], ['meaning', 'asked'], ['listen', 'asked']] };
+function deferQuestion(s) {
   const { k, q } = s.queue[s.i];
-  if (q !== 'meaning' || (s.answered[k] || {}).pinyin) return false;
-  const j = s.queue.findIndex((x, n) => n > s.i && x.k === k && x.q === 'pinyin');
-  if (j < 0) return false;
-  const [m] = s.queue.splice(s.i, 1);              // the pronunciation is now at j - 1
-  s.queue.splice(j, 0, m);
+  let last = -1;
+  for (const [p, how] of WAITS[q] || []) {
+    if (how === 'right' ? (s.answered[k] || {})[p] : (s.first[k] || {})[p]) continue;
+    for (let j = s.queue.length - 1; j > s.i; j--) {
+      if (s.queue[j].k === k && s.queue[j].q === p) { last = Math.max(last, j); break; }
+    }
+  }
+  if (last < 0) return false;
+  const [m] = s.queue.splice(s.i, 1);              // what it waits for is now at last - 1
+  s.queue.splice(last, 0, m);
   return true;
 }
 
@@ -773,13 +863,15 @@ function reviewTool(name) {
   const { k, q } = s.queue[s.i], it = Store.item(k);
   if (name === 'settings') { s.panel = s.panel === 'settings' ? null : 'settings'; return pageReviews(); }
   if (name === 'wrap') return toggleWrap();
+  if (name === 'sound' && (s.shown || q === 'listen')) return Sound.say(k, true);
   if (name === 'reveal') {
     // don't know it: count it as missed, show the answer and the item
     if (s.shown) return;
     s.shown = { ok: false, answer: '', revealed: true };
     s.misses[k] = (s.misses[k] || 0) + 1;
     const f = s.first[k] = s.first[k] || {};
-    if (!f[q]) f[q] = { ok: false, near: false, ms: Infinity };
+    // (writing it is a skill of its own: needing it shown makes a review hard, not forgotten)
+    if (!f[q]) f[q] = q === 'write' ? { ok: true, near: true, ms: 0 } : { ok: false, near: false, ms: Infinity };
     (s.typed[k] = s.typed[k] || []).push({ q, answer: '' });
     s.queue.push({ k, q });
     s.panel = 'info';
@@ -788,7 +880,6 @@ function reviewTool(name) {
   if (!s.shown) return;                            // the rest wait for an answer
   if (name === 'info') { s.panel = s.panel === 'info' ? null : 'info'; s.edit = null; return pageReviews(); }
   if (name === 'syn') { s.panel = 'info'; s.secs.Meaning = true; s.focus = 'syn'; return pageReviews(); }
-  if (name === 'sound') return Sound.say(k, true);
   if (name === 'open') {
     const path = it.kind === 'word' ? '#/search/' : '#/character/';
     return window.open(location.href.split('#')[0] + path + encodeURIComponent(k), '_blank');
@@ -927,7 +1018,7 @@ function nextQuestion() {
   if (s.shown.ok) {
     const a = s.answered[k] = s.answered[k] || {};
     a[q] = true;
-    if (a.meaning && a.pinyin) {
+    if ((s.need[k] || ['pinyin', 'meaning']).every(x => a[x])) {
       const it = Store.item(k), right = !s.misses[k];
       const g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}));
       const opts = { retention: Store.cfg().retention };
@@ -971,8 +1062,8 @@ function reviewsDone() {
     const before = s.before[k], after = it.stage;
     const move = stage(after) + (s.practice ? '' : after > before ? `<small class="up">↑ from ${esc(Learn.stageName(before))}</small>`
       : after < before ? `<small class="down">↓ from ${esc(Learn.stageName(before))}</small>` : '<small>stays</small>');
-    const typed = (s.typed[k] || []).map(t => `${t.q === 'pinyin' ? 'pronunciation' : 'meaning'}
-      ${t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
+    const typed = (s.typed[k] || []).map(t => `${{ pinyin: 'pronunciation', listen: 'meaning by ear', write: 'writing' }[t.q] || 'meaning'}
+      ${t.q === 'write' ? 'needed a hint' : t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
     const m = !s.practice && Learn.memory(it, now);
     const href = (it.kind === 'word' ? '#/search/' : '#/character/') + encodeURIComponent(k);
     return `<a class="rs-item ${it.kind}" href="${href}">
@@ -1250,6 +1341,11 @@ function paintStudySettings() {
       <p class="st-note">An answer that isn't pinyin at all (jeu4, yi22) shakes for you to fix instead of counting as wrong.</p>
       ${tog('sentences', 'Turn word reviews into targeted sentence reviews')}
       <p class="st-note">A word is shown inside the sentence you found it in, or one from the graded stories.</p>
+      ${tog('listen', 'Listening: ask what an item means from its sound alone')}
+      <p class="st-note">Asked first, before you see it. Needs this device's Chinese voice (below); counts like the other questions.</p>
+      ${tog('write', 'Writing: ask me to write each character')}
+      <p class="st-note">Asked last, from its pinyin and meaning: draw the strokes in order. After three misses on a stroke its
+        outline shows; needing it makes the review count as hard, never as forgotten.</p>
     </div>
 
     <h3 class="st-h">Sounds</h3>

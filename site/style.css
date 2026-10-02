@@ -1345,3 +1345,28 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 .sync-backups { list-style: none; padding: 0; margin: 10px 0; }
 .sync-backups li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
 .sync-backups .btn { margin-left: auto; padding: 2px 11px; font-size: 12.5px; }
+
+/* ---------- stroke order and writing practice (hanzi-writer) ---------- */
+.stroke-box { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+.writer-wrap { position: relative; flex: none; background: var(--panel); border-radius: 10px; touch-action: none; }
+.writer-grid { position: absolute; inset: 0; width: 100%; height: 100%; }
+.writer-grid rect { fill: none; stroke: var(--line-2); stroke-width: 1; }
+.writer-grid path { fill: none; stroke: var(--line); stroke-width: .6; stroke-dasharray: 2 2; }
+.writer { position: absolute; inset: 0; }
+.writer svg { display: block; }
+.writer-side { flex: 1 1 240px; min-width: 0; }
+.writer-side .row { flex-wrap: wrap; }
+
+/* reviews: listening (the sound only) and writing (in a square, from the pinyin and meaning) */
+.lx-listen {
+  display: grid; place-items: center; width: 112px; height: 112px; margin: 6px auto 12px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .7); background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
+}
+.lx-listen:hover { background: rgba(255, 255, 255, .22); }
+.lx-listen svg { width: 52px; height: 52px; }
+.lx-write .writer-wrap { margin: 8px auto 6px; box-shadow: 0 1px 4px rgba(0, 0, 0, .2); }
+.lx-write .lx-mean { font-size: 22px; }
+.rv-writing { text-align: center; }
+.rv-write-msg { min-height: 1.5em; margin: 6px 0 0; color: var(--ink-2); }
+.rv-enter { position: absolute; left: -9999px; }
+.lx-right { color: #15803d; font-weight: 600; }

@@ -26,7 +26,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 5;
+const DATA_VERSION = 6;
 
 const _loading = {};
 function loadScript(src) {
@@ -75,7 +75,17 @@ async function charData(ch) {
   if (!HZ.chunk[b]) { try { await loadScript('data/c/' + b + '.js'); } catch (e) { return null; } }
   return (HZ.chunk[b] || {})[ch] || null;
 }
+/* how to write a character, stroke by stroke (site/data/s/, build/export_strokes.js):
+   [strokes, medians, radStrokes], or null for the few characters it doesn't cover */
+const strokeCount = ch => { const b = HZ.strokes[bucketOf(ch)]; return b && b[ch] ? b[ch][0].length : 0; };
+async function strokeData(ch) {
+  const b = bucketOf(ch);
+  if (!HZ.strokes[b]) { try { await loadScript('data/s/' + b + '.js'); } catch (e) { return null; } }
+  return (HZ.strokes[b] || {})[ch] || null;
+}
+
 const need = {
+  writer: () => window.HanziWriter ? Promise.resolve() : loadScript('vendor/hanzi-writer.min.js'),
   comps: () => HZ.comps ? Promise.resolve() : loadScript('data/comps.js'),
   words: () => HZ.words ? Promise.resolve() : loadScript('data/words.js'),
   hsk: () => HZ.hsk ? Promise.resolve() : loadScript('data/hsk.js'),
@@ -1332,6 +1342,44 @@ const wordChip = w => `<a class="word" href="#/search/${encodeURIComponent(w[0])
 const REL = { 1: 'Exact match, including tone.', 2: 'Same pinyin, different tone.',
               3: 'It rhymes.', 4: 'Same initial sound.' };
 
+/* a square for HanziWriter to draw in, over a 米字格 practice grid */
+function writerBox(id, size = 220) {
+  return `<div class="writer-wrap" style="width:${size}px;height:${size}px">
+    <svg class="writer-grid" viewBox="0 0 100 100" aria-hidden="true"><rect x=".5" y=".5" width="99" height="99"/>
+      <path d="M0 0L100 100M100 0L0 100M50 0V100M0 50H100"/></svg>
+    <div id="${id}" class="writer"></div></div>`;
+}
+
+/* HanziWriter in the element with that id, drawing ch from site/data/s; null when
+   there are no strokes for it. Colours follow the page's (light or dark). */
+async function makeWriter(id, ch, size, opts) {
+  const [, d] = await Promise.all([need.writer(), strokeData(ch)]);
+  if (!d || !document.getElementById(id)) return null;
+  const css = getComputedStyle(document.documentElement);
+  const v = n => css.getPropertyValue(n).trim();
+  return HanziWriter.create(id, ch, Object.assign({
+    width: size, height: size, padding: 6,
+    strokeColor: v('--ink'), outlineColor: v('--line-2'), radicalColor: v('--accent'),
+    drawingColor: v('--blue'), highlightColor: v('--blue'),
+    strokeAnimationSpeed: 1.1, delayBetweenStrokes: 220, drawingWidth: 6,
+    charDataLoader: (c, done) => done({ strokes: d[0], medians: d[1], radStrokes: d[2] || [] }),
+  }, opts));
+}
+
+/* a writing quiz in a writer: tracing over the outline, or from memory (the outline
+   only comes back, stroke by stroke, after three misses on it). done(mistakes, strokes) */
+function writeQuiz(writer, memory, say, done) {
+  let strokes = 0;
+  writer.hideCharacter();
+  if (memory) writer.hideOutline(); else writer.showOutline();
+  writer.quiz({
+    showHintAfterMisses: 3, leniency: 1.1,
+    onCorrectStroke: s => { strokes = s.strokeNum + 1 + s.strokesRemaining; say(`Stroke ${s.strokeNum + 1} of ${strokes}.`); },
+    onMistake: s => say(s.mistakesOnStroke >= 3 ? `Stroke ${s.strokeNum + 1}: follow the hint.` : `Not quite: stroke ${s.strokeNum + 1} again.`),
+    onComplete: s => { writer.showOutline(); done(s.totalMistakes, strokes); },
+  });
+}
+
 async function pageCharacter(ch) {
   app.innerHTML = '<p class="muted">Loading…</p>';
   const d = await charData(ch);
@@ -1406,6 +1454,21 @@ async function pageCharacter(ch) {
       <ul class="facts">${facts.join('')}</ul>
     </section>
 
+    <section id="stroke-sec" hidden>
+      <h2 class="sec-h">Stroke order</h2>
+      <div class="decomp-box pad stroke-box">
+        ${writerBox('writer')}
+        <div class="writer-side">
+          <p class="small muted" id="writer-msg"></p>
+          <div class="row">
+            <button class="btn" id="w-play">▶ Play</button>
+            <button class="btn quiet" id="w-trace">✎ Trace it</button>
+            <button class="btn quiet" id="w-recall">✎ Write from memory</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <h2 class="sec-h">Decomposition</h2>
     <p class="tip"><i class="info-i">i</i> Components you have marked as known are
        outlined in green — click one in row 2 to mark it.</p>
@@ -1470,6 +1533,27 @@ async function pageCharacter(ch) {
         placeholder="A mnemonic, an example sentence, anything…">${esc(store.notes[ch] || '')}</textarea>
       <p class="small muted" id="note-state">Saved automatically.</p>
     </div>`);
+
+  // stroke order: play it, trace it, or write it from memory
+  makeWriter('writer', ch, 220, { showOutline: true }).then(writer => {
+    const sec = document.getElementById('stroke-sec');
+    if (!writer || !sec) return;
+    sec.hidden = false;
+    const msg = document.getElementById('writer-msg');
+    const n = strokeCount(ch);
+    const intro = `${n ? n + ' strokes. ' : ''}The radical's strokes are in red. Play them in order, then write it yourself.`;
+    msg.textContent = intro;
+    const say = t => { msg.textContent = t; };
+    document.getElementById('w-play').addEventListener('click', () => { writer.cancelQuiz(); say(intro); writer.animateCharacter(); });
+    const practise = memory => () => {
+      say(memory ? 'Write it from memory: draw each stroke in order.' : 'Trace over the outline, stroke by stroke.');
+      writeQuiz(writer, memory, say, (mistakes) => say(mistakes
+        ? `Done, with ${mistakes} ${mistakes === 1 ? 'slip' : 'slips'}. Again, or play it to compare.`
+        : 'Done, without a slip.'));
+    };
+    document.getElementById('w-trace').addEventListener('click', practise(false));
+    document.getElementById('w-recall').addEventListener('click', practise(true));
+  });
 
   const dd = (btnId, popId, build) => {
     const btn = document.getElementById(btnId), pop = document.getElementById(popId);
