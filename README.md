@@ -323,7 +323,9 @@ switch in Settings → Desktop app turns this off. `npx electron test/text.js` (
 compares both ways with where the characters really are.
 
 Everything is offline apart from sync. `cd desktop && npm install && npm start` runs it from
-here; `npm run dist` builds the installer. How it works, what was measured and what each
+here; `npm run dist` builds the installer. Ready-built installers are on the repo's
+[Releases](https://github.com/EidurEwan/hanzihome/releases) page, built on Windows by
+`.github/workflows/desktop-installer.yml` for each pushed `v*` tag. How it works, what was measured and what each
 part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 ## Known differences from the original
