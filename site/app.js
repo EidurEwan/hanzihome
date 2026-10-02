@@ -915,16 +915,56 @@ function initSearch() {
   });
 }
 
+/* ===================== simplified or traditional =====================
+   Settings → Appearance → Characters. The data is simplified throughout; shown,
+   it can be traditional (site/data/s2t.js, build/export_s2t.js: the usual
+   traditional form of each character, and the words that convert otherwise:
+   头发 頭髮, 皇后 皇后), or both: simplified with traditional beside it. */
+const scriptMode = () => (HZ.s2t ? Store.cfg().script : 'simp') || 'simp';
+const needS2t = () => Store.cfg().script !== 'simp' && !HZ.s2t ? loadScript('data/s2t.js') : Promise.resolve();
+let _s2tMax = 0;
+function toTrad(text) {
+  if (!HZ.s2t) return text;
+  if (!_s2tMax) _s2tMax = Math.max(2, ...Object.keys(HZ.s2tWords).map(w => [...w].length));
+  const cs = [...String(text)];
+  let out = '';
+  for (let i = 0; i < cs.length;) {
+    let n = Math.min(_s2tMax, cs.length - i);
+    for (; n >= 2; n--) { const w = cs.slice(i, i + n).join(''); if (w in HZ.s2tWords) { out += HZ.s2tWords[w]; break; } }
+    if (n >= 2) { i += n; continue; }
+    // 只 counting animals is 隻 (一隻貓), "only" stays 只
+    out += cs[i] === '只' && i && /[一二两三四五六七八九十几这那每半]/.test(cs[i - 1]) ? '隻' : HZ.s2t[cs[i]] || cs[i];
+    i++;
+  }
+  return out;
+}
+/* a character or word where there is room: traditional, or simplified with the
+   traditional beside it (both), escaped */
+function zh(text) {
+  const m = scriptMode(), t = m === 'simp' ? text : toTrad(text);
+  if (t === text) return esc(text);
+  return m === 'trad' ? esc(t) : `${esc(text)}<span class="trad">${esc(t)}</span>`;
+}
+/* where there is room for one (tiles, links, running text): traditional only in 'trad' */
+const zhOne = text => esc(scriptMode() === 'trad' ? toTrad(text) : text);
+
 /* ============================ shared bits ============================ */
 
-const charLink = (c, cls) => `<a class="${cls || ''}" href="#/character/${encodeURIComponent(c)}">${esc(c)}</a>`;
+const charLink = (c, cls) => `<a class="${cls || ''}" href="#/character/${encodeURIComponent(c)}">${zhOne(c)}</a>`;
+/* a word as links to its characters' pages, shown in the chosen characters (trad: its own
+   traditional spelling) */
+function wordLinks(simp, trad) {
+  const s = [...simp], t = [...(scriptMode() === 'trad' ? trad || toTrad(simp) : simp)];
+  return s.map((c, i) => HZ.index[c]
+    ? `<a href="#/character/${encodeURIComponent(c)}">${esc(t.length === s.length ? t[i] : c)}</a>` : esc(c)).join('');
+}
 
 function tile(c, label) {
   const e = HZ.index[c] || [];
   const st = Store.status(c);
   return `<a class="tile ${st || ''}" href="#/character/${encodeURIComponent(c)}"
      title="${esc((e[2] || '') + '  ' + (e[3] || ''))}">
-     <span class="g">${esc(c)}</span><span class="n">${label != null ? label : (e[0] || '')}</span></a>`;
+     <span class="g">${zhOne(c)}</span><span class="n">${label != null ? label : (e[0] || '')}</span></a>`;
 }
 
 /* The tile hover menu lives on <body>, not inside the card, so nothing about
@@ -997,7 +1037,7 @@ function chip(c, rank) {
   const e = HZ.index[c] || [];
   const st = Store.status(c) === 'learned' ? 'learned' : '';
   return `<a class="chip ${st}" href="#/character/${encodeURIComponent(c)}">
-    <span class="g">${esc(c)}</span><span class="p">${esc(e[2] || '')}</span>
+    <span class="g">${zhOne(c)}</span><span class="p">${esc(e[2] || '')}</span>
     ${rank ? `<span class="r">#${rank}</span>` : ''}</a>`;
 }
 
@@ -1335,9 +1375,11 @@ const ICON = {
 const icon = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[n]}"/></svg>`;
 
-const wordChip = w => `<a class="word" href="#/search/${encodeURIComponent(w[0])}">
-  <span class="w">${esc(w[0])}</span>${w[1] ? ` <span class="t">(${esc(w[1])})</span>` : ''}
-  <span class="p">${esc(w[2])}</span></a>`;
+// [simplified, traditional or '', pinyin]: the one chosen first, the other in brackets
+const wordChip = w => { const [a, b] = scriptMode() === 'trad' && w[1] ? [w[1], w[0]] : [w[0], w[1]];
+  return `<a class="word" href="#/search/${encodeURIComponent(w[0])}">
+  <span class="w">${esc(a)}</span>${b ? ` <span class="t">(${esc(b)})</span>` : ''}
+  <span class="p">${esc(w[2])}</span></a>`; };
 
 const REL = { 1: 'Exact match, including tone.', 2: 'Same pinyin, different tone.',
               3: 'It rhymes.', 4: 'Same initial sound.' };
@@ -1428,10 +1470,10 @@ async function pageCharacter(ch) {
 
   app.innerHTML = `<p class="crumb"><a href="#/dashboard">Dashboard</a> / <span class="han">${esc(ch)}</span></p>`
   + withRail(`
-    <div class="chartab han">${esc(ch)}</div>
+    <div class="chartab han">${zhOne(ch)}</div>
     <section class="card chartop">
       <div class="hero-row">
-        <div class="hero-glyph ${status || ''}">${esc(ch)}</div>
+        <div class="hero-glyph ${status || ''}">${zhOne(ch)}</div>
         <div class="hero-actions">
           <div class="dd">
             <button class="btn status-btn ${status || 'none'}" id="statusbtn">
@@ -1645,8 +1687,8 @@ async function pageSearch(q) {
       </tbody></table></section>` : ''}
     ${words.length ? `<section class="card"><h2>Words</h2><table><tbody>
       ${words.map(w => `<tr>
-        <td class="g">${[...w[0]].map(c => HZ.index[c] ? charLink(c) : esc(c)).join('')}</td>
-        <td class="num">${esc(w[1] || '')}</td>
+        <td class="g">${wordLinks(w[0], w[1])}</td>
+        <td class="num">${esc(scriptMode() === 'trad' ? (w[1] ? w[0] : '') : w[1] || '')}</td>
         <td><b>${esc(w[2])}</b><br><span class="muted">${esc(w[3])}</span></td></tr>`).join('')}
       </tbody></table></section>` : ''}
     ${!chars.length && !words.length ? '<div class="card"><p class="empty">Nothing found.</p></div>' : ''}`);
@@ -1697,7 +1739,7 @@ async function pageReader() {
     const chars = st.c.map(r => r[0]);   // precomputed at build time; st.t is gone
     return `<a class="story" href="#/reader/${st.id}">
       <span class="story-tag">HSK ${st.l} · ${esc(st.tag)}</span>
-      <span class="story-zh han">${esc(st.zh)}</span>
+      <span class="story-zh han">${zhOne(st.zh)}</span>
       <span class="story-en">${esc(st.en)}</span>
       <span class="story-stat">${trackedIn(chars)} of ${chars.length} unique characters tracked</span>
     </a>`;
@@ -1802,7 +1844,7 @@ function showStory(st, back) {
         </section>
       </aside>
       <div class="readmain">
-        <h1 class="storytitle han">${esc(st.zh)}</h1>
+        <h1 class="storytitle han">${zhOne(st.zh)}</h1>
         <p class="storysub">${esc(st.en)}</p>
         <div class="reading-pane" id="pane"></div>
       </div>
@@ -1827,7 +1869,7 @@ function paintStory() {
     if (tk.br) return '<br>';               // a new speaker starts a new line
     if (typeof tk !== 'string') return esc(tk.s);
     const w = st.g[tk][0];
-    return `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${esc(w)}</span>`;
+    return `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${zhOne(w)}</span>`;
   }).join('') + '</p>').join('');
   pane.querySelectorAll('.w').forEach(el => {
     el.addEventListener('mouseenter', () => showWordPop(el));
@@ -1884,7 +1926,7 @@ function vocabList(st) {
   return '<h4 class="paneltitle">Vocabulary</h4>' + st.v.map(r => {
     const state = wordState(r[0]);
     return `<a class="vrow ${state}" href="#/character/${encodeURIComponent(r[0][0])}">
-      <span class="vw han">${esc(r[0])}</span>
+      <span class="vw han">${zhOne(r[0])}</span>
       <span class="vp">${esc(r[1] || '')}</span>
       <span class="vd">${esc(r[2] || '')}</span></a>`;
   }).join('');
@@ -1918,7 +1960,7 @@ function charList(st) {
     + (rows.length ? `<div class="crows">${rows.map(c => {
         const e = HZ.index[c] || [], r = inStory[c];
         return `<a class="crow ${stat(c) || ''}" href="#/character/${encodeURIComponent(c)}">
-          <span class="han">${esc(c)}</span>
+          <span class="han">${zhOne(c)}</span>
           <span class="rk">${e[0] ? '#' + e[0] : ''}</span>
           <span class="cp"><b>${esc(r[1])}</b> ${esc(r[2])}</span></a>`;
       }).join('')}</div>` : '<p class="empty small">Nothing in this group.</p>');
@@ -1977,14 +2019,14 @@ function showWordPop(el) {
     const meaning = multi
       ? `<span class="wp-cm"><b>${esc(cp)}</b> ${esc(cg)}</span>` : '';
     return `<div class="wp-char${multi ? ' multi' : ''}">
-      <a class="wp-c han" href="#/character/${encodeURIComponent(c)}">${esc(c)}</a>
+      <a class="wp-c han" href="#/character/${encodeURIComponent(c)}">${zhOne(c)}</a>
       <span class="wp-cbody">${meaning}${HZ.index[c]
         ? `<span class="seg3">${btn('', 'Not known', 'none')}${btn('learning', 'Learning', 'learning')}${btn('learned', 'Learned', 'learned')}</span>`
         : ''}</span>
     </div>`;
   };
   pop.innerHTML = `
-    <div class="wp-head"><span class="han">${esc(w)}</span>
+    <div class="wp-head"><span class="han">${zh(w)}</span>
       <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
     <p class="wp-learn">${Store.item(learnKey(w))
@@ -2049,7 +2091,7 @@ async function pageHsk(level) {
          you have marked as learned</p>
       <table><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th></tr></thead><tbody>
         ${words.map(w => `<tr>
-          <td class="g">${[...w[0]].map(c => HZ.index[c] ? charLink(c) : esc(c)).join('')}</td>
+          <td class="g">${wordLinks(w[0])}</td>
           <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td></tr>`).join('')}
       </tbody></table>
     </section>`);
@@ -2224,6 +2266,11 @@ function pageSettings() {
         <select class="st-select" id="theme">${[['system', 'Same as this device'], ['light', 'Light'], ['dark', 'Dark']]
           .map(([v, l]) => `<option value="${v}"${theme() === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <p class="st-note">Kept on this device only, so a phone can be dark and a laptop light.</p></div>
+      <div class="st-field"><div class="st-label">Characters</div>
+        <select class="st-select" id="script">${[['simp', 'Simplified'], ['trad', 'Traditional'], ['both', 'Simplified, with traditional beside it']]
+          .map(([v, l]) => `<option value="${v}"${Store.cfg().script === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+        <p class="st-note">How characters and words are shown, on every page and in the stories. Searching, lessons and
+          answers work the same either way.</p></div>
     </section>
     <section class="card" id="study-card"></section>
     ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
@@ -2300,6 +2347,11 @@ function pageSettings() {
     }
   });
   document.getElementById('theme').addEventListener('change', e => { setTheme(e.target.value); render(true); });
+  document.getElementById('script').addEventListener('change', async e => {
+    Store.setCfg({ script: e.target.value });
+    await optional(needS2t());
+    render(true);
+  });
   wireSyncCard();
   if (offlineCan()) paintOffline();
   paintStudySettings();
@@ -2546,7 +2598,7 @@ function offlineFiles() {
   const hex = n => ('0' + n.toString(16)).slice(-2);
   const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
-    'stories', 'readings', 'readerwords'].map(f => `data/${f}.js`)
+    'stories', 'readings', 'readerwords', 's2t'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
       ['textstory.js', 'vendor/hanzi-writer.min.js'])
     .map(f => f + '?v=' + DATA_VERSION);
@@ -2681,7 +2733,7 @@ document.addEventListener('keydown', e => {
 
 initSearch();
 if (!location.hash) location.hash = '#/dashboard';
-render();
+optional(needS2t()).then(() => render());
 tellDesktop();
 if (window.hanzihomeDesktop) {
   document.getElementById('nav-screen').hidden = false;

@@ -210,7 +210,7 @@ async function itemFacts(k, it) {
 function band(k, it, show) {
   return `<div class="lx-band ${it.kind}">
     ${show ? `<div class="lx-pin">${esc(it.pin)}</div>` : '<div class="lx-pin">&nbsp;</div>'}
-    <div class="lx-glyph han">${esc(k)}</div>
+    <div class="lx-glyph han">${zh(k)}</div>
     ${show ? `<div class="lx-mean">${esc((it.mean || '').split(';')[0])}</div>` : ''}
     <span class="lx-kind">${kindName(it)}</span>
   </div>`;
@@ -420,7 +420,7 @@ function drawStudy() {
         return `<span class="lx-q ${it.kind}${it.prio ? ' prio' : ''}${p.locked[k] ? ' locked' : ''}" title="${esc(why(k))}">
           <button data-prio="${esc(k)}" class="lx-star" aria-label="${it.prio ? 'Stop prioritizing' : 'Prioritize'} ${esc(k)}"
             title="${it.prio ? 'Prioritized' : 'Prioritize'}">${it.prio ? '★' : '☆'}</button>
-          <a class="han" href="#/character/${encodeURIComponent([...k][0])}">${p.locked[k] ? '🔒' : ''}${esc(k)}</a>
+          <a class="han" href="#/character/${encodeURIComponent([...k][0])}">${p.locked[k] ? '🔒' : ''}${zhOne(k)}</a>
           <button data-rm="${esc(k)}" aria-label="Remove ${esc(k)}">×</button></span>`;
       }).join('')}</div>
       <p class="small muted">In the order they come: ☆ puts one at the front. 🔒 waits to unlock
@@ -1067,7 +1067,7 @@ function reviewsDone() {
     const m = !s.practice && Learn.memory(it, now);
     const href = (it.kind === 'word' ? '#/search/' : '#/character/') + encodeURIComponent(k);
     return `<a class="rs-item ${it.kind}" href="${href}">
-      <span class="rs-glyph han">${esc(k)}</span>
+      <span class="rs-glyph han">${zhOne(k)}</span>
       <span class="rs-body"><span><b>${esc(it.pin)}</b> ${esc(primary(it))}</span>
         <span class="rs-move">${gradeTag(s.grades[k])}${move}</span>
         ${m ? `<span class="rs-mem" title="Stability: days until the chance of recall falls to 90%. Difficulty: 1 to 10.">

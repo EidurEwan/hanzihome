@@ -282,6 +282,7 @@
     showPct: true, showCount: true,
     validate: false,           // shake at answers that aren't pinyin, instead of marking them wrong
     sentences: false,          // word reviews show the word in a sentence
+    script: 'simp',            // characters shown 'simp' | 'trad' | 'both' (app.js zh)
     listen: false,             // also ask an item's meaning from its sound alone, first
     write: false,              // also ask to write a character, last (hanzi-writer)
     voice: 'female', speed: 'normal', muteSfx: false, muteVoice: false,

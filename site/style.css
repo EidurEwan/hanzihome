@@ -1460,3 +1460,6 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 :root[data-theme="dark"] .rs-grade.g4 { color: #60a5fa; border-color: #60a5fa; }
 :root[data-theme="dark"] .rv-practice { color: #a78bfa; }
 :root[data-theme="dark"] .rv-wrapping { color: #22d3ee; }
+
+/* both kinds of characters: the traditional form beside the simplified one */
+.trad { font-size: .6em; margin-left: .12em; opacity: .75; }

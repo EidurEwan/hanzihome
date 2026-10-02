@@ -183,6 +183,13 @@ custom lists, notes and search history.
 
 **Search** — a character, pinyin (`hao3` or `hao`), or an English word, with type-ahead.
 
+**Simplified or traditional** — Settings → Appearance → Characters shows every page, story and
+review in traditional characters, or simplified with traditional beside it. The data stays
+simplified; [`build/export_s2t.js`](build/export_s2t.js) writes the table it is shown through:
+each character as CC-CEDICT's traditional spellings of words write it most often (发 發, 后 後),
+and the 1,885 words that convert otherwise (头发 頭髮, 皇后 皇后, 干净 乾淨). Dark mode is under
+Appearance too, or follows the device.
+
 ## How the data is put together
 
 | Source | Used for | Licence |
@@ -206,6 +213,7 @@ build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> 
                         data/raw/{cedict,jieba_dict}.txt -> site/data/readerwords.js
 build/word_readings.py  everyday readings (build/everyday_readings.txt) into words.js, hsk.js, c/*.js
 build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the same 64 buckets)
+build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
 test/accuracy.js        scores textstory.js against the hand-glossed stories
