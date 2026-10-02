@@ -28,22 +28,19 @@ namespace HanziOcr
         const int Full = 120;         // and from this on, as dark as text gets
         const int Steady = 24;        // a pixel is in a flat patch when nothing 2, 4 and 6 px away differs more
         const int Near = 20;          // how far a flat patch's colour reaches
+        const int Fine = 8;           // the finer background: 8 px tiles, 24 px around
+        const double BoxShare = 0.5;  // a box: its colour covers this much of the 24 px around...
+        const int BoxApart = 60;      // ...and is this far from the page's
 
         // ---------------------------------------------------------------- the map
 
-        // The picture as grey, dark where a pixel's colour is far from the
-        // background around it. That background is the colour of the nearest flat
-        // patch, so text in a highlight box is measured against the box. Where no
-        // flat patch is near (a photo, a noisy video frame) it is the colour most of
-        // the tiles around share (colours rounded to 4 bits a channel), so a word of
-        // text, even a big bold one, never outweighs the page it sits on.
-        public static Bitmap ContrastMap(Bitmap bmp)
+        // Each tile's background: the commonest colour (rounded to 4 bits a channel)
+        // of the tiles up to reach around it, as that tile itself has it, so a
+        // gradient keeps its local shade; share is how much of the area has it.
+        static int[] TileModes(int[] px, int w, int h, int tile, int reach, out double[] share)
         {
-            int w = bmp.Width, h = bmp.Height;
-            int[] px = Pixels(bmp);
-            int tw = (w + Tile - 1) / Tile, th = (h + Tile - 1) / Tile;
-
-            // each tile's three commonest colours: bin, count and colour sums
+            int tw = (w + tile - 1) / tile, th = (h + tile - 1) / tile;
+            // each tile's three commonest colours: bin, count and mean colour
             var tops = new int[tw * th][];
             var counts = new int[4096];
             var sums = new long[4096 * 3];
@@ -52,9 +49,9 @@ namespace HanziOcr
                 for (int tx = 0; tx < tw; tx++)
                 {
                     touched.Clear();
-                    int y1 = Math.Min(h, (ty + 1) * Tile), x1 = Math.Min(w, (tx + 1) * Tile);
-                    for (int y = ty * Tile; y < y1; y++)
-                        for (int x = tx * Tile, i = y * w + x; x < x1; x++, i++)
+                    int y1 = Math.Min(h, (ty + 1) * tile), x1 = Math.Min(w, (tx + 1) * tile);
+                    for (int y = ty * tile; y < y1; y++)
+                        for (int x = tx * tile, i = y * w + x; x < x1; x++, i++)
                         {
                             int p = px[i], q = Bin(p);
                             if (counts[q]++ == 0) touched.Add(q);
@@ -79,17 +76,18 @@ namespace HanziOcr
                     tops[ty * tw + tx] = top;
                 }
 
-            // each tile's background: the commonest colour of the tiles around it, as
-            // that tile itself has it (so a gradient keeps its local shade)
             var bg = new int[tw * th];
+            share = new double[tw * th];
             var votes = new Dictionary<int, int>();
             for (int ty = 0; ty < th; ty++)
                 for (int tx = 0; tx < tw; tx++)
                 {
                     votes.Clear();
-                    for (int y = Math.Max(0, ty - Reach); y <= Math.Min(th - 1, ty + Reach); y++)
-                        for (int x = Math.Max(0, tx - Reach); x <= Math.Min(tw - 1, tx + Reach); x++)
+                    int area = 0;
+                    for (int y = Math.Max(0, ty - reach); y <= Math.Min(th - 1, ty + reach); y++)
+                        for (int x = Math.Max(0, tx - reach); x <= Math.Min(tw - 1, tx + reach); x++)
                         {
+                            area += (Math.Min(h, (y + 1) * tile) - y * tile) * (Math.Min(w, (x + 1) * tile) - x * tile);
                             var t = tops[y * tw + x];
                             for (int k = 0; k < 3; k++)
                             {
@@ -107,7 +105,29 @@ namespace HanziOcr
                         if (own[k * 5] == best) colour = (own[k * 5 + 2] << 16) | (own[k * 5 + 3] << 8) | own[k * 5 + 4];
                     if (colour < 0) colour = Centre(best);
                     bg[ty * tw + tx] = colour;
+                    share[ty * tw + tx] = area > 0 ? (double)bestVotes / area : 0;
                 }
+            return bg;
+        }
+
+        // The picture as grey, dark where a pixel's colour is far from the
+        // background around it. That background is the colour of the nearest flat
+        // patch, so text in a highlight box is measured against the box. Where no
+        // flat patch is near (a photo, a noisy video frame) it is the colour most of
+        // the tiles around share (colours rounded to 4 bits a channel), so a word of
+        // text, even a big bold one, never outweighs the page it sits on.
+        public static Bitmap ContrastMap(Bitmap bmp)
+        {
+            int w = bmp.Width, h = bmp.Height;
+            int[] px = Pixels(bmp);
+            int tw = (w + Tile - 1) / Tile, th = (h + Tile - 1) / Tile;
+            double[] share;
+            var bg = TileModes(px, w, h, Tile, Reach, out share);
+            // and a finer one, the commonest colour within 24 px: inside a highlight
+            // box that is the box, where the coarse one sees the page around it
+            int fw = (w + Fine - 1) / Fine;
+            double[] fineShare;
+            var fine = TileModes(px, w, h, Fine, 1, out fineShare);
 
             // Nearer backgrounds: the colour of the nearest flat patch (page, panel,
             // highlight box: anywhere the colour holds steady 6 pixels around, which
@@ -158,9 +178,15 @@ namespace HanziOcr
                     double ax = Math.Max(0, Math.Min(1, fx - tx0));
                     double d = Dist(p, bg[ty0 * tw + tx0]) * (1 - ax) * (1 - ay) + Dist(p, bg[ty0 * tw + tx1]) * ax * (1 - ay)
                              + Dist(p, bg[ty1 * tw + tx0]) * (1 - ax) * ay + Dist(p, bg[ty1 * tw + tx1]) * ax * ay;
-                    // ...or, nearer, the nearest flat patch: white text in a dark box is
-                    // measured against the box
+                    // ...or, nearer, the nearest flat patch...
                     if (near[i] >= 0) d = Dist(p, near[i]);
+                    // ...or, inside a box (where the fine background is a colour of its own,
+                    // covering most of the 24 px around), the box: white text in a dark box
+                    // comes out dark. Not steady page showing through (a strip between lines).
+                    int f = (y / Fine) * fw + x / Fine;
+                    if (fineShare[f] >= BoxShare && Dist(fine[f], bg[Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1)]) > BoxApart
+                        && !(near[i] >= 0 && steps[i] == 0 && Close(p, bg[Clamp(y / Tile, 0, th - 1) * tw + Clamp(x / Tile, 0, tw - 1)])))
+                        d = Dist(p, fine[f]);
                     int v = 255 - Clamp((int)((d - Quiet) * 255 / (Full - Quiet)), 0, 255);
                     outPx[i] = unchecked((int)0xff000000) | (v << 16) | (v << 8) | v;
                 }
@@ -172,10 +198,30 @@ namespace HanziOcr
             return map;
         }
 
-        // Is a second look worth its time? Only when some of the picture differs from
+        // Is a second look worth its time? When some of the picture differs from
         // its surroundings by colour more than by brightness, away from any dark or
         // light stroke: colourful text the engine may not see, not the coloured edges
-        // ClearType gives black text. Share of such pixels, every other row and column.
+        // ClearType gives black text (ColourShare, the share of such pixels, every
+        // other row and column); or when there are boxes of their own colour in the
+        // page, light on dark or dark on light (BoxShareOf, the share of the area).
+        public static double BoxShareOf(Bitmap bmp)
+        {
+            int w = bmp.Width, h = bmp.Height;
+            int[] px = Pixels(bmp);
+            double[] share, fineShare;
+            var bg = TileModes(px, w, h, Tile, Reach, out share);
+            var fine = TileModes(px, w, h, Fine, 1, out fineShare);
+            int fw = (w + Fine - 1) / Fine, fh = (h + Fine - 1) / Fine, tw = (w + Tile - 1) / Tile, th = (h + Tile - 1) / Tile;
+            int boxes = 0;
+            for (int fy = 0; fy < fh; fy++)
+                for (int fx = 0; fx < fw; fx++)
+                {
+                    int f = fy * fw + fx, t = Clamp(fy * Fine / Tile, 0, th - 1) * tw + Clamp(fx * Fine / Tile, 0, tw - 1);
+                    if (fineShare[f] >= BoxShare && Dist(fine[f], bg[t]) > BoxApart) boxes++;
+                }
+            return fw * fh == 0 ? 0 : (double)boxes / (fw * fh);
+        }
+
         public static double ColourShare(Bitmap bmp)
         {
             int w = bmp.Width, h = bmp.Height;

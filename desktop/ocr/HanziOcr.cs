@@ -99,6 +99,9 @@ namespace HanziOcr
         // a second look (Enhance.cs) when at least this share of a picture is colour
         // edges the engine may not see; desktop/test/ocr.js prints the shares it meets
         const double ColourMin = 0.002;
+        // or when at least this share of it is boxes of their own colour (highlights,
+        // tags, buttons: light text on dark, or dark on light, in the same lines)
+        const double BoxMin = 0.01;
 
         static OcrEngine engine;
         static readonly JavaScriptSerializer Json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
@@ -290,8 +293,9 @@ namespace HanziOcr
             var lines = Recognize(bmp, scale, offX, offY);
             if (mode == "off") return lines;
             double share = Enhance.ColourShare(bmp);
-            if (info != null) info["colour"] = Math.Round(share, 4);
-            if (mode == "auto" && share < ColourMin) return lines;
+            double boxes = share < ColourMin ? Enhance.BoxShareOf(bmp) : 0;
+            if (info != null) { info["colour"] = Math.Round(share, 4); info["boxes"] = Math.Round(boxes, 4); }
+            if (mode == "auto" && share < ColourMin && boxes < BoxMin) return lines;
             using (var map = Enhance.ContrastMap(bmp))
             {
                 var second = Recognize(map, scale, offX, offY);

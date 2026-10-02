@@ -161,12 +161,13 @@ async function accuracy() {
   const pct = (dist, len) => `${(100 * (1 - dist / len)).toFixed(1)}%`;
   console.log('Chinese characters read correctly, by style and enlargement (ms per picture). The');
   console.log(`enlargements read once; "auto" and "always" read at ×${DEFAULT} and take a second look at`);
-  console.log('a colour-contrast copy (ocr/Enhance.cs) when the picture is colourful, or always;');
-  console.log('"colour" is the share of colour edges that decides it, "lines" the lines taken from');
-  console.log(`the second look. "repaired" runs "auto" through desktop/src/ocrfix.js, as the app does.\n`);
+  console.log('a colour-contrast copy (ocr/Enhance.cs) when the picture is colourful or has boxes of');
+  console.log('their own colour, or always; "colour" and "boxes" are the shares that decide it, "lines"');
+  console.log('the lines taken from the second look. "repaired" runs "auto" through desktop/src/ocrfix.js,');
+  console.log('as the app does.\n');
   const COLS = SCALES.map(s => ({ head: `×${s}`, scale: s, enhance: 'off' }))
     .concat([{ head: 'auto', scale: DEFAULT, enhance: 'auto' }, { head: 'always', scale: DEFAULT, enhance: 'always' }]);
-  console.log('style'.padEnd(28) + COLS.map(c => c.head.padStart(14)).join('') + 'colour'.padStart(8) +
+  console.log('style'.padEnd(28) + COLS.map(c => c.head.padStart(14)).join('') + 'colour'.padStart(8) + 'boxes'.padStart(7) +
     'lines'.padStart(7) + 'repaired'.padStart(10));
   const totals = COLS.map(() => ({ dist: 0, len: 0, hardDist: 0, hardLen: 0 }));
   for (let si = 0; si < styles.length; si++) {
@@ -177,7 +178,7 @@ async function accuracy() {
       continue;
     }
     const cells = [];
-    let fixed = 0, fixedLen = 0, colour = 0, second = 0;
+    let fixed = 0, fixedLen = 0, colour = 0, boxes = 0, second = 0;
     for (const [ci, col] of COLS.entries()) {
       let dist = 0, len = 0, ms = 0;
       for (const job of mine) {
@@ -187,6 +188,7 @@ async function accuracy() {
         len += want.length; ms += r.ms;
         if (col.enhance === 'auto') {
           colour += (r.colour || 0) / mine.length;
+          boxes += (r.boxes || 0) / mine.length;
           second += r.second || 0;
           read.push({ want, lines: r.lines });
           fixed += align(want, han(readText(repair(r.lines, HZ).lines))).dist;
@@ -199,7 +201,7 @@ async function accuracy() {
       cells.push(`${pct(dist, len)} ${String(Math.round(ms / mine.length)).padStart(4)}`);
     }
     console.log(styles[si].name.padEnd(28) + cells.map(c => c.padStart(14)).join('') +
-      colour.toFixed(4).padStart(8) + String(second).padStart(7) + pct(fixed, fixedLen).padStart(10));
+      colour.toFixed(4).padStart(8) + boxes.toFixed(3).padStart(7) + String(second).padStart(7) + pct(fixed, fixedLen).padStart(10));
   }
   const all = t => t.len ? pct(t.dist, t.len) : '-';
   const hard = t => t.hardLen ? pct(t.hardDist, t.hardLen) : '-';
