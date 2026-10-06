@@ -31,7 +31,7 @@ function numbered(pin) {
   }).join('');
 }
 
-const kindName = it => it.kind === 'word' ? 'Word' : 'Character';
+const kindName = it => ({ word: 'Word', comp: 'Component', sound: 'Sound' })[it.kind] || 'Character';
 
 /* what Store.plan() needs to know about characters, for unlocking: how far along each
    is (its item's stage, or 5 when marked learned, 1 when marked learning), and a
@@ -60,23 +60,127 @@ function charInfo(c, syl) {
   return info;
 }
 
-/* keep a character's components on its item, for "unlock when its components are…" */
-function rememberParts(k) {
-  optional(charData(k)).then(cd => {
-    const it = Store.item(k);
-    if (cd && it && !it.cm) { it.cm = cd.cm || []; Store.save(); }
-  });
+/* ------------------------------------------------ parts: components and sounds
+
+   A character is learnt from its parts, as HanziHero teaches it: its components
+   (the first level of its breakdown, or itself when it is a component of others, as
+   半 is) and its sound: an initial, a final and a tone (site/data/sounds.js: a person,
+   a place, a room). Each part not known yet gets a short lesson of its own just
+   before the character (Learn.plan puts it there), which opens on a Prerequisites
+   page showing the character and which of its parts you know.
+
+   Parts are items too, under keys of their own: c:半 a component (the character 半 is
+   another item), i:b an initial (i: for none), f:an a final, t:4 a tone. */
+
+const partKind = k => /^c:/.test(k) ? 'comp' : /^[ift]:/.test(k) ? 'sound' : null;
+const glyphOf = k => /^c:/.test(k) ? k.slice(2) : k;
+const finalText = f => f.replace(/^v/, 'ü').replace('ih', 'i');
+/* an item's key as shown: 半, b-, -an, 4 */
+function itemText(k) {
+  if (k.startsWith('c:')) return k.slice(2);
+  if (k.startsWith('i:')) return (k.slice(2) || 'Ø') + '-';
+  if (k.startsWith('f:')) return '-' + finalText(k.slice(2));
+  if (k.startsWith('t:')) return k.slice(2) === '5' ? '·' : k.slice(2);
+  return k;
+}
+const itemHtml = k => partKind(k) === 'sound' ? `<span class="snd-key">${esc(itemText(k))}</span>` : zh(glyphOf(k));
+/* where an item's own page is */
+function itemHref(k) {
+  const it = Store.item(k);
+  if (partKind(k) === 'sound') return '#/study';
+  if (it && it.kind === 'word') return '#/word/' + encodeURIComponent(k);
+  return '#/character/' + encodeURIComponent(glyphOf(k));
+}
+/* a sound part's picture: [name, why] */
+function soundInfo(k) {
+  const S = HZ.sounds || {}, v = k.slice(2);
+  return ((k[0] === 'i' ? S.initials : k[0] === 'f' ? S.finals : S.tones) || {})[v] || [itemText(k), ''];
+}
+/* a part's name, as its lesson teaches it */
+const partName = k => partKind(k) === 'sound' ? soundInfo(k)[0] : compName(glyphOf(k));
+
+/* the sound parts of a reading */
+function soundParts(pin) {
+  if (!pin) return [];
+  const s = Learn.soundOf(pin);
+  if (!HZ.sounds || !HZ.sounds.initials[s.initial] || !HZ.sounds.finals[s.final]) return [];
+  return ['i:' + s.initial, 'f:' + s.final, 't:' + s.tone];
+}
+
+/* a character's component parts, from its breakdown (data/c/): itself when it is a
+   named component (半), else the first-level parts that have a picture name, going one
+   level further down for a part that has none */
+function compParts(k, cd) {
+  const named = c => HZ.cnames && HZ.cnames[c];
+  if (named(k)) return ['c:' + k];
+  const out = [];
+  const walk = (nodes, depth) => {
+    for (const [c, kids] of nodes || []) {
+      if (c === k) continue;
+      if (named(c)) out.push('c:' + c);
+      else if (depth < 2) walk(kids, depth + 1);
+    }
+  };
+  walk(cd && cd.bd ? cd.bd[1] : [], 0);
+  return [...new Set(out)];
+}
+
+/* the reading a character's lesson teaches: the reviewed key's (长 cháng "long"),
+   unless it came from a sentence, where the reading it had there wins */
+function teachReading(k, it, cd) {
+  const cm = HZ.cmnem && HZ.cmnem[k];
+  if (!cm || it.stage || (it.ex && it.ex.text)) return;
+  const row = cm[2] && cm[2] !== it.pin && (cd.rd || []).find(x => x[1] === cm[2]);
+  if (row) { it.pin = row[1]; it.alts = row[2].slice(0, 6); it.mean = row[2].slice(0, 2).join('; '); }
+  if (!String(it.mean).toLowerCase().startsWith(cm[0].toLowerCase())) it.mean = cm[0] + '; ' + it.mean;
+}
+
+/* look up a character's parts and keep them on its item (it.cm: its components, for
+   "unlock when its components are…"; it.parts: what it is learnt from); the ones not
+   known yet join the lessons */
+async function rememberParts(k) {
+  const r = await optional(Promise.all([charData(k), need.cnames(), need.cmnem(), need.sounds()]));
+  const cd = r && r[0], it = Store.item(k);
+  if (!cd || !it) return;
+  if (!it.cm) it.cm = cd.cm || [];
+  teachReading(k, it, cd);
+  it.parts = compParts(k, cd).concat(soundParts(it.pin));
+  if (!it.stage) addParts(it.parts);
+  Store.save();
+}
+
+/* a part is known once its lesson is done; a component also when ticked, or when it
+   is a character marked learned */
+const partKnown = p => {
+  const it = Store.item(p);
+  if (it && it.stage >= 1) return true;
+  return partKind(p) === 'comp' && Store.compKnown(glyphOf(p));
+};
+
+/* "Teach components and sounds first" (Settings): a lesson for each part not known */
+function addParts(parts) {
+  if (!Store.cfg().autoComps) return;
+  const d = Store.load(), now = Date.now();
+  for (const p of parts) {
+    if (d.items[p] || partKnown(p)) continue;
+    if (partKind(p) === 'comp') {
+      const c = glyphOf(p), e = HZ.index[c], name = HZ.cnames[c];
+      const gloss = [glossOf(c), ...String((e || [])[3] || '').split(/;\s*/)].filter(x => x && !/…$/.test(x) && x !== name[0]);
+      d.items[p] = Learn.newItem('comp', { pin: '', mean: name[0], alts: [...new Set(gloss)].slice(0, 4) }, now);
+    } else {
+      d.items[p] = Learn.newItem('sound', { pin: '', mean: soundInfo(p)[0], alts: [] }, now);
+    }
+    d.items[p].prio = true;
+  }
 }
 
 /* before planning with character unlocking on: look up the components not known yet
    (true when there were some) */
 async function fillParts() {
-  if (Store.cfg().charUnlock === 'now') return false;
   const d = Store.load();
-  const missing = Object.keys(d.items).filter(k => d.items[k].stage === 0 && d.items[k].kind !== 'word' && !d.items[k].cm);
+  const missing = Object.keys(d.items).filter(k => d.items[k].stage === 0 && d.items[k].kind === 'char' && !d.items[k].parts);
   if (!missing.length) return false;
-  await Promise.all(missing.map(k => optional(charData(k)).then(cd => { d.items[k].cm = (cd && cd.cm) || []; })));
-  Store.save();
+  await Promise.all(missing.map(k => rememberParts(k)));
   return true;
 }
 
@@ -130,7 +234,7 @@ const Sound = {
   },
   say(text, force) {
     const cfg = Store.cfg();
-    if ((cfg.muteVoice && !force) || !window.speechSynthesis || !text) return;
+    if ((cfg.muteVoice && !force) || !window.speechSynthesis || !text || partKind(text)) return;
     const u = new SpeechSynthesisUtterance(text);
     const v = this.voice();
     if (v) u.voice = v;
@@ -185,16 +289,18 @@ const others = it => Learn.meanings(it).filter(m => m !== primary(it).toLowerCas
 /* what a page needs about an item beyond what is stored: its parts, the words it is
    in, and (for items added before they were known) its meanings */
 async function itemFacts(k, it) {
-  const f = { parts: [], comps: [], words: [], sound: null, mn: '', ex: [] };
-  // HanziHome's own mnemonics and the components' picture names (data/c*.js, data/winfo.js)
-  await Promise.all([optional(need.cnames()), optional(it.kind === 'char' ? need.cmnem() : need.winfo())]);
-  f.mn = builtinMnemonic(k);
-  if (it.kind === 'word' && HZ.winfo && HZ.winfo[k]) f.ex = HZ.winfo[k][2];
-  if (it.kind === 'char') {
+  const f = { parts: [], comps: [], sounds: [], words: [], sound: null, mn: '', ex: [], subs: [] };
+  // HanziHome's own mnemonics, the components' picture names and the sound cast
+  await Promise.all([optional(need.cnames()), optional(need.sounds()),
+    optional(it.kind === 'word' ? need.winfo() : need.cmnem())]);
+  if (it.kind === 'word') {
+    f.mn = builtinMnemonic(k);
+    if (HZ.winfo && HZ.winfo[k]) f.ex = HZ.winfo[k][2];
+    f.parts = [...k].filter(isHan).map(c => [c, partGloss(c)]);
+  } else if (it.kind === 'char') {
+    f.mn = builtinMnemonic(k);
     const d = await charData(k);
     if (d) {
-      // a component goes by its picture name, the name the mnemonics use
-      f.comps = (d.cm || []).map(c => [c, compName(c)]);
       f.words = (d.w || []).slice(0, 6).map(w => [w[0], w[2]]);
       const ph = (d.ph || []).find(p => p.r <= 2);
       if (ph) f.sound = [ph.c, ph.t];
@@ -204,28 +310,41 @@ async function itemFacts(k, it) {
         if (!it.alts.length) it.alts = r[2].slice(0, 6);
         if (!it.mean || /…$/.test(it.mean)) it.mean = r[2].slice(0, 2).join('; ');   // (the index's are cut short)
       }
-      // A lesson not taken yet teaches the sense a learner needs first, HanziHome's key
-      // (data/cmnem.js), in the reading that goes with it (长 cháng "long", not zhǎng
-      // "chief", the dictionary's first) - unless it came from a sentence, where the
-      // reading it had there wins.
-      const cm = HZ.cmnem && HZ.cmnem[k];
-      if (cm && !it.stage && !(it.ex && it.ex.text)) {
-        const row = cm[2] && cm[2] !== it.pin && (d.rd || []).find(x => x[1] === cm[2]);
-        if (row) { it.pin = row[1]; it.alts = row[2].slice(0, 6); it.mean = row[2].slice(0, 2).join('; '); }
-        if (!String(it.mean).toLowerCase().startsWith(cm[0].toLowerCase())) it.mean = cm[0] + '; ' + it.mean;
-      }
+      teachReading(k, it, d);
+      const parts = it.parts || compParts(k, d).concat(soundParts(it.pin));
+      f.comps = parts.filter(p => partKind(p) === 'comp').map(p => [glyphOf(p), partName(p)]);
+      f.sounds = parts.filter(p => partKind(p) === 'sound').map(p => [itemText(p), partName(p), p]);
     }
-  } else {
-    f.parts = [...k].filter(isHan).map(c => [c, partGloss(c)]);
+  } else if (it.kind === 'comp') {
+    // a component: its own parts and mnemonic, and common characters it is in
+    const c = glyphOf(k), name = (HZ.cnames && HZ.cnames[c]) || [];
+    f.mn = name[2] || (name[1] ? `The *${name[0]}*: ${name[1]}` : '');
+    const d = await optional(charData(c));
+    if (d && d.bd) f.subs = d.bd[1].map(x => x[0]).filter(x => x !== c && HZ.cnames[x]).map(x => [x, compName(x)]);
+    await optional(need.comps());
+    f.words = byRank().slice(0, 3000).filter(x => x === c || ((HZ.comps || {})[x] || []).includes(c)).slice(0, 8)
+      .map(x => [x, String(HZ.index[x][3] || '').split(/;|…/)[0]]);
+  } else if (it.kind === 'sound') {
+    // a sound: its picture, and common characters that have it
+    const [name, why] = soundInfo(k), part = k[0], v = k.slice(2);
+    f.mn = `*${name}*: ${why}`;
+    f.words = byRank().slice(0, 1500).filter(x => {
+      const so = Learn.soundOf(HZ.index[x][2]);
+      return String(part === 'i' ? so.initial : part === 'f' ? so.final : so.tone) === v;
+    }).slice(0, 8).map(x => [x, HZ.index[x][2]]);
   }
   return f;
 }
+
+/* what a mnemonic's chips stand for (words.js mnHtml) */
+const mnCtx = (k, it, f) => it.kind === 'comp' ? { comps: (f.subs || []).concat([[glyphOf(k), it.mean]]) }
+  : it.kind === 'sound' ? { sounds: [[itemText(k), it.mean]] } : { comps: f.comps || [], sounds: f.sounds || [] };
 
 /* the coloured band at the top: the item, and optionally its reading and meaning */
 function band(k, it, show) {
   return `<div class="lx-band ${it.kind}">
     ${show ? `<div class="lx-pin">${esc(it.pin)}</div>` : '<div class="lx-pin">&nbsp;</div>'}
-    <div class="lx-glyph han">${zh(k)}</div>
+    <div class="lx-glyph han">${itemHtml(k)}</div>
     ${show ? `<div class="lx-mean">${esc((it.mean || '').split(';')[0])}</div>` : ''}
     <span class="lx-kind">${kindName(it)}</span>
   </div>`;
@@ -543,7 +662,7 @@ function drawStudy() {
         return `<span class="lx-q ${it.kind}${it.prio ? ' prio' : ''}${p.locked[k] ? ' locked' : ''}" title="${esc(why(k))}">
           <button data-prio="${esc(k)}" class="lx-star" aria-label="${it.prio ? 'Stop prioritizing' : 'Prioritize'} ${esc(k)}"
             title="${it.prio ? 'Prioritized' : 'Prioritize'}">${it.prio ? '★' : '☆'}</button>
-          <a class="han" href="#/character/${encodeURIComponent([...k][0])}">${p.locked[k] ? '🔒' : ''}${zhOne(k)}</a>
+          <a class="han" href="${itemHref(k)}">${p.locked[k] ? '🔒' : ''}${itemHtml(k)}</a>
           <button data-rm="${esc(k)}" aria-label="Remove ${esc(k)}">×</button></span>`;
       }).join('')}</div>
       <p class="small muted">In the order they come: ☆ puts one at the front. 🔒 waits to unlock
@@ -600,6 +719,13 @@ async function pageLessons() {
     await fillParts();
     const cfg = Store.cfg(), p = Store.plan();
     const batch = p.lessons.slice(0, cfg.batch);
+    // a batch that ends in parts goes on to what they are parts of (a few more at most)
+    const d = Store.load();
+    while (batch.length < p.lessons.length && batch.length < cfg.batch + 4) {
+      const nx = p.lessons[batch.length];
+      if (!Learn.partsOf(nx, d.items[nx]).some(x => batch.includes(x))) break;
+      batch.push(nx);
+    }
     if (!batch.length) {
       const nLocked = Object.keys(p.locked).length;
       const why = p.vacation ? '<p class="empty">Lessons are paused while you\'re on vacation.</p>'
@@ -618,77 +744,91 @@ async function pageLessons() {
       paintRail();
       return;
     }
-    lessonState = { batch, i: 0, tab: 0, done: [] };
+    lessonState = { batch, i: 0, tab: 0, done: [], intro: [] };
   }
   const s = lessonState;
   if (s.i >= s.batch.length) return lessonsDone();
   const k = s.batch[s.i], it = Store.item(k);
   if (!it) { s.i++; return pageLessons(); }
+  // a part (component or sound) has no composition: its lesson opens on the mnemonic
+  const part = it.kind === 'comp' || it.kind === 'sound', first = part ? 1 : 0;
+  if (s.tab < first) s.tab = first;
+  // before anything else, the character (or word) coming up: its Prerequisites page
+  if (s.tab === first) {
+    const goal = introFor(k, s);
+    if (goal) return lessonIntro(goal, k, s);
+  }
   const f = await itemFacts(k, it);
   const tabs = [it.kind === 'word' ? 'Characters' : 'Composition', 'Mnemonic', 'Examples', 'Confirmation'];
   const quiz = s.tab === 3;
+  const ctx = mnCtx(k, it, f);
+  const chips = (xs, cls) => `<div class="lx-chips ${cls || ''}">${xs.map(([c, g, key]) => cls === 'snd'
+    ? `<span class="lx-chip snd-chip"><span class="snd-key">${esc(c)}</span><span>${esc(g)}</span></span>` : lxChip(c, g)).join('')}</div>`;
 
   let body = '';
   if (s.tab === 0) {
     body = it.kind === 'word'
       ? `<h3>Characters</h3><p class="muted">This word is made of these characters. Can you see how they
-          make its meaning and its sound?</p><div class="lx-chips">${f.parts.map(([c, g]) => lxChip(c, g)).join('')}</div>`
-      : `<h3>Composition</h3><p class="muted">This character is made of these parts. Can you see where they are?</p>
-         <div class="lx-chips">${f.comps.map(([c, g]) => lxChip(c, g)).join('') || '<span class="muted small">It is a part of its own.</span>'}</div>
-         ${f.sound ? `<h3>Sound</h3><p class="muted"><span class="han">${esc(f.sound[0])}</span> ${esc(f.sound[1])}
-           gives the sound: <b>${esc(it.pin)}</b>.</p>` : ''}`;
+          make its meaning and its sound?</p>${chips(f.parts)}`
+      : `<h3>Component composition</h3><p class="muted">This character is made of these components. Can you see where they are?</p>
+         ${f.comps.length ? chips(f.comps, 'comp') : '<p class="muted small">It has no components with a name of their own.</p>'}
+         ${f.sounds.length ? `<h3>Sound composition</h3><p class="muted">Its pronunciation, <b>${esc(it.pin)}</b>, is these three
+           sounds: a person, a place and a room. Can you hear how they make the syllable?</p>${chips(f.sounds, 'snd')}` : ''}
+         ${f.sound ? `<p class="muted small"><span class="han">${esc(f.sound[0])}</span> ${esc(f.sound[1])} also hints at the sound.</p>` : ''}`;
   } else if (s.tab === 1) {
-    const scaffold = it.kind === 'word'
-      ? f.parts.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ')
-      : f.comps.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g || '?')}`).join(' + ');
+    const scaffold = it.kind === 'word' ? f.parts.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ')
+      : it.kind === 'char' ? f.comps.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g || '?')}`).join(' + ')
+      : it.kind === 'comp' ? f.subs.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ') : '';
     body = `<h3>Mnemonic</h3>
-      <p class="muted">${scaffold ? scaffold + ' → ' : ''}<b class="han">${esc(k)}</b> ${esc(primary(it))}
-        · sounds <b>${esc(it.pin)}</b></p>
-      ${f.mn ? `<p class="mn lx-mn-builtin">${mnHtml(f.mn)}</p>
+      ${scaffold || it.kind === 'char' ? `<p class="muted">${scaffold ? scaffold + ' → ' : ''}<b class="han">${esc(itemText(k))}</b> ${esc(primary(it))}
+        ${it.pin ? `· sounds <b>${esc(it.pin)}</b>` : ''}</p>` : ''}
+      ${f.mn ? `<div class="mn lx-mn-builtin">${mnHtml(f.mn, ctx)}</div>
         <p class="small muted">Picture it for a moment. Or write a story of your own, which is shown instead:</p>` : ''}
       <textarea id="lx-mn" rows="${f.mn ? 2 : 4}" placeholder="${f.mn ? 'Your own mnemonic (optional)…' : 'Make up a little story that joins the parts, the meaning and the sound…'}">${esc(it.mnemonic || '')}</textarea>
       <p class="small muted" id="lx-mn-state">Saved as you type.</p>
-      <h3>Meaning</h3>
+      <h3>${part ? 'Name' : 'Meaning'}</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
         <dt>Alternatives</dt><dd>${others(it).length ? esc(others(it).join(', ')) : '<span class="muted">none</span>'}</dd></dl>
-      <h3>Pronunciation</h3>
+      ${part ? '' : `<h3>Pronunciation</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}
-        ${Sound.voices().length ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`;
+        ${Sound.voices().length ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`}`;
   } else if (s.tab === 2) {
     body = `<h3>Examples</h3>
-      ${it.ex && it.ex.text ? `<p class="muted">Where you found it:</p>${foundIn(k, it)}` : ''}
+      ${it.kind === 'comp' ? `<p class="muted">Characters with this component. Can you see where it is in each of them?</p>${chips(f.words)}`
+      : it.kind === 'sound' ? `<p class="muted">Common characters with this sound:</p>${chips(f.words)}`
+      : `${it.ex && it.ex.text ? `<p class="muted">Where you found it:</p>${foundIn(k, it)}` : ''}
       ${f.ex.length ? `<p class="muted">How it is used:</p>${f.ex.map(ex => `<div class="example">${exampleHtml(ex, k)}</div>`).join('')}
         ${HZ.winfo[k][3] ? `<p class="word-use"><b>Good to know:</b> ${esc(HZ.winfo[k][3])}</p>` : ''}` : ''}
       ${f.words.length ? `<p class="muted">Words it is in:</p>
         <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/word/' + encodeURIComponent(w))).join('')}</div>` : ''}
       ${!(it.ex && it.ex.text) && !f.words.length && !f.ex.length ? '<p class="muted">No examples yet.</p>' : ''}
-      ${it.kind === 'word' ? `<p><a class="small" href="#/word/${encodeURIComponent(k)}" target="_blank">The word's card →</a></p>` : ''}`;
+      ${it.kind === 'word' ? `<p><a class="small" href="#/word/${encodeURIComponent(k)}" target="_blank">The word's card →</a></p>` : ''}`}`;
   } else {
-    // the pronunciation first; the meaning only once that is right
+    // the pronunciation first; the meaning only once that is right (a part: its name only)
+    if (part && s.pinOk !== k) { s.pinOk = k; s.pinAnswer = ''; }
     const pinDone = s.pinOk === k;
     body = `<h3>Confirmation</h3>
-      <p class="muted">${pinDone ? 'Right. Now its <b>meaning</b>.'
+      <p class="muted">${part ? `Its <b>name</b>?` : pinDone ? 'Right. Now its <b>meaning</b>.'
         : 'First its <b>pronunciation</b>, with tone numbers (like pin1yin1). Its meaning comes after.'}</p>
       <form id="lx-quiz" autocomplete="off">
-        <input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
-          autocapitalize="off" lang="en"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>
-        ${pinDone ? '<input id="lx-mean" class="lx-input" placeholder="Meaning…" spellcheck="false" autocapitalize="off" lang="en">' : ''}
+        ${part ? '' : `<input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
+          autocapitalize="off" lang="en"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>`}
+        ${pinDone ? `<input id="lx-mean" class="lx-input" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" lang="en">` : ''}
         <div id="lx-verdict"></div>
         <button class="btn" type="submit">Check</button>
       </form>`;
   }
 
   app.innerHTML = band(k, it, !quiz) + `
-    <nav class="lx-tabs">${tabs.map((t, i) => `<button data-t="${i}" class="${i === s.tab ? 'on' : ''}">${t}</button>`).join('')}</nav>
+    <nav class="lx-tabs">${tabs.map((t, i) => i < first ? '' : `<button data-t="${i}" class="${i === s.tab ? 'on' : ''}">${t}</button>`).join('')}</nav>
     <div class="lx-body">
-      <button class="lx-arrow prev" ${s.tab === 0 ? 'disabled' : ''} aria-label="Back">‹</button>
+      <button class="lx-arrow prev" ${s.tab === first ? 'disabled' : ''} aria-label="Back">‹</button>
       <div class="lx-main">${body}</div>
       <button class="lx-arrow next" ${quiz ? 'disabled' : ''} aria-label="Next">›</button>
     </div>
-    <div class="lx-batch">${s.batch.map((b, i) => `<span class="${Store.item(b) ? Store.item(b).kind : ''}
-      ${i === s.i ? 'on' : ''} ${s.done.includes(b) ? 'done' : ''}">${esc(b)}</span>`).join('')}</div>`;
+    ${batchStrip(s)}`;
 
-  const go2 = t => { s.tab = Math.max(0, Math.min(3, t)); pageLessons(); };
+  const go2 = t => { s.tab = Math.max(first, Math.min(3, t)); pageLessons(); };
   app.querySelectorAll('.lx-tabs button').forEach(b => b.addEventListener('click', () => go2(+b.dataset.t)));
   app.querySelector('.lx-arrow.prev').addEventListener('click', () => go2(s.tab - 1));
   app.querySelector('.lx-arrow.next').addEventListener('click', () => go2(s.tab + 1));
@@ -743,7 +883,7 @@ async function pageLessons() {
         s.missed = 0;
         Store.learnSaved(k);
         s.done.push(k);
-        s.i++; s.tab = 0; s.pinOk = null;
+        s.i++; s.tab = 0; s.pinOk = null;           // (a part's lesson moves on to its first tab)
         markNav(currentPath());
         return pageLessons();
       }
@@ -751,6 +891,80 @@ async function pageLessons() {
       verdict.innerHTML = `<p class="lx-wrong">It means <b>${esc(primary(it))}</b>. Try again.</p>`;
     });
   }
+  paintRail();
+}
+
+/* the batch, under the lesson: each item, the one open, the ones done */
+function batchStrip(s, goal) {
+  return `<div class="lx-batch">${s.batch.map((b, i) => `<span class="${Store.item(b) ? Store.item(b).kind : ''}
+    ${i === s.i ? 'on' : ''} ${b === goal ? 'goal' : ''} ${s.done.includes(b) ? 'done' : ''}">${esc(itemText(b))}</span>`).join('')}</div>`;
+}
+
+/* The Prerequisites page to show before lesson k, if any: for a character or word,
+   before the lessons of its parts (outermost first: before 亻, 你好's and then 你's),
+   or before its own lesson when every part is known. */
+function introFor(k, s) {
+  const d = Store.load(), chain = [];
+  let cur = k;
+  for (let n = 0; n < 4; n++) {
+    const later = s.batch.slice(s.batch.indexOf(cur) + 1).find(x => d.items[x] && Learn.partsOf(x, d.items[x]).includes(cur));
+    if (!later) break;
+    chain.push(later);
+    cur = later;
+  }
+  chain.reverse();
+  const it = d.items[k];
+  if (it && (it.kind === 'char' || it.kind === 'word')) chain.push(k);
+  return chain.find(g => !s.intro.includes(g)) || null;
+}
+
+/* Prerequisites: the character (or word) coming up, its components and sounds (its
+   characters, for a word), which you know and which you learn first. Learn goes on;
+   Skip leaves it, and the parts only it needed, for another day. */
+async function lessonIntro(goal, k, s) {
+  const d = Store.load(), g = d.items[goal];
+  await Promise.all([optional(need.cnames()), optional(need.sounds()), optional(need.cmnem())]);
+  if (g.kind === 'char' && !g.parts) await rememberParts(goal);
+  const parts = [...new Set(Learn.partsOf(goal, g))];
+  const name = p => g.kind === 'word' ? partGloss(p) : partName(p);
+  const state = p => partKnown(p) ? 'known' : s.batch.includes(p) || d.items[p] ? 'new' : 'other';
+  const fresh = parts.filter(p => state(p) === 'new');
+  const label = { known: '✓ known', new: 'new', other: 'no lesson' };
+  const chip = p => `<span class="lx-chip intro-part ${state(p)} ${partKind(p) || ''}">
+    ${partKind(p) === 'sound' ? `<span class="snd-key">${esc(itemText(p))}</span>` : `<span class="han">${zh(glyphOf(p))}</span>`}
+    <span>${esc(name(p))}</span><small>${label[state(p)]}</small></span>`;
+  const comps = parts.filter(p => partKind(p) !== 'sound'), sounds = parts.filter(p => partKind(p) === 'sound');
+  app.innerHTML = band(goal, g, true) + `
+    <nav class="lx-tabs"><button class="on">Learn this ${g.kind === 'word' ? 'word' : 'character'}?</button></nav>
+    <div class="lx-body"><div class="lx-main lx-intro">
+      <h3>Prerequisites</h3>
+      <p class="muted">${g.kind === 'word' ? 'These are the characters this word is made of.'
+        : 'These are the components and sounds this character is made of.'}
+        ${fresh.length ? `The ones you haven't learned yet come first, each with a short lesson, then ${zh(goal)} itself.`
+          : `You know them all: straight on to ${zh(goal)}.`}</p>
+      ${comps.length ? `<div class="lx-chips intro-parts">${comps.map(chip).join('')}</div>` : ''}
+      ${sounds.length ? `<div class="lx-chips intro-parts">${sounds.map(chip).join('')}</div>` : ''}
+      <p class="row intro-go"><button class="btn quiet" id="lx-intro-skip">⏭ Skip</button>
+        <button class="btn" id="lx-intro-go">Learn</button></p>
+    </div></div>
+    ${batchStrip(s, goal)}`;
+  const go = document.getElementById('lx-intro-go');
+  go.focus();
+  go.addEventListener('click', () => { s.intro.push(goal); pageLessons(); });
+  document.getElementById('lx-intro-skip').addEventListener('click', () => {
+    // to the back of the queue, with the parts nothing else waiting needs
+    const now = Date.now(), others = Object.keys(d.items).filter(x => x !== goal && d.items[x].stage === 0);
+    const needed = new Set(others.flatMap(x => Learn.partsOf(x, d.items[x])));
+    for (const x of [goal, ...fresh]) {
+      if (x !== goal && needed.has(x)) continue;
+      if (!d.items[x] || d.items[x].stage) continue;
+      delete d.items[x].prio;
+      d.items[x].added = now;
+    }
+    Store.save();
+    lessonState = null;
+    pageLessons();
+  });
   paintRail();
 }
 
@@ -795,6 +1009,7 @@ const toolIcon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentCo
    this device can speak Chinese), its pronunciation and meaning, and writing it (for
    a character, with Writing on) */
 function questionsFor(it, cfg) {
+  if (it && (it.kind === 'comp' || it.kind === 'sound')) return ['meaning'];   // a part is asked its name
   const qs = ['pinyin', 'meaning'];
   if (cfg.listen && Sound.voices().length) qs.unshift('listen');
   if (cfg.write && it && it.kind !== 'word') qs.push('write');
@@ -869,13 +1084,13 @@ async function pageReviews() {
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
     ${q === 'listen' && !shown ? listenBand(it) : q === 'write' ? writeBand(it, shown)
       : cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
-    <div class="rv-prompt">${kindName(it)} <b>${{ pinyin: 'Pronunciation', write: 'Write it' }[q] || 'Meaning'}?</b>
+    <div class="rv-prompt">${kindName(it)} <b>${{ pinyin: 'Pronunciation', write: 'Write it' }[q] || (it.kind === 'comp' ? 'Name' : 'Meaning')}?</b>
       ${q === 'listen' ? '<span class="muted">from its sound</span>' : ''}</div>
     <form id="rv-form" autocomplete="off"${q === 'write' ? ' class="rv-writing"' : ''}>
       ${q === 'write' ? `<p class="rv-write-msg" id="rv-write-msg">${shown ? '' : 'Draw each stroke in order. After three misses on a stroke, its outline shows.'}</p>
         <button class="rv-enter" ${shown ? '' : 'hidden'}>Next</button>` : `
       <input id="rv-in" class="rv-input ${shown ? (shown.ok ? 'ok' : 'bad') : ''}"
-        placeholder="${q === 'pinyin' ? 'pin1yin1' : 'Meaning…'}" spellcheck="false" autocapitalize="off" lang="en"
+        placeholder="${q === 'pinyin' ? 'pin1yin1' : it.kind === 'comp' ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" lang="en"
         ${shown ? 'readonly' : ''} value="${shown ? esc(shown.answer) : ''}">
       <p class="rv-hint" id="rv-hint" hidden>That isn't pinyin. Check it and try again.</p>`}
     </form>
@@ -1020,8 +1235,7 @@ function reviewTool(name) {
   if (name === 'info') { s.panel = s.panel === 'info' ? null : 'info'; s.edit = null; return pageReviews(); }
   if (name === 'syn') { s.panel = 'info'; s.secs.Meaning = true; s.focus = 'syn'; return pageReviews(); }
   if (name === 'open') {
-    const path = it.kind === 'word' ? '#/search/' : '#/character/';
-    return window.open(location.href.split('#')[0] + path + encodeURIComponent(k), '_blank');
+    return window.open(location.href.split('#')[0] + itemHref(k), '_blank');
   }
   if (name === 'undo') {
     // don't count this answer: the question goes back into the queue, later on
@@ -1078,7 +1292,7 @@ function infoPanel(k, it, q) {
   const editing = (what, value, placeholder) => `<textarea id="rv-edit" rows="3" placeholder="${placeholder}">${esc(value)}</textarea>
     <p class="row"><button class="btn" data-save="${what}">Save</button><button class="btn quiet" data-cancel>Cancel</button></p>`;
   return `
-    <p class="rv-stage"><b class="han">${esc(k)}</b> · ${esc(Learn.stageName(it.stage))}</p>
+    <p class="rv-stage"><b class="han">${esc(itemText(k))}</b> · ${esc(Learn.stageName(it.stage))}</p>
     ${parts.length ? sec(it.kind === 'word' ? 'Characters' : 'Composition',
       `<div class="lx-chips">${parts.map(([c, g]) => lxChip(c, g)).join('')}</div>`, true) : ''}
     ${sec('Pronunciation', `<dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}</dd></dl>`,
@@ -1091,7 +1305,7 @@ function infoPanel(k, it, q) {
           spellcheck="false" autocapitalize="off" lang="en"><button class="btn quiet">Add</button></form></dd></dl>`,
       !(q === 'pinyin' && pending('meaning')))}
     ${sec('Mnemonic', s.edit === 'mnemonic' ? editing('mnemonic', it.mnemonic || '', 'A little story that joins the parts, the meaning and the sound…')
-      : `${it.mnemonic ? `<p class="rv-text">${esc(it.mnemonic)}</p>` : f.mn ? `<p class="rv-text mn">${mnHtml(f.mn)}</p>` : '<p class="muted">No mnemonic yet.</p>'}
+      : `${it.mnemonic ? `<p class="rv-text">${esc(it.mnemonic)}</p>` : f.mn ? `<div class="rv-text mn">${mnHtml(f.mn, mnCtx(k, it, f))}</div>` : '<p class="muted">No mnemonic yet.</p>'}
         <p><button class="btn quiet" data-edit="mnemonic">${it.mnemonic ? 'Edit' : 'Write your own'}</button></p>`, true)}
     ${sec('Notes', s.edit === 'note' ? editing('note', note, 'Anything to remember about it…')
       : `${note ? `<p class="rv-text">${esc(note)}</p>` : ''}
@@ -1205,9 +1419,8 @@ function reviewsDone() {
     const typed = (s.typed[k] || []).map(t => `${{ pinyin: 'pronunciation', listen: 'meaning by ear', write: 'writing' }[t.q] || 'meaning'}
       ${t.q === 'write' ? 'needed a hint' : t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
     const m = !s.practice && Learn.memory(it, now);
-    const href = (it.kind === 'word' ? '#/search/' : '#/character/') + encodeURIComponent(k);
-    return `<a class="rs-item ${it.kind}" href="${href}">
-      <span class="rs-glyph han">${zhOne(k)}</span>
+    return `<a class="rs-item ${it.kind}" href="${itemHref(k)}">
+      <span class="rs-glyph han">${itemHtml(k)}</span>
       <span class="rs-body"><span><b>${esc(it.pin)}</b> ${esc(primary(it))}</span>
         <span class="rs-move">${gradeTag(s.grades[k])}${move}</span>
         ${m ? `<span class="rs-mem" title="Stability: days until the chance of recall falls to 90%. Difficulty: 1 to 10.">
@@ -1461,6 +1674,8 @@ function paintStudySettings() {
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
       ['learned', 'Unlock when its components are learned'], ['familiar', 'Unlock when its components are familiar']]),
       'A component counts once you mark it known on the Productive Components page or mark it learned, or once it has had its own lesson (learned) or reached Apprentice I (familiar).')}
+    ${field('Components and sounds first', tog('autoComps', 'Teach a character\'s new components and sounds first'),
+      'A character you add brings the parts of it you don\'t know yet: its components (by their picture names) and its sounds (the initial as a person, the final as a place, the tone as a room). Each gets a short lesson just before the character, which opens on a Prerequisites page showing them, known and new. Parts don\'t count against the daily lesson limit.')}
     ${field('Word unlocking', `${tog('wordWait', 'Words wait for their characters')}
       ${tog('autoChars', 'Automatically prioritize characters')}
       ${sel('wordUnlock', [['familiar', 'Unlock when characters are familiar'], ['learned', 'Unlock when characters are learned']])}`,

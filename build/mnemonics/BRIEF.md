@@ -88,3 +88,54 @@ Output:
   difference from a near word. An empty string when there is nothing useful to say.
 
 Check your Chinese. Every example must be grammatical, and must contain the word.
+
+## 4. Components, round two: `components-2.json`
+
+As section 1: `{c, meaning, pin, parts, examples}` in, `{c, name, why}` out, to
+`out/components-2.json`. These are the first-level parts of common characters (尚, 争,
+平, 君) that had no picture name yet. Many are characters in their own right: keep a
+plain concrete meaning when the character has one (平 "flat", 君 "lord", 光 "light"),
+otherwise name the picture. Every name must differ from every name already in
+`out/components.json` (check against it), and stay lowercase, one to three words.
+
+## 5. Component mnemonics: `compmn-NN.json`
+
+Input: `{c, name, parts}`: a component, its picture name, and the named components it is
+built from (`[glyph, name]`). Output `{"c": "半", "m": "…"}`: a mnemonic of 12 to 35
+words that puts the parts together into the component's name, each part's name between
+single asterisks exactly as given, and the component's own name between double
+asterisks. Example: 半 half, from 丷 horns, 二 two, 丨 rod: "If you have *two* *horns* and
+want to split them into **half**, all you need is a *rod* down the middle."
+
+## 6. Character scenes: `scene-NN.json`
+
+HanziHome now teaches a character the way a good memory palace does: its **sound** and
+its **parts** in one absurd little scene. Each syllable is three pictures, from
+`site/data/sounds.js`: the initial is a PERSON (b- the Baker, sh- the Sheriff, no
+initial the Ghost), the final is a PLACE (-an the Mansion, -ing the Boxing Ring) and
+the tone is a ROOM or spot in that place (1 Rooftop, 2 Staircase, 3 Basement,
+4 Trapdoor, 5 Front Step).
+
+Input: `{c, pin, key, sound, parts, old}`: the character, its reading, the meaning to
+teach, `sound` as `["b- Baker", "-an Mansion", "4 Trapdoor"]`, its components as
+`[glyph, picture name]`, and the old, shorter mnemonic (ideas welcome, but rewrite).
+
+Output: `{"c": "半", "m": "…"}`, where `m` is the scene:
+
+* **40 to 80 words**, two to four sentences, present tense, vivid and absurd: something
+  happens, with movement, noise, a surprise. Funny beats sensible; the stranger the
+  image, the better it sticks. Nothing gory, sexual, or about real people or brands.
+* **Open with the sound**: the person, in the room, of the place, in the first
+  sentence: "The {Baker} crashes through the {Trapdoor} of the {Mansion} …". Write the
+  three sound names between curly braces exactly as given (no "-an" or tone numbers),
+  each once.
+* **Use every component**, by its name exactly as given, between single asterisks
+  (`*horns*`), as a thing in the scene that does something.
+* **The meaning twice**: the `key` (or a plain form of it: halves, halved) between double
+  asterisks, at least twice, and the scene should make the meaning *happen* (for 半 the
+  Baker saws everything in the mansion in **half**), not just name it at the end.
+* Example, 半 bàn "half", sound b- Baker, -an Mansion, 4 Trapdoor, parts 半 half:
+  "The {Baker} crashes through the {Trapdoor} into the {Mansion}'s cellar with a bread
+  knife and saws everything he finds into two *halves*: barrels, chairs, a grandfather
+  clock. The butler finds the wine rack sliced clean in **half** and faints, also in
+  **half** a second."

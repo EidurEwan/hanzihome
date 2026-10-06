@@ -69,9 +69,36 @@ function hskOf(w) {
 
 // ---------------------------------------------------- mnemonics and picture names
 
-/* *picture* names and **meanings** in a mnemonic, drawn as such */
-function mnHtml(m) {
-  return esc(m || '').replace(/\*\*([^*]+)\*\*/g, '<b class="mn-key">$1</b>').replace(/\*([^*]+)\*/g, '<span class="mn-part">$1</span>');
+/* A mnemonic, drawn: **meanings** in bold, *component names* and {sound names} as
+   chips with the glyph or the sound they stand for, when ctx says which ({comps:
+   [[glyph, name]], sounds: [[label, name]]}): 半 half, b- Baker. A name matches as
+   written or with an ending (halves, Bakers). */
+function mnHtml(m, ctx) {
+  ctx = ctx || {};
+  const find = (list, said) => {
+    const w = said.toLowerCase();
+    return (list || []).find(([, n]) => {
+      const name = String(n || '').toLowerCase();
+      return name && (w === name || w.startsWith(name) || name.startsWith(w) || w.startsWith(name.replace(/(f|fe|y|e)$/, '')));
+    });
+  };
+  return esc(m || '')
+    .replace(/\*\*([^*]+)\*\*/g, '<b class="mn-key">$1</b>')
+    .replace(/\*([^*]+)\*/g, (all, said) => {
+      const hit = find(ctx.comps, said);
+      return hit ? `<span class="mn-chip comp"><span class="han">${esc(hit[0])}</span>${said}</span>` : `<span class="mn-part">${said}</span>`;
+    })
+    .replace(/\{([^}]+)\}/g, (all, said) => {
+      const hit = find(ctx.sounds, said);
+      return `<span class="mn-chip snd">${hit ? `<span class="snd-key">${esc(hit[0])}</span>` : ''}${said}</span>`;
+    });
+}
+/* the chips' context for a character: its components and sounds */
+function mnContext(c, cd) {
+  const parts = typeof compParts === 'function' && cd ? compParts(c, cd) : [];
+  const pin = (HZ.cmnem && HZ.cmnem[c] && HZ.cmnem[c][2]) || (HZ.index[c] || [])[2];
+  const sounds = HZ.sounds ? soundParts(pin) : [];
+  return { comps: parts.map(p => [glyphOf(p), partName(p)]), sounds: sounds.map(p => [itemText(p), partName(p)]) };
 }
 /* a component's picture name (data/cnames.js), or failing that its meaning */
 const compName = c => (HZ.cnames && HZ.cnames[c] && HZ.cnames[c][0]) || glossOf(c) || String((HZ.index[c] || [])[3] || '').split(/;|…/)[0].trim();

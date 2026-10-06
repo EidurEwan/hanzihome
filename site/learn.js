@@ -275,6 +275,7 @@
     wordWait: true,            // a word waits for its characters...
     wordUnlock: 'familiar',    // ...until they are 'familiar' or 'learned' (lesson done)
     autoChars: true,           // adding a word adds its characters too, prioritized
+    autoComps: true,           // adding a character adds its new components too, learnt first
     questionOrder: 'pinyin',   // 'pinyin': pronunciation then meaning, in pairs; 'random': shuffled
     lessonOrder: 'words',      // 'words' first | 'chars' first | 'mix'
     prioRespect: true,         // prioritized items keep to the limits and the lesson order
@@ -296,6 +297,10 @@
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     return a;
   }
+
+  /* what an item is learnt from, to be learnt before it: a word's characters; a
+     character's components and sounds (kept on its item once looked up: it.parts) */
+  const partsOf = (k, item) => item.kind === 'word' ? [...new Set([...k].filter(isHan))] : item.parts || [];
 
   /* due reviews in the order the settings ask for */
   function reviewOrder(keys, items, how, now, rnd = Math.random) {
@@ -365,12 +370,25 @@
     // with the priority queue absolute, prioritized items go before everything
     out.waiting = cfg.prioRespect ? order(queued)
       : order(queued.filter(k => it(k).prio)).concat(order(queued.filter(k => !it(k).prio)));
+    // then in a sensible order: what an item is made of (a character's components, a
+    // word's characters) comes just before it when that is waiting for its lesson too
+    const inQueue = new Set(queued), placed = new Set(), seq = [];
+    const put = (k, depth) => {
+      if (placed.has(k)) return;
+      placed.add(k);
+      if (depth < 4) for (const p of partsOf(k, it(k))) if (p !== k && inQueue.has(p)) put(p, depth + 1);
+      seq.push(k);
+    };
+    out.waiting.forEach(k => put(k, 0));
+    out.waiting = seq;
 
     let left = cfg.lessonLimit ? Math.max(0, cfg.lessonLimit - out.lessonsToday) : Infinity;
     let words = cfg.lessonLimit ? Math.max(0, Math.min(cfg.wordLimit, cfg.lessonLimit) - out.wordsToday) : Infinity;
     for (const k of out.waiting) {
       if (out.locked[k]) continue;
       const word = it(k).kind === 'word';
+      // a component or a sound is a small lesson on the way to a character: it doesn't count
+      if (it(k).kind === 'comp' || it(k).kind === 'sound') { out.lessons.push(k); continue; }
       if (it(k).prio && !cfg.prioRespect) { out.lessons.push(k); continue; }
       if (left <= 0 || (word && words <= 0)) continue;
       out.lessons.push(k);
@@ -403,6 +421,19 @@
       else if (/[a-z]/.test(ch)) letters += ch === 'ü' ? 'v' : ch;
     }
     return { letters: letters.replace(/ü/g, 'v'), tones };
+  }
+
+  /* A syllable's sound as HanziHome teaches it (site/data/sounds.js): {initial, final,
+     tone}. y and w count as initials (ya: y + a; yu: y + ü), ü is v (nǚ: n + v), and
+     the buzzing -i after zh ch sh r z c s is "ih". The first syllable only. */
+  const INITIALS = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+  function soundOf(pin) {
+    const p = parsePinyin(String(pin || '').trim().split(/\s+/)[0]);
+    const initial = INITIALS.find(i => p.letters.startsWith(i) && p.letters.length > i.length) || '';
+    let final = p.letters.slice(initial.length);
+    if (/^[jqxy]$/.test(initial) && final[0] === 'u') final = 'v' + final.slice(1);
+    if (/^(zh|ch|sh|r|z|c|s)$/.test(initial) && final === 'i') final = 'ih';
+    return { initial, final, tone: p.tones[0] || 5 };
   }
 
   /* the expected pinyin's syllables, each with its tone (5 = neutral) */
@@ -512,10 +543,10 @@
   }
 
   return {
-    STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson,
+    STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
     review, known, resume, isDue, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
-    checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin,
+    checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin, soundOf,
   };
 });

@@ -98,6 +98,7 @@ const need = {
   // written for HanziHome (build/mnemonics/): components' picture names, the characters'
   // mnemonics, and the words' mnemonics, examples and notes
   cnames: () => HZ.cnames ? Promise.resolve() : loadScript('data/cnames.js'),
+  sounds: () => HZ.sounds ? Promise.resolve() : loadScript('data/sounds.js'),
   cmnem: () => HZ.cmnem ? Promise.resolve() : loadScript('data/cmnem.js'),
   winfo: () => HZ.winfo ? Promise.resolve() : loadScript('data/winfo.js'),
   // the reader for pasted text: the engine, every character's readings, and the
@@ -296,7 +297,12 @@ const Store = {
   /* after a lesson or review: a character's stage decides its status on the rest of the site */
   learnSaved(k) {
     const d = this.load(), it = d.items[k];
-    if (it) {
+    if (it && it.kind === 'comp') {
+      const c = k.replace(/^c:/, '');                             // its lesson done: a known component
+      if (it.stage >= 1 && d.comps[c] !== 0) d.comps[c] = 1;
+    } else if (it && it.kind === 'sound') {
+      // a sound has no status elsewhere: its item is all there is
+    } else if (it) {
       const s = Learn.statusFor(it);
       if (s) (it.kind === 'char' ? d.status : d.wstatus)[k] = s;
     }
@@ -1488,7 +1494,7 @@ function writeQuiz(writer, memory, say, done) {
 
 async function pageCharacter(ch) {
   app.innerHTML = '<p class="muted">Loading…</p>';
-  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem())]);
+  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem()), optional(need.sounds())]);
   if (!d) {
     app.innerHTML = withRail(`<div class="card"><h1>${esc(ch)}</h1>
       <p class="empty">No data for this character.</p></div>`);
@@ -1599,7 +1605,7 @@ async function pageCharacter(ch) {
 
     ${HZ.cmnem && HZ.cmnem[ch] ? `<h2 class="sec-h">Mnemonic</h2>
     <div class="decomp-box pad"><p class="small muted">Learn it first as <b>${esc(HZ.cmnem[ch][0])}</b>,
-      <b>${esc(HZ.cmnem[ch][2] || (HZ.index[ch] || [])[2] || '')}</b>.</p><p class="mn">${mnHtml(HZ.cmnem[ch][1])}</p>
+      <b>${esc(HZ.cmnem[ch][2] || (HZ.index[ch] || [])[2] || '')}</b>.</p><div class="mn">${mnHtml(HZ.cmnem[ch][1], mnContext(ch, d))}</div>
       ${HZ.cnames && HZ.cnames[ch] ? `<p class="small muted">As a part of other characters it is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p>` : ''}</div>`
       : HZ.cnames && HZ.cnames[ch] ? `<h2 class="sec-h">Picture name</h2>
     <div class="decomp-box pad"><p>As a part of other characters this is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p></div>` : ''}
@@ -2794,7 +2800,7 @@ function offlineFiles() {
   const hex = n => ('0' + n.toString(16)).slice(-2);
   const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
-    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo'].map(f => `data/${f}.js`)
+    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo', 'sounds'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
       ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
     .map(f => f + '?v=' + DATA_VERSION);
