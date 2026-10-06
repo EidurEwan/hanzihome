@@ -1,6 +1,6 @@
 {
   "name": "hanzihome-desktop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "HanziHome on the desktop: reads Chinese off the screen with Windows OCR",
   "author": "Eidur Ewan",
