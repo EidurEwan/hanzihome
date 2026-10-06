@@ -117,11 +117,22 @@ English, the sentences of the stories it is in, its characters with their mnemon
 words. The Words page lists the commonest 10,000, each HSK level, or yours, to mark them or add
 them to your lessons; the reader colours a word by its own status once it has one.
 
-**Mnemonics** — the components have picture names (氵 water drops, 勺 ladle, 丷 horns), and the
-3,000 commonest characters mnemonics built from them; the 7,000 commonest words (and every HSK
+**Prerequisites first** — a character is learnt from its parts: its components (the first level
+of its breakdown: 伴 is 亻 standing person + 半 half) and its sound, an initial, a final and a tone,
+which HanziHome pictures as a person, a place and a room (`site/data/sounds.js`: b- the Baker, -an
+the Mansion, 4 the Trapdoor). A character's lesson opens on a Prerequisites page that shows them,
+known and new, with Learn or Skip; each new part then gets a short lesson of its own (asked its
+name), and the character's Composition tab shows its component and sound composition. Parts don't
+count against the daily limit; Settings → Lessons and reviews can turn this off.
+
+**Mnemonics** — 1,066 components have picture names (氵 water drops, 勺 ladle, 丷 horns), 897 of them
+a mnemonic from their own parts, and each of the 3,000 commonest characters a scene of 40 to 80
+words: the person in the room of the place, doing something absurd with its components, so the
+sound and the meaning come together ("The {Baker} tumbles through the {Trapdoor} of the {Mansion}
+and finds a *standing person* sawn in *half*…"), components and sounds shown as chips; the 7,000 commonest words (and every HSK
 word) have a mnemonic, two example sentences and a usage note. They were written for HanziHome
 by Claude agents, commonest first, to the brief in `build/mnemonics/BRIEF.md`:
-`build/mnemonics/make_inputs.js [chars] [words]` writes the next batches, `check.js` checks an
+`build/mnemonics/make_inputs.js [chars] [words]` and `make_scenes.js` write the batches, `check.js` checks an
 agent's output, and `merge.js` makes `site/data/cnames.js`, `cmnem.js` and `winfo.js` (giving the
 example sentences their pinyin with the reader's own segmenter).
 
