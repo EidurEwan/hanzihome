@@ -49,6 +49,14 @@ for (const f of files.filter(f => f.startsWith('scene-'))) for (const x of read(
   if (cmnem[x.c] && /\*\*[^*]+\*\*/.test(x.m || '') && /\{[^}]+\}/.test(x.m)) cmnem[x.c][1] = x.m.trim();
   else skipped.push('scene ' + x.c);
 }
+// keys fixed by hand (out/keyfix.json): the mnemonic's **key** follows
+const keyfix = read('keyfix.json') || {};
+for (const [c, key] of Object.entries(keyfix)) {
+  if (!cmnem[c]) continue;
+  const old = cmnem[c][0];
+  cmnem[c][0] = key;
+  cmnem[c][1] = cmnem[c][1].split('**' + old + '**').join('**' + key + '**');
+}
 write('cmnem.js', 'cmnem', cmnem);
 
 /* a sentence -> [words joined by |, their pinyin joined by |]; the word kept whole */

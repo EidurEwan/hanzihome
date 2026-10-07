@@ -163,6 +163,14 @@ check('plan: components come just before their character, and are not counted', 
     ['c:女', 'c:子', 'i:h', 'f:ao', '好', 'c:亻']);
 });
 
+check('plan: prioritized parts still come just before their own character', () => {
+  const items = { 的: queued('char', 1, { parts: ['c:白', 'i:d'] }), 是: queued('char', 2, { parts: ['c:日', 'i:sh', 'i:d'] }),
+    'c:白': queued('comp', 3, { prio: true }), 'i:d': queued('sound', 4, { prio: true }),
+    'c:日': queued('comp', 5, { prio: true }), 'i:sh': queued('sound', 6, { prio: true }) };
+  assert.deepStrictEqual(L.plan(items, { lessonLimit: 0 }, t0, world(items)).lessons,
+    ['c:白', 'i:d', '的', 'c:日', 'i:sh', '是']);
+});
+
 check('soundOf: initial, final and tone, as the sound cast has them', () => {
   const so = s => { const x = L.soundOf(s); return [x.initial, x.final, x.tone].join(' '); };
   assert.strictEqual(so('bàn'), 'b an 4');

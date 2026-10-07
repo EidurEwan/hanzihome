@@ -99,6 +99,7 @@ const need = {
   // mnemonics, and the words' mnemonics, examples and notes
   cnames: () => HZ.cnames ? Promise.resolve() : loadScript('data/cnames.js'),
   sounds: () => HZ.sounds ? Promise.resolve() : loadScript('data/sounds.js'),
+  audio: () => HZ.audio ? Promise.resolve() : loadScript('data/audio.js'),
   cmnem: () => HZ.cmnem ? Promise.resolve() : loadScript('data/cmnem.js'),
   winfo: () => HZ.winfo ? Promise.resolve() : loadScript('data/winfo.js'),
   // the reader for pasted text: the engine, every character's readings, and the
@@ -143,6 +144,7 @@ const Store = {
     d.notes = d.notes || {}; d.history = d.history || []; d.items = d.items || {};
     d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT; d.study = d.study || {};
     d.wstatus = d.wstatus || {};      // words: 'learning' | 'learned', as status is for characters
+    d.log = d.log || {};              // study by day: {date: {r: reviews, ok: right first time, l: lessons, s: seconds}}
     // The old Study flashcards (srs) gave way to lessons and reviews: a character
     // that was marked Learning joins the reviews at Novice I, due when it was due.
     for (const c of Object.keys(d.srs || {})) {
@@ -177,6 +179,11 @@ const Store = {
     tellDesktop();
   },
   touch() { const d = this.load(); d.days[today()] = (d.days[today()] || 0) + 1; this.save(); },
+  /* add to today's study log (the Statistics page) */
+  logDay(add) {
+    const d = this.load(), day = d.log[today()] = d.log[today()] || {};
+    for (const [k, v] of Object.entries(add)) day[k] = (day[k] || 0) + v;
+  },
 
   status(ch) { return this.load().status[ch] || null; },
   setStatus(ch, s) {
@@ -831,6 +838,18 @@ function merge3(base, local, remote) {
     return out;
   };
 
+  // the study log: each day's counts only ever go up, so the larger of the two is right
+  const studyLog = () => {
+    const out = {};
+    for (const src of [remote.log || {}, local.log || {}]) {
+      for (const [day, v] of Object.entries(src)) {
+        const o = out[day] = out[day] || {};
+        for (const [f, n] of Object.entries(v || {})) o[f] = Math.max(o[f] || 0, n);
+      }
+    }
+    return out;
+  };
+
   const out = {};
   new Set([...Object.keys(b), ...Object.keys(local), ...Object.keys(remote)]).forEach(k => {
     // (items: each character or word learnt changes on its own; study: each setting;
@@ -839,6 +858,7 @@ function merge3(base, local, remote) {
     else if (k === 'lists') out[k] = lists();
     else if (k === 'history') out[k] = history();
     else if (k === 'days') out[k] = days();
+    else if (k === 'log') out[k] = studyLog();
     else {
       const v = pick(b[k], local[k], remote[k]);
       if (v !== undefined) out[k] = v;
@@ -910,7 +930,7 @@ const currentPath = () => {
 };
 
 function markNav(path) {
-  path = path.replace(/^\/(lessons|reviews|calibrate)/, '/study');
+  path = path.replace(/^\/(lessons|reviews|calibrate|stats)/, '/study');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
     a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
@@ -2884,6 +2904,7 @@ function render(keepScroll) {
   if (seg[0] === 'words') return pageWords(seg[1], seg[2], n(3));
   if (seg[0] === 'study') return pageStudy();
   if (seg[0] === 'lessons') return pageLessons();
+  if (seg[0] === 'stats') return pageStats();
   if (seg[0] === 'reviews') return pageReviews();
   if (seg[0] === 'calibrate') return pageCalibrate();
   if (seg[0] === 'reader' && seg[1] === 'book') return pageBook(seg[2], parseInt(seg[3], 10));

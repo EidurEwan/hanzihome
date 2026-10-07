@@ -174,6 +174,40 @@ function addParts(parts) {
   }
 }
 
+/* The learning path (Settings): each day, the next characters along it go into the
+   lessons, as many as "new characters a day" less the path's lessons still waiting,
+   and no more than that number in a day. Characters known, marked or queued are
+   skipped. Returns how many it added. */
+async function fillPath() {
+  const cfg = Store.cfg();
+  if (!cfg.path || cfg.path === 'off' || !cfg.pathDaily) return 0;
+  const d = Store.load(), day = Learn.dayStart(Date.now());
+  const log = d.study.pathLog && d.study.pathLog.day === day ? d.study.pathLog : { day, n: 0 };
+  const waiting = Object.values(d.items).filter(it => it.path && it.stage === 0).length;
+  let want = Math.min(cfg.pathDaily - waiting, cfg.pathDaily - log.n);
+  if (want <= 0) return 0;
+  let order;
+  if (cfg.path === 'hsk') {
+    await optional(need.hskChars());
+    order = Object.keys(HZ.hskChars || {}).sort((a, b) => a - b).flatMap(lv => HZ.hskChars[lv]);
+  } else order = byRank();
+  await optional(Promise.all([need.cmnem(), need.cnames(), need.sounds()]));
+  const added = [];
+  for (const c of order) {
+    if (want <= 0) break;
+    if (!HZ.index[c] || d.items[c] || d.status[c]) continue;
+    const it = Store.learnAdd(c, 'char', charInfo(c));
+    it.path = cfg.path;
+    added.push(c);
+    want--;
+  }
+  log.n += added.length;
+  d.study.pathLog = log;
+  Store.save();
+  await Promise.all(added.map(c => rememberParts(c)));
+  return added.length;
+}
+
 /* before planning with character unlocking on: look up the components not known yet
    (true when there were some) */
 async function fillParts() {
@@ -232,9 +266,57 @@ const Sound = {
     return vs.find(v => this.gender(v) === want && /CN/i.test(v.lang)) || vs.find(v => this.gender(v) === want)
       || vs.find(v => /CN/i.test(v.lang)) || vs[0] || null;
   },
-  say(text, force) {
+  /* Say a character or word: a person's recording when there is one (site/audio/,
+     audio-cmn, CC BY-SA): the word's own (the HSK's 8,500), else its syllables one
+     after another; failing that, the browser's Chinese voice. */
+  say(text, force, pin) {
     const cfg = Store.cfg();
-    if ((cfg.muteVoice && !force) || !window.speechSynthesis || !text || partKind(text)) return;
+    if ((cfg.muteVoice && !force) || !text || partKind(text)) return;
+    if (cfg.audio === 'browser') return this.speak(text, cfg);
+    need.audio().then(() => this.recorded(text, pin, cfg) || this.speak(text, cfg), () => this.speak(text, cfg));
+  },
+  /* play the recording(s) for text; false when there are none to play */
+  recorded(text, pin, cfg) {
+    if (!HZ.audio) return false;
+    const words = this.words || (this.words = new Set(HZ.audio.w.split('|')));
+    const k = typeof learnKey === 'function' ? learnKey(text) : text;
+    let files;
+    if (words.has(k)) files = ['audio/w/' + k + '.mp3'];
+    else {
+      // the syllables, from the reading the item, the dictionary or the word list gives
+      const it = Store.item(k);
+      const p = pin || (it && it.pin) || ([...k].length === 1 ? (HZ.index[k] || [])[2]
+        : typeof wordEntries === 'function' && wordEntries(k)[0] ? wordEntries(k)[0][2] : '');
+      if (!p) return false;
+      files = String(p).trim().split(/\s+/).map(syl => {
+        const x = Learn.parsePinyin(syl);
+        return 'audio/s/' + x.letters + (x.tones[0] || 5) + '.mp3';
+      });
+      if (files.length !== [...k].filter(isHan).length) return false;
+    }
+    if (this.playing) this.playing.pause();
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    const rate = { slow: 0.75, normal: 1, fast: 1.25 }[cfg.speed] || 1;
+    const play = (i, retry) => {
+      if (i >= files.length) return;
+      const a = this.playing = new Audio(files[i] + '?v=1');
+      a.playbackRate = rate;
+      a.onended = () => play(i + 1);
+      // a neutral tone (5) the collection hasn't got: its first tone, lightly
+      a.onerror = () => {
+        if (!retry && /5\.mp3$/.test(files[i])) { files[i] = files[i].replace(/5\.mp3$/, '1.mp3'); play(i, true); }
+        else if (i === 0) this.speak(text, cfg);
+      };
+      a.play().catch(() => {});
+    };
+    play(0);
+    return true;
+  },
+  /* can this device say things: recordings (on unless Settings says the browser's voice),
+     or a Chinese voice in the browser */
+  canSay() { return Store.cfg().audio !== 'browser' || this.voices().length > 0; },
+  speak(text, cfg) {
+    if (!window.speechSynthesis) return;
     const u = new SpeechSynthesisUtterance(text);
     const v = this.voice();
     if (v) u.voice = v;
@@ -594,8 +676,10 @@ function ankiPreview(box, name, deck, cols, redraw) {
 
 function pageStudy() {
   drawStudy();
-  // with character unlocking on, components still to look up may lock a lesson or two
-  fillParts().then(changed => { if (changed && currentPath() === '/study') drawStudy(); });
+  // today's characters from the learning path, and the parts of what is queued
+  fillPath().then(n => fillParts().then(changed => {
+    if ((n || changed) && currentPath() === '/study') drawStudy();
+  }));
 }
 
 function drawStudy() {
@@ -644,7 +728,7 @@ function drawStudy() {
       <button class="btn quiet" id="lx-mistakes" title="Missed in the last three days. Practice doesn't change when they come back.">Recent mistakes (${mistakes.length})</button></p>` : ''}
     <p class="small muted lx-today">Today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
       (${of(p.wordsToday, cfg.lessonLimit && Math.min(cfg.wordLimit, cfg.lessonLimit))} words) ·
-      ${of(p.reviewsToday, cfg.reviewLimit)} reviews · <a href="#/settings">Settings</a></p>
+      ${of(p.reviewsToday, cfg.reviewLimit)} reviews · <a href="#/stats">Statistics</a> · <a href="#/settings">Settings</a></p>
     ${unsorted ? `<section class="card cb-cta">
       <h2>Sort your learned characters</h2>
       <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
@@ -655,6 +739,16 @@ function drawStudy() {
       <div class="lx-fc">${fc.map((n, i) => `<div><span>${dayName(i)}</span>
         <i style="width:${Math.round(100 * n / max)}%"></i><b>${n ? '+' + n : ''}</b></div>`).join('')}</div>
     </section>
+    ${(!cfg.path || cfg.path === 'off') && !p.waiting.length ? `<section class="card lx-path">
+      <h2 class="caps">Nothing to learn next?</h2>
+      <p class="muted">Let HanziHome fill your lessons each day, ${cfg.pathDaily} new characters at a time, with their
+        components and sounds before them.</p>
+      <p class="row"><button class="btn" data-path="common">Most common first</button>
+        <button class="btn quiet" data-path="hsk">HSK 1 to 6</button>
+        <a class="small" href="#/settings">More in Settings</a></p></section>` : ''}
+    ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-today">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : 'the most common characters'},
+      ${cfg.pathDaily} a day · <a href="#/settings">change</a></p>` : ''}
+    ${leechCard(d, now)}
     <section class="card">
       <h2 class="caps">Lesson queue (${p.waiting.length})</h2>
       ${p.waiting.length ? `<div class="lx-queue">${p.waiting.map(k => {
@@ -698,6 +792,12 @@ function drawStudy() {
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { Store.learnRemove(b.dataset.rm); redraw(); }));
   app.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => { Store.prioritize(b.dataset.prio); redraw(); }));
+  wireLeeches(redraw);
+  app.querySelectorAll('[data-path]').forEach(b => b.addEventListener('click', async () => {
+    Store.setCfg({ path: b.dataset.path });
+    await fillPath();
+    redraw();
+  }));
   const mis = document.getElementById('lx-mistakes');
   if (mis) mis.addEventListener('click', () => startPractice(mistakes));
   const back = document.getElementById('lx-back');
@@ -716,6 +816,7 @@ function drawStudy() {
 
 async function pageLessons() {
   if (!lessonState) {
+    await fillPath();
     await fillParts();
     const cfg = Store.cfg(), p = Store.plan();
     const batch = p.lessons.slice(0, cfg.batch);
@@ -744,10 +845,10 @@ async function pageLessons() {
       paintRail();
       return;
     }
-    lessonState = { batch, i: 0, tab: 0, done: [], intro: [] };
+    lessonState = { batch, i: 0, tab: 0, done: [], intro: [], grade: {} };
   }
   const s = lessonState;
-  if (s.i >= s.batch.length) return lessonsDone();
+  if (s.i >= s.batch.length) return s.done.length ? lessonQuiz(s) : lessonsDone();
   const k = s.batch[s.i], it = Store.item(k);
   if (!it) { s.i++; return pageLessons(); }
   // a part (component or sound) has no composition: its lesson opens on the mnemonic
@@ -791,7 +892,7 @@ async function pageLessons() {
         <dt>Alternatives</dt><dd>${others(it).length ? esc(others(it).join(', ')) : '<span class="muted">none</span>'}</dd></dl>
       ${part ? '' : `<h3>Pronunciation</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}
-        ${Sound.voices().length ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`}`;
+        ${Sound.canSay() ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`}`;
   } else if (s.tab === 2) {
     body = `<h3>Examples</h3>
       ${it.kind === 'comp' ? `<p class="muted">Characters with this component. Can you see where it is in each of them?</p>${chips(f.words)}`
@@ -879,10 +980,9 @@ async function pageLessons() {
         Sound.ding();
         // the quiz is the item's first rating for FSRS: right first time is good, one
         // miss hard, more again
-        const g = !s.missed ? 3 : s.missed === 1 ? 2 : 1;
-        Learn.finishLesson(Store.item(k) || it, Date.now(), g, { retention: Store.cfg().retention, rnd: Math.random });
+        // (the lesson only ends with the quiz after the batch: lessonQuiz)
+        s.grade[k] = !s.missed ? 3 : s.missed === 1 ? 2 : 1;
         s.missed = 0;
-        Store.learnSaved(k);
         s.done.push(k);
         s.i++; s.tab = 0; s.pinOk = null;           // (a part's lesson moves on to its first tab)
         markNav(currentPath());
@@ -969,6 +1069,17 @@ async function lessonIntro(goal, k, s) {
   paintRail();
 }
 
+/* After a batch of lessons, a quiz over all of them, mixed, in the reviews' page:
+   recall a few minutes on, not with the lesson still on screen. Its first answers,
+   with the lesson's own check, rate each item's first review (Learn.finishLesson).
+   Leaving it half-way leaves the rest waiting for their lessons. */
+function lessonQuiz(ls) {
+  reviewState = newSession(shuffle(ls.done.slice()), 'lessonquiz');
+  reviewState.lessonGrade = ls.grade;
+  lessonState = null;
+  go('/reviews');
+}
+
 function lessonsDone() {
   const s = lessonState, more = Store.plan().lessons.length;
   lessonState = null;
@@ -1012,7 +1123,7 @@ const toolIcon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentCo
 function questionsFor(it, cfg) {
   if (it && (it.kind === 'comp' || it.kind === 'sound')) return ['meaning'];   // a part is asked its name
   const qs = ['pinyin', 'meaning'];
-  if (cfg.listen && Sound.voices().length) qs.unshift('listen');
+  if (cfg.listen && Sound.canSay()) qs.unshift('listen');
   if (cfg.write && it && it.kind !== 'word') qs.push('write');
   return qs;
 }
@@ -1071,7 +1182,7 @@ async function pageReviews() {
   const total = new Set(s.queue.map(x => x.k)).size, finished = s.right.length + s.wrong.length;
   const pct = finished ? Math.round(100 * s.right.length / finished) : 100;
   const shown = s.shown;
-  const can = { info: !!shown, sound: (!!shown || q === 'listen') && Sound.voices().length > 0, settings: true, reveal: !shown,
+  const can = { info: !!shown, sound: (!!shown || q === 'listen') && Sound.canSay(), settings: true, reveal: !shown,
     open: !!shown, wrap: true, undo: !!shown };
   const labels = { info: 'Item info (I)', sound: 'Play the pronunciation (P)', settings: 'Quiz settings (Q)',
     reveal: 'Reveal the answer (Ctrl+Enter)', open: 'Open in a new tab (O)',
@@ -1080,6 +1191,7 @@ async function pageReviews() {
   app.innerHTML = `
     <div class="rv-top">${s.practice ? '<span class="rv-practice">Practice: the schedule stays as it is</span>' : ''}
       ${s.calibrating ? '<span class="rv-practice">Calibration test</span>' : ''}
+      ${s.mode === 'lessonquiz' ? '<span class="rv-practice">Lesson quiz</span>' : ''}
       ${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
       ${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
@@ -1100,7 +1212,9 @@ async function pageReviews() {
         : shown.ok ? (shown.slips ? `Written, with ${shown.slips} ${shown.slips === 1 ? 'slip' : 'slips'}.` : 'Written without a slip.')
         : `${shown.hinted} ${shown.hinted === 1 ? 'stroke' : 'strokes'} needed the outline: it comes again later.`}</p>`
       : shown.ok ? '' : `<p class="lx-wrong">${q === 'pinyin'
-        ? `It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}).` : `It means <b>${esc(primary(it))}</b>.`}</p>`}
+        ? `It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}).` : `It means <b>${esc(primary(it))}</b>.`}
+        ${shown.mixed ? `<br><span class="rv-mixed">“${esc(shown.answer)}” is <a href="${itemHref(shown.mixed)}" target="_blank" class="han">${itemHtml(shown.mixed)}</a>
+          ${esc((Store.item(shown.mixed) || {}).pin || '')}: compare them on the Study page.</span>` : ''}</p>`}
       <p class="row">
         ${!shown.ok && (q === 'meaning' || q === 'listen') && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
         <span class="small muted">Enter for the next one</span></p>
@@ -1152,6 +1266,15 @@ async function pageReviews() {
     if (!ok) {
       s.misses[k] = (s.misses[k] || 0) + 1;
       (s.typed[k] = s.typed[k] || []).push({ q, answer });
+      // what the answer belongs to, if it is another item's: a confusion to remember
+      if (q === 'meaning' || q === 'listen') {
+        const d = Store.load(), other = Object.keys(d.items).find(x => x !== k && d.items[x].stage >= 1
+          && d.items[x].kind === it.kind && Learn.checkMeaning(answer, d.items[x]));
+        if (other) { s.shown.mixed = other; noteConfusion(k, other); }
+      }
+      // the mnemonic, straight away, unless it would give away a question still to come
+      const pending = s.queue.slice(s.i + 1).some(x => x.k === k && x.q !== q);
+      if (!pending) { s.panel = 'info'; s.secs = { Mnemonic: true }; s.toMnemonic = true; }
       s.queue.push({ k, q });                      // asked again before the session ends
     }
     pageReviews();
@@ -1169,6 +1292,11 @@ async function pageReviews() {
   });
   app.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => reviewTool(b.dataset.tool)));
   wireReviewPanel(k);
+  if (s.toMnemonic) {                              // (after a miss: the mnemonic, in view)
+    s.toMnemonic = false;
+    const mn = app.querySelector('[data-sec="Mnemonic"]');
+    if (mn) mn.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
   paintRail();
 }
 
@@ -1192,6 +1320,73 @@ function deferQuestion(s) {
   const [m] = s.queue.splice(s.i, 1);              // what it waits for is now at last - 1
   s.queue.splice(last, 0, m);
   return true;
+}
+
+/* Leeches on the Study page: the items that keep slipping, what you mix them up
+   with (side by side, with both mnemonics), and three ways out: learn it again from
+   a lesson, write a mnemonic of your own, or rest it for two weeks. */
+function leechCard(d, now) {
+  const leeches = Object.keys(d.items).filter(k => Learn.isLeech(d.items[k]))
+    .sort((a, b) => (d.items[b].lapses || 0) - (d.items[a].lapses || 0)).slice(0, 12);
+  if (!leeches.length) return '';
+  const row = k => {
+    const it = d.items[k], conf = (it.confused || []).filter(x => d.items[x]);
+    const resting = it.rest > now;
+    const side = x => `<div class="lc-side"><a class="han" href="${itemHref(x)}">${itemHtml(x)}</a>
+      <b>${esc(d.items[x].pin)}</b> ${esc(primary(d.items[x]))}
+      ${d.items[x].mnemonic || builtinMnemonic(glyphOf(x)) ? `<p class="small mn">${d.items[x].mnemonic ? esc(d.items[x].mnemonic) : mnHtml(builtinMnemonic(glyphOf(x)))}</p>` : ''}</div>`;
+    return `<div class="lc-row" data-k="${esc(k)}">
+      <div class="lc-head"><a class="han lc-glyph" href="${itemHref(k)}">${itemHtml(k)}</a>
+        <span><b>${esc(it.pin)}</b> ${esc(primary(it))}<br><span class="small muted">${it.lapses || 0} lapses
+          ${conf.length ? ` · mixed up with ${conf.map(x => `<span class="han">${itemHtml(x)}</span>`).join(' ')}` : ''}
+          ${resting ? ` · resting until ${esc(new Date(it.rest).toLocaleDateString())}` : ''}</span></span>
+        <span class="lc-acts">
+          ${conf.length ? '<button class="btn quiet small" data-lc="compare">Compare</button>' : ''}
+          <button class="btn quiet small" data-lc="mn">My mnemonic</button>
+          <button class="btn quiet small" data-lc="relearn" title="Back to the lesson queue, at the front: its lesson again, then reviews from the start">Learn again</button>
+          <button class="btn quiet small" data-lc="${resting ? 'wake' : 'rest'}">${resting ? 'Bring back' : 'Rest 2 weeks'}</button></span></div>
+      <div class="lc-compare" hidden>${side(k)}${conf.map(side).join('')}</div>
+      <div class="lc-mn" hidden><textarea rows="2" placeholder="A new story for ${esc(itemText(k))}…">${esc(it.mnemonic || '')}</textarea>
+        <button class="btn small" data-lc="save">Save</button></div>
+    </div>`;
+  };
+  return `<section class="card lc">
+    <h2 class="caps">Leeches (${leeches.length})</h2>
+    <p class="small muted">Items that keep slipping: forgotten four times, or missed four times in their last eight
+      reviews. A new mnemonic usually fixes one; so does seeing it next to what you mix it up with.</p>
+    ${leeches.map(row).join('')}</section>`;
+}
+
+function wireLeeches(redraw) {
+  app.querySelectorAll('.lc-row').forEach(r => r.addEventListener('click', e => {
+    const b = e.target.closest('button[data-lc]');
+    if (!b) return;
+    const k = r.dataset.k, it = Store.item(k), what = b.dataset.lc;
+    if (!it) return;
+    if (what === 'compare') r.querySelector('.lc-compare').hidden = !r.querySelector('.lc-compare').hidden;
+    else if (what === 'mn') r.querySelector('.lc-mn').hidden = !r.querySelector('.lc-mn').hidden;
+    else if (what === 'save') { it.mnemonic = r.querySelector('.lc-mn textarea').value.trim(); Store.save(); redraw(); }
+    else if (what === 'rest') { it.rest = Date.now() + 14 * Learn.DAY; Store.save(); redraw(); }
+    else if (what === 'wake') { delete it.rest; Store.save(); redraw(); }
+    else if (what === 'relearn') {
+      // a fresh start: its lesson again, at the front of the queue; what was learnt of it stays in its history
+      Object.assign(it, { stage: 0, due: 0, prio: true, relearn: (it.relearn || 0) + 1 });
+      delete it.rest; delete it.learnt;
+      Store.save();
+      redraw();
+    }
+  }));
+}
+
+/* remember that k was answered as other (both ways round), the latest first, a few each */
+function noteConfusion(k, other) {
+  const d = Store.load();
+  for (const [a, b] of [[k, other], [other, k]]) {
+    const it = d.items[a];
+    if (!it) continue;
+    it.confused = [b, ...(it.confused || []).filter(x => x !== b)].slice(0, 4);
+  }
+  Store.save();
 }
 
 /* a missed question taken back: the miss, and its repeat at the end of the queue */
@@ -1398,11 +1593,16 @@ function nextQuestion() {
     a[q] = true;
     if ((s.need[k] || ['pinyin', 'meaning']).every(x => a[x])) {
       const it = Store.item(k), right = !s.misses[k];
-      const g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}));
+      let g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}));
       const opts = { retention: Store.cfg().retention };
-      if (s.calibrating) Learn.calibrate(it, g, Date.now(), Math.random, opts);
+      if (s.mode === 'lessonquiz') {
+        // the first review: the quiz, and the lesson's check before it, the worse of the two
+        g = s.grades[k] = Math.min(g, (s.lessonGrade || {})[k] || 4);
+        Learn.finishLesson(it, Date.now(), g, Object.assign(opts, { rnd: Math.random }));
+      } else if (s.calibrating) Learn.calibrate(it, g, Date.now(), Math.random, opts);
       else if (!s.practice) Learn.review(it, g, Date.now(), Math.random, opts);
       if (!s.practice) Store.learnSaved(k);
+      if (!s.practice) Store.logDay(s.mode === 'lessonquiz' ? { l: 1 } : { r: 1, ok: right ? 1 : 0 });
       (right ? s.right : s.wrong).push(k);
       markNav(currentPath());
     }
@@ -1422,12 +1622,14 @@ function nextQuestion() {
 function reviewsDone() {
   const s = reviewState;
   reviewState = null;
+  if (!s.practice) { Store.logDay({ s: Math.round((Date.now() - s.start) / 1000) }); Store.save(); }
   const d = Store.load(), p = Store.plan(), now = Date.now();
   const done = s.right.length + s.wrong.length;
   const pct = done ? Math.round(100 * s.right.length / done) : 100;
   const secs = Math.round((now - s.start) / 1000);
   const time = secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s`;
-  const title = s.practice ? 'Practice summary' : s.calibrating ? 'Calibration summary' : 'Review summary';
+  const title = s.practice ? 'Practice summary' : s.calibrating ? 'Calibration summary'
+    : s.mode === 'lessonquiz' ? 'Lessons learned' : 'Review summary';
   // how the app rated each item from the answers, and how many got each rating
   const rated = [0, 0, 0, 0, 0];
   for (const k of Object.keys(s.grades)) rated[s.grades[k]]++;
@@ -1693,6 +1895,9 @@ function paintStudySettings() {
       + 'more reviews, each easier; 90% is FSRS’s own choice. The rating of each review (again, hard, good, easy) isn’t asked: '
       + 'it comes from your answers. Wrong is again; a slip of tone or a long think (over ' + Learn.SLOW / 1000 + ' seconds '
       + 'before you start typing) is hard; right is good; right and started within ' + Learn.QUICK / 1000 + ' seconds is easy.')}
+    ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['common', 'The most common characters first'],
+      ['hsk', 'HSK 1 to 6, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
+      'Puts the next characters of the path in your lessons each day, skipping the ones you know or have queued, with their new components and sounds before them. It tops up to the daily number: lessons you haven\'t done yet count towards it.')}
     ${field('Daily review limit', sel('reviewLimit', reviewLimits, 'int'),
       'A soft limit: a session stops there, and once today\'s are done the Reviews tile greys out. You can still start another session.')}
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
@@ -1728,7 +1933,9 @@ function paintStudySettings() {
     </div>
 
     <h3 class="st-h">Sounds</h3>
-    ${field('Preferred voice', sel('voice', [['female', 'Female'], ['male', 'Male']]),
+    ${field('Pronunciation', sel('audio', [['recorded', 'Recordings by Chinese speakers'], ['browser', 'The browser\'s voice']]),
+      'Recordings: the 8,500 words and characters of the HSK lists read by a speaker, and any other word read syllable by syllable (audio-cmn, CC BY-SA: Chen Wang and Yue Tan). Where there is none, the browser\'s voice reads it.')}
+    ${field('Browser voice', sel('voice', [['female', 'Female'], ['male', 'Male']]),
       `<span id="st-voice-note">${voice ? `Reading with ${esc(voice.name)}${Sound.gender(voice) && Sound.gender(voice) !== c.voice
         ? ` (this device has no ${c.voice} Chinese voice)` : ''}.`
         : 'This device has no Chinese voice, so nothing is read aloud. On Windows: Settings → Time &amp; language → Speech → Add voices → Chinese (Simplified).'}</span>`)}
@@ -1779,4 +1986,90 @@ function paintStudySettings() {
     markNav(currentPath());
     paintStudySettings();
   });
+}
+
+// ------------------------------------------------------------------ statistics
+
+/* #/stats: how your studying is going. Answers by type, reviews and lessons by day
+   (the store's log), how much you would remember now (FSRS's retrievability) against
+   the retention you asked for, what is coming, where your items are, and the hardest. */
+function pageStats() {
+  const d = Store.load(), cfg = Store.cfg(), now = Date.now();
+  const items = Object.entries(d.items).filter(([, it]) => it.stage >= 1);
+  const KINDS = [['char', 'Characters'], ['word', 'Words'], ['comp', 'Components'], ['sound', 'Sounds']];
+  const pc = (a, b) => b ? Math.round(100 * a / b) + '%' : '—';
+
+  // answers lately, by type: each item's last ten reviews
+  const byKind = KINDS.map(([kind, name]) => {
+    const its = items.filter(([, it]) => (it.kind || 'char') === kind).map(e => e[1]);
+    const h = its.flatMap(it => it.hist || []);
+    const mem = its.map(it => Learn.memory(it, now)).filter(Boolean);
+    const R = mem.length ? mem.reduce((t, m) => t + m.R, 0) / mem.length : 0;
+    return { kind, name, n: its.length, right: h.filter(Boolean).length, all: h.length, R,
+      learned: its.filter(it => it.stage >= Learn.LEARNED_FROM).length };
+  }).filter(x => x.n);
+
+  // the last 30 days
+  const dayKey = t => new Date(t).toISOString().slice(0, 10);
+  const days = Array.from({ length: 30 }, (_, i) => dayKey(now - (29 - i) * Learn.DAY));
+  const log = days.map(k => Object.assign({ r: 0, ok: 0, l: 0, s: 0 }, d.log[k] || {}));
+  const maxR = Math.max(1, ...log.map(x => x.r + x.l));
+  const total = log.reduce((t, x) => ({ r: t.r + x.r, ok: t.ok + x.ok, l: t.l + x.l, s: t.s + x.s }), { r: 0, ok: 0, l: 0, s: 0 });
+  let streak = 0;
+  for (let i = log.length - 1; i >= 0 && (log[i].r || log[i].l); i--) streak++;
+  if (!streak && log.length > 1) for (let i = log.length - 2; i >= 0 && (log[i].r || log[i].l); i--) streak++;   // today not yet
+
+  const fc = Learn.forecast(items.map(e => e[1]), now, 14), maxF = Math.max(1, ...fc);
+  const groups = ['Novice', 'Apprentice', 'Journeyman', 'Expert', 'Master'];
+  const hardest = items.filter(([, it]) => (it.hist || []).length >= 3)
+    .map(([k, it]) => [k, it, (it.hist || []).filter(Boolean).length / it.hist.length])
+    .sort((a, b) => a[2] - b[2] || (b[1].D || 0) - (a[1].D || 0)).slice(0, 12);
+  const mins = sec => sec < 3600 ? Math.round(sec / 60) + ' min' : (sec / 3600).toFixed(1) + ' h';
+
+  app.innerHTML = '<h1 class="page-title">Statistics</h1>' + withRail(`
+    <section class="card">
+      <div class="st-tiles">
+        <div><b>${streak}</b><span>day${streak === 1 ? '' : 's'} in a row</span></div>
+        <div><b>${total.r}</b><span>reviews in 30 days</span></div>
+        <div><b>${pc(total.ok, total.r)}</b><span>right first time</span></div>
+        <div><b>${total.l}</b><span>lessons in 30 days</span></div>
+        <div><b>${mins(total.s)}</b><span>studied in 30 days</span></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2 class="caps">The last 30 days</h2>
+      <div class="st-days">${log.map((x, i) => `<div title="${esc(days[i])}: ${x.r} reviews (${pc(x.ok, x.r)} right), ${x.l} lessons">
+        <i class="r" style="height:${Math.round(100 * x.r / maxR)}%"></i><i class="l" style="height:${Math.round(100 * x.l / maxR)}%"></i></div>`).join('')}</div>
+      <p class="small muted"><span class="st-key r"></span> reviews <span class="st-key l"></span> lessons · today on the right</p>
+    </section>
+    <section class="card">
+      <h2 class="caps">By type</h2>
+      ${byKind.length ? `<table><thead><tr><th></th><th>In reviews</th><th>Learned</th><th>Right lately</th>
+        <th title="The average chance you'd recall one now, by FSRS">Would recall now</th></tr></thead><tbody>
+        ${byKind.map(x => `<tr><td><b>${x.name}</b></td><td class="num">${x.n}</td><td class="num">${x.learned}</td>
+          <td class="num">${pc(x.right, x.all)}</td><td class="num ${x.R < cfg.retention - 0.05 ? 'st-low' : ''}">${Math.round(100 * x.R)}%</td></tr>`).join('')}
+      </tbody></table>
+      <p class="small muted">You asked for ${Math.round(cfg.retention * 100)}% retention (Settings). Reviews come when
+        an item's chance of recall falls there, so "would recall now" sits a little above it when you are up to date,
+        and below it when reviews have piled up.</p>` : '<p class="empty">Nothing reviewed yet.</p>'}
+    </section>
+    <section class="card">
+      <h2 class="caps">The next two weeks</h2>
+      <div class="lx-fc">${fc.map((n, i) => `<div><span>${i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
+        : new Date(now + i * Learn.DAY).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</span>
+        <i style="width:${Math.round(100 * n / maxF)}%"></i><b>${n ? '+' + n : ''}</b></div>`).join('')}</div>
+    </section>
+    <section class="card">
+      <h2 class="caps">Stages</h2>
+      <table><thead><tr><th></th>${groups.map(g => `<th>${g}</th>`).join('')}</tr></thead><tbody>
+        ${KINDS.filter(([kind]) => items.some(([, it]) => (it.kind || 'char') === kind)).map(([kind, name]) => `<tr><td><b>${name}</b></td>
+          ${groups.map(g => `<td class="num">${items.filter(([, it]) => (it.kind || 'char') === kind && Learn.group(it.stage) === g).length}</td>`).join('')}</tr>`).join('')}
+      </tbody></table>
+    </section>
+    ${hardest.length ? `<section class="card">
+      <h2 class="caps">Hardest for you</h2>
+      <div class="lx-chips">${hardest.map(([k, it, r]) => `<a class="lx-chip" href="${itemHref(k)}">
+        <span class="han">${itemHtml(k)}</span><span>${esc(primary(it))} <small class="muted">${Math.round(100 * r)}% right</small></span></a>`).join('')}</div>
+    </section>` : ''}`, true);
+  paintRail();
 }

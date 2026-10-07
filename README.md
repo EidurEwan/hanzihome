@@ -110,6 +110,23 @@ word's characters), a mnemonic (HanziHome's own, or one you write on a scaffold 
 its meanings and pronunciation, and examples, then asks you to type its pinyin (tone numbers:
 `ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
 
+**A learning path** (Settings, or the Study page when nothing is queued) fills the lessons each
+day with the next characters of the most common or of HSK 1 to 6, as many a day as you choose,
+each with its new components and sounds. **After each batch of lessons comes a quiz** over all of
+them, mixed, in the reviews' page: its first answers (with each lesson's own check) rate the first
+review. **A missed review opens the mnemonic**, unless it would give away a question still to come,
+and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
+lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
+what you mix them up with, to learn again from a lesson, give a mnemonic of your own, or rest for
+two weeks. **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
+type, the next two weeks, stages, and the items hardest for you. Enter steps through a lesson and
+on to the next review.
+
+**Pronunciation** is a person's recording where there is one: the 8,500 words and characters of
+the HSK lists, and every other word read syllable by syllable (`site/audio/`, from audio-cmn by
+Chen Wang and Yue Tan, CC BY-SA: see `site/audio/LICENSE.md`); the browser's Chinese voice reads
+the rest, or everything if Settings says so.
+
 **Words** — a word has a status of its own (Not known, Learning, Learned), which its lessons and
 reviews set as they do a character's, and a card (`#/word/电脑`): its readings and meanings, part
 of speech, measure word, HSK level and frequency, a mnemonic, example sentences with pinyin and

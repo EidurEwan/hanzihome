@@ -209,7 +209,12 @@
   }
   const GRADE_NAMES = [null, 'Again', 'Hard', 'Good', 'Easy'];
 
-  const isDue = (item, now) => item.stage >= 1 && item.due <= now;
+  const isDue = (item, now) => item.stage >= 1 && item.due <= now && !(item.rest > now);
+
+  /* Leeches: items that keep slipping. Four lapses (forgotten after being known), or
+     four misses in the last eight reviews. */
+  const isLeech = item => item.stage >= 1 && ((item.lapses || 0) >= 4
+    || (item.hist || []).slice(-8).filter(r => !r).length >= 4);
   const waiting = item => item.stage === 0;
 
   /* how many reviews fall due on each of the next `days` days (index 0 = today, from now) */
@@ -276,6 +281,8 @@
     wordUnlock: 'familiar',    // ...until they are 'familiar' or 'learned' (lesson done)
     autoChars: true,           // adding a word adds its characters too, prioritized
     autoComps: true,           // adding a character adds its new components too, learnt first
+    path: 'off',               // a learning path that fills the lessons: 'off' | 'common' | 'hsk'
+    pathDaily: 5,              // ...with this many new characters a day
     questionOrder: 'pinyin',   // 'pinyin': pronunciation then meaning, in pairs; 'random': shuffled
     lessonOrder: 'words',      // 'words' first | 'chars' first | 'mix'
     prioRespect: true,         // prioritized items keep to the limits and the lesson order
@@ -287,6 +294,7 @@
     listen: false,             // also ask an item's meaning from its sound alone, first
     write: false,              // also ask to write a character, last (hanzi-writer)
     voice: 'female', speed: 'normal', muteSfx: false, muteVoice: false,
+    audio: 'recorded',         // 'recorded': people's recordings (site/audio/), else 'browser': its voice
     vacation: 0,               // when vacation mode began (0: not on vacation)
   };
   const settings = s => Object.assign({}, DEFAULTS, s || {});
@@ -379,7 +387,13 @@
       if (depth < 4) for (const p of partsOf(k, it(k))) if (p !== k && inQueue.has(p)) put(p, depth + 1);
       seq.push(k);
     };
-    out.waiting.forEach(k => put(k, 0));
+    // (a component or sound waiting for its lesson comes with its character, not on its own)
+    const isPart = new Set();
+    for (const k of queued) for (const p of partsOf(k, it(k))) {
+      if (p !== k && inQueue.has(p) && (it(p).kind === 'comp' || it(p).kind === 'sound')) isPart.add(p);
+    }
+    out.waiting.forEach(k => { if (!isPart.has(k)) put(k, 0); });
+    out.waiting.forEach(k => put(k, 0));            // (anything left: a loop of parts)
     out.waiting = seq;
 
     let left = cfg.lessonLimit ? Math.max(0, cfg.lessonLimit - out.lessonsToday) : Infinity;
@@ -544,7 +558,7 @@
 
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
-    review, known, resume, isDue, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    review, known, resume, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin, soundOf,
