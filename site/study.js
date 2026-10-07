@@ -826,6 +826,7 @@ async function pageLessons() {
       <div class="lx-main">${body}</div>
       <button class="lx-arrow next" ${quiz ? 'disabled' : ''} aria-label="Next">›</button>
     </div>
+    <p class="lx-keys small muted">${quiz ? 'Enter checks your answer' : 'Enter or → for the next step · ← back'}</p>
     ${batchStrip(s)}`;
 
   const go2 = t => { s.tab = Math.max(first, Math.min(3, t)); pageLessons(); };
@@ -1350,6 +1351,27 @@ function wireReviewPanel(k) {
   }));
 }
 
+/* Lessons by keyboard: Enter (or →) goes to the next step, Prerequisites → Composition
+   → Mnemonic → Examples → Confirmation, where Enter checks the answer; ← goes back.
+   Typing in a box (your mnemonic, the answers) keeps Enter for the box. */
+document.addEventListener('keydown', e => {
+  const s = lessonState;
+  if (!s || currentPath() !== '/lessons' || e.ctrlKey || e.metaKey || e.altKey) return;
+  const t = e.target;
+  if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT' || t.isContentEditable)) return;
+  const intro = document.getElementById('lx-intro-go');
+  if (intro) {
+    if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); intro.click(); }
+    return;
+  }
+  const next = app.querySelector('.lx-arrow.next'), prev = app.querySelector('.lx-arrow.prev');
+  if ((e.key === 'Enter' || e.key === 'ArrowRight') && next && !next.disabled) { e.preventDefault(); next.click(); }
+  else if (e.key === 'Enter' && document.getElementById('lx-quiz')) {
+    e.preventDefault();
+    (document.getElementById('lx-mean') || document.getElementById('lx-pin')).focus();
+  } else if (e.key === 'ArrowLeft' && prev && !prev.disabled) { e.preventDefault(); prev.click(); }
+});
+
 /* HanziHero's review keys: I, P, Q, O, W and + once the question is answered;
    Ctrl+Enter reveals the answer, Ctrl+Z undoes it */
 document.addEventListener('keydown', e => {
@@ -1361,6 +1383,8 @@ document.addEventListener('keydown', e => {
   if (ctrl && e.key === 'Enter') { e.preventDefault(); reviewTool('reveal'); return; }
   if (ctrl && e.key.toLowerCase() === 'z') { if (s.shown) { e.preventDefault(); reviewTool('undo'); } return; }
   if (!s.shown || ctrl || e.altKey) return;
+  // Enter goes on to the next question from anywhere on the page, not only the answer box
+  if (e.key === 'Enter' && t.id !== 'rv-in') { e.preventDefault(); nextQuestion(); return; }
   const name = { i: 'info', p: 'sound', q: 'settings', o: 'open', w: 'wrap', '+': 'syn' }[e.key.toLowerCase()];
   if (!name) return;
   e.preventDefault();

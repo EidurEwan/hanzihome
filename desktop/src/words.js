@@ -42,11 +42,16 @@ function wordsOf(line, HZ) {
 }
 
 /* a word's colour: 'learned', 'learning' or 'new' (null: nothing to colour) */
-function stateOf(word, status, HZ) {
+function stateOf(word, status, HZ, wstatus) {
   const t2s = HZ.t2s || {};
   const known = c => HZ.index[c] || HZ.index[t2s[c]];
   const cs = [...word].filter(c => isHan(c) && known(c));
   if (!cs.length) return null;
+  // a word marked as a word (or learnt in the lessons) says so itself
+  if (cs.length > 1 && wstatus) {
+    const own = wstatus[word] || wstatus[[...word].map(c => t2s[c] || c).join('')];
+    if (own) return own;
+  }
   const st = c => status[c] || status[t2s[c]] || null;
   if (cs.every(c => st(c) === 'learned')) return 'learned';
   if (cs.some(c => st(c))) return 'learning';

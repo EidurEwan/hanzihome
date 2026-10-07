@@ -38,6 +38,7 @@ const inside = (r, p, pad = 0) => p.x >= r.x - pad && p.x < r.x + (r.w || r.widt
 class Hover {
   /* opts: key() -> 'ctrl'|'alt'|'shift'|'off'; overlays() -> Overlays or null; ocr(); HZ();
      status() -> {char: state}; mark(char, state) -> Promise of the new statuses;
+     wstatus() -> {word: state}; markWord(word, state) -> Promise, once marked;
      items() -> the lesson items {key: item}; learn(word, pinyin, gloss, sentence) ->
      Promise of the item, once added to the lessons; open(char); paused() -> Promise: is the program in front on the pause list;
      direct() -> take text straight from the program under the pointer when it
@@ -61,6 +62,12 @@ class Hover {
       if (!this.from(e) || !this.word) return;
       try { this.show(this.word, await this.o.mark(this.simp(c), s)); }
       catch (err) { this.log('mark: ' + err.message); }
+    });
+    ipcMain.on('popup-wmark', async (e, s) => {
+      if (!this.from(e) || !this.word || !this.o.markWord) return;
+      const word = this.word, k = this.learnKey(this.gloss(word)[0]);
+      try { const r = await this.o.markWord(k, s); this.show(word, r.status, null, r.wstatus); }
+      catch (err) { this.log('mark word: ' + err.message); }
     });
     ipcMain.on('popup-learn', async e => {
       if (!this.from(e) || !this.word) return;
@@ -239,7 +246,7 @@ class Hover {
 
   /* status: the statuses to show, when they have just changed (after a mark);
      item: the word's lesson item, when it has just been added */
-  async show(word, status, item) {
+  async show(word, status, item, wstatus) {
     const win = this.popup();
     await this.ready;
     this.word = word;
@@ -254,7 +261,10 @@ class Hover {
     const it = item || ((this.o.items && this.o.items()) || {})[this.learnKey(entry[0])];
     const learn = !this.o.learn ? null
       : it ? { stage: it.stage ? Learn.stageName(it.stage) : 'In lessons' } : { add: true };
-    win.webContents.send('popup-show', { entry, status: st, known, learn });
+    // the word's own status (a word of two or more characters, when the store has them)
+    const ws = wstatus || (this.o.wstatus && this.o.wstatus());
+    const wstate = ws ? ws[this.learnKey(entry[0])] || null : undefined;
+    win.webContents.send('popup-show', { entry, status: st, known, learn, wstate });
   }
 
   /* the page has drawn and measured itself: fit the window, next to the word */

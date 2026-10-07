@@ -172,7 +172,7 @@ class Overlays {
     const status = this.o.status(), HZ = this.o.HZ(), ex = this.o.exclude();
     const bars = [];
     for (const w of p.words) {
-      const s = stateOf(w.text, status, HZ);
+      const s = stateOf(w.text, status, HZ, this.o.wstatus ? this.o.wstatus() : null);
       if (!s || !show[s]) continue;
       const cx = w.x + w.w / 2, cy = w.y + w.h / 2;
       if (ex && cx >= ex.x && cx < ex.x + ex.width && cy >= ex.y && cy < ex.y + ex.height) continue;

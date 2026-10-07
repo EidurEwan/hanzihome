@@ -1574,3 +1574,5 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
 .mn-chip.snd { background: color-mix(in srgb, var(--lx-sound) 14%, transparent); padding-left: 6px; }
 .mn-chip.snd .snd-key { background: var(--lx-sound); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; margin-left: -6px; font-size: .85em; }
 .lx-mn-builtin { line-height: 1.9; }
+.wp-wl { font-size: 11.5px; font-weight: 700; color: var(--ink-2); }
+.lx-keys { text-align: center; margin: 8px 0 0; }
