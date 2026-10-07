@@ -29,6 +29,7 @@ const Anki = (() => {
   function exportText(items) {
     const lines = ['#separator:tab', '#html:false', '#columns:Hanzi\tPinyin\tMeaning\tExample\tMnemonic\tTags', '#tags column:6'];
     for (const [k, it] of Object.entries(items)) {
+      if (it.kind !== 'char' && it.kind !== 'word') continue;     // components and sounds stay here
       const stage = it.stage ? Learn.stageName(it.stage).replace(/\s+/g, '_') : 'lesson_queue';
       lines.push([k, it.pin, it.mean, it.ex && it.ex.text, it.mnemonic, `HanziHome ${it.kind} ${stage}`].map(clean).join('\t'));
     }

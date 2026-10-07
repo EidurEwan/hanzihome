@@ -110,6 +110,23 @@ word's characters), a mnemonic (HanziHome's own, or one you write on a scaffold 
 its meanings and pronunciation, and examples, then asks you to type its pinyin (tone numbers:
 `ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
 
+**A learning path** (Settings, or the Study page when nothing is queued) fills the lessons each
+day with the next characters of the most common or of HSK 1 to 6, as many a day as you choose,
+each with its new components and sounds. **After each batch of lessons comes a quiz** over all of
+them, mixed, in the reviews' page: its first answers (with each lesson's own check) rate the first
+review. **A missed review opens the mnemonic**, unless it would give away a question still to come,
+and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
+lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
+what you mix them up with, to learn again from a lesson, give a mnemonic of your own, or rest for
+two weeks. **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
+type, the next two weeks, stages, and the items hardest for you. Enter steps through a lesson and
+on to the next review.
+
+**Pronunciation** is a person's recording where there is one: the 8,500 words and characters of
+the HSK lists, and every other word read syllable by syllable (`site/audio/`, from audio-cmn by
+Chen Wang and Yue Tan, CC BY-SA: see `site/audio/LICENSE.md`); the browser's Chinese voice reads
+the rest, or everything if Settings says so.
+
 **Words** — a word has a status of its own (Not known, Learning, Learned), which its lessons and
 reviews set as they do a character's, and a card (`#/word/电脑`): its readings and meanings, part
 of speech, measure word, HSK level and frequency, a mnemonic, example sentences with pinyin and
@@ -117,11 +134,22 @@ English, the sentences of the stories it is in, its characters with their mnemon
 words. The Words page lists the commonest 10,000, each HSK level, or yours, to mark them or add
 them to your lessons; the reader colours a word by its own status once it has one.
 
-**Mnemonics** — the components have picture names (氵 water drops, 勺 ladle, 丷 horns), and the
-3,000 commonest characters mnemonics built from them; the 7,000 commonest words (and every HSK
+**Prerequisites first** — a character is learnt from its parts: its components (the first level
+of its breakdown: 伴 is 亻 standing person + 半 half) and its sound, an initial, a final and a tone,
+which HanziHome pictures as a person, a place and a room (`site/data/sounds.js`: b- the Baker, -an
+the Mansion, 4 the Trapdoor). A character's lesson opens on a Prerequisites page that shows them,
+known and new, with Learn or Skip; each new part then gets a short lesson of its own (asked its
+name), and the character's Composition tab shows its component and sound composition. Parts don't
+count against the daily limit; Settings → Lessons and reviews can turn this off.
+
+**Mnemonics** — 1,066 components have picture names (氵 water drops, 勺 ladle, 丷 horns), 897 of them
+a mnemonic from their own parts, and each of the 3,000 commonest characters a scene of 40 to 80
+words: the person in the room of the place, doing something absurd with its components, so the
+sound and the meaning come together ("The {Baker} tumbles through the {Trapdoor} of the {Mansion}
+and finds a *standing person* sawn in *half*…"), components and sounds shown as chips; the 7,000 commonest words (and every HSK
 word) have a mnemonic, two example sentences and a usage note. They were written for HanziHome
 by Claude agents, commonest first, to the brief in `build/mnemonics/BRIEF.md`:
-`build/mnemonics/make_inputs.js [chars] [words]` writes the next batches, `check.js` checks an
+`build/mnemonics/make_inputs.js [chars] [words]` and `make_scenes.js` write the batches, `check.js` checks an
 agent's output, and `merge.js` makes `site/data/cnames.js`, `cmnem.js` and `winfo.js` (giving the
 example sentences their pinyin with the reader's own segmenter).
 

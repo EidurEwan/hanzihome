@@ -138,16 +138,49 @@ check('plan: lesson order, word limit and daily limit', () => {
     一二: queued('word', 4), 二三: queued('word', 5), 一三: queued('word', 6) };
   const cfg = { lessonLimit: 4, wordLimit: 2, wordWait: false };
   const env = world(items);
-  assert.deepStrictEqual(L.plan(items, cfg, t0, env).lessons, ['一二', '二三', '一', '二']);
+  // words first, but a word's characters, waiting too, come just before it
+  assert.deepStrictEqual(L.plan(items, cfg, t0, env).lessons, ['一', '二', '一二', '三']);
   assert.deepStrictEqual(L.plan(items, { ...cfg, lessonOrder: 'chars' }, t0, env).lessons, ['一', '二', '三', '一二']);
   assert.deepStrictEqual(L.plan(items, { ...cfg, lessonOrder: 'mix', lessonLimit: 0 }, t0, env).lessons,
-    ['一', '一二', '二', '二三', '三', '一三']);
+    ['一', '二', '一二', '三', '二三', '一三']);
   // two lessons done today: two left, and one of them may be a word
   L.finishLesson(items['一二'], t0);
   L.finishLesson(items['一'], t0);
-  assert.deepStrictEqual(L.plan(items, cfg, t0 + 1000, env).lessons, ['二三', '二']);
+  assert.deepStrictEqual(L.plan(items, cfg, t0 + 1000, env).lessons, ['二', '三']);
   // tomorrow the limits start again
   assert.strictEqual(L.plan(items, cfg, t0 + DAY, env).lessons.length, 4);
+});
+
+check('plan: components come just before their character, and are not counted', () => {
+  const items = { 好: queued('char', 1, { parts: ['c:女', 'c:子', 'i:h', 'f:ao', 't:3'] }),
+    'c:女': queued('comp', 2), 'c:子': queued('comp', 3), 'i:h': queued('sound', 4), 'f:ao': queued('sound', 5),
+    你: queued('char', 6, { parts: ['c:亻', 'c:尔'] }), 'c:亻': queued('comp', 7), 你好: queued('word', 8) };
+  const env = world(items);
+  const p = L.plan(items, { lessonLimit: 0, wordWait: false }, t0, env);
+  assert.deepStrictEqual(p.lessons, ['c:亻', '你', 'c:女', 'c:子', 'i:h', 'f:ao', '好', '你好']);
+  // a limit of 1: components and sounds don't count
+  assert.deepStrictEqual(L.plan(items, { lessonLimit: 1, wordWait: false, lessonOrder: 'chars' }, t0, env).lessons,
+    ['c:女', 'c:子', 'i:h', 'f:ao', '好', 'c:亻']);
+});
+
+check('plan: prioritized parts still come just before their own character', () => {
+  const items = { 的: queued('char', 1, { parts: ['c:白', 'i:d'] }), 是: queued('char', 2, { parts: ['c:日', 'i:sh', 'i:d'] }),
+    'c:白': queued('comp', 3, { prio: true }), 'i:d': queued('sound', 4, { prio: true }),
+    'c:日': queued('comp', 5, { prio: true }), 'i:sh': queued('sound', 6, { prio: true }) };
+  assert.deepStrictEqual(L.plan(items, { lessonLimit: 0 }, t0, world(items)).lessons,
+    ['c:白', 'i:d', '的', 'c:日', 'i:sh', '是']);
+});
+
+check('soundOf: initial, final and tone, as the sound cast has them', () => {
+  const so = s => { const x = L.soundOf(s); return [x.initial, x.final, x.tone].join(' '); };
+  assert.strictEqual(so('bàn'), 'b an 4');
+  assert.strictEqual(so('yuè'), 'y ve 4');
+  assert.strictEqual(so('zhī'), 'zh ih 1');
+  assert.strictEqual(so('nǚ'), 'n v 3');
+  assert.strictEqual(so('qù'), 'q v 4');
+  assert.strictEqual(so('ér'), ' er 2');
+  assert.strictEqual(so('de'), 'd e 5');
+  assert.strictEqual(so('xiǎo jiě'), 'x iao 3');
 });
 
 check('plan: words wait for their characters, characters for their components', () => {

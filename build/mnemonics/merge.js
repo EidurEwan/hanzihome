@@ -1,5 +1,5 @@
 /* Turns the agents' output (build/mnemonics/out/, see BRIEF.md) into the site's data:
- *   site/data/cnames.js   HZ.cnames = {component: [picture name, why]}
+ *   site/data/cnames.js   HZ.cnames = {component: [picture name, why, mnemonic]}
  *   site/data/cmnem.js    HZ.cmnem  = {character: [keyword, mnemonic, reading if not the index's]}
  *   site/data/winfo.js    HZ.winfo  = {word: [part of speech, mnemonic, examples, note]}
  * Each example is ['我|的|电脑|…', 'wǒ|de|diàn nǎo|…', 'English']: the sentence cut into
@@ -22,8 +22,12 @@ const write = (name, v, obj) => {
 };
 const skipped = [];
 
+// components: [picture name, why, mnemonic from its parts (compmn-*.json) if it has one]
 const cnames = {};
-for (const x of read('components.json') || []) if (x.c && x.name) cnames[x.c] = [x.name, x.why || ''];
+for (const f of ['components.json', 'components-2.json']) for (const x of read(f) || []) if (x.c && x.name) cnames[x.c] = [x.name, x.why || ''];
+for (const f of files.filter(f => f.startsWith('compmn-'))) for (const x of read(f) || []) {
+  if (cnames[x.c] && /\*\*[^*]+\*\*/.test(x.m || '')) cnames[x.c][2] = x.m.trim(); else skipped.push('compmn ' + x.c);
+}
 write('cnames.js', 'cnames', cnames);
 
 const cmnem = {};
@@ -39,6 +43,19 @@ for (const f of files.filter(f => f.startsWith('review-'))) for (const x of read
   if (x.pin && !pins.includes(x.pin)) { skipped.push(`review ${x.c} (${x.pin}?)`); continue; }
   cmnem[x.c] = [x.key, x.m.trim()];
   if (x.pin && x.pin !== HZ.index[x.c][2]) cmnem[x.c].push(x.pin);
+}
+// the scenes (scene-*.json): sound and components in one story, in place of the first mnemonic
+for (const f of files.filter(f => f.startsWith('scene-'))) for (const x of read(f) || []) {
+  if (cmnem[x.c] && /\*\*[^*]+\*\*/.test(x.m || '') && /\{[^}]+\}/.test(x.m)) cmnem[x.c][1] = x.m.trim();
+  else skipped.push('scene ' + x.c);
+}
+// keys fixed by hand (out/keyfix.json): the mnemonic's **key** follows
+const keyfix = read('keyfix.json') || {};
+for (const [c, key] of Object.entries(keyfix)) {
+  if (!cmnem[c]) continue;
+  const old = cmnem[c][0];
+  cmnem[c][0] = key;
+  cmnem[c][1] = cmnem[c][1].split('**' + old + '**').join('**' + key + '**');
 }
 write('cmnem.js', 'cmnem', cmnem);
 

@@ -277,7 +277,7 @@ function startOverlay() {
   if (!overlays) {
     overlays = new Overlays({
       ocr: helper, HZ: data, settings: () => settings, exclude: ownWindow, self: SELF, skip: SKIP,
-      status: () => (store && store.status) || {}, log: debug,
+      status: () => (store && store.status) || {}, wstatus: () => (store && store.wstatus) || {}, log: debug,
     });
   }
   overlays.start().catch(e => console.error('overlay:', e.message));
@@ -307,6 +307,18 @@ function learnWord(w, pin, gloss, sentence) {
   return win.webContents.executeJavaScript(`learnFromReader(${a})`, true);
 }
 
+/* mark a word Learning or Learned (or neither) in the site's store, as its Words page
+   does: Learned puts it in the reviews at Journeyman. Hands back every status. */
+function markWord(w, s) {
+  return win.webContents.executeJavaScript(`(async () => {
+    const w = ${JSON.stringify(w)};
+    await need.words();
+    Store.setWStatus(w, ${JSON.stringify(s || null)}, wordInfo(w));
+    applyStateChange(w);
+    return { status: Store.load().status, wstatus: Store.load().wstatus };
+  })()`, true);
+}
+
 function openChar(c) {
   showWindow();
   win.webContents.executeJavaScript(`go('/character/' + encodeURIComponent(${JSON.stringify(c)}))`, true)
@@ -319,6 +331,7 @@ function startHover() {
       key: () => settings.hoverKey, overlays: () => overlays, ocr: helper, HZ: data,
       status: () => (store && store.status) || {}, mark: markChar, open: openChar, log: debug,
       items: () => (store && store.items) || {}, learn: learnWord,
+      wstatus: () => (store && store.wstatus) || {}, markWord,
       direct: () => settings.directText !== false, skip: SKIP,
       paused: async () => settings.pause.includes((await helper().request('foreground')).process),
     });

@@ -2,8 +2,9 @@
  * on screen. The main process (desktop/src/hover.js) sends the word's glossary
  * entry, as textToStory made it, and the status of each of its characters; this
  * draws it, reports its size so the window can fit it, and passes on clicks:
- * a status button marks the character, the character itself opens its page, and
- * "Add to lessons" puts the word in the site's lesson queue (site/study.js). */
+ * a status button marks the character (or, in "The word" row, the word itself:
+ * Learning or Learned, as the site's Words page does), the character itself opens
+ * its page, and "Add to lessons" puts the word in the site's lesson queue. */
 
 'use strict';
 
@@ -12,7 +13,7 @@ const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-function render({ entry, status, known, learn }) {
+function render({ entry, status, known, learn, wstate }) {
   const [w, p, d, parts, extra] = entry;
   const alt = (extra && extra.alt) || [];
   const han = [...w].filter(isHan);
@@ -39,12 +40,17 @@ function render({ entry, status, known, learn }) {
     ${!learn ? '' : `<p class="wp-learn">${learn.add
       ? '<button type="button" data-learn>＋ Add to lessons</button>'
       : `<span>✓ ${esc(learn.stage)}</span>`}</p>`}
+    ${multi && wstate !== undefined ? `<div class="wp-word"><span class="wp-wl">The word</span><span class="seg3">${
+      [['', 'Not known', 'none'], ['learning', 'Learning', 'learning'], ['learned', 'Learned', 'learned']].map(([v, label, cls]) =>
+        `<button type="button" data-ws="${v}"${(wstate || '') === v ? ` class="on ${cls}"` : ''}>${label}</button>`).join('')}</span></div>` : ''}
     ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
   const r = pop.getBoundingClientRect();
   window.popup.size(Math.ceil(r.width) + 2, Math.ceil(r.height) + 2);   // + the 1px border
 }
 
 pop.addEventListener('click', e => {
+  const ws = e.target.closest('button[data-ws]');
+  if (ws) { window.popup.markWord(ws.dataset.ws || null); return; }
   const b = e.target.closest('button[data-s]');
   if (b) { window.popup.mark(b.dataset.c, b.dataset.s || null); return; }
   if (e.target.closest('button[data-learn]')) { window.popup.learn(); return; }

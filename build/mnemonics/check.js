@@ -17,7 +17,22 @@ for (const name of process.argv.slice(2)) {
   inp.forEach((x, i) => {
     const o = out[i] || {}, k = x.w || x.c, ok = o.w || o.c;
     if (ok !== k) return say(`#${i}: ${ok} where ${k} should be`);
-    if (n === 'components') {
+    if (n.startsWith('scene')) {
+      const m = o.m || '', words = m.split(/\s+/).length;
+      if (words < 35 || words > 95) say(`${k}: ${words} words`);
+      for (const sd of x.sound) if (!m.includes('{' + sd.replace(/^\S+ /, '') + '}')) say(`${k}: no {${sd.replace(/^\S+ /, '')}}`);
+      if ((m.match(/\*\*[^*]+\*\*/g) || []).length < 2) say(`${k}: the meaning should be in **…** twice`);
+      for (const [g, nm] of x.parts) if (!nm.toLowerCase().split(/\s+/).every(wd => m.toLowerCase().includes(wd.length > 4 ? wd.slice(0, -1) : wd))) say(`${k}: doesn't use ${g} "${nm}"`);
+      return;
+    }
+    if (n.startsWith('compmn')) {
+      const m = o.m || '';
+      if (!/\*\*[^*]+\*\*/.test(m)) say(`${k}: no **name**`);
+      for (const [g, nm] of x.parts) if (!m.toLowerCase().includes(nm.toLowerCase().split(/\s+/).pop().slice(0, 4))) say(`${k}: doesn't use ${g} "${nm}"`);
+      if (m.split(/\s+/).length > 45) say(`${k}: too long`);
+      return;
+    }
+    if (n.startsWith('components')) {
       if (!o.name || o.name.split(/\s+/).length > 3) say(`${k}: name "${o.name}"`);
       if (!o.why) say(`${k}: no why`);
     } else if (n.startsWith('chars')) {
