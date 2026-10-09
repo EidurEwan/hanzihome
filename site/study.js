@@ -819,14 +819,7 @@ async function pageLessons() {
     await fillPath();
     await fillParts();
     const cfg = Store.cfg(), p = Store.plan();
-    const batch = p.lessons.slice(0, cfg.batch);
-    // a batch that ends in parts goes on to what they are parts of (a few more at most)
-    const d = Store.load();
-    while (batch.length < p.lessons.length && batch.length < cfg.batch + 4) {
-      const nx = p.lessons[batch.length];
-      if (!Learn.partsOf(nx, d.items[nx]).some(x => batch.includes(x))) break;
-      batch.push(nx);
-    }
+    const batch = nextBatch([]);
     if (!batch.length) {
       const nLocked = Object.keys(p.locked).length;
       const why = p.vacation ? '<p class="empty">Lessons are paused while you\'re on vacation.</p>'
@@ -848,7 +841,12 @@ async function pageLessons() {
     lessonState = { batch, i: 0, tab: 0, done: [], intro: [], grade: {} };
   }
   const s = lessonState;
-  if (s.i >= s.batch.length) return s.done.length ? lessonQuiz(s) : lessonsDone();
+  if (s.i >= s.batch.length) {
+    // the next batch, if there are lessons left today; the quiz once there are none
+    const next = nextBatch(s.done);
+    if (next.length) Object.assign(s, { batch: next, i: 0, tab: 0, round: (s.round || 1) + 1 });
+    else return s.done.length ? lessonQuiz(s) : lessonsDone();
+  }
   const k = s.batch[s.i], it = Store.item(k);
   if (!it) { s.i++; return pageLessons(); }
   // a part (component or sound) has no composition: its lesson opens on the mnemonic
@@ -928,8 +926,10 @@ async function pageLessons() {
       <button class="lx-arrow next" ${quiz ? 'disabled' : ''} aria-label="Next">›</button>
     </div>
     <p class="lx-keys small muted">${quiz ? 'Enter checks your answer' : 'Enter or → for the next step · ← back'}</p>
-    ${batchStrip(s)}`;
+    ${batchStrip(s)}
+    ${quizNow(s)}`;
 
+  wireQuizNow(s);
   const go2 = t => { s.tab = Math.max(first, Math.min(3, t)); pageLessons(); };
   app.querySelectorAll('.lx-tabs button').forEach(b => b.addEventListener('click', () => go2(+b.dataset.t)));
   app.querySelector('.lx-arrow.prev').addEventListener('click', () => go2(s.tab - 1));
@@ -995,6 +995,30 @@ async function pageLessons() {
   paintRail();
 }
 
+/* The next batch of lessons, leaving out those done in this session: up to the batch
+   size in characters and words, each with the components and sounds that come just
+   before it (they don't count). The lessons go on batch after batch; the quiz comes
+   once none are left today (lessonQuiz). */
+function nextBatch(done) {
+  const cfg = Store.cfg(), d = Store.load(), out = [];
+  let n = 0;
+  for (const k of Store.plan().lessons) {
+    if (done.includes(k) || !d.items[k]) continue;
+    if (n >= cfg.batch) break;                     // (the next character's parts start a new batch)
+    out.push(k);
+    if (d.items[k].kind !== 'comp' && d.items[k].kind !== 'sound') n++;
+  }
+  return out;
+}
+
+/* stop early: the quiz over the lessons done so far (the rest wait for another time) */
+const quizNow = s => s.done.length ? `<p class="lx-quiznow"><button class="btn quiet small" id="lx-quiznow"
+  title="The lessons not done yet stay in the queue">Stop here and take the quiz (${s.done.length} done)</button></p>` : '';
+function wireQuizNow(s) {
+  const b = document.getElementById('lx-quiznow');
+  if (b) b.addEventListener('click', () => lessonQuiz(s));
+}
+
 /* the batch, under the lesson: each item, the one open, the ones done */
 function batchStrip(s, goal) {
   return `<div class="lx-batch">${s.batch.map((b, i) => `<span class="${Store.item(b) ? Store.item(b).kind : ''}
@@ -1048,7 +1072,9 @@ async function lessonIntro(goal, k, s) {
       <p class="row intro-go"><button class="btn quiet" id="lx-intro-skip">⏭ Skip</button>
         <button class="btn" id="lx-intro-go">Learn</button></p>
     </div></div>
-    ${batchStrip(s, goal)}`;
+    ${batchStrip(s, goal)}
+    ${quizNow(s)}`;
+  wireQuizNow(s);
   const go = document.getElementById('lx-intro-go');
   go.focus();
   go.addEventListener('click', () => { s.intro.push(goal); pageLessons(); });
@@ -1069,7 +1095,7 @@ async function lessonIntro(goal, k, s) {
   paintRail();
 }
 
-/* After a batch of lessons, a quiz over all of them, mixed, in the reviews' page:
+/* After the lessons, a quiz over all of them, mixed, in the reviews' page:
    recall a few minutes on, not with the lesson still on screen. Its first answers,
    with the lesson's own check, rate each item's first review (Learn.finishLesson).
    Leaving it half-way leaves the rest waiting for their lessons. */
@@ -1883,7 +1909,7 @@ function paintStudySettings() {
     <h2>Lessons and reviews <span class="st-saved" id="st-saved" hidden>Saved</span></h2>
     <p class="muted small">HanziHero's settings for lessons and reviews. Changes are saved as you make them,
       and sync with the rest of your progress.</p>
-    ${field('Lesson batch size', range('batch', 1, 20), 'How many lessons you go through before their quiz.')}
+    ${field('Lesson batch size', range('batch', 1, 20), 'How many characters and words a batch holds; the components and sounds they need come with them. Batches follow one another until today\'s lessons are done, then all of them are quizzed together.')}
     ${field('Daily lesson limit', sel('lessonLimit', limits, 'int'), c.lessonLimit
       ? `You'll have about <b>${c.lessonLimit * 10} reviews</b> a day once they settle in.`
       : 'Every lesson in your queue is ready as soon as it unlocks.')}

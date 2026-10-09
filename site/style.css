@@ -1601,3 +1601,4 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
 .st-days i.l, .st-key.l { background: var(--purple); }
 .st-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; }
 .st-low { color: var(--accent); font-weight: 700; }
+.lx-quiznow { text-align: center; margin: 4px 0 0; }

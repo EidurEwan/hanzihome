@@ -158,9 +158,9 @@ check('plan: components come just before their character, and are not counted', 
   const env = world(items);
   const p = L.plan(items, { lessonLimit: 0, wordWait: false }, t0, env);
   assert.deepStrictEqual(p.lessons, ['c:亻', '你', 'c:女', 'c:子', 'i:h', 'f:ao', '好', '你好']);
-  // a limit of 1: components and sounds don't count
+  // a limit of 1: components and sounds don't count, but 你's 亻 waits with 你 for another day
   assert.deepStrictEqual(L.plan(items, { lessonLimit: 1, wordWait: false, lessonOrder: 'chars' }, t0, env).lessons,
-    ['c:女', 'c:子', 'i:h', 'f:ao', '好', 'c:亻']);
+    ['c:女', 'c:子', 'i:h', 'f:ao', '好']);
 });
 
 check('plan: prioritized parts still come just before their own character', () => {

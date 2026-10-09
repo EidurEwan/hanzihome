@@ -398,17 +398,25 @@
 
     let left = cfg.lessonLimit ? Math.max(0, cfg.lessonLimit - out.lessonsToday) : Infinity;
     let words = cfg.lessonLimit ? Math.max(0, Math.min(cfg.wordLimit, cfg.lessonLimit) - out.wordsToday) : Infinity;
+    // characters and words, within the limits...
+    const offered = new Set();
     for (const k of out.waiting) {
-      if (out.locked[k]) continue;
+      if (out.locked[k] || isPart.has(k) || it(k).kind === 'comp' || it(k).kind === 'sound') continue;
       const word = it(k).kind === 'word';
-      // a component or a sound is a small lesson on the way to a character: it doesn't count
-      if (it(k).kind === 'comp' || it(k).kind === 'sound') { out.lessons.push(k); continue; }
-      if (it(k).prio && !cfg.prioRespect) { out.lessons.push(k); continue; }
+      if (it(k).prio && !cfg.prioRespect) { offered.add(k); continue; }
       if (left <= 0 || (word && words <= 0)) continue;
-      out.lessons.push(k);
+      offered.add(k);
       left--;
       if (word) words--;
     }
+    // ...and the components and sounds of those (small lessons on the way to a character:
+    // they don't count), or of nothing waiting; not the parts of a character held back
+    // for another day
+    const needers = {};
+    for (const k of queued) for (const p of partsOf(k, it(k))) (needers[p] = needers[p] || []).push(k);
+    out.lessons = out.waiting.filter(k => offered.has(k)
+      || (!out.locked[k] && (it(k).kind === 'comp' || it(k).kind === 'sound')
+        && (!needers[k] || needers[k].some(n => offered.has(n)))));
 
     out.due = keys.filter(k => isDue(it(k), now));
     out.reviews = reviewOrder(out.due, items, cfg.reviewOrder, now, rnd);
