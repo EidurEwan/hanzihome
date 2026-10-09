@@ -112,9 +112,10 @@ its meanings and pronunciation, and examples, then asks you to type its pinyin (
 
 **A learning path** (Settings, or the Study page when nothing is queued) fills the lessons each
 day with the next characters of the most common or of HSK 1 to 6, as many a day as you choose,
-each with its new components and sounds. **After each batch of lessons comes a quiz** over all of
-them, mixed, in the reviews' page: its first answers (with each lesson's own check) rate the first
-review. **A missed review opens the mnemonic**, unless it would give away a question still to come,
+each with its new components and sounds. **When today's lessons are done comes a quiz** over all of
+them, mixed, in the reviews' page (batch after batch first: a batch holds that many characters and
+words, with the components and sounds they need); its first answers (with each lesson's own check)
+rate the first review. "Stop here and take the quiz" ends early and leaves the rest queued. **A missed review opens the mnemonic**, unless it would give away a question still to come,
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
 lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
 what you mix them up with, to learn again from a lesson, give a mnemonic of your own, or rest for
