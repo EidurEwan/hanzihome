@@ -238,6 +238,26 @@ page at a time, remembering your place (`site/books.js`, kept in the browser's I
 live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)
 sends any web page you are on, or the part you selected, to the reader; when context can't settle a meaning, the popup names the other one too.
 
+**Translate** (`#/translate`, in the menu) — English to Chinese or Chinese to English, the
+direction found by itself or chosen. The Chinese side, whichever it is, comes back as word
+cards: each word with its pinyin and the meaning it has in this sentence, coloured by how well
+you know it, opening its word or character page. Then the sentence's structure in one line and
+its grammar, each point with the words that show it and why the Chinese is built that way (time
+and place before the verb, 了 after the verb or at the end, measure words, 把, 是…的, 因为…所以 …).
+**Add the new words to lessons** puts the words you don't know in your lessons, with the sentence;
+**Open in the reader** reads it there.
+
+With an [Anthropic API key](https://console.anthropic.com/settings/keys) (Settings → Translator),
+Claude (Opus 5.5) translates and explains: the browser sends the text straight to Anthropic's
+API, a few US cents a translation, billed to your account. A declined request is retried on the
+model Anthropic recommends (`fallbacks: "default"`). The key is kept in that browser only: not
+in the store, so never synced or exported. The SDK, `@anthropic-ai/sdk` bundled for the browser
+(`site/vendor/anthropic-sdk.js`, Apache-2.0), loads only when a translation is sent. Without a
+key, or offline, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
+and its grammar explained by pattern (`site/grammar.js`, checked by `node test/grammar.js`);
+English gets the likeliest Chinese words for each word from the dictionary, which is not a
+translation, and the page says so.
+
 **Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
 productive components, productive characters, the full frequency list, plus your own
 custom lists, notes and search history.
@@ -278,6 +298,9 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
+site/translate.js       the translator: Claude with your API key, or offline (see "Translate")
+site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
+test/grammar.js         checks grammar.js
 test/accuracy.js        scores textstory.js against the hand-glossed stories
 sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet
 sync/mock-server.js     runs Code.gs locally for testing, no Google account needed

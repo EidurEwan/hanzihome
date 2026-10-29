@@ -2504,6 +2504,7 @@ function pageSettings() {
           answers work the same either way.</p></div>
     </section>
     <section class="card" id="study-card"></section>
+    <section class="card" id="translate-card"></section>
     ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
     <section class="card">
       <h2>Learning goal</h2>
@@ -2586,6 +2587,7 @@ function pageSettings() {
   wireSyncCard();
   if (offlineCan()) paintOffline();
   paintStudySettings();
+  paintTranslateSettings();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
 }
@@ -2916,6 +2918,7 @@ function render(keepScroll) {
   if (seg[0] === 'word') return pageWord(seg.slice(1).join('/'));
   if (seg[0] === 'words') return pageWords(seg[1], seg[2], n(3));
   if (seg[0] === 'study') return pageStudy();
+  if (seg[0] === 'translate') return pageTranslate();
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'stats') return pageStats();
   if (seg[0] === 'reviews') return pageReviews();
