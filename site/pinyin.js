@@ -1,7 +1,7 @@
 /* pinyin.js — Chinese characters from pinyin, offline, as a simple input method does.
  *
  * The translator (site/translate.js) takes pinyin as well as English and characters.
- * With an API key Claude works out the characters from context; without one, this
+ * With an API key Gemini works out the characters from context; without one, this
  * does: the pinyin is cut into syllables, with tone numbers (ni3hao3), tone marks
  * (nǐ hǎo) or no tones at all (ni hao), and every way of grouping the syllables into
  * dictionary words is scored, the likeliest winning, as the reader's segmenter

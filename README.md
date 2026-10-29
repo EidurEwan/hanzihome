@@ -255,13 +255,18 @@ and place before the verb, 了 after the verb or at the end, measure words, 把,
 **Add the new words to lessons** puts the words you don't know in your lessons, with the sentence;
 **Open in the reader** reads it there.
 
-With an [Anthropic API key](https://console.anthropic.com/settings/keys) (Settings → Translator),
-Claude (Opus 5.5) translates and explains: the browser sends the text straight to Anthropic's
-API, a few US cents a translation, billed to your account. A declined request is retried on the
-model Anthropic recommends (`fallbacks: "default"`). The key is kept in that browser only: not
-in the store, so never synced or exported. The SDK, `@anthropic-ai/sdk` bundled for the browser
-(`site/vendor/anthropic-sdk.js`, Apache-2.0), loads only when a translation is sent. Without a
-key, or offline, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
+With a [Google AI Studio key](https://aistudio.google.com/app/apikey) (Settings → Translator;
+a free one works), Google's Gemini translates the whole text, works out the characters for
+pinyin, and explains the grammar: the browser sends the text straight to the Gemini API, asking
+for JSON held to a schema. The key is kept in that browser only: not in the store, so never
+synced or exported. The free tier limits requests per minute and per day, model by model, so the
+translator asks the key once a day which models it may use (the Flash ones first, newest first),
+and when one model's limit is reached it tries the next. Only when every model has reached its
+limit, or there is no connection, does it read the text offline, and it says so; a model whose
+day is used up is skipped until the quota resets at midnight Pacific time. Any other problem (a
+key not accepted, Gemini busy) is shown with a button to read the text offline anyway. On the
+free tier Google may use what you send to improve its products. Without a key, or past the
+limit, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
 and its grammar explained by pattern (`site/grammar.js`, checked by `node test/grammar.js`);
 pinyin is turned into characters first, as a simple input method does (`site/pinyin.js`,
 checked by `node test/pinyin.js`): every way of grouping the syllables into words is scored by
@@ -312,7 +317,7 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
-site/translate.js       the translator: Claude with your API key, or offline (see "Translate")
+site/translate.js       the translator: Gemini with your Google AI Studio key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
 test/pinyin.js          checks pinyin.js
