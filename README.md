@@ -492,8 +492,17 @@ Every page is one centred column, and the menu is a drawer at every size.
 | Window | Layout | Cards per row |
 | --- | --- | --- |
 | 901 px and up | the column at its widest; home's progress cards two by two | up to 15 |
-| 601–900 px | tighter gutters | up to 10 |
-| 600 px and under | phone spacing, home's cards one under another, the logo without its name | as many as fit (6 on a 375 px phone) |
+| 601–900 px | tighter gutters | as many as fit (14 on an iPad mini, 15 on an 11-inch iPad) |
+| 600 px and under | phone spacing, home's cards one under another, the logo without its name | as many as fit (5 on an iPhone SE, 6 on an iPhone 15, 7 on a Pro Max) |
+
+**On iPhone and iPad.** Text fields are 16 px, so Safari doesn't zoom the page into them;
+everything you tap is at least 44 px on a touch screen (36–40 for the small controls inside
+rows and tables); a tap doesn't leave a character card pressed flat; the notch, the rounded
+corners and the home bar are kept clear; the answer boxes turn off the keyboard's
+autocorrect, so `ren4shi` stays as typed; and a tap on a word in the reader opens its card.
+Added to the home screen (Share → Add to Home Screen), it opens full screen as HanziHome.
+These were checked with Chromium's iPhone and iPad profiles (sizes, touch, pixel density),
+not in Safari itself.
 
 Tables scroll sideways inside their card. On touch screens a tap opens a card's status menu
 and a second tap opens the character.

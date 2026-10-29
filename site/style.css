@@ -2042,7 +2042,6 @@ body.nav-open { overflow: hidden; }
 .home-grid .card { margin: 0; padding-inline: 20px; }
 
 @media (max-width: 900px) {
-  :root { --cols: 10; }
   #app { padding: 20px 16px 56px; }
   .topbar .search { flex: 1; width: auto; max-width: 460px; }
 }
@@ -2054,4 +2053,75 @@ body.nav-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sidebar, .sidebar.open { transition: none; }
+}
+
+
+/* =====================================================================
+   Phones and tablets: iPhone and iPad
+   ---------------------------------------------------------------------
+   Fields at 16px, or Safari zooms the page into them; controls you tap
+   at least 44px, Apple's smallest comfortable target; nothing kept in
+   its hover look after a tap; and the notch, the rounded corners and
+   the home bar kept clear (index.html asks for the whole screen with
+   viewport-fit=cover).
+   ===================================================================== */
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
+a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-highlight-color: transparent; }
+/* (:is takes its most specific part's weight, so this beats the fields' own font rules, ids included) */
+:is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), select, textarea, #reader-text, #note) { font-size: max(16px, 1em); }
+.shell { min-height: calc(100dvh - var(--topbar-h)); }
+
+/* the notch and the home bar */
+:root { --gutter: 24px; }
+@media (max-width: 900px) { :root { --gutter: 16px; } }
+@media (max-width: 600px) { :root { --gutter: 12px; } }
+#app { padding-left: max(var(--gutter), env(safe-area-inset-left)); padding-right: max(var(--gutter), env(safe-area-inset-right));
+  padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+.topbar { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+.sidebar { padding-top: env(safe-area-inset-top); padding-left: env(safe-area-inset-left); padding-bottom: env(safe-area-inset-bottom); }
+
+/* fingers: every control at least 44px (smaller ones that sit inside rows and tables, 36 to 40) */
+@media (pointer: coarse) {
+  .btn, .filters button, .filters a, .tabs a, .pager a, .pager span, .more, .lx-tabs button, .menu-btn { min-height: 44px; }
+  .btn.small, .next-row .btn, .selbar .btn, .lx-extra .btn, .cb-top .btn, .rv-synform .btn, .dk-recent .btn,
+  .sync-backups .btn, .books .btn, .st-try, .lx-say, .wp-learn button, .filters.tight button { min-height: 38px; }
+  .seg button { min-height: 40px; }
+  .seg3 button { min-height: 36px; padding: 6px 10px; }
+  .wordtable .seg3 button { min-height: 36px; }
+  .wordtable .btn.small { min-width: 40px; }
+  .rv-tool { height: 50px; }
+  .rail-pager button { min-width: 40px; min-height: 40px; font-size: 22px; }
+  .lx-q button { min-width: 32px; min-height: 32px; }
+  .sidebar .nav-rows a { padding-block: 12px; }
+  .dd-pop button { padding-block: 11px; }
+  #tile-menu button { height: 36px; width: 124px; font-size: 12.5px; }
+  .seg3 { gap: 6px; }
+  input[type=checkbox]:not(.st-toggle input), input[type=radio] { width: 22px; height: 22px; }
+  summary { padding-block: 10px; }
+}
+
+/* A tap leaves :hover on (Safari keeps it until the next tap elsewhere): a character
+   card would stay pressed flat. On touch screens they press while touched (:active)
+   and when their menu is open (.hot), and stand up again after. */
+@media (hover: none) {
+  .tile:hover:not(.hot) { transform: none; background: var(--panel); box-shadow: 0 var(--tile-depth) 0 var(--tile-edge); }
+  .tile.learned:hover:not(.hot) { background: var(--green-soft); box-shadow: 0 var(--tile-depth) 0 var(--green-edge); }
+  .tile.learning:hover:not(.hot) { background: var(--blue-soft); box-shadow: 0 var(--tile-depth) 0 var(--blue-edge); }
+  .tile:active { transform: translateY(var(--tile-depth)); box-shadow: 0 0 0 transparent; }
+  .story:hover { transform: none; box-shadow: var(--shadow); }
+  .btn:hover { filter: none; }
+}
+
+/* a phone held sideways: little height, so the study band gives the answer room */
+@media (max-height: 500px) and (orientation: landscape) {
+  .lx-band { padding: 10px 14px 12px; margin-bottom: 12px; }
+  .lx-glyph { font-size: 64px; }
+  .lx-mean { font-size: 22px; }
+}
+@media (max-width: 600px) {
+  .lx-band { padding: 14px 12px 18px; border-radius: 18px; }
+  .rv-prompt { font-size: 21px; }
+  .rv-input { font-size: 22px; padding: 12px; }
+  .rv-tools { gap: 6px; }
 }

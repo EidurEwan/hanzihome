@@ -1675,7 +1675,7 @@ async function pageCharacter(ch) {
 
     <h2 class="sec-h">Your Note</h2>
     <div class="decomp-box pad">
-      <textarea id="note" rows="3" style="width:100%;font:inherit;padding:10px;
+      <textarea id="note" rows="3" style="width:100%;font-family:inherit;padding:10px;
         border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"
         placeholder="A mnemonic, an example sentence, anything…">${esc(store.notes[ch] || '')}</textarea>
       <p class="small muted" id="note-state">Saved automatically.</p>
@@ -2090,6 +2090,7 @@ function paintStory() {
   pane.querySelectorAll('.w').forEach(el => {
     el.addEventListener('mouseenter', () => showWordPop(el));
     el.addEventListener('mouseleave', () => { if (!isTouch()) hideWordPop(); });
+    el.addEventListener('click', () => { if (isTouch()) showWordPop(el); });   // a tap, on a phone or iPad
   });
   paintStatsCard();
   paintReadList();
@@ -2449,7 +2450,7 @@ function pageLists() {
         || '<span class="empty">Empty — add characters from their page.</span>'}</div>
     </section>`).join('')}
     <section class="card"><div class="row">
-      <input id="newlist" placeholder="New list name" style="flex:1;font:inherit;padding:8px 12px;
+      <input id="newlist" placeholder="New list name" style="flex:1;font-family:inherit;padding:8px 12px;
         border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">
       <button class="btn" id="mklist">Create list</button></div></section>`);
   document.getElementById('mklist').addEventListener('click', () => {
@@ -2508,7 +2509,7 @@ function pageSettings() {
       <h2>Learning goal</h2>
       <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
       <div class="row"><input id="goal" type="number" min="100" max="9933" value="${d.goal}"
-        style="width:120px;font:inherit;padding:8px 12px;border:1px solid var(--line);
+        style="width:120px;font-family:inherit;padding:8px 12px;border:1px solid var(--line);
         border-radius:8px;background:var(--bg);color:var(--ink)">
         <button class="btn" id="savegoal">Save</button></div>
     </section>
@@ -2526,7 +2527,7 @@ function pageSettings() {
         <button class="btn quiet" id="import-file">Import a file…</button>
         <input type="file" id="import-pick" accept=".json,application/json" hidden>
         <button class="btn quiet" id="reset">Reset everything</button></div>
-      <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font:inherit;
+      <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font-family:inherit;
         padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
     </section>
     <section class="card">
@@ -2900,6 +2901,10 @@ function render(keepScroll) {
   const path = currentPath();
   markNav(path);
   setNav(false);
+  // the floating menus belong to the page they were opened on (on a phone or iPad
+  // nothing else closes them when you go back)
+  if (_wpEl) _wpEl.hidden = true;
+  if (_menuEl) { _menuEl.hidden = true; if (_menuAnchor) _menuAnchor.classList.remove('hot'); _menuAnchor = null; }
   if (!keepScroll) window.scrollTo(0, 0);
   const seg = path.split('/').filter(Boolean);
   const n = i => parseInt(seg[i], 10) || 1;
@@ -2948,6 +2953,10 @@ document.getElementById('sidebar-toggle').addEventListener('click', e => {
   setNav(!document.getElementById('sidebar').classList.contains('open'));
 });
 document.getElementById('sidebar').addEventListener('click', e => { if (e.target.closest('a')) setNav(false); });
+
+/* Safari on iPhone and iPad only shows :active (a button sinking as it is pressed)
+   when the page listens for touches */
+document.addEventListener('touchstart', () => {}, { passive: true });
 
 /* one outside-tap handler for everything that floats */
 document.addEventListener('pointerdown', e => {
