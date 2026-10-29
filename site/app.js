@@ -924,10 +924,12 @@ function markNav(path) {
   const due = Store.due().length;
   const b = document.getElementById('due-badge');
   b.hidden = !due; b.textContent = due;
-  const learned = Store.chars('learned').length;
-  document.getElementById('side-who').textContent =
-    learned ? learned + (learned === 1 ? ' character learned' : ' characters learned')
-            : 'Local profile';
+  // the player card at the top of the drawer, as Boxes has it
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('pc-streak', num(streak().weeks));
+  set('pc-learned', num(Store.chars('learned').length));
+  set('pc-words', num(Store.words('learned').length));
+  set('pc-title', due ? `${due} review${due === 1 ? '' : 's'} waiting` : 'Your progress');
 }
 
 /* ============================ search ============================ */
@@ -1166,9 +1168,11 @@ function railHtml() {
   </section>`;
 }
 
-/* railLast: on one column, keep the rail under the page instead of above it */
-function withRail(main, railLast) {
-  return `<div class="dash${railLast ? ' rail-last' : ''}"><div>${main}</div><div class="rail">${railHtml()}</div></div>`;
+/* A page's column. The progress cards (the rail) used to sit beside every page; in
+   the one-column layout they are the home page's (pageDashboard), and the drawer's
+   player card carries the main numbers everywhere. */
+function withRail(main) {
+  return `<div class="dash"><div>${main}</div></div>`;
 }
 
 async function paintRail() {
@@ -1391,9 +1395,14 @@ async function pageDashboard() {
   const learned = Store.chars('learned'), learning = Store.chars('learning');
   const st = streak();
   const tracked = byRank().slice(0, d.goal);
-  const dueN = Store.due().length;
 
-  app.innerHTML = `<h1 class="page-title">Dashboard</h1>` + withRail(`
+  // Today first, as Boxes' home is today's boxes: what there is to study now
+  const p = Store.plan();
+  const hub = (cls, name, n) => `<a class="lx-tile ${cls}${n ? '' : ' idle'}" href="#/${cls}">
+    <b>${name}</b><span>${n}</span></a>`;
+  app.innerHTML = `<h1 class="page-title">Today</h1>
+    <div class="home">
+    <div class="lx-hub">${hub('lessons', 'Lessons', p.lessons.length)}${hub('reviews', 'Reviews', p.reviewsLeft)}</div>
     <section class="card streak">
       <div class="big"><b>${st.weeks}</b><u>Week<br>streak
         <em>Best ${st.best}</em></u></div>
@@ -1408,15 +1417,14 @@ async function pageDashboard() {
             || '<span class="muted small">Nothing marked yet</span>'}
           ${learned.length > 8 ? `<span class="plusn">+${learned.length - 8}</span>` : ''}</div>
       </div>
-      <div style="margin-left:auto"><a class="btn" href="#/study">
-        ${dueN ? `Reviews (${dueN})` : Store.lessons().length ? `Lessons (${Store.lessons().length})` : 'Study'}</a></div>
     </section>
+    <div class="home-grid">${railHtml()}</div>
     <section class="card">
       <h2 class="caps">Most common characters</h2>
       <p class="muted small">Keep track of the most popular characters by updating them
          with what you currently know. Open a character to mark it.</p>
       ${tileBoard('track', tracked)}
-    </section>`);
+    </section></div>`;
   wireTileBoard('track', tracked);
   paintRail();
 }
@@ -1477,7 +1485,7 @@ async function makeWriter(id, ch, size, opts) {
   const v = n => css.getPropertyValue(n).trim();
   return HanziWriter.create(id, ch, Object.assign({
     width: size, height: size, padding: 6,
-    strokeColor: v('--ink'), outlineColor: v('--line-2'), radicalColor: v('--accent'),
+    strokeColor: v('--ink'), outlineColor: v('--line-2'), radicalColor: v('--radical'),
     drawingColor: v('--blue'), highlightColor: v('--blue'),
     strokeAnimationSpeed: 1.1, delayBetweenStrokes: 220, drawingWidth: 6,
     charDataLoader: (c, done) => done({ strokes: d[0], medians: d[1], radStrokes: d[2] || [] }),
@@ -1544,7 +1552,7 @@ async function pageCharacter(ch) {
          data-g="${title}" data-from="${initial}">Show ${list.length - initial} more</button></p>` : ''}</div>`;
   };
 
-  app.innerHTML = `<p class="crumb"><a href="#/dashboard">Dashboard</a> / <span class="han">${esc(ch)}</span></p>`
+  app.innerHTML = `<p class="crumb"><a href="#/dashboard">Home</a> / <span class="han">${esc(ch)}</span></p>`
   + withRail(`
     <div class="chartab han">${zhOne(ch)}</div>
     <section class="card chartop">
@@ -1653,7 +1661,7 @@ async function pageCharacter(ch) {
 
     <h2 class="sec-h">Your Note</h2>
     <div class="decomp-box pad">
-      <textarea id="note" rows="3" style="width:100%;font:inherit;padding:10px;
+      <textarea id="note" rows="3" style="width:100%;font-family:inherit;padding:10px;
         border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"
         placeholder="A mnemonic, an example sentence, anything…">${esc(store.notes[ch] || '')}</textarea>
       <p class="small muted" id="note-state">Saved automatically.</p>
@@ -2068,6 +2076,7 @@ function paintStory() {
   pane.querySelectorAll('.w').forEach(el => {
     el.addEventListener('mouseenter', () => showWordPop(el));
     el.addEventListener('mouseleave', () => { if (!isTouch()) hideWordPop(); });
+    el.addEventListener('click', () => { if (isTouch()) showWordPop(el); });   // a tap, on a phone or iPad
   });
   paintStatsCard();
   paintReadList();
@@ -2427,7 +2436,7 @@ function pageLists() {
         || '<span class="empty">Empty — add characters from their page.</span>'}</div>
     </section>`).join('')}
     <section class="card"><div class="row">
-      <input id="newlist" placeholder="New list name" style="flex:1;font:inherit;padding:8px 12px;
+      <input id="newlist" placeholder="New list name" style="flex:1;font-family:inherit;padding:8px 12px;
         border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)">
       <button class="btn" id="mklist">Create list</button></div></section>`);
   document.getElementById('mklist').addEventListener('click', () => {
@@ -2481,12 +2490,13 @@ function pageSettings() {
           answers work the same either way.</p></div>
     </section>
     <section class="card" id="study-card"></section>
+    <section class="card" id="translate-card"></section>
     ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
     <section class="card">
       <h2>Learning goal</h2>
       <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
       <div class="row"><input id="goal" type="number" min="100" max="9933" value="${d.goal}"
-        style="width:120px;font:inherit;padding:8px 12px;border:1px solid var(--line);
+        style="width:120px;font-family:inherit;padding:8px 12px;border:1px solid var(--line);
         border-radius:8px;background:var(--bg);color:var(--ink)">
         <button class="btn" id="savegoal">Save</button></div>
     </section>
@@ -2504,7 +2514,7 @@ function pageSettings() {
         <button class="btn quiet" id="import-file">Import a file…</button>
         <input type="file" id="import-pick" accept=".json,application/json" hidden>
         <button class="btn quiet" id="reset">Reset everything</button></div>
-      <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font:inherit;
+      <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font-family:inherit;
         padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
     </section>
     <section class="card">
@@ -2563,6 +2573,7 @@ function pageSettings() {
   wireSyncCard();
   if (offlineCan()) paintOffline();
   paintStudySettings();
+  paintTranslateSettings();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
 }
@@ -2878,6 +2889,10 @@ function render(keepScroll) {
   const path = currentPath();
   markNav(path);
   setNav(false);
+  // the floating menus belong to the page they were opened on (on a phone or iPad
+  // nothing else closes them when you go back)
+  if (_wpEl) _wpEl.hidden = true;
+  if (_menuEl) { _menuEl.hidden = true; if (_menuAnchor) _menuAnchor.classList.remove('hot'); _menuAnchor = null; }
   if (!keepScroll) window.scrollTo(0, 0);
   const seg = path.split('/').filter(Boolean);
   const n = i => parseInt(seg[i], 10) || 1;
@@ -2889,6 +2904,7 @@ function render(keepScroll) {
   if (seg[0] === 'word') return pageWord(seg.slice(1).join('/'));
   if (seg[0] === 'words') return pageWords(seg[1], seg[2], n(3));
   if (seg[0] === 'study') return pageStudy();
+  if (seg[0] === 'translate') return pageTranslate();
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'stats') return pageStats();
   if (seg[0] === 'reviews') return pageReviews();
@@ -2910,18 +2926,26 @@ function render(keepScroll) {
 
   app.innerHTML = `<div class="card"><h1>Not found</h1>
     <p class="empty">No page at ${esc(path)}.</p>
-    <p><a href="#/dashboard">Go to the dashboard</a></p></div>`;
+    <p><a href="#/dashboard">Go home</a></p></div>`;
 }
 
-/* the sidebar slides in on narrow screens; body.nav-open drives the scrim */
+/* the menu: a drawer that slides in from the left over the page, at every size, as
+   in Boxes; body.nav-open drives the scrim. A link closes it, even to this page. */
 function setNav(open) {
   document.getElementById('sidebar').classList.toggle('open', open);
   document.body.classList.toggle('nav-open', open);
+  document.getElementById('sidebar-toggle').setAttribute('aria-expanded', open);
+  if (open) document.querySelector('#sidebar nav a').focus({ preventScroll: true });
 }
 document.getElementById('sidebar-toggle').addEventListener('click', e => {
   e.stopPropagation();
   setNav(!document.getElementById('sidebar').classList.contains('open'));
 });
+document.getElementById('sidebar').addEventListener('click', e => { if (e.target.closest('a')) setNav(false); });
+
+/* Safari on iPhone and iPad only shows :active (a button sinking as it is pressed)
+   when the page listens for touches */
+document.addEventListener('touchstart', () => {}, { passive: true });
 
 /* one outside-tap handler for everything that floats */
 document.addEventListener('pointerdown', e => {

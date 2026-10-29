@@ -926,8 +926,8 @@ async function pageLessons() {
         : 'First its <b>pronunciation</b>, with tone numbers (like pin1yin1). Its meaning comes after.'}</p>
       <form id="lx-quiz" autocomplete="off">
         ${part ? '' : `<input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
-          autocapitalize="off" lang="en"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>`}
-        ${pinDone ? `<input id="lx-mean" class="lx-input" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" lang="en">` : ''}
+          autocapitalize="off" autocorrect="off" autocomplete="off" lang="en"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>`}
+        ${pinDone ? `<input id="lx-mean" class="lx-input" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en">` : ''}
         <div id="lx-verdict"></div>
         <button class="btn" type="submit">Check</button>
       </form>`;
@@ -1245,7 +1245,7 @@ async function pageReviews() {
       ${q === 'write' ? `<p class="rv-write-msg" id="rv-write-msg">${shown ? '' : 'Draw each stroke in order. After three misses on a stroke, its outline shows.'}</p>
         <button class="rv-enter" ${shown ? '' : 'hidden'}>Next</button>` : `
       <input id="rv-in" class="rv-input ${shown ? (shown.ok ? 'ok' : 'bad') : ''}"
-        placeholder="${q === 'pinyin' ? 'pin1yin1' : it.kind === 'comp' ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" lang="en"
+        placeholder="${q === 'pinyin' ? 'pin1yin1' : it.kind === 'comp' ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en"
         ${shown ? 'readonly' : ''} value="${shown ? esc(shown.answer) : ''}">
       <p class="rv-hint" id="rv-hint" hidden>That isn't pinyin. Check it and try again.</p>`}
     </form>
@@ -2012,7 +2012,12 @@ function paintStudySettings() {
     const k = el.dataset.k, t = el.dataset.t;
     const value = () => t === 'bool' ? el.checked : t === 'int' ? parseInt(el.value, 10) || 0
       : t === 'pct' ? (parseInt(el.value, 10) || 90) / 100 : el.value;
-    if (el.type === 'range') el.addEventListener('input', () => { el.nextElementSibling.textContent = el.value + (t === 'pct' ? '%' : ''); });
+    if (el.type === 'range') {
+      // the track fills with yellow up to the knob (style.css .st-range)
+      const fill = () => el.style.setProperty('--fill', 100 * (el.value - el.min) / ((el.max - el.min) || 1) + '%');
+      fill();
+      el.addEventListener('input', () => { el.nextElementSibling.textContent = el.value + (t === 'pct' ? '%' : ''); fill(); });
+    }
     el.addEventListener('change', () => {
       const patch = { [k]: value() };
       // the word limit is at most the lesson limit

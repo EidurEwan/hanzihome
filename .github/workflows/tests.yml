@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: 22
       - run: node test/learn.js
+      - run: node test/grammar.js
       - run: node test/sync.js
       - run: node test/polyphones.js
       - run: node test/polyphones.js --heldout

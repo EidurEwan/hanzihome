@@ -86,9 +86,14 @@ an in-memory sheet on `http://localhost:8787/exec`.
 
 ## What's in it
 
-**Dashboard** — a week-streak card, counts of what you are learning versus what you have
-learned, and the most common characters as a tile grid you can filter by
-All / Not known / Learning / Learned. A right-hand rail follows you across every page with:
+**The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
+size: a card with your week streak and the characters and words you have learned, the three
+main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
+
+**Today** (the home page) — today's lessons and reviews first, then the week streak and counts
+of what you are learning versus what you have learned, the progress cards two by two, and the
+most common characters as a tile grid you can filter by All / Not known / Learning / Learned.
+The progress cards:
 
 * **Character progress** — searched, components known, learning, learned.
 * **Reading coverage** — a donut showing what share of ordinary running text your learned
@@ -240,6 +245,26 @@ page at a time, remembering your place (`site/books.js`, kept in the browser's I
 live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)
 sends any web page you are on, or the part you selected, to the reader; when context can't settle a meaning, the popup names the other one too.
 
+**Translate** (`#/translate`, in the menu) — English to Chinese or Chinese to English, the
+direction found by itself or chosen. The Chinese side, whichever it is, comes back as word
+cards: each word with its pinyin and the meaning it has in this sentence, coloured by how well
+you know it, opening its word or character page. Then the sentence's structure in one line and
+its grammar, each point with the words that show it and why the Chinese is built that way (time
+and place before the verb, 了 after the verb or at the end, measure words, 把, 是…的, 因为…所以 …).
+**Add the new words to lessons** puts the words you don't know in your lessons, with the sentence;
+**Open in the reader** reads it there.
+
+With an [Anthropic API key](https://console.anthropic.com/settings/keys) (Settings → Translator),
+Claude (Opus 5.5) translates and explains: the browser sends the text straight to Anthropic's
+API, a few US cents a translation, billed to your account. A declined request is retried on the
+model Anthropic recommends (`fallbacks: "default"`). The key is kept in that browser only: not
+in the store, so never synced or exported. The SDK, `@anthropic-ai/sdk` bundled for the browser
+(`site/vendor/anthropic-sdk.js`, Apache-2.0), loads only when a translation is sent. Without a
+key, or offline, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
+and its grammar explained by pattern (`site/grammar.js`, checked by `node test/grammar.js`);
+English gets the likeliest Chinese words for each word from the dictionary, which is not a
+translation, and the page says so.
+
 **Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
 productive components, productive characters, the full frequency list, plus your own
 custom lists, notes and search history.
@@ -280,6 +305,9 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
+site/translate.js       the translator: Claude with your API key, or offline (see "Translate")
+site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
+test/grammar.js         checks grammar.js
 test/accuracy.js        scores textstory.js against the hand-glossed stories
 sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet
 sync/mock-server.js     runs Code.gs locally for testing, no Google account needed
@@ -459,33 +487,52 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 ## Typography and colour
 
-Matched to their dashboard. Their stylesheet's own comment names **Nunito** as the
-dashboard UI font, so English text uses Nunito — bundled in `site/fonts/` (SIL Open Font
-License, 4 weights, 152 KB) so nothing is fetched from the network.
+After the game look of the Boxes app (`andrewtmitchell/boxes`, its `light-mode-and-game-ui`
+branch): warm paper (`#F6F4EF`) with charcoal text (`#222`), or in the dark charcoal with
+white text; yellow (`#FDE24D`) pill buttons that stand on a darker edge (`#D4B21F`) and sink
+onto it when pressed, as do the chips, tabs and the study tiles; Boxes' pink, green and blue
+for the lessons, reviews and stages; and the menu, after Boxes' drawer, with the current page as a
+yellow pill. Three of Boxes' buddies (`site/img/`: the flame by the streak, the gift and the
+hourglass on the study tiles) come from its artwork.
 
-The palette is lifted from their stylesheet: `#b83746` accent with `#8c2a35` as the dark
-variant (which is also the sidebar), over a Tailwind-style grey scale — `#111827` ink,
-`#6b7280` and `#9ca3af` for secondary text, `#e5e7eb` borders. Active sidebar rows use the
-brighter `#b83746` against the darker sidebar, as on theirs.
+The character cards keep HanziHome's own 3D: each stands on an edge in the colour of its
+state (green learned, blue learning) and presses flat under the pointer.
 
-Chinese uses a sans CJK stack (`Noto Sans SC`, `PingFang SC`, `Microsoft YaHei`), because
-they serve a Noto Sans subset — their hanzi render sans, not serif.
+English text is **Poppins**, Boxes' font, bundled in `site/fonts/` (SIL Open Font License,
+3 weights, 33 KB) so nothing is fetched from the network. Its Latin subset lacks the third
+tone and the ü tones (ǎ ǐ ǒ ǔ ǖ ǘ ǚ ǜ), which pinyin can't do without, so
+`build/fonts/addpinyin.py` adds them, built from Poppins' own letters and accents the way it
+builds ě and ü; then `pyftsubset` makes the woff2 files:
 
-Light theme only. Character tiles are capped at 15 per row, matching their grid, and the
-content column is centred rather than pinned to the sidebar.
+```bash
+python3 build/fonts/addpinyin.py Poppins-Regular.ttf Poppins-Regular+pinyin.ttf
+pyftsubset Poppins-Regular+pinyin.ttf --unicodes="U+0000-024F,U+02BB-02BC,U+02C6-02DD,U+0300-0304,U+0308,U+030C,U+1E00-1EFF,U+2000-206F,U+2190-2193,U+20AC,U+2122,U+2212,U+2215,U+FEFF,U+FFFD" --layout-features='*' --flavor=woff2 --output-file=site/fonts/poppins-400.woff2
+```
+
+Chinese uses a sans CJK stack (`Noto Sans SC`, `PingFang SC`, `Microsoft YaHei`). Character
+tiles are capped at 15 per row, in one centred column.
 
 ## Screen sizes
 
 The list card is always a whole number of tiles wide plus its gutters, so it snaps down a
 card at a time as the window narrows instead of overflowing.
 
+Every page is one centred column, and the menu is a drawer at every size.
+
 | Window | Layout | Cards per row |
 | --- | --- | --- |
-| 1480 px and up | list + rail side by side | up to 15 |
-| 1181–1479 px | list + narrower rail | as many as fit |
-| 901–1180 px | one column, rail cards above the list | up to 12 |
-| 601–900 px | nav becomes a slide-in drawer | up to 10 |
-| 600 px and under | phone spacing, rail cards stacked | as many as fit (6 on a 375 px phone) |
+| 901 px and up | the column at its widest; home's progress cards two by two | up to 15 |
+| 601–900 px | tighter gutters | as many as fit (14 on an iPad mini, 15 on an 11-inch iPad) |
+| 600 px and under | phone spacing, home's cards one under another, the logo without its name | as many as fit (5 on an iPhone SE, 6 on an iPhone 15, 7 on a Pro Max) |
+
+**On iPhone and iPad.** Text fields are 16 px, so Safari doesn't zoom the page into them;
+everything you tap is at least 44 px on a touch screen (36–40 for the small controls inside
+rows and tables); a tap doesn't leave a character card pressed flat; the notch, the rounded
+corners and the home bar are kept clear; the answer boxes turn off the keyboard's
+autocorrect, so `ren4shi` stays as typed; and a tap on a word in the reader opens its card.
+Added to the home screen (Share → Add to Home Screen), it opens full screen as HanziHome.
+These were checked with Chromium's iPhone and iPad profiles (sizes, touch, pixel density),
+not in Safari itself.
 
 Tables scroll sideways inside their card. On touch screens a tap opens a card's status menu
 and a second tap opens the character.
