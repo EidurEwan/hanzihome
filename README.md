@@ -123,9 +123,10 @@ words, with the components and sounds they need); its first answers (with each l
 rate the first review. "Stop here and take the quiz" ends early and leaves the rest queued. **A missed review opens the mnemonic**, unless it would give away a question still to come,
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
 lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
-what you mix them up with, to learn again from a lesson, give a mnemonic of your own, or rest for
+what you mix them up with, to learn again from a lesson (which starts its count of misses afresh), give a mnemonic of your own, or rest for
 two weeks. **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
-type, the next two weeks, stages, and the items hardest for you. Enter steps through a lesson and
+type, how well FSRS predicts you (the chance of recall it gave at each review against how often you
+were right), the next two weeks, stages, and the items hardest for you. Enter steps through a lesson and
 on to the next review.
 
 **Pronunciation** is a person's recording where there is one: the 8,500 words and characters of
@@ -166,14 +167,20 @@ and so a retrievability, the chance of recalling it now; it comes back when that
 retention you want (90% unless set otherwise in Settings). The rating each review gives FSRS
 isn't asked for: it comes from the answers. A wrong answer (or the answer shown) is *again*, a
 slip of tone or a long think (over 15 seconds before typing starts) *hard*, right *good*, right
-and typing within 3 seconds on both questions *easy*; the lesson's quiz gives the first rating.
+and typing within 3 seconds on both questions *easy* — but only on an item remembered a month or
+more (Journeyman) that wasn't missed or hard last time, since a quick answer on a young item says
+more about having just seen it; the lesson's quiz gives the first rating, *good* at best.
 A lapse is relearned in the session, which FSRS counts as a same-day review. The stages keep
 HanziHero's names as bands of stability (Novice under 4 days, Apprentice from a week,
 Journeyman from a month, Expert from 4 months, Master from 2 years), and the item info panel
-shows each item's numbers. A review asks both questions, the
+shows each item's numbers. **Every rating is logged** on its item (the time, the rating and
+the chance of recall FSRS gave it; about 400 KB a year at 100 reviews a day, synced with the
+rest), and Statistics → Download the review log gives it as the `revlog.csv` the
+[FSRS optimizer](https://github.com/open-spaced-repetition/fsrs-optimizer) fits weights from. A review asks both questions, the
 meaning only once the pronunciation is right (in pairs or shuffled); anything missed comes
 back again before the session ends. A neutral tone may be
-typed with any tone or none, meanings allow a typo and ignore "to" and brackets, and **My
+typed with any tone or none, meanings allow a typo (unless what you typed is a meaning of its
+own: *tell* is no typo of *sell*) and British spellings, ignore "to" and brackets, and **My
 answer was right** keeps your wording as a synonym. Under the answer is HanziHero's toolbar,
 with its keys: item info once answered (I: parts, pronunciation, meaning and your synonyms (+
 to add one), your mnemonic and notes to edit, usage; a section that would give away the item's

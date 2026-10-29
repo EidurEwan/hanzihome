@@ -81,6 +81,25 @@ check('the rating comes from the answers, not from asking', () => {
   assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)]), 1);       // wrong
 });
 
+check('easy needs a month of memory and no trouble last time', () => {
+  const a = (ok, ms) => ({ ok, ms, near: false }), quick = [a(true, 1200), a(true, 2500)];
+  const lesson = L.newItem('char', {}, t0);
+  assert.strictEqual(L.gradeFrom(quick, lesson), 3);                          // a lesson's quiz: good at best
+  const young = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  assert.strictEqual(L.gradeFrom(quick, young), 3);                           // S 3 days: quick is just recent
+  const month = { stage: 5, S: 30, D: 5, grades: [3, 3, 3] };
+  assert.strictEqual(L.gradeFrom(quick, month), 4);
+  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 2] }), 3);   // hard last time
+  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 1] }), 3);   // forgotten last time
+  assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)], month), 1);
+  // a joined (calibration) item starts at a month: quick there still says easy
+  assert.strictEqual(L.gradeFrom(quick, L.known('char', {}, t0, 0)), 4);
+  // quick answers every time no longer reach years after three reviews
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3), waits = [];
+  for (let i = 0; i < 4; i++) { const now = it.due; L.review(it, L.gradeFrom(quick, it), now, null); waits.push(Math.round((it.due - now) / DAY)); }
+  assert.deepStrictEqual(waits, [11, 35, 232, 1420]);
+});
+
 check('an item from before FSRS keeps its place', () => {
   const it = { stage: 5, due: t0 + 10 * DAY, hist: [true, false, true] };
   L.adopt(it);
@@ -113,6 +132,23 @@ check('meaning: alternatives, "to", brackets, typos, synonyms', () => {
   for (const a of ['', 'eat', 'no', 'familiar']) assert.ok(!L.checkMeaning(a, it), `${a} should be wrong`);
   it.syn.push('meet');
   assert.ok(L.checkMeaning('meet', it));
+});
+
+check('meaning: a real word is no typo; British spellings are no typo either', () => {
+  const words = new Set(['tell', 'sell', 'month', 'mouth', 'colour', 'grey', 'center']), isWord = w => words.has(w);
+  const of = (mean, alts) => L.newItem('char', { mean, alts }, t0);
+  assert.ok(!L.checkMeaning('tell', of('to sell'), isWord));
+  assert.ok(L.checkMeaning('tell', of('to sell')));                          // (without a word list: a typo)
+  assert.ok(!L.checkMeaning('month', of('mouth'), isWord));
+  assert.ok(L.checkMeaning('to selll', of('to sell'), isWord));                 // a typo still is one
+  assert.ok(L.checkMeaning('to knwo', of('to know'), isWord));
+  assert.ok(L.checkMeaning('to sell', of('to sell'), isWord));
+  for (const [ans, mean] of [['colour', 'color'], ['grey', 'gray'], ['centre', 'center'], ['to recognise', 'to recognize'],
+    ['travelling', 'traveling'], ['theatre', 'theater'], ['to analyse', 'to analyze'], ['favourite', 'favorite']]) {
+    assert.ok(L.checkMeaning(ans, of(mean), isWord), `${ans} for ${mean}`);
+    assert.ok(L.checkMeaning(mean, of(ans), isWord), `${mean} for ${ans}`);
+  }
+  assert.ok(!L.checkMeaning('four', of('for'), w => w === 'four'));          // (-our is only British past 5 letters)
 });
 
 check('pinyin validation: real syllables, tones after syllables', () => {
@@ -225,10 +261,24 @@ check('plan: reviews in order, under a soft daily limit; vacation stops everythi
   const p = L.plan(items, { reviewLimit: 3 }, t0 + 1000, env);
   assert.strictEqual(p.reviewsToday, 2);
   assert.strictEqual(p.reviewsLeft, 1);
+  // a lesson today is not a review today
+  items['五'] = L.finishLesson(queued('char', 9), t0 + 500);
+  assert.strictEqual(L.plan(items, { reviewLimit: 3 }, t0 + 1000, env).reviewsToday, 2);
   const v = L.plan(items, { vacation: t0 }, t0, env);
   assert.deepStrictEqual([v.lessons.length, v.reviews.length, v.vacation], [0, 0, true]);
   L.resume(items, t0 - 5 * DAY, t0);
   assert.strictEqual(items['三'].due, t0 - 2000 + 5 * DAY);
+});
+
+check('a leech learnt again is no longer a leech', () => {
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0 - 60 * DAY);
+  for (let i = 0; i < 4; i++) L.review(it, 1, t0 - (50 - 5 * i) * DAY);
+  assert.ok(L.isLeech(it));
+  Object.assign(it, { stage: 0, due: 0, prio: true });                         // Learn again
+  delete it.learnt;
+  L.finishLesson(it, t0, 3);
+  assert.ok(!L.isLeech(it));
+  assert.deepStrictEqual([it.lapses, it.hist], [0, []]);
 });
 
 check('a learned character joins at Journeyman I without using a lesson', () => {
@@ -254,6 +304,50 @@ check('calibration: rated from the answers, as if reviewed when due', () => {
   ]);
   // something learned in a lesson isn't "unsorted"
   assert.ok(!L.uncalibrated(L.finishLesson(L.newItem('char', {}, t0), t0)));
+});
+
+check('the review log: every rating, with the chance of recall FSRS gave it', () => {
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  L.review(it, 3, t0 + 3 * DAY, null);
+  L.review(it, 1, t0 + 14 * DAY, null);
+  const min = t => Math.round(t / 6e4);
+  assert.deepStrictEqual(it.log, [[min(t0), 3, 'l'], [min(t0 + 3 * DAY), 3, 90], [min(t0 + 14 * DAY), 1, 90]]);
+  // a known character, said known, calibrated: tagged, no R
+  const k = L.known('char', {}, t0, 0);
+  L.calibrate(k, 2, t0 + DAY);
+  assert.deepStrictEqual(k.log.map(e => e[2]), ['k', 'c']);
+  const s = L.sayKnown(L.finishLesson(L.newItem('char', {}, t0), t0, 3), t0 + DAY, 30 * DAY);
+  assert.deepStrictEqual([s.S, L.stageName(s.stage), s.log.map(e => e[2])], [30, 'Journeyman I', ['l', 'k']]);
+  // learnt again: the old lines stay, a new lesson follows
+  Object.assign(it, { stage: 0 });
+  L.finishLesson(it, t0 + 20 * DAY, 2);
+  assert.deepStrictEqual(it.log.map(e => e[2]), ['l', 90, 90, 'l']);
+});
+
+check('the prediction check groups reviews by R and counts what was recalled', () => {
+  const at = (R, g) => [1, g, R];
+  const items = { a: { log: [[1, 3, 'l'], at(92, 3), at(91, 1), at(93, 2), at(75, 1)] }, b: { log: [[1, 0, 'k'], at(96, 4), [2, 3, 'c']] } };
+  const p = L.predictionCheck(items);
+  assert.strictEqual(p.n, 5);
+  near(p.predicted, (92 + 91 + 93 + 75 + 96) / 500, 'predicted');
+  near(p.actual, 3 / 5, 'actual');
+  assert.deepStrictEqual(p.groups.map(x => [x.from, x.to, x.n, x.actual]), [[0.7, 0.8, 1, 0], [0.9, 0.95, 3, 2 / 3], [0.95, 1, 1, 1]]);
+  assert.strictEqual(L.predictionCheck(items, 10 * 6e4).n, 0);              // since: none that new
+});
+
+check('the optimizer CSV: from the last lesson, a relearning good after an again', () => {
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  L.review(it, 1, t0 + 3 * DAY, null);
+  const k = L.known('char', {}, t0, 0);
+  L.review(k, 3, t0 + 30 * DAY, null);                                       // never had a lesson: left out
+  const m = Math.round(t0 / 6e4) * 6e4, m3 = Math.round((t0 + 3 * DAY) / 6e4) * 6e4;
+  const out = L.reviewLogCsv({ 好: it, 是: k });
+  assert.deepStrictEqual(out.items, ['好']);
+  assert.strictEqual(out.csv, `card_id,review_time,review_rating\n1,${m},3\n1,${m3},1\n1,${m3 + 6e4},3\n`);
+  // learnt again: only the new run counts
+  Object.assign(it, { stage: 0 });
+  L.finishLesson(it, t0 + 5 * DAY, 2);
+  assert.strictEqual(L.reviewLogCsv({ 好: it }).csv.trim().split('\n').length, 2);
 });
 
 console.log(`\n${n} checks passed`);

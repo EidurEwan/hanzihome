@@ -25,7 +25,8 @@
  *   {kind: 'char' | 'word', pin: 'rèn shi', mean: 'to know', alts: [...meanings],
  *    syn: [your synonyms], mnemonic, ex: {text, t} (where you met it), added,
  *    stage (0: waiting for its lesson), D, S, last (the last review), due,
- *    hist (right or not, lately), grades (the ratings, lately), reps, lapses}
+ *    hist (right or not, lately), grades (the ratings, lately), reps, lapses,
+ *    log (every rating it has had: see logged())}
  *
  * Pure functions, no DOM: site/study.js draws the pages, test/learn.js checks this
  * (the FSRS numbers against the reference implementation's). Works in the browser
@@ -134,6 +135,23 @@
     return item;
   }
 
+  /* The review log: every change to an item's memory, kept on the item (so it syncs and
+     merges with the schedule it explains), oldest first, a few bytes each:
+       [minute, grade, R]       a review: the time (minutes since 1970), the rating it got,
+                                and the chance of recall FSRS gave it then, in percent
+       [minute, grade, 'l']     a lesson's first rating
+       [minute, grade, 'c']     a calibration test's rating (taken as if due: no R)
+       [minute, 0, 'k']         joined, or said to be known, at a month's stability
+     An again is followed by relearning in the same session (review()), which isn't a
+     line of its own. A hundred reviews a day come to about 400 KB a year. With the
+     ratings and times, FSRS's weights can be fitted to you (reviewLogCsv()), and R
+     against what happened says how well it predicts you (predictionCheck()). */
+  const LOG_TAGS = { lesson: 'l', cal: 'c', known: 'k' };
+  function logged(item, now, grade, R) {
+    (item.log = item.log || []).push([Math.round(now / 6e4), grade,
+      typeof R === 'number' ? Math.round(R * 100) : LOG_TAGS[R]]);
+  }
+
   /* R now, and the rest of an item's memory, for showing */
   function memory(item, now) {
     adopt(item);
@@ -160,6 +178,8 @@
     item.reps = 1;
     item.lapses = 0;
     item.grades = [g];
+    item.hist = [];                         // (learnt again: a leech starts afresh)
+    logged(item, now, g, 'lesson');
     return schedule(item, now, opts.retention, opts.rnd);
   }
 
@@ -192,20 +212,31 @@
     item.reps = (item.reps || 0) + 1;
     item.hist = (item.hist || []).concat(g > AGAIN).slice(-10);
     item.grades = (item.grades || []).concat(g).slice(-10);
+    if (!opts.assumeDue) logged(item, now, g, R);
     return schedule(item, now, opts.retention, rnd, t);
   }
 
   /* The rating a review earned, worked out from the answers: one per question, each
      {ok, near (a slip: the right syllables with a wrong tone), ms (from the question
      showing to the first key typed)}. Wrong: again. A slip, or a long think: hard.
-     Right at once on every question: easy. Otherwise good. */
-  const QUICK = 3000, SLOW = 15000;
-  function gradeFrom(answers) {
+     Right at once on every question: easy. Otherwise good.
+     Given the item (as it was before this review), easy also needs it to have been
+     remembered a month (Journeyman) and its last rating not to have been again or
+     hard: a quick answer on a young item says more about having seen it lately than
+     about knowing it, and FSRS's easy multiplies the next wait by three. (A lesson's
+     quiz, before any memory, is good at best.) */
+  const QUICK = 3000, SLOW = 15000, EASY_FROM = STAGES[LEARNED_FROM][1];
+  function gradeFrom(answers, item) {
     if (!answers.length) return GOOD;
     if (answers.some(a => !a.ok && !a.near)) return AGAIN;
     if (answers.some(a => a.near || a.ms > SLOW)) return HARD;
-    if (answers.every(a => a.ms <= QUICK)) return EASY;
-    return GOOD;
+    if (!answers.every(a => a.ms <= QUICK)) return GOOD;
+    if (item) {
+      adopt(item);
+      const last = (item.grades || []).slice(-1)[0];
+      if (!(item.S >= EASY_FROM) || last < GOOD) return GOOD;
+    }
+    return EASY;
   }
   const GRADE_NAMES = [null, 'Again', 'Hard', 'Good', 'Easy'];
 
@@ -243,6 +274,20 @@
     item.stage = stageFor(item.S);
     item.joined = now;
     item.due = now + wait;
+    logged(item, now, 0, 'known');
+    return item;
+  }
+
+  /* An item already under way that you say you know (marked Learned): a month's
+     stability at least, first checked `wait` ms from now */
+  function sayKnown(item, now, wait) {
+    adopt(item);
+    item.S = Math.max(item.S || 0, STAGES[LEARNED_FROM][1]);
+    item.D = item.D || initD(GOOD);
+    item.stage = stageFor(item.S);
+    item.due = now + wait;
+    if (!item.learnt) item.joined = now;
+    logged(item, now, 0, 'known');
     return item;
   }
 
@@ -251,6 +296,7 @@
      rated from the answers like any other, taken as if it came right when due. */
   function calibrate(item, grade, now, rnd, opts = {}) {
     review(item, grade, now, rnd, Object.assign({}, opts, { assumeDue: true }));
+    logged(item, now, item.grades[item.grades.length - 1], 'cal');
     item.cal = now;
     return item;
   }
@@ -262,6 +308,49 @@
   function resume(items, since, now) {
     const away = Math.max(0, now - since);
     for (const it of Object.values(items)) if (it.stage >= 1) it.due += away;
+  }
+
+  /* How well FSRS predicts you: every logged review, grouped by the chance of recall FSRS
+     gave it, against how many of them you did recall (anything but again). Calibrated,
+     the two agree in every group; "since" (a time) leaves out older reviews.
+     -> {n, predicted, actual, groups: [{from, to, n, predicted, actual}]} (shares, 0 to 1) */
+  const R_GROUPS = [0, 70, 80, 85, 90, 95, 101];
+  function predictionCheck(items, since = 0) {
+    const groups = R_GROUPS.slice(0, -1).map((from, i) => ({ from, to: R_GROUPS[i + 1], n: 0, p: 0, ok: 0 }));
+    const all = { n: 0, p: 0, ok: 0 }, from = since / 6e4;
+    for (const it of Object.values(items)) {
+      for (const [t, g, R] of it.log || []) {
+        if (typeof R !== 'number' || t < from) continue;
+        const grp = groups.find(x => R < x.to);
+        for (const x of [grp, all]) { x.n++; x.p += R / 100; x.ok += g > AGAIN ? 1 : 0; }
+      }
+    }
+    const share = x => ({ n: x.n, predicted: x.n ? x.p / x.n : 0, actual: x.n ? x.ok / x.n : 0 });
+    return Object.assign(share(all), {
+      groups: groups.filter(x => x.n).map(x => Object.assign({ from: x.from / 100, to: Math.min(1, x.to / 100) }, share(x))),
+    });
+  }
+
+  /* The log as the FSRS optimizer reads it (github.com/open-spaced-repetition/fsrs-optimizer:
+     a revlog.csv of card_id, review_time in ms, review_rating). A card's lines start at its
+     last lesson, its first rating; an item with no lesson since it was said to be known
+     (or calibrated) has none, as FSRS's own fitting leaves out cards it didn't see from
+     the start. An again is followed by the relearning good it had in the session, a minute
+     on. -> {csv, items: [the keys, in card_id order]} */
+  function reviewLogCsv(items) {
+    const lines = ['card_id,review_time,review_rating'], keys = [];
+    for (const [k, it] of Object.entries(items)) {
+      const log = it.log || [];
+      let start = -1;
+      log.forEach((e, i) => { if (e[2] === 'l') start = i; else if (e[2] === 'k' || e[2] === 'c') start = -1; });
+      if (start < 0) continue;
+      const id = keys.push(k);
+      for (const [t, g, R] of log.slice(start)) {
+        lines.push(`${id},${t * 6e4},${g}`);
+        if (g === AGAIN && R !== 'l') lines.push(`${id},${(t + 1) * 6e4},${GOOD}`);
+      }
+    }
+    return { csv: lines.join('\n') + '\n', items: keys };
   }
 
   // ------------------------------------------------------------ settings
@@ -342,7 +431,9 @@
     const out = {
       lessons: [], waiting: [], locked: {},
       lessonsToday: today.length, wordsToday: today.filter(k => it(k).kind === 'word').length,
-      due: [], reviews: [], reviewsToday: keys.filter(k => it(k).last >= start).length, reviewsLeft: 0,
+      // (an item whose last time was its lesson was learnt today, not reviewed)
+      due: [], reviews: [], reviewsToday: keys.filter(k => it(k).last >= start && it(k).last !== it(k).learnt).length,
+      reviewsLeft: 0,
       vacation: !!cfg.vacation,
     };
 
@@ -511,13 +602,23 @@
     return out;
   }
 
+  /* British and American spellings of one word are the same answer, not a typo
+     (colour color, centre center, recognise recognize, grey gray, travelling traveling) */
+  const american = s => s.replace(/\b(\w{3,})our\b/g, '$1or').replace(/\b(\w{2,}[^aeiou\s])re\b/g, '$1er')
+    .replace(/\b(\w{3,})is(e|ed|es|ing|ation)\b/g, '$1iz$2').replace(/\b(\w{2,})ys(e|ed|es|ing)\b/g, '$1yz$2')
+    .replace(/\bgrey/g, 'gray').replace(/\b(\w{2,}[aeiou])ll(ed|ing|er)\b/g, '$1l$2');
+
   /* Right when the answer is one of the item's meanings, give or take "to", "a",
-     brackets and a typo (one letter wrong from 4 letters, two from 8) */
-  function checkMeaning(answer, item) {
+     brackets, spelling, and a typo (one letter wrong from 4 letters, two from 8).
+     isWord(a), if given, says the answer is a real meaning of its own (another
+     character's: sell and tell, mouth and month), which is then no typo but wrong. */
+  function checkMeaning(answer, item, isWord) {
     const a = norm(answer);
     if (!a) return false;
-    return meanings(item).some(m => m === a
-      || (a.length >= 4 && distance(a, m) <= (a.length >= 8 ? 2 : 1)));
+    const ms = meanings(item), us = american(a);
+    if (ms.some(m => m === a || american(m) === us)) return true;
+    if (a.length < 4 || (isWord && isWord(a))) return false;
+    return ms.some(m => distance(a, m) <= (a.length >= 8 ? 2 : 1));
   }
 
   /* Pinyin answer validation: is this pinyin at all? Every syllable has to be a real one
@@ -566,9 +667,9 @@
 
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
-    review, known, resume, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    review, known, sayKnown, resume, predictionCheck, reviewLogCsv, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
-    checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin, soundOf,
+    checkPinyin, checkMeaning, validPinyin, meanings, american, parsePinyin, soundOf,
   };
 });

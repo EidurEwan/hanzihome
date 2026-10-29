@@ -152,6 +152,7 @@ const Store = {
         const e = HZ.index[c] || [], now = Date.now();
         const it = Learn.finishLesson(Learn.newItem('char', { pin: e[2] || '', mean: e[3] || '' }, now), now);
         it.due = Math.min(d.srs[c].due || now, now);
+        delete it.log;                    // (no lesson took place: the log starts with its next review)
         d.items[c] = it;
       }
     }
@@ -193,15 +194,7 @@ const Store = {
     if (s === 'learned' && HZ.index[ch]) {
       const it = d.items[ch], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
       if (!it) d.items[ch] = Learn.known('char', charInfo(ch), now, wait);
-      else if (it.stage < Learn.LEARNED_FROM) {
-        // said to be known: a month's stability at least, first checked in a month
-        Learn.adopt(it);
-        it.S = Math.max(it.S || 0, Learn.STAGES[Learn.LEARNED_FROM][1]);
-        it.D = it.D || Learn.initD(3);
-        it.stage = Learn.stageFor(it.S);
-        it.due = now + wait;
-        if (!it.learnt) it.joined = now;
-      }
+      else if (it.stage < Learn.LEARNED_FROM) Learn.sayKnown(it, now, wait);   // a month's stability at least
     }
     this.touch();
   },
@@ -216,14 +209,7 @@ const Store = {
     if (s === 'learned') {
       const it = d.items[w], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
       if (!it) d.items[w] = Learn.known('word', info || wordInfo(w), now, wait);
-      else if (it.stage < Learn.LEARNED_FROM) {
-        Learn.adopt(it);
-        it.S = Math.max(it.S || 0, Learn.STAGES[Learn.LEARNED_FROM][1]);
-        it.D = it.D || Learn.initD(3);
-        it.stage = Learn.stageFor(it.S);
-        it.due = now + wait;
-        if (!it.learnt) it.joined = now;
-      }
+      else if (it.stage < Learn.LEARNED_FROM) Learn.sayKnown(it, now, wait);
     }
     this.touch();
   },
