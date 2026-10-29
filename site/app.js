@@ -1491,7 +1491,7 @@ async function makeWriter(id, ch, size, opts) {
   const v = n => css.getPropertyValue(n).trim();
   return HanziWriter.create(id, ch, Object.assign({
     width: size, height: size, padding: 6,
-    strokeColor: v('--ink'), outlineColor: v('--line-2'), radicalColor: v('--accent'),
+    strokeColor: v('--ink'), outlineColor: v('--line-2'), radicalColor: v('--radical'),
     drawingColor: v('--blue'), highlightColor: v('--blue'),
     strokeAnimationSpeed: 1.1, delayBetweenStrokes: 220, drawingWidth: 6,
     charDataLoader: (c, done) => done({ strokes: d[0], medians: d[1], radStrokes: d[2] || [] }),

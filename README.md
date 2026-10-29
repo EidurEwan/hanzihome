@@ -452,20 +452,31 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 ## Typography and colour
 
-Matched to their dashboard. Their stylesheet's own comment names **Nunito** as the
-dashboard UI font, so English text uses Nunito — bundled in `site/fonts/` (SIL Open Font
-License, 4 weights, 152 KB) so nothing is fetched from the network.
+After the game look of the Boxes app (`andrewtmitchell/boxes`, its `light-mode-and-game-ui`
+branch): warm paper (`#F6F4EF`) with charcoal text (`#222`), or in the dark charcoal with
+white text; yellow (`#FDE24D`) pill buttons that stand on a darker edge (`#D4B21F`) and sink
+onto it when pressed, as do the chips, tabs and the study tiles; Boxes' pink, green and blue
+for the lessons, reviews and stages; and a charcoal sidebar with the current page as a yellow
+pill. Three of Boxes' buddies (`site/img/`: the flame by the streak, the gift and the
+hourglass on the study tiles) come from its artwork.
 
-The palette is lifted from their stylesheet: `#b83746` accent with `#8c2a35` as the dark
-variant (which is also the sidebar), over a Tailwind-style grey scale — `#111827` ink,
-`#6b7280` and `#9ca3af` for secondary text, `#e5e7eb` borders. Active sidebar rows use the
-brighter `#b83746` against the darker sidebar, as on theirs.
+The character cards keep HanziHome's own 3D: each stands on an edge in the colour of its
+state (green learned, blue learning) and presses flat under the pointer.
 
-Chinese uses a sans CJK stack (`Noto Sans SC`, `PingFang SC`, `Microsoft YaHei`), because
-they serve a Noto Sans subset — their hanzi render sans, not serif.
+English text is **Poppins**, Boxes' font, bundled in `site/fonts/` (SIL Open Font License,
+3 weights, 33 KB) so nothing is fetched from the network. Its Latin subset lacks the third
+tone and the ü tones (ǎ ǐ ǒ ǔ ǖ ǘ ǚ ǜ), which pinyin can't do without, so
+`build/fonts/addpinyin.py` adds them, built from Poppins' own letters and accents the way it
+builds ě and ü; then `pyftsubset` makes the woff2 files:
 
-Light theme only. Character tiles are capped at 15 per row, matching their grid, and the
-content column is centred rather than pinned to the sidebar.
+```bash
+python3 build/fonts/addpinyin.py Poppins-Regular.ttf Poppins-Regular+pinyin.ttf
+pyftsubset Poppins-Regular+pinyin.ttf --unicodes="U+0000-024F,U+02BB-02BC,U+02C6-02DD,U+0300-0304,U+0308,U+030C,U+1E00-1EFF,U+2000-206F,U+2190-2193,U+20AC,U+2122,U+2212,U+2215,U+FEFF,U+FFFD" --layout-features='*' --flavor=woff2 --output-file=site/fonts/poppins-400.woff2
+```
+
+Chinese uses a sans CJK stack (`Noto Sans SC`, `PingFang SC`, `Microsoft YaHei`). Character
+tiles are capped at 15 per row, and the content column is centred rather than pinned to the
+sidebar.
 
 ## Screen sizes
 

@@ -1,0 +1,14 @@
+<svg width="88" height="86" viewBox="0 0 88 86" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M62 22C54 22 47.5 18.5 48.5 12.5C49.5 6.5 57.5 7.5 62 22Z" fill="#FDE24D"/>
+<path d="M62 22C70 22 76.5 18.5 75.5 12.5C74.5 6.5 66.5 7.5 62 22Z" fill="#F8CA28"/>
+<path d="M10 38H78V76C78 79.3 75.3 82 72 82H16C12.7 82 10 79.3 10 76V38Z" fill="#F44285"/>
+<rect x="10" y="38" width="68" height="4" fill="#C9366E"/>
+<path d="M78 58V76C78 79.3 75.3 82 72 82H16C12.7 82 10 79.3 10 76V74.5C34 80 62 74 78 58Z" fill="#C9366E"/>
+<rect x="6" y="22" width="76" height="16" rx="5" fill="#F44285"/>
+<path d="M11 28C12 25.5 16 24 18.5 25C20 26 17.5 28.5 15 29.5C12.5 30.5 10.5 29.8 11 28Z" fill="#FF9CC2"/>
+<rect x="57.5" y="22" width="9" height="60" fill="#FDE24D"/>
+<rect x="64" y="22" width="2.5" height="60" fill="#F8CA28"/>
+<circle cx="62" cy="21" r="4.5" fill="#F8CA28"/>
+<ellipse cx="27" cy="60" rx="4.24224" ry="7.63603" transform="rotate(17.9957 27 60)" fill="#3F3F3F"/>
+<ellipse cx="43.1201" cy="60" rx="4.24224" ry="7.63603" transform="rotate(17.9957 43.1201 60)" fill="#3F3F3F"/>
+</svg>
