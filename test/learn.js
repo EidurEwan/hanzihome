@@ -306,4 +306,48 @@ check('calibration: rated from the answers, as if reviewed when due', () => {
   assert.ok(!L.uncalibrated(L.finishLesson(L.newItem('char', {}, t0), t0)));
 });
 
+check('the review log: every rating, with the chance of recall FSRS gave it', () => {
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  L.review(it, 3, t0 + 3 * DAY, null);
+  L.review(it, 1, t0 + 14 * DAY, null);
+  const min = t => Math.round(t / 6e4);
+  assert.deepStrictEqual(it.log, [[min(t0), 3, 'l'], [min(t0 + 3 * DAY), 3, 90], [min(t0 + 14 * DAY), 1, 90]]);
+  // a known character, said known, calibrated: tagged, no R
+  const k = L.known('char', {}, t0, 0);
+  L.calibrate(k, 2, t0 + DAY);
+  assert.deepStrictEqual(k.log.map(e => e[2]), ['k', 'c']);
+  const s = L.sayKnown(L.finishLesson(L.newItem('char', {}, t0), t0, 3), t0 + DAY, 30 * DAY);
+  assert.deepStrictEqual([s.S, L.stageName(s.stage), s.log.map(e => e[2])], [30, 'Journeyman I', ['l', 'k']]);
+  // learnt again: the old lines stay, a new lesson follows
+  Object.assign(it, { stage: 0 });
+  L.finishLesson(it, t0 + 20 * DAY, 2);
+  assert.deepStrictEqual(it.log.map(e => e[2]), ['l', 90, 90, 'l']);
+});
+
+check('the prediction check groups reviews by R and counts what was recalled', () => {
+  const at = (R, g) => [1, g, R];
+  const items = { a: { log: [[1, 3, 'l'], at(92, 3), at(91, 1), at(93, 2), at(75, 1)] }, b: { log: [[1, 0, 'k'], at(96, 4), [2, 3, 'c']] } };
+  const p = L.predictionCheck(items);
+  assert.strictEqual(p.n, 5);
+  near(p.predicted, (92 + 91 + 93 + 75 + 96) / 500, 'predicted');
+  near(p.actual, 3 / 5, 'actual');
+  assert.deepStrictEqual(p.groups.map(x => [x.from, x.to, x.n, x.actual]), [[0.7, 0.8, 1, 0], [0.9, 0.95, 3, 2 / 3], [0.95, 1, 1, 1]]);
+  assert.strictEqual(L.predictionCheck(items, 10 * 6e4).n, 0);              // since: none that new
+});
+
+check('the optimizer CSV: from the last lesson, a relearning good after an again', () => {
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  L.review(it, 1, t0 + 3 * DAY, null);
+  const k = L.known('char', {}, t0, 0);
+  L.review(k, 3, t0 + 30 * DAY, null);                                       // never had a lesson: left out
+  const m = Math.round(t0 / 6e4) * 6e4, m3 = Math.round((t0 + 3 * DAY) / 6e4) * 6e4;
+  const out = L.reviewLogCsv({ 好: it, 是: k });
+  assert.deepStrictEqual(out.items, ['好']);
+  assert.strictEqual(out.csv, `card_id,review_time,review_rating\n1,${m},3\n1,${m3},1\n1,${m3 + 6e4},3\n`);
+  // learnt again: only the new run counts
+  Object.assign(it, { stage: 0 });
+  L.finishLesson(it, t0 + 5 * DAY, 2);
+  assert.strictEqual(L.reviewLogCsv({ 好: it }).csv.trim().split('\n').length, 2);
+});
+
 console.log(`\n${n} checks passed`);

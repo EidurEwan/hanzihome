@@ -2069,6 +2069,9 @@ function pageStats() {
     .map(([k, it]) => [k, it, (it.hist || []).filter(Boolean).length / it.hist.length])
     .sort((a, b) => a[2] - b[2] || (b[1].D || 0) - (a[1].D || 0)).slice(0, 12);
   const mins = sec => sec < 3600 ? Math.round(sec / 60) + ' min' : (sec / 3600).toFixed(1) + ' h';
+  // FSRS's chance of recall at each logged review, against what happened (Learn.predictionCheck)
+  const pred = Learn.predictionCheck(d.items), PRED_MIN = 30;
+  const pp = x => Math.round(100 * x) + '%';
 
   app.innerHTML = '<h1 class="page-title">Statistics</h1>' + withRail(`
     <section class="card">
@@ -2098,6 +2101,22 @@ function pageStats() {
         and below it when reviews have piled up.</p>` : '<p class="empty">Nothing reviewed yet.</p>'}
     </section>
     <section class="card">
+      <h2 class="caps">How well FSRS predicts you</h2>
+      ${pred.n >= PRED_MIN ? `<table><thead><tr><th>FSRS gave it</th><th>Reviews</th><th>Expected right</th><th>You got right</th></tr></thead><tbody>
+        ${pred.groups.map(x => `<tr><td>${x.to >= 1 ? pp(x.from) + ' or more' : pp(x.from) + '–' + pp(x.to)}</td><td class="num">${x.n}</td>
+          <td class="num">${pp(x.predicted)}</td><td class="num ${x.n >= 20 && x.actual < x.predicted - 0.1 ? 'st-low' : ''}">${pp(x.actual)}</td></tr>`).join('')}
+        <tr><td><b>All</b></td><td class="num"><b>${pred.n}</b></td><td class="num"><b>${pp(pred.predicted)}</b></td><td class="num"><b>${pp(pred.actual)}</b></td></tr>
+      </tbody></table>
+      <p class="small muted">Each review, FSRS says how likely you are to recall the item. When it knows you well, the
+        two columns agree. Far fewer right than expected means it waits too long for you (a higher retention in Settings
+        brings reviews sooner); far more, that it could wait longer. Anything but a wrong answer counts as right.</p>`
+        : `<p class="empty">This builds up as you review: ${pred.n} of the first ${PRED_MIN} reviews logged so far.</p>`}
+      <p class="row"><button class="btn quiet" id="st-revlog">Download the review log</button></p>
+      <p class="small muted">A CSV for the <a href="https://github.com/open-spaced-repetition/fsrs-optimizer" target="_blank" rel="noopener">FSRS
+        optimizer</a>, which fits FSRS's weights to your own reviews (worth it after a thousand or so). Each item is in it from its
+        lesson on; characters marked learned without a lesson are not.</p>
+    </section>
+    <section class="card">
       <h2 class="caps">The next two weeks</h2>
       <div class="lx-fc">${fc.map((n, i) => `<div><span>${i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
         : new Date(now + i * Learn.DAY).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</span>
@@ -2115,5 +2134,13 @@ function pageStats() {
       <div class="lx-chips">${hardest.map(([k, it, r]) => `<a class="lx-chip" href="${itemHref(k)}">
         <span class="han">${itemHtml(k)}</span><span>${esc(primary(it))} <small class="muted">${Math.round(100 * r)}% right</small></span></a>`).join('')}</div>
     </section>` : ''}`, true);
+  document.getElementById('st-revlog').addEventListener('click', () => {
+    const blob = new Blob([Learn.reviewLogCsv(Store.load().items).csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `hanzihome-revlog-${today()}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
   paintRail();
 }
