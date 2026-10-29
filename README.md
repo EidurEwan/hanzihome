@@ -86,9 +86,14 @@ an in-memory sheet on `http://localhost:8787/exec`.
 
 ## What's in it
 
-**Dashboard** — a week-streak card, counts of what you are learning versus what you have
-learned, and the most common characters as a tile grid you can filter by
-All / Not known / Learning / Learned. A right-hand rail follows you across every page with:
+**The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
+size: a card with your week streak and the characters and words you have learned, the three
+main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
+
+**Today** (the home page) — today's lessons and reviews first, then the week streak and counts
+of what you are learning versus what you have learned, the progress cards two by two, and the
+most common characters as a tile grid you can filter by All / Not known / Learning / Learned.
+The progress cards:
 
 * **Character progress** — searched, components known, learning, learned.
 * **Reading coverage** — a donut showing what share of ordinary running text your learned
@@ -456,8 +461,8 @@ After the game look of the Boxes app (`andrewtmitchell/boxes`, its `light-mode-a
 branch): warm paper (`#F6F4EF`) with charcoal text (`#222`), or in the dark charcoal with
 white text; yellow (`#FDE24D`) pill buttons that stand on a darker edge (`#D4B21F`) and sink
 onto it when pressed, as do the chips, tabs and the study tiles; Boxes' pink, green and blue
-for the lessons, reviews and stages; and a charcoal sidebar with the current page as a yellow
-pill. Three of Boxes' buddies (`site/img/`: the flame by the streak, the gift and the
+for the lessons, reviews and stages; and the menu, after Boxes' drawer, with the current page as a
+yellow pill. Three of Boxes' buddies (`site/img/`: the flame by the streak, the gift and the
 hourglass on the study tiles) come from its artwork.
 
 The character cards keep HanziHome's own 3D: each stands on an edge in the colour of its
@@ -475,21 +480,20 @@ pyftsubset Poppins-Regular+pinyin.ttf --unicodes="U+0000-024F,U+02BB-02BC,U+02C6
 ```
 
 Chinese uses a sans CJK stack (`Noto Sans SC`, `PingFang SC`, `Microsoft YaHei`). Character
-tiles are capped at 15 per row, and the content column is centred rather than pinned to the
-sidebar.
+tiles are capped at 15 per row, in one centred column.
 
 ## Screen sizes
 
 The list card is always a whole number of tiles wide plus its gutters, so it snaps down a
 card at a time as the window narrows instead of overflowing.
 
+Every page is one centred column, and the menu is a drawer at every size.
+
 | Window | Layout | Cards per row |
 | --- | --- | --- |
-| 1480 px and up | list + rail side by side | up to 15 |
-| 1181–1479 px | list + narrower rail | as many as fit |
-| 901–1180 px | one column, rail cards above the list | up to 12 |
-| 601–900 px | nav becomes a slide-in drawer | up to 10 |
-| 600 px and under | phone spacing, rail cards stacked | as many as fit (6 on a 375 px phone) |
+| 901 px and up | the column at its widest; home's progress cards two by two | up to 15 |
+| 601–900 px | tighter gutters | up to 10 |
+| 600 px and under | phone spacing, home's cards one under another, the logo without its name | as many as fit (6 on a 375 px phone) |
 
 Tables scroll sideways inside their card. On touch screens a tap opens a card's status menu
 and a second tap opens the character.

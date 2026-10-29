@@ -15,7 +15,7 @@
 const CACHE = 'hanzihome';
 const SHELL = ['./', 'index.html', 'logo.svg?v=2', 'favicon.svg?v=2', 'manifest.webmanifest?v=2',
   'fonts/poppins-400.woff2', 'fonts/poppins-500.woff2', 'fonts/poppins-600.woff2',
-  'img/flame.svg', 'img/gift.svg', 'img/hourglass.svg'];
+  'img/flame.svg', 'img/gift.svg', 'img/hourglass.svg', 'img/star.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

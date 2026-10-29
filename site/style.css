@@ -53,6 +53,8 @@
   --tile-rim: #e6e2d9;
   --tile-edge: #d3cec3;
   --quiet-face: #ffffff; --quiet-edge: #d3cec3; --quiet-ink: #222222;
+  --drawer: #ebe8e1;        /* Boxes' drawer: a well, with white cards on it */
+  --drawer-card: #ffffff;
   --word-hover: #fdf0b0;
   --radius: 16px;
   --shadow: 0 1px 0 rgba(60, 50, 30, .04), 0 2px 4px rgba(60, 50, 30, .05), 0 10px 24px -8px rgba(60, 50, 30, .12);
@@ -1414,6 +1416,7 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
   --tile-rim: #3a3a3a;
   --tile-edge: #141414;
   --quiet-face: #3a3a3a; --quiet-edge: #151515; --quiet-ink: #ffffff;
+  --drawer: #181818; --drawer-card: #262626;
   --hl-learned: #1d4a39;
   --hl-learning: #23385c;
   --hl-hover: #5a4a14;
@@ -1455,6 +1458,7 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
   --tile-rim: #3a3a3a;
   --tile-edge: #141414;
   --quiet-face: #3a3a3a; --quiet-edge: #151515; --quiet-ink: #ffffff;
+  --drawer: #181818; --drawer-card: #262626;
   --hl-learned: #1d4a39;
   --hl-learning: #23385c;
   --hl-hover: #5a4a14;
@@ -1930,4 +1934,124 @@ mark.ex-w, .lx-ex mark { background: var(--accent-soft); color: inherit; }
   .wordtable .seg3 button { padding: 3px 5px; font-size: 11px; }
   .wordtable .btn.small { padding: 4px 8px; }
   .streak .big::before { width: 32px; height: 38px; }
+}
+
+
+/* =====================================================================
+   The layout (Boxes): one column, the menu in a drawer
+   ---------------------------------------------------------------------
+   As in Boxes, there is no standing sidebar: the menu button at the top
+   left opens a drawer over the page, at every size. It holds a player card
+   (streak, characters and words learned), the three main places as cards
+   with a coloured tile (Study, Words, Reader), the rest as quiet rows, and
+   the small print (where your data is) at the bottom. Pages are one centred
+   column, a whole number of character cards wide; the progress cards that
+   stood beside every page are the home page's.
+   ===================================================================== */
+
+:root { --drawer-w: min(360px, calc(100vw - 56px)); --cols: 15; --fit: 100cqi; --page-w: var(--list-card-w); }
+
+/* ---- the top bar: the menu button, the name, the search ---- */
+.topbar { gap: 10px; padding: 0 16px 0 10px; }
+.hamburger { display: none !important; }
+.menu-btn { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 14px;
+  background: transparent; color: var(--ink); cursor: pointer; }
+.menu-btn:hover { background: var(--hover); }
+.menu-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.menu-btn svg { width: 26px; height: 26px; }
+.topbar .search { margin: 0 auto; width: min(460px, 46vw); }
+
+/* ---- the drawer ---- */
+.shell { display: block; }
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; height: auto; z-index: 90;
+  width: var(--drawer-w); background: var(--drawer); color: var(--ink);
+  border-radius: 0 24px 24px 0; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  transform: translateX(-105%); visibility: hidden;
+  transition: transform .22s ease, visibility 0s linear .22s;
+}
+.sidebar.open { transform: none; visibility: visible; transition: transform .22s ease, visibility 0s;
+  box-shadow: 0 0 48px rgba(0, 0, 0, .28); }
+body.nav-open::after { content: ""; position: fixed; inset: 0; z-index: 85; background: rgba(20, 20, 20, .42); }
+body.nav-open { overflow: hidden; }
+
+/* the player card */
+.player { margin: 16px 16px 12px; padding: 18px 18px 16px; background: var(--drawer-card); border-radius: 20px; }
+.player-top { display: flex; align-items: center; gap: 14px; }
+.avatar { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  background: var(--yellow); color: #222; font-size: 24px; }
+.player-name { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.player-name b { font-size: 18px; font-weight: 600; }
+.player-name span { font-size: 12.5px; color: var(--ink-2); }
+.player .buddy { width: 40px; height: 40px; flex: none; }
+.player-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px;
+  font-size: 12px; line-height: 1.3; color: var(--ink-2); }
+.player-stats span { display: flex; align-items: center; gap: 4px; }
+.player-stats b { font-size: 22px; font-weight: 500; color: var(--ink); line-height: 1.35; }
+.player-stats img { width: 16px; height: 20px; }
+
+/* the three main places, as cards */
+.sidebar nav { padding: 0; gap: 0; }
+.sidebar nav a.main { margin: 0 16px 8px; padding: 12px; gap: 14px; border-radius: 16px;
+  background: var(--drawer-card); color: var(--ink); font-size: 17px; font-weight: 500; box-shadow: none;
+  transition: transform .1s ease; }
+.sidebar nav a.main:hover { background: var(--drawer-card); }
+.sidebar nav a.main:active { transform: scale(.97); }
+.sidebar nav a.main.on { background: var(--drawer-card); color: var(--ink); box-shadow: inset 0 0 0 2px var(--yellow-edge); font-weight: 600; }
+.ico { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: #222; }
+/* (the old sidebar's rule for its icon slot: an 18px span) */
+.sidebar nav a span.ico { width: 40px; opacity: 1; font-size: inherit; text-align: initial; }
+.sidebar nav a span.lbl { width: auto; opacity: 1; font-size: inherit; text-align: left; }
+.ico.pink { background: var(--pink); } .ico.mint { background: var(--mint); } .ico.sky { background: var(--sky); }
+.sidebar nav a .ico svg { width: 22px; height: 22px; opacity: 1; }
+.lbl { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.chev { flex: none; width: 20px; height: 20px; color: var(--ink-2); }
+.sidebar nav a.main em { background: var(--panel-2); color: var(--ink-2); }
+
+/* the rest, as rows */
+.nav-rows { display: flex; flex-direction: column; margin-top: 6px; }
+.sidebar .nav-rows a { margin: 0 16px; padding: 10px 12px; gap: 16px; border-radius: 12px;
+  color: var(--ink); font-size: 15px; font-weight: 400; box-shadow: none; }
+.sidebar .nav-rows a svg { color: var(--ink-2); opacity: 1; }
+.sidebar .nav-rows a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.sidebar .nav-rows a.on { background: var(--yellow); color: #222; font-weight: 600; box-shadow: 0 3px 0 var(--yellow-edge); }
+.sidebar .nav-rows a.on svg { color: #222; }
+
+/* the small print */
+.side-foot { margin-top: auto; padding: 16px 28px 18px; border-top: 0; }
+.side-foot .who { color: var(--ink); font-weight: 500; font-size: 13px; }
+.side-foot .muted { color: var(--ink-2); }
+
+/* ---- the page: one centred column ---- */
+#app { padding: 28px 24px 72px; }
+.dash { grid-template-columns: minmax(0, var(--list-card-w)); }
+#app > * { max-width: var(--list-card-w); }
+@supports (width: round(down, 101px, 10px)) {
+  .dash { grid-template-columns: var(--list-fit); }
+  #app > * { max-width: var(--list-fit); }
+}
+#app > .readlayout { max-width: none; }
+#app > .crumb { max-width: var(--list-card-w); }
+@supports (width: round(down, 101px, 10px)) { #app > .crumb { max-width: var(--list-fit); } }
+#app > .crumb:has(+ .readlayout) { max-width: none; }            /* the reader's: as wide as the reader */
+
+/* the home page: today's study, the streak, the progress cards two by two, the list */
+.home .lx-hub { margin-bottom: 20px; }
+.home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; align-items: start; }
+.home-grid .card { margin: 0; padding-inline: 20px; }
+
+@media (max-width: 900px) {
+  :root { --cols: 10; }
+  #app { padding: 20px 16px 56px; }
+  .topbar .search { flex: 1; width: auto; max-width: 460px; }
+}
+@media (max-width: 600px) {
+  #app { padding: 14px 12px 48px; }
+  .topbar { padding: 0 10px 0 6px; gap: 6px; }
+  .topbar .brand span { display: none; }          /* the logo alone, so the search has room */
+  .home-grid { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar.open { transition: none; }
 }
