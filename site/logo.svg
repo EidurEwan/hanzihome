@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- HanziHome: 字 ("character") in a writing-practice square (田字格).
        desktop/tools/make-icons.js leaves out the guides at 24px and below. -->
-  <rect x="1.5" y="1.5" width="29" height="29" rx="6" fill="#fffaf5" stroke="#b83746" stroke-width="2.2"/>
-  <path id="guides" d="M16 3v26M3 16h26" stroke="#b83746" stroke-width="1" stroke-dasharray="1.6 1.6" opacity=".45"/>
-  <g transform="translate(4 3.6) scale(.75)" fill="none" stroke="#111827" stroke-width="3.3"
+  <rect x="1.5" y="1.5" width="29" height="29" rx="6" fill="#fde24d" stroke="#222222" stroke-width="2.2"/>
+  <path id="guides" d="M16 3v26M3 16h26" stroke="#222222" stroke-width="1" stroke-dasharray="1.6 1.6" opacity=".3"/>
+  <g transform="translate(4 3.6) scale(.75)" fill="none" stroke="#222222" stroke-width="3.3"
      stroke-linecap="round" stroke-linejoin="round">
     <path d="M16 3.8V6.2"/>
     <path d="M6.5 11V8.2H25.5V11"/>
