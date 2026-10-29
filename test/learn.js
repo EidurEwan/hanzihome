@@ -81,6 +81,25 @@ check('the rating comes from the answers, not from asking', () => {
   assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)]), 1);       // wrong
 });
 
+check('easy needs a month of memory and no trouble last time', () => {
+  const a = (ok, ms) => ({ ok, ms, near: false }), quick = [a(true, 1200), a(true, 2500)];
+  const lesson = L.newItem('char', {}, t0);
+  assert.strictEqual(L.gradeFrom(quick, lesson), 3);                          // a lesson's quiz: good at best
+  const young = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
+  assert.strictEqual(L.gradeFrom(quick, young), 3);                           // S 3 days: quick is just recent
+  const month = { stage: 5, S: 30, D: 5, grades: [3, 3, 3] };
+  assert.strictEqual(L.gradeFrom(quick, month), 4);
+  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 2] }), 3);   // hard last time
+  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 1] }), 3);   // forgotten last time
+  assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)], month), 1);
+  // a joined (calibration) item starts at a month: quick there still says easy
+  assert.strictEqual(L.gradeFrom(quick, L.known('char', {}, t0, 0)), 4);
+  // quick answers every time no longer reach years after three reviews
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3), waits = [];
+  for (let i = 0; i < 4; i++) { const now = it.due; L.review(it, L.gradeFrom(quick, it), now, null); waits.push(Math.round((it.due - now) / DAY)); }
+  assert.deepStrictEqual(waits, [11, 35, 232, 1420]);
+});
+
 check('an item from before FSRS keeps its place', () => {
   const it = { stage: 5, due: t0 + 10 * DAY, hist: [true, false, true] };
   L.adopt(it);
@@ -113,6 +132,23 @@ check('meaning: alternatives, "to", brackets, typos, synonyms', () => {
   for (const a of ['', 'eat', 'no', 'familiar']) assert.ok(!L.checkMeaning(a, it), `${a} should be wrong`);
   it.syn.push('meet');
   assert.ok(L.checkMeaning('meet', it));
+});
+
+check('meaning: a real word is no typo; British spellings are no typo either', () => {
+  const words = new Set(['tell', 'sell', 'month', 'mouth', 'colour', 'grey', 'center']), isWord = w => words.has(w);
+  const of = (mean, alts) => L.newItem('char', { mean, alts }, t0);
+  assert.ok(!L.checkMeaning('tell', of('to sell'), isWord));
+  assert.ok(L.checkMeaning('tell', of('to sell')));                          // (without a word list: a typo)
+  assert.ok(!L.checkMeaning('month', of('mouth'), isWord));
+  assert.ok(L.checkMeaning('to selll', of('to sell'), isWord));                 // a typo still is one
+  assert.ok(L.checkMeaning('to knwo', of('to know'), isWord));
+  assert.ok(L.checkMeaning('to sell', of('to sell'), isWord));
+  for (const [ans, mean] of [['colour', 'color'], ['grey', 'gray'], ['centre', 'center'], ['to recognise', 'to recognize'],
+    ['travelling', 'traveling'], ['theatre', 'theater'], ['to analyse', 'to analyze'], ['favourite', 'favorite']]) {
+    assert.ok(L.checkMeaning(ans, of(mean), isWord), `${ans} for ${mean}`);
+    assert.ok(L.checkMeaning(mean, of(ans), isWord), `${mean} for ${ans}`);
+  }
+  assert.ok(!L.checkMeaning('four', of('for'), w => w === 'four'));          // (-our is only British past 5 letters)
 });
 
 check('pinyin validation: real syllables, tones after syllables', () => {
@@ -225,10 +261,24 @@ check('plan: reviews in order, under a soft daily limit; vacation stops everythi
   const p = L.plan(items, { reviewLimit: 3 }, t0 + 1000, env);
   assert.strictEqual(p.reviewsToday, 2);
   assert.strictEqual(p.reviewsLeft, 1);
+  // a lesson today is not a review today
+  items['五'] = L.finishLesson(queued('char', 9), t0 + 500);
+  assert.strictEqual(L.plan(items, { reviewLimit: 3 }, t0 + 1000, env).reviewsToday, 2);
   const v = L.plan(items, { vacation: t0 }, t0, env);
   assert.deepStrictEqual([v.lessons.length, v.reviews.length, v.vacation], [0, 0, true]);
   L.resume(items, t0 - 5 * DAY, t0);
   assert.strictEqual(items['三'].due, t0 - 2000 + 5 * DAY);
+});
+
+check('a leech learnt again is no longer a leech', () => {
+  const it = L.finishLesson(L.newItem('char', {}, t0), t0 - 60 * DAY);
+  for (let i = 0; i < 4; i++) L.review(it, 1, t0 - (50 - 5 * i) * DAY);
+  assert.ok(L.isLeech(it));
+  Object.assign(it, { stage: 0, due: 0, prio: true });                         // Learn again
+  delete it.learnt;
+  L.finishLesson(it, t0, 3);
+  assert.ok(!L.isLeech(it));
+  assert.deepStrictEqual([it.lapses, it.hist], [0, []]);
 });
 
 check('a learned character joins at Journeyman I without using a lesson', () => {

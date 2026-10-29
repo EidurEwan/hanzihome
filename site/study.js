@@ -31,6 +31,20 @@ function numbered(pin) {
   }).join('');
 }
 
+/* is this answer a meaning in its own right: of a character in the dictionary, or of
+   one of your items? Then it is not let through as a typo of another meaning (tell for
+   sell). Built at the first answer of a session (about a tenth of a second; the words'
+   ninety thousand meanings would take five times that and add little). */
+let wordSet = null;
+function isWord(a) {
+  if (!wordSet) {
+    wordSet = new Set();
+    for (const e of Object.values(HZ.index)) Learn.meanings({ mean: e[3] }).forEach(m => wordSet.add(m));
+    for (const it of Object.values(Store.load().items)) Learn.meanings(it).forEach(m => wordSet.add(m));
+  }
+  return wordSet.has(a);
+}
+
 const kindName = it => ({ word: 'Word', comp: 'Component', sound: 'Sound' })[it.kind] || 'Character';
 
 /* what Store.plan() needs to know about characters, for unlocking: how far along each
@@ -839,6 +853,7 @@ async function pageLessons() {
       return;
     }
     lessonState = { batch, i: 0, tab: 0, done: [], intro: [], grade: {} };
+    wordSet = null;
   }
   const s = lessonState;
   if (s.i >= s.batch.length) {
@@ -976,7 +991,7 @@ async function pageLessons() {
       }
       const ma = document.getElementById('lx-mean').value;
       if (!ma.trim()) return;
-      if (Learn.checkMeaning(ma, it)) {
+      if (Learn.checkMeaning(ma, it, isWord)) {
         Sound.ding();
         // the quiz is the item's first rating for FSRS: right first time is good, one
         // miss hard, more again
@@ -1155,6 +1170,7 @@ function questionsFor(it, cfg) {
 }
 
 function newSession(keys, mode = 'review') {
+  wordSet = null;                                  // (isWord: your items as they are now)
   // Item question order: pronunciation then meaning, in pairs or shuffled (a meaning
   // still waits for its pronunciation, listening comes first and writing last: see
   // deferQuestion)
@@ -1276,7 +1292,7 @@ async function pageReviews() {
       document.getElementById('rv-hint').hidden = false;
       return;
     }
-    const ok = q === 'pinyin' ? Learn.checkPinyin(answer, it.pin) : Learn.checkMeaning(answer, it);   // (listen: the meaning)
+    const ok = q === 'pinyin' ? Learn.checkPinyin(answer, it.pin) : Learn.checkMeaning(answer, it, isWord);   // (listen: the meaning)
     if (ok) {
       Sound.ding();
       if (q === 'pinyin') Sound.say(k);
@@ -1395,7 +1411,8 @@ function wireLeeches(redraw) {
     else if (what === 'rest') { it.rest = Date.now() + 14 * Learn.DAY; Store.save(); redraw(); }
     else if (what === 'wake') { delete it.rest; Store.save(); redraw(); }
     else if (what === 'relearn') {
-      // a fresh start: its lesson again, at the front of the queue; what was learnt of it stays in its history
+      // a fresh start: its lesson again, at the front of the queue (which clears its misses,
+      // so it is no longer a leech unless it starts slipping again; relearn counts the times)
       Object.assign(it, { stage: 0, due: 0, prio: true, relearn: (it.relearn || 0) + 1 });
       delete it.rest; delete it.learnt;
       Store.save();
@@ -1619,7 +1636,7 @@ function nextQuestion() {
     a[q] = true;
     if ((s.need[k] || ['pinyin', 'meaning']).every(x => a[x])) {
       const it = Store.item(k), right = !s.misses[k];
-      let g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}));
+      let g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}), it);
       const opts = { retention: Store.cfg().retention };
       if (s.mode === 'lessonquiz') {
         // the first review: the quiz, and the lesson's check before it, the worse of the two
@@ -1783,7 +1800,8 @@ const GRADE_WHY = [null,
   'A wrong answer (or the answer shown)',
   'Right, but with a slip of tone or after a long think',
   'Right first time',
-  'Right first time, and you started typing within ' + Learn.QUICK / 1000 + ' seconds on every question'];
+  'Right first time, and you started typing within ' + Learn.QUICK / 1000 + ' seconds on every question'
+    + ' (on an item remembered a month or more, not missed or hard last time)'];
 
 /* Practice: a session over the given items that leaves their schedule alone */
 function startPractice(keys) {

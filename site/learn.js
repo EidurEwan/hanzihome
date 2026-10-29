@@ -160,6 +160,7 @@
     item.reps = 1;
     item.lapses = 0;
     item.grades = [g];
+    item.hist = [];                         // (learnt again: a leech starts afresh)
     return schedule(item, now, opts.retention, opts.rnd);
   }
 
@@ -198,14 +199,24 @@
   /* The rating a review earned, worked out from the answers: one per question, each
      {ok, near (a slip: the right syllables with a wrong tone), ms (from the question
      showing to the first key typed)}. Wrong: again. A slip, or a long think: hard.
-     Right at once on every question: easy. Otherwise good. */
-  const QUICK = 3000, SLOW = 15000;
-  function gradeFrom(answers) {
+     Right at once on every question: easy. Otherwise good.
+     Given the item (as it was before this review), easy also needs it to have been
+     remembered a month (Journeyman) and its last rating not to have been again or
+     hard: a quick answer on a young item says more about having seen it lately than
+     about knowing it, and FSRS's easy multiplies the next wait by three. (A lesson's
+     quiz, before any memory, is good at best.) */
+  const QUICK = 3000, SLOW = 15000, EASY_FROM = STAGES[LEARNED_FROM][1];
+  function gradeFrom(answers, item) {
     if (!answers.length) return GOOD;
     if (answers.some(a => !a.ok && !a.near)) return AGAIN;
     if (answers.some(a => a.near || a.ms > SLOW)) return HARD;
-    if (answers.every(a => a.ms <= QUICK)) return EASY;
-    return GOOD;
+    if (!answers.every(a => a.ms <= QUICK)) return GOOD;
+    if (item) {
+      adopt(item);
+      const last = (item.grades || []).slice(-1)[0];
+      if (!(item.S >= EASY_FROM) || last < GOOD) return GOOD;
+    }
+    return EASY;
   }
   const GRADE_NAMES = [null, 'Again', 'Hard', 'Good', 'Easy'];
 
@@ -342,7 +353,9 @@
     const out = {
       lessons: [], waiting: [], locked: {},
       lessonsToday: today.length, wordsToday: today.filter(k => it(k).kind === 'word').length,
-      due: [], reviews: [], reviewsToday: keys.filter(k => it(k).last >= start).length, reviewsLeft: 0,
+      // (an item whose last time was its lesson was learnt today, not reviewed)
+      due: [], reviews: [], reviewsToday: keys.filter(k => it(k).last >= start && it(k).last !== it(k).learnt).length,
+      reviewsLeft: 0,
       vacation: !!cfg.vacation,
     };
 
@@ -511,13 +524,23 @@
     return out;
   }
 
+  /* British and American spellings of one word are the same answer, not a typo
+     (colour color, centre center, recognise recognize, grey gray, travelling traveling) */
+  const american = s => s.replace(/\b(\w{3,})our\b/g, '$1or').replace(/\b(\w{2,}[^aeiou\s])re\b/g, '$1er')
+    .replace(/\b(\w{3,})is(e|ed|es|ing|ation)\b/g, '$1iz$2').replace(/\b(\w{2,})ys(e|ed|es|ing)\b/g, '$1yz$2')
+    .replace(/\bgrey/g, 'gray').replace(/\b(\w{2,}[aeiou])ll(ed|ing|er)\b/g, '$1l$2');
+
   /* Right when the answer is one of the item's meanings, give or take "to", "a",
-     brackets and a typo (one letter wrong from 4 letters, two from 8) */
-  function checkMeaning(answer, item) {
+     brackets, spelling, and a typo (one letter wrong from 4 letters, two from 8).
+     isWord(a), if given, says the answer is a real meaning of its own (another
+     character's: sell and tell, mouth and month), which is then no typo but wrong. */
+  function checkMeaning(answer, item, isWord) {
     const a = norm(answer);
     if (!a) return false;
-    return meanings(item).some(m => m === a
-      || (a.length >= 4 && distance(a, m) <= (a.length >= 8 ? 2 : 1)));
+    const ms = meanings(item), us = american(a);
+    if (ms.some(m => m === a || american(m) === us)) return true;
+    if (a.length < 4 || (isWord && isWord(a))) return false;
+    return ms.some(m => distance(a, m) <= (a.length >= 8 ? 2 : 1));
   }
 
   /* Pinyin answer validation: is this pinyin at all? Every syllable has to be a real one
@@ -569,6 +592,6 @@
     review, known, resume, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
-    checkPinyin, checkMeaning, validPinyin, meanings, parsePinyin, soundOf,
+    checkPinyin, checkMeaning, validPinyin, meanings, american, parsePinyin, soundOf,
   };
 });
