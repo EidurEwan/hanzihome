@@ -245,7 +245,8 @@ page at a time, remembering your place (`site/books.js`, kept in the browser's I
 live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)
 sends any web page you are on, or the part you selected, to the reader; when context can't settle a meaning, the popup names the other one too.
 
-**Translate** (`#/translate`, in the menu) — English to Chinese or Chinese to English, the
+**Translate** (`#/translate`, in the menu) — English to Chinese, Chinese to English, or
+pinyin to English (with tone numbers `ni3 hao3`, tone marks `nǐ hǎo`, or no tones), the
 direction found by itself or chosen. The Chinese side, whichever it is, comes back as word
 cards: each word with its pinyin and the meaning it has in this sentence, coloured by how well
 you know it, opening its word or character page. Then the sentence's structure in one line and
@@ -262,6 +263,12 @@ in the store, so never synced or exported. The SDK, `@anthropic-ai/sdk` bundled 
 (`site/vendor/anthropic-sdk.js`, Apache-2.0), loads only when a translation is sent. Without a
 key, or offline, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
 and its grammar explained by pattern (`site/grammar.js`, checked by `node test/grammar.js`);
+pinyin is turned into characters first, as a simple input method does (`site/pinyin.js`,
+checked by `node test/pinyin.js`): every way of grouping the syllables into words is scored by
+how often each word is used on its own in jieba's corpus, a tone you typed has to match, and a
+little context from the word before helps (吧 at the end of a sentence, 贵 after 很, 书 after a
+measure word, a verb after 我). Without tones it is a guess, so each word that could likely be
+another becomes a picker: choose 借 for 接 and the cards and grammar follow;
 English gets the likeliest Chinese words for each word from the dictionary, which is not a
 translation, and the page says so.
 
@@ -307,6 +314,8 @@ site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
 site/translate.js       the translator: Claude with your API key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
+site/pinyin.js          turns pinyin into characters, offline, for the translator
+test/pinyin.js          checks pinyin.js
 test/grammar.js         checks grammar.js
 test/accuracy.js        scores textstory.js against the hand-glossed stories
 sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet

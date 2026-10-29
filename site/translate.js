@@ -1,6 +1,7 @@
 /* translate.js — a translator between English and Chinese (#/translate).
  *
- * Type or paste either language. The Chinese side, whichever it is, comes back as
+ * Type or paste either language, or Chinese written in pinyin (with tone marks, tone
+ * numbers or none). The Chinese side, whichever it is, comes back as
  * word cards: each word with its pinyin and the meaning it has in this sentence,
  * coloured by how well you know it, opening its word or character page. Under them,
  * the grammar the sentence uses, explained.
@@ -12,9 +13,10 @@
  *     The key is kept in this browser's localStorage only, never in the store, so it
  *     is never synced or exported.
  *   - Without a key, or offline: Chinese is cut into words and glossed in context by
- *     textstory.js, and grammar.js explains the patterns it finds; English gets each
- *     word's likeliest Chinese words from the dictionary. Not a translation, and the
- *     page says so.
+ *     textstory.js, and grammar.js explains the patterns it finds; pinyin is turned into
+ *     characters first by pinyin.js, each guessed word with a choice of the others its
+ *     syllables could be; English gets each word's likeliest Chinese words from the
+ *     dictionary. Not a translation, and the page says so.
  */
 
 'use strict';
@@ -29,6 +31,17 @@ function setTrKey(k) {
   catch (e) { /* private mode: nothing kept */ }
 }
 const hasHan = s => [...s].some(isHan);
+
+/* Is this Chinese written in pinyin? Every word has to be pinyin (Learn.validPinyin); then
+   tone marks or numbers settle it, and otherwise it is pinyin unless it has the little
+   words English can't do without (a, the, is …: "a man" is English, "ni hao" is not). */
+const EN_LITTLE = /^(a|the|is|are|am|to|of|and|in|it|you|i|my|me|this|that|be|was|for|on|with|not|do|can|have|has|he|she|we)$/;
+function looksLikePinyin(text) {
+  const words = text.toLowerCase().replace(/[.,!?;:()"“”。，！？]/g, ' ').split(/\s+/).filter(Boolean);
+  if (!words.length || !words.every(w => Learn.validPinyin(w))) return false;
+  if (/[1-5]|[\u0300-\u036f]/.test(text.normalize('NFD'))) return true;
+  return words.length > 1 && !words.some(w => EN_LITTLE.test(w));
+}
 
 /* kept while the app is open, so a word's page and back finds the translation again */
 const trState = { text: '', dir: 'auto', result: null, busy: false };
@@ -72,7 +85,9 @@ const TR_SCHEMA = {
 
 const TR_SYSTEM = `You are the translator in HanziHome, an app for people learning Mandarin Chinese.
 
-You get a text and a direction: English to Chinese, or Chinese to English. Translate it naturally, the way a native speaker would say it, in simplified characters, in the register of the original.
+You get a text and a direction: English to Chinese, Chinese to English, or pinyin to English. Translate it naturally, the way a native speaker would say it, in simplified characters, in the register of the original.
+
+Pinyin is Mandarin written in letters, with tone marks, tone numbers or no tones at all, and often with mistakes. For pinyin, first work out the characters the writer meant, using the context and the tones they gave; those characters are the Chinese side. If a syllable could be more than one word and the context doesn't settle it, choose the likelier and say so in the notes.
 
 Then explain the Chinese side (the original when translating from Chinese, your translation when translating into it) for a learner who reads English: cut it into words as a Chinese dictionary would (每天, not 每 天; 一本书 as 一 / 本 / 书), each with pinyin in tone marks and what it means in this sentence. Give a one-line structure of the sentence, then the grammar points a learner needs to understand it: word order that differs from English, particles (了, 过, 着, 的, 得, 吗, 呢, 吧), measure words, patterns (把, 被, 是…的, 比, 因为…所以), and anything that would trip up a learner. Explain why the Chinese is built the way it is, briefly and concretely, quoting the sentence's own words. Skip points that are obvious; for a long text, choose the most useful points rather than covering everything.
 
@@ -92,7 +107,7 @@ async function translateWithClaude(text, dir) {
     output_config: { effort: 'low', format: { type: 'json_schema', schema: TR_SCHEMA } },
     messages: [{
       role: 'user',
-      content: `Direction: ${dir === 'en-zh' ? 'English to Chinese' : 'Chinese to English'}.\n\n<text>\n${text}\n</text>`,
+      content: `Direction: ${{ 'en-zh': 'English to Chinese', 'zh-en': 'Chinese to English', 'py-en': 'pinyin to English' }[dir]}.\n\n<text>\n${text}\n</text>`,
     }],
   });
   if (res.stop_reason === 'refusal') throw Object.assign(new Error('Claude declined to translate this text.'), { kind: 'refusal' });
@@ -142,6 +157,11 @@ function enIndex() {
 }
 
 async function translateOffline(text, dir) {
+  if (dir === 'py-en') {
+    await Promise.all([need.textStory(), loadScript('pinyin.js')]);
+    const hz = Pinyin.toHanzi(text, HZ, Learn);
+    return Object.assign(await translateOffline(hz.text, 'zh-en'), { dir, pinyinWords: hz.words, unknown: hz.unknown });
+  }
   if (dir === 'zh-en') {
     await need.textStory();
     const st = TextStory.textToStory(text, HZ);
@@ -176,11 +196,11 @@ async function pageTranslate() {
   const key = !!trKey();
   app.innerHTML = `<h1 class="page-title">Translate</h1>
     <section class="card tr-in">
-      <textarea id="tr-text" maxlength="${TR_MAX}" placeholder="Type or paste English or Chinese…" lang="zh-CN"
+      <textarea id="tr-text" maxlength="${TR_MAX}" placeholder="Type or paste English, Chinese, or pinyin (ni3 hao3, nǐ hǎo or ni hao)…" lang="zh-CN"
         autocapitalize="off" spellcheck="false">${esc(trState.text)}</textarea>
       <div class="tr-bar">
         <div class="seg" id="tr-dir" role="group" aria-label="Direction">
-          ${[['auto', 'Auto'], ['en-zh', 'English → 中文'], ['zh-en', '中文 → English']].map(([v, l]) =>
+          ${[['auto', 'Auto'], ['en-zh', 'English → 中文'], ['zh-en', '中文 → English'], ['py-en', 'Pinyin → English']].map(([v, l]) =>
             `<button data-dir="${v}" class="${trState.dir === v ? 'on' : ''}">${l}</button>`).join('')}
         </div>
         <span class="small muted" id="tr-count"></span>
@@ -188,7 +208,7 @@ async function pageTranslate() {
       </div>
       <p class="small muted tr-mode">${key
         ? 'Translated by Claude with your API key (Settings → Translator); the text is sent to Anthropic.'
-        : 'Offline: Chinese is read word by word with its grammar; English gets dictionary words. <a href="#/settings">Add an Anthropic API key</a> for full translations.'}</p>
+        : 'Offline: Chinese, or pinyin turned into characters, is read word by word with its grammar; English gets dictionary words. <a href="#/settings">Add an Anthropic API key</a> for full translations.'}</p>
     </section>
     <div id="tr-out"></div>`;
 
@@ -209,7 +229,7 @@ async function pageTranslate() {
 async function runTranslate() {
   const text = trState.text.trim();
   if (!text || trState.busy) return;
-  const dir = trState.dir !== 'auto' ? trState.dir : hasHan(text) ? 'zh-en' : 'en-zh';
+  const dir = trState.dir !== 'auto' ? trState.dir : hasHan(text) ? 'zh-en' : looksLikePinyin(text) ? 'py-en' : 'en-zh';
   const out = document.getElementById('tr-out'), btn = document.getElementById('tr-go');
   trState.busy = true;
   btn.disabled = true;
@@ -265,15 +285,30 @@ function drawTranslation(r) {
   if (r.source === 'claude') {
     top = r.dir === 'en-zh'
       ? `<p class="tr-result han">${zhOne(r.translation)}</p><p class="tr-result-pin">${esc(r.pinyin)}</p>`
-      : `<p class="tr-result">${esc(r.translation)}</p>`;
-  } else if (r.dir === 'zh-en' && r.gloss) {
+      : r.dir === 'py-en'
+        ? `<p class="tr-result han tr-from-py">${zhOne(zhText)}</p><p class="tr-result">${esc(r.translation)}</p>`
+        : `<p class="tr-result">${esc(r.translation)}</p>`;
+  } else if ((r.dir === 'zh-en' || r.dir === 'py-en') && r.gloss) {
     top = `<p class="tr-gloss"><b>Word by word:</b> ${esc(r.gloss)}</p>
       <p class="small muted">A reading of each word in context, not a translation. ${trKey() ? '' : '<a href="#/settings">Add an API key</a> for a full translation.'}</p>`;
   }
 
+  // pinyin read offline: the characters, each word that could be another a choice
+  const pyCard = r.pinyinWords ? `<section class="card tr-py">
+      <h2 class="caps">In characters</h2>
+      <p class="tr-py-line han">${r.pinyinWords.map((x, i) => !x.alts || !x.alts.length ? `<span>${zhOne(x.w)}</span>`
+        : `<select class="tr-pick" data-i="${i}" aria-label="${esc(x.pin)}: other characters">
+            ${[{ w: x.w, pin: x.pin }].concat(x.alts).map(a => `<option value="${esc(a.w)}">${esc(a.w)}  ${esc(a.pin)}</option>`).join('')}
+          </select>`).join('')}</p>
+      <p class="small muted">Guessed from your pinyin${/[1-5]|[\u0300-\u036f]/.test(trState.text.normalize('NFD')) ? '' : ' without tones'}:
+        a word with a ▾ could be another; choose it and the rest follows. ${(r.unknown || []).length
+          ? `Not pinyin: <b>${esc(r.unknown.join(', '))}</b>.` : ''}</p>
+    </section>` : '';
+
   out.innerHTML = `
     ${r.problem ? `<p class="tr-problem">${esc(r.problem)}</p>` : ''}
-    ${top ? `<section class="card tr-top"><h2 class="caps">${r.dir === 'en-zh' ? 'In Chinese' : 'In English'}</h2>${top}
+    ${pyCard}
+    ${top ? `<section class="card tr-top"><h2 class="caps">${r.dir === 'en-zh' ? 'In Chinese' : r.dir === 'py-en' && r.source === 'claude' ? 'In characters and English' : 'In English'}</h2>${top}
       ${r.notes ? `<p class="tr-notes">${esc(r.notes)}</p>` : ''}</section>` : ''}
     ${(r.words || []).length ? `<section class="card">
       <h2 class="caps">Word by word</h2>
@@ -296,8 +331,18 @@ function drawTranslation(r) {
         ${(g.words || []).length ? `<div class="tr-chips">${chips(g.words)}</div>` : ''}
         <p>${esc(g.explanation)}</p></div>`).join('')}
       ${r.source === 'offline' ? '<p class="small muted">Found by pattern, offline: the common patterns only, and a word with two jobs gets both explained.</p>' : ''}
-    </section>` : r.dir === 'zh-en' && r.words && r.words.length ? `<section class="card"><h2 class="caps">The grammar</h2>
+    </section>` : r.dir !== 'en-zh' && r.words && r.words.length ? `<section class="card"><h2 class="caps">The grammar</h2>
       <p class="muted">No common patterns found in this one.</p></section>` : ''}`;
+
+  out.querySelectorAll('.tr-pick').forEach(sel => sel.addEventListener('change', async () => {
+    const i = +sel.dataset.i, pw = r.pinyinWords, pick = [{ w: pw[i].w, pin: pw[i].pin }].concat(pw[i].alts).find(a => a.w === sel.value);
+    // the choice becomes the word; the one it replaces joins the others
+    pw[i].alts = [{ w: pw[i].w, pin: pw[i].pin }].concat(pw[i].alts).filter(a => a.w !== pick.w);
+    Object.assign(pw[i], pick);
+    const next = await translateOffline(pw.map(x => x.w).join(''), 'zh-en');
+    trState.result = Object.assign(next, { dir: 'py-en', pinyinWords: pw, unknown: r.unknown, problem: r.problem });
+    drawTranslation(trState.result);
+  }));
 
   const learn = document.getElementById('tr-learn');
   if (learn) learn.addEventListener('click', async () => {

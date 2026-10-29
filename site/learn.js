@@ -657,6 +657,20 @@
     return ok[x.length];
   }
 
+  /* toneless pinyin letters cut into syllables, the fewest that fit (xian is one syllable,
+     xi'an needs its apostrophe), or null: 'tushuguan' -> ['tu', 'shu', 'guan'] */
+  function splitPinyin(x) {
+    const best = [[]];
+    for (let i = 1; i <= x.length; i++) {
+      best[i] = null;
+      for (let j = Math.max(0, i - 6); j < i; j++) {
+        const s = x.slice(j, i);
+        if (best[j] && SYLLABLES.has(s) && (!best[i] || best[j].length + 1 < best[i].length)) best[i] = best[j].concat(s);
+      }
+    }
+    return best[x.length];
+  }
+
   function validPinyin(answer) {
     const s = String(answer || '').toLowerCase().replace(/u:/g, 'v').normalize('NFD')
       .replace(/u\u0308/g, 'v').replace(/[\u0300-\u036f]/g, '').trim();
@@ -670,6 +684,6 @@
     review, known, sayKnown, resume, predictionCheck, reviewLogCsv, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
-    checkPinyin, checkMeaning, validPinyin, meanings, american, parsePinyin, soundOf,
+    checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,
   };
 });
