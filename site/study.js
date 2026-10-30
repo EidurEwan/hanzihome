@@ -1025,6 +1025,10 @@ async function pageLessons() {
     ${quizNow(s)}`;
 
   wireQuizNow(s);
+  // a new item is dealt in; another tab slides in from the side it is on
+  if (!s.drawn || s.drawn.k !== k) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  else if (s.drawn.tab !== s.tab) Motion.play(app.querySelector('.lx-main'), s.tab > s.drawn.tab ? 'm-next' : 'm-prev');
+  s.drawn = { k, tab: s.tab };
   const go2 = t => { s.tab = Math.max(first, Math.min(3, t)); pageLessons(); };
   app.querySelectorAll('.lx-tabs button').forEach(b => b.addEventListener('click', () => go2(+b.dataset.t)));
   app.querySelector('.lx-arrow.prev').addEventListener('click', () => go2(s.tab - 1));
@@ -1067,6 +1071,7 @@ async function pageLessons() {
         }
         s.missed = (s.missed || 0) + 1;
         verdict.innerHTML = `<p class="lx-wrong">It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}). Try again.</p>`;
+        Motion.play(document.getElementById('lx-pin'), 'm-shake');
         return;
       }
       const ma = document.getElementById('lx-mean').value;
@@ -1211,6 +1216,8 @@ function lessonsDone() {
       <a class="btn quiet" href="#/study">Back to study</a></p></div>`, true);
   const m = document.getElementById('lx-more');
   if (m) m.addEventListener('click', e => { e.preventDefault(); pageLessons(); });
+  if (s.done.length) Motion.confetti();
+  Motion.play(app.querySelector('.card'), 'm-rise');
   paintRail();
 }
 
@@ -1348,6 +1355,13 @@ async function pageReviews() {
 
   const input = document.getElementById('rv-in') || document.querySelector('#rv-form .rv-enter');
   const fresh = s.asked !== s.i;
+  // a new question is dealt in; an answer just given pops (right) or shakes (wrong)
+  if (fresh) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  if (s.judged) {
+    Motion.play(document.getElementById('rv-in'), s.shown && s.shown.ok ? 'm-pop' : 'm-shake');
+    Motion.play(app.querySelector('.rv-after'), 'm-rise');
+    s.judged = false;
+  }
   if (fresh) { s.asked = s.i; s.askedAt = Date.now(); s.keyAt = 0; }
   if (fresh && q === 'listen') Sound.say(k, true);
   if (q !== 'write') input.addEventListener('input', () => { if (!s.keyAt) s.keyAt = Date.now(); });
@@ -1385,6 +1399,7 @@ async function pageReviews() {
       f[q] = { ok, near: nearly, ms: (s.keyAt || Date.now()) - s.askedAt };
     }
     s.shown = { ok, answer };
+    s.judged = true;
     if (!ok) {
       s.misses[k] = (s.misses[k] || 0) + 1;
       (s.typed[k] = s.typed[k] || []).push({ q, answer });
@@ -1853,6 +1868,8 @@ function reviewsDone() {
     markNav(currentPath());
     relearn.outerHTML = '<span class="small">Sent to the front of your <a href="#/lessons">lessons</a>.</span>';
   });
+  Motion.countUp(app);
+  if (done) Motion.confetti(app.querySelector('.rs-ring'));
   paintRail();
 }
 

@@ -2893,6 +2893,7 @@ function render(keepScroll) {
   const path = currentPath();
   markNav(path);
   setNav(false);
+  Motion.enter(path);
   // the floating menus belong to the page they were opened on (on a phone or iPad
   // nothing else closes them when you go back)
   if (_wpEl) _wpEl.hidden = true;

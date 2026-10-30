@@ -357,7 +357,10 @@ async function runTranslate() {
   await optional(need.words());                // to know which words have a page of their own
   if (result) result.problem = problem;
   trState.result = result;
-  if (currentPath() === '/translate') drawTranslation(trState.result);
+  if (currentPath() === '/translate') {
+    drawTranslation(trState.result);
+    Motion.play(document.getElementById('tr-out'), 'm-stagger');   // a new translation: its cards come in one by one
+  }
 }
 
 /* where a word's card leads: its word page, its character page, or a search */

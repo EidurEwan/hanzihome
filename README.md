@@ -90,6 +90,13 @@ an in-memory sheet on `http://localhost:8787/exec`.
 (components, tones), how HanziHome teaches it (lessons, then FSRS reviews) and why 20–30
 minutes every day is the way to do it (`site/tour.js`). Settings → Tutorial shows it again.
 
+**Motion** (`site/motion.js`, and the Motion section of `style.css`) — a new page's cards rise in
+one after another and its numbers count up; bars, rings, the coverage donut and the items-learned
+chart fill; popups grow out of what they point at; the drawer's cards follow it in. In lessons and
+reviews each new item is dealt in like a card, a lesson's tabs slide, a right answer pops and a
+wrong one shakes, and finishing a session throws confetti. With the system's "reduce motion"
+setting on, nothing moves.
+
 **The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
 size: a card with your week streak and the characters and words you have learned, the three
 main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
@@ -327,6 +334,7 @@ site/translate.js       the translator: Gemini with your Google AI Studio key, o
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
 site/tour.js            the first-visit tutorial
+site/motion.js          animations: page entry, count-ups, confetti
 test/pinyin.js          checks pinyin.js
 test/grammar.js         checks grammar.js
 test/accuracy.js        scores textstory.js against the hand-glossed stories

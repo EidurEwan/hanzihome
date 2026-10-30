@@ -116,7 +116,7 @@ function showTour(at = 0) {
     });
   }
   function draw(i) {
-    const s = TOUR[i];
+    const s = TOUR[i], from = dlg._at;
     dlg._at = i;
     dlg.innerHTML = `<div class="tour-card">
       <button class="tour-x" data-tour="skip" aria-label="Close the tutorial">×</button>
@@ -133,6 +133,11 @@ function showTour(at = 0) {
         ${s.last ? '<button class="btn" data-tour="study">Start studying</button>'
           : `<button class="btn" data-tour="next">${i ? 'Next' : 'Show me'}</button>`}
       </div></div>`;
+    // the first slide rises in with the card; the others slide in from the side they are on
+    if (dlg.open && from !== i) {
+      dlg.querySelector('.tour-card').classList.add('turning');
+      for (const el of dlg.querySelectorAll('.tour-art > *, .tour-body')) Motion.play(el, i > from ? 'm-next' : 'm-prev');
+    }
     if (dlg.open) focusNext();
   }
   function focusNext() {
