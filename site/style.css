@@ -2241,7 +2241,7 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 @keyframes tour-in { from { transform: translateY(8px); opacity: 0; } }
 .tour-x { position: absolute; top: 10px; right: 12px; z-index: 1; width: 36px; height: 36px; border: 0; border-radius: 50%;
   background: rgba(255, 255, 255, .7); color: #222; font-size: 22px; line-height: 1; cursor: pointer; }
-.tour-art { min-height: 170px; display: grid; place-items: center; padding: 46px 20px 26px; background: var(--yellow);
+.tour-art { min-height: 170px; display: grid; place-items: center; padding: 64px 20px 26px; background: var(--yellow);
   border-bottom: 4px solid var(--yellow-edge); color: #222; }
 .tour-body { padding: 18px 24px 4px; }
 .tour-body h2 { margin: 0 0 8px; font-size: 22px; font-weight: 800; line-height: 1.25; }
@@ -2281,7 +2281,7 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
   font: 600 15px var(--ui); box-shadow: 0 4px 0 var(--tile-edge); white-space: nowrap; }
 .tu-pop b { font: 700 18px var(--han); }
 @media (max-width: 480px) {
-  .tour-art { min-height: 140px; padding: 44px 14px 20px; }
+  .tour-art { min-height: 140px; padding: 60px 14px 20px; }
   .tour-body { padding: 14px 18px 2px; }
   .tour-nav { padding: 10px 18px 18px; }
   .tu-tiles b { min-width: 54px; height: 54px; font-size: 28px; }
@@ -2399,7 +2399,122 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 
 .m-confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 400; pointer-events: none; }
 
+/* ---- more motion ---- */
+@keyframes m-mark { 0% { transform: scale(1); } 35% { transform: scale(1.18) rotate(-3deg); } 70% { transform: scale(.96); } 100% { transform: none; } }
+@keyframes m-ring-out { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); } to { box-shadow: 0 0 0 14px transparent; } }
+@keyframes m-bump { 40% { transform: scale(1.3); color: var(--accent); } }
+@keyframes m-spin { to { transform: rotate(360deg) scale(1); } 50% { transform: rotate(180deg) scale(1.4); } }
+@keyframes m-out { to { opacity: 0; transform: scale(.4); } }
+@keyframes m-float { 50% { transform: translateY(-5px); } }
+@keyframes m-dot { 0%, 80%, 100% { transform: translateY(0); opacity: .35; } 40% { transform: translateY(-6px); opacity: 1; } }
+@keyframes m-shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@keyframes m-hero { from { opacity: 0; transform: scale(.6) rotate(-6deg); } }
+@keyframes m-up { 0%, 100% { transform: none; } 30% { transform: translateY(-4px); } 60% { transform: translateY(1px); } }
+@keyframes m-invite { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--yellow) 70%, transparent); } }
+@keyframes m-fade-up { from { opacity: 0; transform: translateY(6px); } }
+
+/* marking a character: the tile or glyph springs, with a ring going out */
+.m-mark { animation: m-mark .5s var(--m-spring), m-ring-out .6s ease-out; }
+/* a number in the drawer or the review badge that changes */
+.m-bump { display: inline-block; animation: m-bump .45s var(--m-spring); }
+.m-spin { display: inline-block; animation: m-spin .5s var(--m-ease); }
+.m-out { animation: m-out .2s ease-in forwards; pointer-events: none; }
+
+/* cards below the fold rise in as they are scrolled to */
+#app .m-later { animation: none !important; opacity: 0; transform: translateY(22px); }
+#app .m-in { animation: m-rise .55s var(--m-ease) backwards; }
+#app .m-in .lx-fc i, #app .m-in .bar > i { transform-origin: left; animation: m-grow-x .7s .15s var(--m-ease) backwards; }
+#app .m-in .st-days i { transform-origin: bottom; animation: m-grow-y .6s .1s var(--m-ease) backwards; }
+#app .m-in .donut circle + circle { animation: m-donut 1s .15s var(--m-ease) backwards; }
+#app .m-in .lc-area svg { animation: m-wipe 1.1s .1s var(--m-ease) backwards; }
+
+/* the most common characters cascade in, a row at a time */
+#app.entering .tilegrid > .tile, .m-tiles .tilegrid > .tile { animation: m-fade-up .35s var(--m-ease) backwards; }
+#app.entering .tilegrid > .tile:nth-child(n+9), .m-tiles .tilegrid > .tile:nth-child(n+9) { animation-delay: 40ms; }
+#app.entering .tilegrid > .tile:nth-child(n+17), .m-tiles .tilegrid > .tile:nth-child(n+17) { animation-delay: 80ms; }
+#app.entering .tilegrid > .tile:nth-child(n+25), .m-tiles .tilegrid > .tile:nth-child(n+25) { animation-delay: 120ms; }
+#app.entering .tilegrid > .tile:nth-child(n+33), .m-tiles .tilegrid > .tile:nth-child(n+33) { animation-delay: 160ms; }
+#app.entering .tilegrid > .tile:nth-child(n+41), .m-tiles .tilegrid > .tile:nth-child(n+41) { animation-delay: 200ms; }
+#app.entering .tilegrid > .tile:nth-child(n+49), .m-tiles .tilegrid > .tile:nth-child(n+49) { animation: none; }
+
+/* a character's page: its glyph springs in */
+#app.entering .hero-glyph { animation: m-hero .6s .1s var(--m-spring) backwards; }
+#app.entering .tree > *, #app.entering .decomp-box > * { animation: m-fade-up .4s .2s var(--m-ease) backwards; }
+
+/* the study tiles' buddies breathe while there is something to do */
+.lx-tile:not(.idle)::after { animation: m-float 3.2s ease-in-out infinite; }
+.lx-tile.reviews:not(.idle)::after { animation-delay: -1.6s; }
+/* today's streak dot, not yet earned, invites */
+.streak .week i.today:not(.on) { animation: m-invite 2.4s ease-in-out infinite; }
+
+/* review summary: a stage gained hops */
+.rs-move .up { display: inline-block; animation: m-up .7s .5s ease both; }
+.rs-move .up ~ *, .rs-item:has(.up) .rs-glyph { animation: m-mark .6s .45s var(--m-spring) backwards; }
+
+/* loading: three dots bounce (shown after a moment, so quick loads don't flash) */
+.m-loading { display: flex; align-items: center; gap: 4px; color: var(--ink-2); animation: m-fade-up .3s .25s backwards; }
+.m-loading span { margin-right: 4px; }
+.m-loading i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: m-dot 1s ease-in-out infinite; }
+.m-loading i:nth-of-type(2) { animation-delay: .15s; } .m-loading i:nth-of-type(3) { animation-delay: .3s; }
+/* ...and a translation's shape, shimmering, while Gemini works */
+.m-skeleton > b, .m-skel-cards i { display: block; border-radius: 8px;
+  background: linear-gradient(90deg, var(--panel-2) 30%, var(--hover) 50%, var(--panel-2) 70%) 0 0 / 250% 100%;
+  animation: m-shimmer 1.4s linear infinite; }
+.m-skeleton > b { height: 18px; margin: 12px 0 0; }
+.m-skeleton > b.short { width: 55%; }
+.m-skel-cards { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.m-skel-cards i { width: 72px; height: 84px; border-radius: 14px; }
+
+/* switches spring */
+.st-toggle i::after { transition: transform .3s var(--m-spring); }
+.st-toggle i { transition: background .2s ease; }
+
+/* search suggestions drop in one after another */
+.ac:not([hidden]) > * { animation: m-fade-up .22s var(--m-ease) backwards; }
+.ac > :nth-child(2) { animation-delay: 25ms; } .ac > :nth-child(3) { animation-delay: 50ms; }
+.ac > :nth-child(4) { animation-delay: 75ms; } .ac > :nth-child(n+5) { animation-delay: 100ms; }
+
+/* the theme changes as a cross-fade (View Transitions, where the browser has them) */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .35s; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; }
   .lx-tile:hover, .btn:not(:disabled):hover, .rs-item:hover, .tr-card:hover, a.chip:hover, .lx-chip:hover { transform: none; }
 }
+
+/* ---- the setup guides' pictures (tour.js: sync, api) ---- */
+.linkish { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); cursor: pointer; text-decoration: underline; }
+.tour-pick { flex-wrap: wrap; gap: 8px; }
+.tour-body ul { margin: 0 0 10px; padding-left: 20px; color: var(--ink-2); }
+.tour-body code { font-size: .92em; background: var(--panel-2); padding: 1px 5px; border-radius: 5px; }
+.tour-body .btn { text-decoration: none; }
+.tour-note { color: var(--green-ink, var(--green)) !important; min-height: 1.2em; }
+.tu-win { width: min(330px, 100%); background: #fff; color: #222; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 5px 0 var(--yellow-edge); text-align: left; font: 500 12.5px var(--ui); }
+.tu-bar { display: flex; align-items: center; gap: 5px; padding: 7px 10px; background: #ece9e1; }
+.tu-bar i { width: 8px; height: 8px; border-radius: 50%; background: #d3cec3; }
+.tu-bar span { margin-left: 6px; color: #6b6b6b; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tu-menu { display: flex; gap: 6px; align-items: center; padding: 8px 10px 4px; flex-wrap: wrap; }
+.tu-menu span { padding: 2px 8px; border-radius: 6px; color: #6b6b6b; }
+.tu-menu span.on { background: var(--accent-soft, #fdf5cc); color: #222; box-shadow: inset 0 0 0 1.5px var(--yellow-edge); }
+.tu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 6px 10px 10px; background: #dcd8cf; border: 1px solid #dcd8cf; }
+.tu-grid i { height: 14px; background: #fff; }
+.tu-code { display: grid; gap: 3px; padding: 10px 14px 12px; font: 12px ui-monospace, Menlo, Consolas, monospace; color: #222; }
+.tu-code .k { color: #2d7a3e; }
+.tu-form { display: grid; gap: 7px; padding: 10px 14px 12px; }
+.tu-form span { display: flex; justify-content: space-between; gap: 10px; }
+.tu-form .tu-sub { color: #3a78e6; }
+.tu-form .tu-url { font: 11.5px ui-monospace, Menlo, Consolas, monospace; background: #f1eee7; padding: 5px 8px; border-radius: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.tu-form em { justify-self: end; font-style: normal; font-weight: 600; color: #fff; background: #3a78e6; padding: 4px 14px;
+  border-radius: 999px; box-shadow: 0 3px 0 #2d5ca7; }
+.tu-devices { display: flex; align-items: center; gap: 6px; }
+.tu-dev { display: grid; place-items: center; background: #fff; color: #222; font: 700 20px var(--han); box-shadow: 0 4px 0 var(--yellow-edge); }
+.tu-dev.phone { width: 40px; height: 66px; border-radius: 10px; }
+.tu-dev.laptop { width: 84px; height: 56px; border-radius: 8px; }
+.tu-dev.sheet { width: 64px; height: 76px; border-radius: 8px; background: #2da779; box-shadow: 0 4px 0 #1e8c5a;
+  grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 10px 8px; align-content: start; }
+.tu-dev.sheet i { height: 9px; background: rgba(255, 255, 255, .85); border-radius: 2px; }
+.tu-link { width: 22px; border-top: 3px dashed #6e5600; }
+.tu-tiles b.tu-en { font: 700 22px var(--ui); padding: 0 16px; }
+@media (max-width: 480px) { .tu-dev.laptop { width: 66px; height: 48px; } .tu-dev.sheet { width: 54px; height: 66px; } }

@@ -94,8 +94,12 @@ minutes every day is the way to do it (`site/tour.js`). Settings → Tutorial sh
 one after another and its numbers count up; bars, rings, the coverage donut and the items-learned
 chart fill; popups grow out of what they point at; the drawer's cards follow it in. In lessons and
 reviews each new item is dealt in like a card, a lesson's tabs slide, a right answer pops and a
-wrong one shakes, and finishing a session throws confetti. With the system's "reduce motion"
-setting on, nothing moves.
+wrong one shakes, and finishing a session throws confetti. Cards below the fold wait and rise in as you scroll to
+them; marking a character makes its tile or glyph spring; drawer numbers bump when they change;
+lessons removed from the queue shrink away and starred ones spin to the front; the most common
+characters cascade in; loading shows bouncing dots, and a translation in progress its shape,
+shimmering; the theme changes as a cross-fade. With the system's "reduce motion" setting on,
+nothing moves.
 
 **The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
 size: a card with your week streak and the characters and words you have learned, the three
@@ -268,13 +272,13 @@ and place before the verb, 了 after the verb or at the end, measure words, 把,
 **Add the new words to lessons** puts the words you don't know in your lessons, with the sentence;
 **Open in the reader** reads it there.
 
-Google's Gemini translates the whole text, works out the characters for pinyin, and explains
-the grammar: the browser sends the text straight to the Gemini API, asking for JSON held to a
-schema, with little thinking (about 3 s a sentence). It uses the app's built-in free
-[Google AI Studio key](https://aistudio.google.com/app/apikey) (`TR_BUILTIN` in
-`site/translate.js`), shared by everyone using the app and readable by anyone; Settings →
-Translator takes your own instead, kept in that browser only (not in the store, so never synced
-or exported). The free tier limits requests per minute and per day, model by model, so the
+With a [Google AI Studio key](https://aistudio.google.com/app/apikey) (Settings → Translator;
+a free one works, and the "show me how" guide walks through getting one), Google's Gemini
+translates the whole text, works out the characters for pinyin, and explains the grammar: the
+browser sends the text straight to the Gemini API, asking for JSON held to a schema, with little
+thinking (about 3 s a sentence). The key is kept in that browser only: not in the store, so never
+synced or exported. There is no key built in: a key in a public site's code is readable by
+anyone, and Google disables keys it finds published. The free tier limits requests per minute and per day, model by model, so the
 translator asks the key once a day which models it may use (four Flash, newest first, then two
 Flash-Lite), gives each 12 s, tries the one that last worked first and those that were slow or
 gone last, and when one model's limit is reached it tries the next. Only when every model has reached its
@@ -333,7 +337,7 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
-site/translate.js       the translator: Gemini (built-in key, or your own), or offline (see "Translate")
+site/translate.js       the translator: Gemini with your Google AI Studio key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
 site/tour.js            the first-visit tutorial
