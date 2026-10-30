@@ -14,6 +14,13 @@
  * underneath) and is kept out of screen captures. When the key is let go it
  * stays while the pointer is on the word or on the popup, so its buttons can be
  * used, and closes LEAVE ms after the pointer leaves both, or on Escape.
+ *
+ * On the way from the word to the popup the pointer crosses the gap between them
+ * and, often, the words of the next line. A safe triangle, from where the pointer
+ * left the word to the popup's near edge, keeps the popup for that trip, key held
+ * or not: inside it the pointer is heading for the popup, so the words it passes
+ * over are not looked up. Should it stop short, the popup follows it again after
+ * AIM ms.
  */
 
 'use strict';
@@ -28,12 +35,20 @@ const KEYS = { ctrl: ['Ctrl', 'CtrlRight'], alt: ['Alt', 'AltRight'], shift: ['S
 const HOLD = 150;       // ms the key is held alone before looking
 const POLL = 60;        // ms between pointer checks
 const LEAVE = 400;      // ms off the word and the popup before it closes
+const AIM = 600;        // ms the safe triangle lasts after the pointer leaves the word
+const SLACK = 6;        // DIP the triangle's base reaches past the popup's sides
 const STRIP = 70;       // DIP above and below the pointer read when there is no overlay
 const STRIP_FRESH = 1500;
 
 const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 const inside = (r, p, pad = 0) => p.x >= r.x - pad && p.x < r.x + (r.w || r.width) + pad
   && p.y >= r.y - pad && p.y < r.y + (r.h || r.height) + pad;
+/* is p inside (or on) the triangle abc? */
+function inTriangle(p, a, b, c) {
+  const side = (u, v) => (v.x - u.x) * (p.y - u.y) - (v.y - u.y) * (p.x - u.x);
+  const d1 = side(a, b), d2 = side(b, c), d3 = side(c, a);
+  return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+}
 
 class Hover {
   /* opts: key() -> 'ctrl'|'alt'|'shift'|'off'; overlays() -> Overlays or null; ocr(); HZ();
@@ -141,18 +156,29 @@ class Hover {
 
   async step() {
     const pt = this.o.pointer ? this.o.pointer() : screen.getCursorScreenPoint();
-    if (this.visible() && inside(this.win.getBounds(), pt)) { this.away = 0; return; }
+    if (this.visible() && inside(this.win.getBounds(), pt)) { this.away = 0; this.apex = null; return; }
+    if (this.visible() && this.heading(pt)) { this.away = 0; return; }
     if (this.down && this.alone && Date.now() - this.since >= HOLD) {
-      if (this.word && inside(this.word, pt, 2)) return;
+      if (this.word && inside(this.word, pt, 2)) { this.apex = { x: pt.x, y: pt.y, t: Date.now() }; return; }
       await this.lookAt(pt);
       return;
     }
     // let go: stay while the pointer is on the word or the popup
     if (this.visible()) {
-      if (this.word && inside(this.word, pt, 8)) { this.away = 0; return; }
+      if (this.word && inside(this.word, pt, 8)) { this.away = 0; this.apex = { x: pt.x, y: pt.y, t: Date.now() }; return; }
       this.away = (this.away || 0) + POLL;
       if (this.away >= LEAVE) this.hide();
     }
+  }
+
+  /* is the pointer on its way from the word to the popup: inside the triangle from
+     where it was last on the word to the popup's near edge, not long after? */
+  heading(pt) {
+    const a = this.apex;
+    if (!a || Date.now() - a.t > AIM) return false;
+    const b = this.win.getBounds();
+    const y = b.y >= a.y ? b.y : b.y + b.height;    // the popup below the word, or above it
+    return inTriangle(pt, a, { x: b.x - SLACK, y }, { x: b.x + b.width + SLACK, y });
   }
 
   /* show the popup for the word at a point (global DIP), or close it if none */
@@ -285,6 +311,7 @@ class Hover {
 
   hide() {
     this.word = null;
+    this.apex = null;
     if (this.visible()) this.win.hide();
   }
 }
@@ -296,4 +323,4 @@ function sentenceOf(word) {
   return (parts.find(x => x.includes(word.text)) || text).trim().slice(0, 160);
 }
 
-module.exports = { Hover, sentenceOf };
+module.exports = { Hover, sentenceOf, inTriangle };

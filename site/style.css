@@ -2176,11 +2176,230 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 .tr-chip { font-size: 18px; padding: 2px 10px; border-radius: 10px; background: var(--accent-soft); }
 .tr-key-row input { flex: 1 1 220px; min-width: 0; padding: 10px 14px; }
 @media (max-width: 600px) {
-  .tr-bar .seg { width: 100%; }
-  .tr-bar .seg button { flex: 1; padding-inline: 4px; font-size: 12px; white-space: nowrap; }
+  /* four directions: two by two */
+  .tr-bar .seg { width: 100%; display: grid; grid-template-columns: 1fr 1fr; border-radius: 18px; }
+  .tr-bar .seg button { padding-inline: 4px; font-size: 12.5px; white-space: nowrap; }
   .tr-bar .btn { width: 100%; }
   .tr-lookup { grid-template-columns: 1fr; gap: 6px; }
   .tr-card { min-width: 56px; padding: 7px 8px 6px; }
   .tr-card .han { font-size: 22px; }
 }
 @media (prefers-reduced-motion: reduce) { .tr-card { transition: none; } }
+
+/* the translator's pinyin, read offline: the characters, each word that could be another
+   a picker (a native select, so a phone shows its own chooser) */
+.tr-py-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 2px; font-size: 28px; line-height: 1.5; margin: 0 0 10px; }
+.tr-pick {
+  -webkit-appearance: none; appearance: none; font-family: var(--han); font-size: 28px; line-height: 1.3; color: var(--ink);
+  padding: 2px 24px 2px 8px; margin: 0 2px; border: 2px solid var(--yellow-edge); border-radius: 12px; cursor: pointer;
+  background: var(--accent-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238a6c00' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") right 7px center / 10px no-repeat;
+}
+.tr-pick:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.tr-result.tr-from-py { margin-bottom: 4px; }
+@media (max-width: 600px) { .tr-py-line, .tr-pick { font-size: 24px; } }
+
+/* ---- the study page's chart of items learned (drawLearnedChart in study.js) ---- */
+:root { --lc-known: #9a9894; }
+.lc-sound { --c: var(--lx-sound); } .lc-comp { --c: var(--lx-comp); } .lc-char { --c: var(--lx-char); }
+.lc-word { --c: var(--lx-word); } .lc-known { --c: var(--lc-known); }
+.lc-keys { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 12px; }
+.lc-key { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 2px 0;
+  font: 600 13px var(--ui); color: var(--ink); cursor: pointer; }
+.lc-key i, .lc-tip i { width: 22px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--c) 40%, transparent);
+  border: 2px solid var(--c); }
+.lc-tip i { width: 10px; }
+.lc-key.off { color: var(--ink-3); text-decoration: line-through; }
+.lc-key.off i { background: none; border-color: var(--line-2); }
+.lc-plot { display: flex; gap: 8px; }
+.lc-y { position: relative; width: 38px; flex: none; height: 220px; }
+.lc-y span { position: absolute; right: 0; transform: translateY(50%); font-size: 11.5px; color: var(--ink-2);
+  font-variant-numeric: tabular-nums; }
+.lc-area { position: relative; flex: 1; min-width: 0; height: 220px; margin-bottom: 26px; touch-action: pan-y; outline: none; }
+.lc-area:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 4px; }
+.lc-area svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.lc-area path { fill: color-mix(in srgb, var(--c) 35%, transparent); stroke: none; }
+.lc-area path.lc-line { fill: none; stroke: var(--c); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.lc-grid { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.lc-x { position: absolute; left: 0; right: 0; top: 100%; height: 26px; }
+.lc-x span { position: absolute; top: 6px; transform: translateX(-50%); font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+.lc-x span:first-child { transform: none; }
+.lc-x span:last-child:not(:first-child) { transform: translateX(-100%); }
+.lc-cursor { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--ink-3); pointer-events: none; }
+.lc-tip { position: absolute; top: 4px; z-index: 2; pointer-events: none; display: grid; gap: 2px; min-width: 150px;
+  padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line-2);
+  box-shadow: var(--shadow); font-size: 12.5px; white-space: nowrap; }
+.lc-tip span { display: flex; align-items: center; gap: 6px; }
+.lc-tip span b { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .lc-y, .lc-area { height: 170px; } .lc-y { width: 30px; } }
+
+/* ---- the tutorial (tour.js): slides in a dialog ---- */
+#tour { border: 0; padding: 0; background: none; max-width: min(520px, calc(100vw - 32px)); width: 100%;
+  max-height: calc(100dvh - 32px); overflow: visible; color: var(--ink); }
+#tour::backdrop { background: rgba(20, 18, 12, .55); backdrop-filter: blur(2px); }
+.tour-card { position: relative; background: var(--panel); border-radius: 22px; box-shadow: 0 8px 0 var(--tile-edge), var(--shadow);
+  overflow: auto; max-height: calc(100dvh - 40px); display: flex; flex-direction: column; animation: tour-in .2s ease-out; }
+@keyframes tour-in { from { transform: translateY(8px); opacity: 0; } }
+.tour-x { position: absolute; top: 10px; right: 12px; z-index: 1; width: 36px; height: 36px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, .7); color: #222; font-size: 22px; line-height: 1; cursor: pointer; }
+.tour-art { min-height: 170px; display: grid; place-items: center; padding: 46px 20px 26px; background: var(--yellow);
+  border-bottom: 4px solid var(--yellow-edge); color: #222; }
+.tour-body { padding: 18px 24px 4px; }
+.tour-body h2 { margin: 0 0 8px; font-size: 22px; font-weight: 800; line-height: 1.25; }
+.tour-body p { margin: 0 0 10px; color: var(--ink-2); }
+.tour-body p b { color: var(--ink); }
+.tour-n { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent) !important;
+  margin-bottom: 4px !important; }
+.tour-dots { display: flex; justify-content: center; gap: 4px; padding: 6px 0 0; }
+.tour-dots button { width: 22px; height: 22px; border: 0; padding: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.tour-dots button::before { content: ""; width: 8px; height: 8px; border-radius: 4px; background: var(--line-2); transition: width .15s; }
+.tour-dots button.on::before { width: 20px; background: var(--accent); }
+.tour-nav { display: flex; justify-content: space-between; gap: 12px; padding: 12px 24px 22px; }
+/* the slides' pictures */
+.tu-tiles { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.tu-tiles b { display: grid; place-items: center; min-width: 64px; height: 64px; padding: 0 12px; border-radius: 14px;
+  background: var(--lx-char); color: #fff; font: 700 34px var(--han); box-shadow: 0 5px 0 var(--char-edge, #a72d5b); }
+.tu-tiles b.comp { background: var(--lx-comp); box-shadow: 0 5px 0 var(--comp-edge, #146b44); }
+.tu-tiles b.sound { background: var(--lx-sound); box-shadow: 0 5px 0 var(--sound-edge, #5e4a00); font: 700 18px var(--ui); }
+.tu-tiles b.word { background: var(--lx-word); box-shadow: 0 5px 0 var(--word-edge, #2d5ca7); }
+.tu-tiles em { font: 800 24px var(--ui); font-style: normal; color: #6e5600; }
+.tu-tones b { height: 76px; min-width: 60px; grid-template-rows: auto auto; align-content: center; line-height: 1.15; }
+.tu-tones b span { font: 700 26px var(--han); }
+.tu-path b { min-width: 52px; height: 54px; font-size: 26px; }
+.tu-path b.sound { font-size: 16px; }
+.tu-path em { font-size: 18px; }
+.tu-bars { width: 100%; max-width: 320px; display: grid; gap: 7px; }
+.tu-bars div { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 10px; font: 600 12.5px var(--ui); }
+.tu-bars i { display: block; height: 14px; border-radius: 7px; background: var(--lx-word); box-shadow: 0 3px 0 var(--word-edge, #2d5ca7); }
+.tu-goal { display: grid; justify-items: center; line-height: 1.1; }
+.tu-goal img { width: 54px; height: 54px; margin-bottom: 6px; }
+.tu-goal b { font: 900 46px var(--ui); }
+.tu-goal span { font: 600 15px var(--ui); }
+.tu-read { position: relative; display: flex; gap: 2px; font: 600 34px var(--han); padding-bottom: 74px; }
+.tu-read span { padding: 0 3px; border-radius: 6px; }
+.tu-read span.on { background: #fff; box-shadow: 0 3px 0 var(--yellow-edge); }
+.tu-pop { position: absolute; left: 50%; top: 56px; background: #fff; border-radius: 12px; padding: 8px 14px;
+  font: 600 15px var(--ui); box-shadow: 0 4px 0 var(--tile-edge); white-space: nowrap; }
+.tu-pop b { font: 700 18px var(--han); }
+@media (max-width: 480px) {
+  .tour-art { min-height: 140px; padding: 44px 14px 20px; }
+  .tour-body { padding: 14px 18px 2px; }
+  .tour-nav { padding: 10px 18px 18px; }
+  .tu-tiles b { min-width: 54px; height: 54px; font-size: 28px; }
+  .tu-tones b { min-width: 50px; height: 68px; }
+  .tu-path b { min-width: 42px; height: 46px; font-size: 22px; }
+  .tu-read { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .tour-card { animation: none; } }
+
+/* ======================= Motion (motion.js says when) =======================
+   A new page's parts rise in, one after another; bars, rings and charts fill;
+   popups grow out of what they point at; lessons and reviews deal their cards in.
+   Nothing moves with "reduce motion" on (the block at the end). */
+@property --p { syntax: "<number>"; inherits: true; initial-value: 0; }
+:root { --m-ease: cubic-bezier(.2, .8, .2, 1); --m-spring: cubic-bezier(.34, 1.56, .64, 1); }
+
+@keyframes m-rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes m-fade { from { opacity: 0; } }
+@keyframes m-grow-x { from { transform: scaleX(0); } }
+@keyframes m-grow-y { from { transform: scaleY(0); } }
+@keyframes m-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes m-donut { from { stroke-dasharray: 0 999; } }
+@keyframes m-ring { from { --p: 0; } }
+@keyframes m-pop-in { from { opacity: 0; transform: scale(.94) translateY(-4px); } }
+@keyframes m-deal { from { opacity: 0; transform: perspective(900px) translateX(46px) rotateY(-16deg) rotate(2deg); } }
+@keyframes m-next { from { opacity: 0; transform: translateX(26px); } }
+@keyframes m-prev { from { opacity: 0; transform: translateX(-26px); } }
+@keyframes m-pop { 40% { transform: scale(1.04); } }
+@keyframes m-shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+@keyframes m-bob { 30% { transform: translateY(-6px) rotate(-6deg); } 60% { transform: translateY(0) rotate(4deg); } }
+@keyframes m-flicker { 50% { transform: scale(1.06, .95) rotate(-2deg); } }
+@keyframes m-glow { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 55%, transparent); } }
+
+/* a new page: the title, then each card, 45 ms apart */
+#app.entering > :not(.dash):not(.home),
+#app.entering .dash > div > *,
+#app.entering .home > :not(.home-grid),
+#app.entering .home-grid > * { animation: m-rise .45s var(--m-ease) backwards; }
+#app.entering .dash > div > :nth-child(2), #app.entering .home > :nth-child(2), #app.entering .home-grid > :nth-child(1) { animation-delay: 45ms; }
+#app.entering .dash > div > :nth-child(3), #app.entering .home > :nth-child(3), #app.entering .home-grid > :nth-child(2) { animation-delay: 90ms; }
+#app.entering .dash > div > :nth-child(4), #app.entering .home-grid > :nth-child(3) { animation-delay: 135ms; }
+#app.entering .dash > div > :nth-child(5), #app.entering .home > :nth-child(4), #app.entering .home-grid > :nth-child(4) { animation-delay: 180ms; }
+#app.entering .dash > div > :nth-child(6) { animation-delay: 225ms; }
+#app.entering .dash > div > :nth-child(7) { animation-delay: 270ms; }
+#app.entering .dash > div > :nth-child(n+8) { animation-delay: 310ms; }
+#app.entering .home > :nth-child(n+5) { animation-delay: 230ms; }
+#app.entering.first > * { animation-duration: .55s; }
+
+/* ...and what it measures fills */
+#app.entering .lx-fc i, #app.entering .bar > i, #app.entering .tu-bars i { transform-origin: left; animation: m-grow-x .7s .2s var(--m-ease) backwards; }
+#app.entering .st-days i { transform-origin: bottom; animation: m-grow-y .6s .15s var(--m-ease) backwards; }
+#app.entering .donut circle + circle { animation: m-donut 1s .2s var(--m-ease) backwards; }
+#app.entering .lc-area svg { animation: m-wipe 1.1s .15s var(--m-ease) backwards; }
+.rs-ring { animation: m-ring 1.1s .15s var(--m-ease) backwards; }
+#app.entering .streak .week i.on { animation: m-pop-in .35s var(--m-spring) backwards; animation-delay: .25s; }
+#app.entering .lx-stages > div { animation: m-rise .4s var(--m-ease) backwards; }
+#app.entering .lx-stages > div:nth-child(2) { animation-delay: 60ms; }
+#app.entering .lx-stages > div:nth-child(3) { animation-delay: 120ms; }
+#app.entering .lx-stages > div:nth-child(4) { animation-delay: 180ms; }
+#app.entering .lx-stages > div:nth-child(5) { animation-delay: 240ms; }
+
+/* the streak's flame flickers while there is a streak to keep */
+.streak .big::before { transform-origin: 50% 90%; animation: m-flicker 2.4s ease-in-out infinite; }
+
+/* popups grow out of what they point at */
+#word-pop:not([hidden]) { animation: m-pop-in .16s var(--m-ease); transform-origin: top left; }
+#tile-menu:not([hidden]) { animation: m-pop-in .16s var(--m-ease); }
+.ac:not([hidden]), .dd-pop:not([hidden]) { animation: m-pop-in .14s var(--m-ease); transform-origin: top; }
+.rv-panel { animation: m-pop-in .2s var(--m-ease); transform-origin: top; }
+
+/* the drawer's cards follow it in */
+.sidebar.open .player, .sidebar.open nav a.main, .sidebar.open .nav-rows { animation: m-next .32s var(--m-ease) backwards; }
+.sidebar.open nav a.main:nth-of-type(1) { animation-delay: 40ms; }
+.sidebar.open nav a.main:nth-of-type(2) { animation-delay: 70ms; }
+.sidebar.open nav a.main:nth-of-type(3) { animation-delay: 100ms; }
+.sidebar.open nav a.main:nth-of-type(4) { animation-delay: 130ms; }
+.sidebar.open .nav-rows { animation-delay: 160ms; }
+
+/* things you can press rise a little to meet the pointer */
+@media (hover: hover) and (pointer: fine) {
+  .lx-tile { transition: transform .15s var(--m-ease), box-shadow .15s var(--m-ease), filter .12s ease; }
+  .lx-tile:hover { transform: translateY(-3px); }
+  .lx-tile.lessons:hover { box-shadow: 0 9px 0 var(--pink-edge); }
+  .lx-tile.reviews:hover { box-shadow: 0 9px 0 var(--sky-edge); }
+  .lx-tile:hover::after { animation: m-bob .6s ease-in-out; }
+  .lx-tile:active { transition-duration: .06s; }
+  .btn:not(:disabled):not(.topbar .btn):hover { transform: translateY(-1px); box-shadow: 0 calc(var(--edge) + 1px) 0 var(--rim); }
+  .btn:not(:disabled):active { transform: translateY(var(--edge)); box-shadow: 0 0 0 var(--rim); }
+  .rs-item, .tr-card, a.chip, .lx-chip { transition: transform .15s var(--m-ease), box-shadow .15s var(--m-ease), border-color .12s ease; }
+  .rs-item:hover, .tr-card:hover, a.chip:hover, .lx-chip:hover { transform: translateY(-2px); }
+  .tile { transition: transform .12s var(--m-ease), box-shadow .12s ease, background-color .12s ease, border-color .12s ease; }
+}
+
+/* lessons and reviews: a new item is dealt in, a lesson's tabs slide, answers react */
+.m-deal { animation: m-deal .42s var(--m-ease); }
+.m-next { animation: m-next .3s var(--m-ease); }
+.m-prev { animation: m-prev .3s var(--m-ease); }
+.m-pop { animation: m-pop .35s var(--m-spring), m-glow .7s ease-out; }
+.m-shake { animation: m-shake .4s ease; }
+.m-rise { animation: m-rise .45s var(--m-ease); }
+#lx-verdict > * { animation: m-rise .3s var(--m-ease); }
+.rs-item { animation: m-rise .4s var(--m-ease) backwards; }
+.rs-item:nth-child(2) { animation-delay: 40ms; } .rs-item:nth-child(3) { animation-delay: 80ms; }
+.rs-item:nth-child(4) { animation-delay: 120ms; } .rs-item:nth-child(n+5) { animation-delay: 160ms; }
+
+/* a new translation: its word cards come in one by one */
+.m-stagger .tr-cards > * { animation: m-rise .4s var(--m-ease) backwards; }
+.m-stagger .tr-cards > :nth-child(2) { animation-delay: 50ms; } .m-stagger .tr-cards > :nth-child(3) { animation-delay: 100ms; }
+.m-stagger .tr-cards > :nth-child(4) { animation-delay: 150ms; } .m-stagger .tr-cards > :nth-child(5) { animation-delay: 200ms; }
+.m-stagger .tr-cards > :nth-child(6) { animation-delay: 250ms; } .m-stagger .tr-cards > :nth-child(n+7) { animation-delay: 300ms; }
+.m-stagger .tr-gram, .m-stagger .tr-result { animation: m-rise .45s .12s var(--m-ease) backwards; }
+
+/* the tutorial: the card rises once, then slides turn */
+.tour-card.turning { animation: none; }
+
+.m-confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 400; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+  .lx-tile:hover, .btn:not(:disabled):hover, .rs-item:hover, .tr-card:hover, a.chip:hover, .lx-chip:hover { transform: none; }
+}

@@ -1,6 +1,6 @@
 /* grammar.js — the grammar a sentence uses, explained for a learner, offline.
  *
- * The translator (site/translate.js) asks Claude to explain a sentence when it has an
+ * The translator (site/translate.js) asks Gemini to explain a sentence when it has an
  * API key. Without one, or offline, this finds the patterns a learner meets first in
  * the words of a Chinese sentence (as textstory.js cuts them): 了 after a verb or at
  * the end, 过, 着, 把, 被, 是…的, the three de (的 得 地), 比, measure words, the

@@ -86,6 +86,17 @@ an in-memory sheet on `http://localhost:8787/exec`.
 
 ## What's in it
 
+**The tutorial** — a newcomer's first visit opens a few slides on how Mandarin works
+(components, tones), how HanziHome teaches it (lessons, then FSRS reviews) and why 20–30
+minutes every day is the way to do it (`site/tour.js`). Settings → Tutorial shows it again.
+
+**Motion** (`site/motion.js`, and the Motion section of `style.css`) — a new page's cards rise in
+one after another and its numbers count up; bars, rings, the coverage donut and the items-learned
+chart fill; popups grow out of what they point at; the drawer's cards follow it in. In lessons and
+reviews each new item is dealt in like a card, a lesson's tabs slide, a right answer pops and a
+wrong one shakes, and finishing a session throws confetti. With the system's "reduce motion"
+setting on, nothing moves.
+
 **The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
 size: a card with your week streak and the characters and words you have learned, the three
 main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
@@ -124,7 +135,9 @@ rate the first review. "Stop here and take the quiz" ends early and leaves the r
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
 lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
 what you mix them up with, to learn again from a lesson (which starts its count of misses afresh), give a mnemonic of your own, or rest for
-two weeks. **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
+two weeks. **Items learned**, a chart on the Study page: how many sounds, components, characters
+and words you had learned on each day since your first lesson, stacked, with the characters you
+marked known on top (click a key to hide its series; point at or tap a day for its totals). **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
 type, how well FSRS predicts you (the chance of recall it gave at each review against how often you
 were right), the next two weeks, stages, and the items hardest for you. Enter steps through a lesson and
 on to the next review.
@@ -245,7 +258,8 @@ page at a time, remembering your place (`site/books.js`, kept in the browser's I
 live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)
 sends any web page you are on, or the part you selected, to the reader; when context can't settle a meaning, the popup names the other one too.
 
-**Translate** (`#/translate`, in the menu) — English to Chinese or Chinese to English, the
+**Translate** (`#/translate`, in the menu) — English to Chinese, Chinese to English, or
+pinyin to English (with tone numbers `ni3 hao3`, tone marks `nǐ hǎo`, or no tones), the
 direction found by itself or chosen. The Chinese side, whichever it is, comes back as word
 cards: each word with its pinyin and the meaning it has in this sentence, coloured by how well
 you know it, opening its word or character page. Then the sentence's structure in one line and
@@ -254,14 +268,25 @@ and place before the verb, 了 after the verb or at the end, measure words, 把,
 **Add the new words to lessons** puts the words you don't know in your lessons, with the sentence;
 **Open in the reader** reads it there.
 
-With an [Anthropic API key](https://console.anthropic.com/settings/keys) (Settings → Translator),
-Claude (Opus 5.5) translates and explains: the browser sends the text straight to Anthropic's
-API, a few US cents a translation, billed to your account. A declined request is retried on the
-model Anthropic recommends (`fallbacks: "default"`). The key is kept in that browser only: not
-in the store, so never synced or exported. The SDK, `@anthropic-ai/sdk` bundled for the browser
-(`site/vendor/anthropic-sdk.js`, Apache-2.0), loads only when a translation is sent. Without a
-key, or offline, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
+With a [Google AI Studio key](https://aistudio.google.com/app/apikey) (Settings → Translator;
+a free one works), Google's Gemini translates the whole text, works out the characters for
+pinyin, and explains the grammar: the browser sends the text straight to the Gemini API, asking
+for JSON held to a schema. The key is kept in that browser only: not in the store, so never
+synced or exported. The free tier limits requests per minute and per day, model by model, so the
+translator asks the key once a day which models it may use (the Flash ones first, newest first),
+and when one model's limit is reached it tries the next. Only when every model has reached its
+limit, or there is no connection, does it read the text offline, and it says so; a model whose
+day is used up is skipped until the quota resets at midnight Pacific time. Any other problem (a
+key not accepted, Gemini busy) is shown with a button to read the text offline anyway. On the
+free tier Google may use what you send to improve its products. Without a key, or past the
+limit, Chinese is still read word by word (the reader's segmenter, `site/textstory.js`)
 and its grammar explained by pattern (`site/grammar.js`, checked by `node test/grammar.js`);
+pinyin is turned into characters first, as a simple input method does (`site/pinyin.js`,
+checked by `node test/pinyin.js`): every way of grouping the syllables into words is scored by
+how often each word is used on its own in jieba's corpus, a tone you typed has to match, and a
+little context from the word before helps (吧 at the end of a sentence, 贵 after 很, 书 after a
+measure word, a verb after 我). Without tones it is a guess, so each word that could likely be
+another becomes a picker: choose 借 for 接 and the cards and grammar follow;
 English gets the likeliest Chinese words for each word from the dictionary, which is not a
 translation, and the page says so.
 
@@ -305,8 +330,12 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
-site/translate.js       the translator: Claude with your API key, or offline (see "Translate")
+site/translate.js       the translator: Gemini with your Google AI Studio key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
+site/pinyin.js          turns pinyin into characters, offline, for the translator
+site/tour.js            the first-visit tutorial
+site/motion.js          animations: page entry, count-ups, confetti
+test/pinyin.js          checks pinyin.js
 test/grammar.js         checks grammar.js
 test/accuracy.js        scores textstory.js against the hand-glossed stories
 sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet
@@ -438,7 +467,9 @@ and from the tray it:
   red new;
 * shows the reader's word popup for the word under the pointer while you hold Ctrl, with
   the buttons to mark its characters and to add the word to your lessons (with the line
-  it was on as the example);
+  it was on as the example); on the way from the word to the popup, a safe triangle (from
+  where the pointer left the word to the popup's near edge) keeps the popup from jumping to
+  the words the pointer crosses;
 * opens whatever is on screen in the reader ("On screen now"), or the text you copied
   ("Read copied text").
 

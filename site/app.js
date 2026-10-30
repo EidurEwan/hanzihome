@@ -2488,6 +2488,9 @@ function pageSettings() {
           .map(([v, l]) => `<option value="${v}"${Store.cfg().script === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <p class="st-note">How characters and words are shown, on every page and in the stories. Searching, lessons and
           answers work the same either way.</p></div>
+      <div class="st-field"><div class="st-label">Tutorial</div>
+        <button class="btn quiet" id="show-tour">Show the tutorial again</button>
+        <p class="st-note">How learning Mandarin works, and how HanziHome teaches it, in a few slides.</p></div>
     </section>
     <section class="card" id="study-card"></section>
     <section class="card" id="translate-card"></section>
@@ -2565,6 +2568,7 @@ function pageSettings() {
     }
   });
   document.getElementById('theme').addEventListener('change', e => { setTheme(e.target.value); render(true); });
+  document.getElementById('show-tour').addEventListener('click', () => showTour(0));
   document.getElementById('script').addEventListener('change', async e => {
     Store.setCfg({ script: e.target.value });
     await optional(needS2t());
@@ -2889,6 +2893,7 @@ function render(keepScroll) {
   const path = currentPath();
   markNav(path);
   setNav(false);
+  Motion.enter(path);
   // the floating menus belong to the page they were opened on (on a phone or iPad
   // nothing else closes them when you go back)
   if (_wpEl) _wpEl.hidden = true;

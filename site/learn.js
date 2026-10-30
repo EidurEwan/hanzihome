@@ -331,6 +331,33 @@
     });
   }
 
+  /* How many items you had learned on each day, for the chart on the study page: an
+     item counts from its first lesson (its log's first 'l'), or from when you said you
+     knew it without one, in its own series ('known': characters marked learned on the
+     rest of the site). From the first day anything was learned to today, `most` days at
+     most. -> {days: [day starts], series: {sound, comp, char, word, known: [running totals]}} */
+  const LEARNED_KINDS = ['sound', 'comp', 'char', 'word', 'known'];
+  function learnedByDay(items, now, most = 365) {
+    const when = [];
+    for (const it of Object.values(items)) {
+      if (!(it.stage >= 1)) continue;
+      const first = (it.log || []).find(r => r[2] === 'l' || r[2] === 'k');
+      const t = first ? first[0] * 6e4 : it.learnt || it.joined;
+      if (!t) continue;
+      when.push([t, first ? (first[2] === 'k' ? 'known' : it.kind || 'char') : it.learnt ? it.kind || 'char' : 'known']);
+    }
+    const today = dayStart(now), from = when.length ? Math.max(dayStart(Math.min(...when.map(x => x[0]))), today - (most - 1) * DAY) : today;
+    const days = [];
+    for (let d = from; d <= today; d = dayStart(d + DAY * 1.5)) days.push(d);   // (1.5: a day of 23 or 25 hours)
+    const series = {};
+    for (const k of LEARNED_KINDS) series[k] = days.map(() => 0);
+    for (const [t, k] of when) {
+      series[k][days.findIndex((d, j) => j === days.length - 1 || days[j + 1] > t)]++;   // (before the first day: on it)
+    }
+    for (const k of LEARNED_KINDS) for (let i = 1; i < days.length; i++) series[k][i] += series[k][i - 1];
+    return { days, series };
+  }
+
   /* The log as the FSRS optimizer reads it (github.com/open-spaced-repetition/fsrs-optimizer:
      a revlog.csv of card_id, review_time in ms, review_rating). A card's lines start at its
      last lesson, its first rating; an item with no lesson since it was said to be known
@@ -657,6 +684,20 @@
     return ok[x.length];
   }
 
+  /* toneless pinyin letters cut into syllables, the fewest that fit (xian is one syllable,
+     xi'an needs its apostrophe), or null: 'tushuguan' -> ['tu', 'shu', 'guan'] */
+  function splitPinyin(x) {
+    const best = [[]];
+    for (let i = 1; i <= x.length; i++) {
+      best[i] = null;
+      for (let j = Math.max(0, i - 6); j < i; j++) {
+        const s = x.slice(j, i);
+        if (best[j] && SYLLABLES.has(s) && (!best[i] || best[j].length + 1 < best[i].length)) best[i] = best[j].concat(s);
+      }
+    }
+    return best[x.length];
+  }
+
   function validPinyin(answer) {
     const s = String(answer || '').toLowerCase().replace(/u:/g, 'v').normalize('NFD')
       .replace(/u\u0308/g, 'v').replace(/[\u0300-\u036f]/g, '').trim();
@@ -667,9 +708,9 @@
 
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
-    review, known, sayKnown, resume, predictionCheck, reviewLogCsv, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    review, known, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, LEARNED_KINDS, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
-    checkPinyin, checkMeaning, validPinyin, meanings, american, parsePinyin, soundOf,
+    checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,
   };
 });
