@@ -36,7 +36,11 @@ const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 // if the list of models can't be had: Flash models a free key had in October 2026
 const TR_FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-latest'];
 
-const trKey = () => { try { return JSON.parse(localStorage.getItem(TR_KEY) || '{}').key || ''; } catch (e) { return ''; } };
+// the app's own Google AI Studio key, shared by everyone using HanziHome: used unless
+// you save your own in Settings (which then has its own free requests)
+const TR_BUILTIN = 'AQ.Ab8RN6LAa9MJqdgOUk8RClPiS8tF-ALUi-H4YLbMtmgyIUVxfg';
+const ownKey = () => { try { return JSON.parse(localStorage.getItem(TR_KEY) || '{}').key || ''; } catch (e) { return ''; } };
+const trKey = () => ownKey() || TR_BUILTIN;
 function setTrKey(k) {
   try { if (k) localStorage.setItem(TR_KEY, JSON.stringify({ key: k })); else localStorage.removeItem(TR_KEY); }
   catch (e) { /* private mode: nothing kept */ }
@@ -550,19 +554,21 @@ function paintTranslateSettings() {
   if (!box) return;
   // (the translator used Anthropic's API before: a key kept for it is no longer used)
   try { localStorage.removeItem('hanzihome.anthropic'); } catch (e) { /* private mode */ }
-  const key = trKey();
+  const key = ownKey();
   const spent = Object.entries(ls.get(TR_SPENT) || {}).filter(([, d]) => d === pacificDay()).map(([m]) => m);
   box.innerHTML = `<h2>Translator</h2>
-    <p class="muted small">With a Google AI Studio key, <a href="#/translate">Translate</a> uses Google’s Gemini to
-      translate whole sentences either way, turn pinyin into characters, and explain the grammar; without one it reads
-      Chinese word by word, offline. Get a free key at
+    <p class="muted small"><a href="#/translate">Translate</a> uses Google’s Gemini to translate whole sentences either
+      way, turn pinyin into characters, and explain the grammar. A free key of your own is at
       <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.
       The free tier allows a number of requests per minute and per day for each model; when every model has reached
       its limit, the translator reads offline until the limit resets (midnight Pacific time for the daily one).</p>
     ${key ? `<p>A key is saved on this device, ending <b>…${esc(key.slice(-4))}</b>.${spent.length
         ? ` Today’s free requests are used up on: ${spent.map(esc).join(', ')}.` : ''}</p>
       <p class="row"><button class="btn quiet" id="tr-key-rm">Remove the key</button></p>`
-    : `<div class="row tr-key-row"><input id="tr-key" type="password" placeholder="AQ.… or AIza…" autocomplete="off"
+    : `<p>Translating with HanziHome’s built-in key, shared by everyone who uses the app${spent.length
+        ? `. Today’s free requests are used up on: ${spent.map(esc).join(', ')}` : ''}. If its free requests often
+        run out, add a key of your own:</p>
+      <div class="row tr-key-row"><input id="tr-key" type="password" placeholder="AQ.… or AIza…" autocomplete="off"
         autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Google AI Studio API key">
       <button class="btn" id="tr-key-save">Save</button></div>`}
     <p class="small muted">The key stays in this browser only: it is not synced, not in exports, and not sent anywhere but
@@ -573,12 +579,14 @@ function paintTranslateSettings() {
     const v = document.getElementById('tr-key').value.trim();
     if (!v) return;
     setTrKey(v);
+    try { localStorage.removeItem(TR_SPENT); localStorage.removeItem(TR_MODELS); } catch (e) { /* private mode */ }
     trState.result = null;
     paintTranslateSettings();
   });
   const rm = document.getElementById('tr-key-rm');
   if (rm) rm.addEventListener('click', () => {
     setTrKey('');
+    try { localStorage.removeItem(TR_SPENT); } catch (e) { /* private mode */ }
     try { localStorage.removeItem(TR_MODELS); } catch (e) { /* private mode */ }
     trState.result = null;
     paintTranslateSettings();
