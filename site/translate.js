@@ -28,12 +28,19 @@
 const TR_KEY = 'hanzihome.gemini';         // {key}: this browser only
 const TR_MODELS = 'hanzihome.gemini-models'; // {key, at, list}: the models the key can use, asked once a day
 const TR_SPENT = 'hanzihome.gemini-spent';   // {model: day}: the Pacific day a model's free requests ran out
+const TR_AVOID = 'hanzihome.gemini-avoid';   // {model: until}: too slow, or gone; tried last until then
+const TR_GOOD = 'hanzihome.gemini-good';     // the model that last translated: tried first
+const TR_WAIT = 12000;                      // ms a model has to answer before the next is tried
 const TR_MAX = 1500;                        // characters per translation
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
-// if the list of models can't be had: the free-tier Flash models, newest first
-const TR_FALLBACK_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+// if the list of models can't be had: Flash models a free key had in October 2026
+const TR_FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-latest'];
 
-const trKey = () => { try { return JSON.parse(localStorage.getItem(TR_KEY) || '{}').key || ''; } catch (e) { return ''; } };
+// the app's own Google AI Studio key, shared by everyone using HanziHome: used unless
+// you save your own in Settings (which then has its own free requests)
+const TR_BUILTIN = 'AQ.Ab8RN6LAa9MJqdgOUk8RClPiS8tF-ALUi-H4YLbMtmgyIUVxfg';
+const ownKey = () => { try { return JSON.parse(localStorage.getItem(TR_KEY) || '{}').key || ''; } catch (e) { return ''; } };
+const trKey = () => ownKey() || TR_BUILTIN;
 function setTrKey(k) {
   try { if (k) localStorage.setItem(TR_KEY, JSON.stringify({ key: k })); else localStorage.removeItem(TR_KEY); }
   catch (e) { /* private mode: nothing kept */ }
@@ -123,11 +130,16 @@ const ls = {
 const pacificDay = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date());
 const spentToday = m => (ls.get(TR_SPENT) || {})[m] === pacificDay();
 function markSpent(m) { const x = ls.get(TR_SPENT) || {}; x[m] = pacificDay(); ls.set(TR_SPENT, x); }
+/* A model that didn't answer in time (the newest are often slow, or swamped) is tried last
+   for three days; one the key lists but can't use (404), for a week. */
+const avoided = m => ((ls.get(TR_AVOID) || {})[m] || 0) > Date.now();
+function avoid(m, days) { const x = ls.get(TR_AVOID) || {}; x[m] = Date.now() + days * 864e5; ls.set(TR_AVOID, x); }
 
 const trFail = (kind, extra) => Object.assign(new Error(kind), { kind }, extra || {});
 
-/* The models the key can use for this, likeliest to be free first: the Flash models,
-   newest first, then Flash-Lite, then the rest. Asked once a day (a free request). */
+/* The models the key can use for this: four Flash models, newest first, then two
+   Flash-Lite. Asked once a day (a free request). translateWithGemini() puts the one
+   that last worked first and those that were slow or gone last. */
 async function trModels() {
   const key = trKey(), have = ls.get(TR_MODELS);
   if (have && have.key === key.slice(-6) && Date.now() - have.at < 864e5 && have.list.length) return have.list;
@@ -138,12 +150,13 @@ async function trModels() {
   if (!res.ok) return TR_FALLBACK_MODELS;
   const version = n => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || 0);
   const tier = n => (/flash-lite/.test(n) ? 1 : /flash/.test(n) ? 0 : 2);
-  const list = ((await res.json()).models || [])
+  const all = ((await res.json()).models || [])
     .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
     .map(m => m.name.replace(/^models\//, ''))
-    .filter(n => /^gemini-/.test(n) && !/(image|tts|audio|live|embed|vision|robotics|computer|exp|thinking|nano|-\d{3}$)/.test(n))
-    .sort((a, b) => tier(a) - tier(b) || version(b) - version(a) || /preview/.test(a) - /preview/.test(b) || a.length - b.length)
-    .slice(0, 5);
+    .filter(n => /^gemini-/.test(n) && !/(image|tts|audio|live|embed|vision|robotics|computer|exp|thinking|nano|omni|transcribe|customtools|-\d{3}$)/.test(n))
+    .sort((a, b) => tier(a) - tier(b) || version(b) - version(a) || /preview/.test(a) - /preview/.test(b) || a.length - b.length);
+  // four Flash, then two Flash-Lite (faster, and with more free requests a day)
+  const list = all.filter(n => tier(n) === 0).slice(0, 4).concat(all.filter(n => tier(n) === 1).slice(0, 2));
   if (!list.length) return TR_FALLBACK_MODELS;
   ls.set(TR_MODELS, { key: key.slice(-6), at: Date.now(), list });
   return list;
@@ -162,23 +175,45 @@ function limitOf(body) {
   return { daily, seconds: retry ? Math.ceil(parseFloat(retry)) : 0 };
 }
 
-async function translateWithGemini(text, dir) {
+async function translateWithGemini(text, dir, note = () => {}) {
   const key = trKey();
-  const models = (await trModels()).filter(m => !spentToday(m));
+  // the one that last worked first, then the rest, those that were slow or gone last
+  const good = ls.get(TR_GOOD);
+  const models = (await trModels()).concat(good ? [good] : []).filter((m, i, all) => all.indexOf(m) === i && !spentToday(m))
+    .sort((a, b) => (b === good) - (a === good) || avoided(a) - avoided(b));
   if (!models.length) throw trFail('limit', { daily: true });
-  const body = JSON.stringify({
+  const request = thinking => JSON.stringify({
     systemInstruction: { parts: [{ text: TR_SYSTEM }] },
     contents: [{ role: 'user', parts: [{ text: `Direction: ${{ 'en-zh': 'English to Chinese', 'zh-en': 'Chinese to English', 'py-en': 'pinyin to English' }[dir]}.\n\n<text>\n${text}\n</text>` }] }],
-    generationConfig: { responseMimeType: 'application/json', responseSchema: geminiSchema(TR_SCHEMA) },
+    generationConfig: Object.assign({ responseMimeType: 'application/json', responseSchema: geminiSchema(TR_SCHEMA) },
+      // little thinking: a translation needs little, and it is several times faster (3 s, not 10)
+      thinking ? { thinkingConfig: { thinkingLevel: 'low' } } : {}),
   });
   let limited = 0, wait = 0, last = null;
   for (const model of models) {
-    let res;
-    try {
-      res = await fetch(`${GEMINI}/models/${encodeURIComponent(model)}:generateContent`, {
-        method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key }, body,
-      });
-    } catch (e) { throw trFail('network'); }
+    // Gemini 3 and later take a thinking level; a model that doesn't is asked again without
+    let res, thinking = parseFloat((model.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || 0) >= 3;
+    for (;;) {
+      const stop = new AbortController(), timer = setTimeout(() => stop.abort(), TR_WAIT);
+      try {
+        res = await fetch(`${GEMINI}/models/${encodeURIComponent(model)}:generateContent`, {
+          method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key }, body: request(thinking),
+          signal: stop.signal,
+        });
+      } catch (e) {
+        if (!stop.signal.aborted) throw trFail('network');
+        res = null;                              // too slow: on to the next
+      } finally { clearTimeout(timer); }
+      if (res && res.status === 400 && thinking) {
+        const detail = await res.clone().json().then(j => (j.error && j.error.message) || '').catch(() => '');
+        if (/thinking|invalid argument/i.test(detail)) { thinking = false; continue; }
+      }
+      break;
+    }
+    const next = models[models.indexOf(model) + 1];
+    if (!res) { avoid(model, 3); last = trFail('busy'); if (next) note(`${model} is slow right now; trying ${next}…`); continue; }
+    if (res.status === 503 && next) note(`${model} is busy; trying ${next}…`);
+    if (res.status === 404) { avoid(model, 7); last = trFail('api', { detail: await errText(res), status: 404 }); continue; }
     if (res.status === 429) {                    // this model's free limit: on to the next
       const lim = limitOf(await res.json().catch(() => null));
       if (lim.daily) markSpent(model);
@@ -205,6 +240,7 @@ async function translateWithGemini(text, dir) {
       out = JSON.parse(((cand.content && cand.content.parts) || []).filter(p => !p.thought).map(p => p.text || '').join(''));
     } catch (e) { last = trFail('bad'); continue; }
     if (!out || typeof out.translation !== 'string' || !Array.isArray(out.words)) { last = trFail('bad'); continue; }
+    ls.set(TR_GOOD, model);
     return Object.assign({ pinyin: '', structure: '', grammar: [], notes: '' }, out, { dir, source: 'api', model });
   }
   if (limited && limited === models.length) throw trFail('limit', { daily: models.every(spentToday), seconds: wait });
@@ -256,6 +292,47 @@ function enIndex() {
   return _enIx;
 }
 
+/* Chinese cut into words by the reader's segmenter, each with its pinyin and first sense
+   (needs textstory.js) */
+function segment(text) {
+  const st = TextStory.textToStory(text, HZ);
+  return [].concat(...st.seg).filter(t => !t.br).map(t => {
+    if (typeof t !== 'string') return { text: t.s, pinyin: '', meaning: '' };
+    const [w, pin, gloss] = st.g[t];
+    return { text: w, pinyin: pin, meaning: String(gloss || '').split(/;\s*/)[0] };
+  });
+}
+
+/* Gemini's words should spell out the Chinese exactly, but now and then one overlaps the
+   next or is left out (火车站 / 在 / 在哪里 for 火车站在哪里). Walk the sentence: a word that
+   is next is kept; one that overlaps what came before keeps its unread end, with its
+   meaning; one that isn't there is dropped; whatever is left unread is cut by the
+   reader's segmenter. Cards then never repeat or miss a character. */
+async function fitWords(words, zh) {
+  const text = zh.replace(/\s+/g, '');
+  if (words.map(w => w.text.replace(/\s+/g, '')).join('') === text) return words;
+  await need.textStory();
+  const out = [];
+  let at = 0;
+  const fill = to => { if (to > at) out.push(...segment(text.slice(at, to))); at = Math.max(at, to); };
+  for (const w of words) {
+    const t = w.text.replace(/\s+/g, '');
+    if (!t) continue;
+    if (text.startsWith(t, at)) { out.push(w); at += t.length; continue; }
+    const tail = [...Array(t.length).keys()].slice(1).map(k => t.slice(k)).find(x => text.startsWith(x, at));
+    if (tail) {
+      const seg = segment(tail);
+      out.push(...(seg.length === 1 ? [Object.assign(seg[0], { meaning: w.meaning || seg[0].meaning })] : seg));
+      at += tail.length;
+      continue;
+    }
+    const next = text.indexOf(t, at);
+    if (next >= 0 && next - at <= 8) { fill(next); out.push(w); at += t.length; }
+  }
+  fill(text.length);
+  return out;
+}
+
 async function translateOffline(text, dir) {
   if (dir === 'py-en') {
     await Promise.all([need.textStory(), loadScript('pinyin.js')]);
@@ -264,12 +341,7 @@ async function translateOffline(text, dir) {
   }
   if (dir === 'zh-en') {
     await need.textStory();
-    const st = TextStory.textToStory(text, HZ);
-    const words = [].concat(...st.seg).filter(t => !t.br).map(t => {
-      if (typeof t !== 'string') return { text: t.s, pinyin: '', meaning: '' };
-      const [w, pin, gloss] = st.g[t];
-      return { text: w, pinyin: pin, meaning: String(gloss || '').split(/;\s*/)[0] };
-    });
+    const words = segment(text);
     const grammar = Grammar.explain(words.map(x => ({ w: x.text, pin: x.pinyin })))
       .map(g => ({ title: g.title, words: g.words, explanation: g.explanation }));
     return { dir, source: 'offline', translation: '', words, grammar, structure: '', notes: '',
@@ -334,13 +406,16 @@ async function runTranslate() {
   trState.busy = true;
   btn.disabled = true;
   btn.textContent = 'Translating…';
-  out.innerHTML = '<section class="card"><p class="muted">Translating…</p></section>';
+  out.innerHTML = '<section class="card"><p class="muted" id="tr-wait">Translating…</p></section>';
+  const note = msg => { const el = document.getElementById('tr-wait'); if (el) el.textContent = msg; };
   let result, problem = '';
   try {
     if (trKey()) {
       try {
         if (navigator.onLine === false) throw trFail('network');
-        result = await translateWithGemini(text, dir);
+        result = await translateWithGemini(text, dir, note);
+        // the cards spell out the Chinese (the original, or the translation into it)
+        if (dir !== 'py-en') result.words = await fitWords(result.words, dir === 'zh-en' ? text : result.translation);
       } catch (e) {
         const err = trError(e);
         problem = err.msg;
@@ -479,19 +554,21 @@ function paintTranslateSettings() {
   if (!box) return;
   // (the translator used Anthropic's API before: a key kept for it is no longer used)
   try { localStorage.removeItem('hanzihome.anthropic'); } catch (e) { /* private mode */ }
-  const key = trKey();
+  const key = ownKey();
   const spent = Object.entries(ls.get(TR_SPENT) || {}).filter(([, d]) => d === pacificDay()).map(([m]) => m);
   box.innerHTML = `<h2>Translator</h2>
-    <p class="muted small">With a Google AI Studio key, <a href="#/translate">Translate</a> uses Google’s Gemini to
-      translate whole sentences either way, turn pinyin into characters, and explain the grammar; without one it reads
-      Chinese word by word, offline. Get a free key at
+    <p class="muted small"><a href="#/translate">Translate</a> uses Google’s Gemini to translate whole sentences either
+      way, turn pinyin into characters, and explain the grammar. A free key of your own is at
       <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.
       The free tier allows a number of requests per minute and per day for each model; when every model has reached
       its limit, the translator reads offline until the limit resets (midnight Pacific time for the daily one).</p>
     ${key ? `<p>A key is saved on this device, ending <b>…${esc(key.slice(-4))}</b>.${spent.length
         ? ` Today’s free requests are used up on: ${spent.map(esc).join(', ')}.` : ''}</p>
       <p class="row"><button class="btn quiet" id="tr-key-rm">Remove the key</button></p>`
-    : `<div class="row tr-key-row"><input id="tr-key" type="password" placeholder="AIza…" autocomplete="off"
+    : `<p>Translating with HanziHome’s built-in key, shared by everyone who uses the app${spent.length
+        ? `. Today’s free requests are used up on: ${spent.map(esc).join(', ')}` : ''}. If its free requests often
+        run out, add a key of your own:</p>
+      <div class="row tr-key-row"><input id="tr-key" type="password" placeholder="AQ.… or AIza…" autocomplete="off"
         autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Google AI Studio API key">
       <button class="btn" id="tr-key-save">Save</button></div>`}
     <p class="small muted">The key stays in this browser only: it is not synced, not in exports, and not sent anywhere but
@@ -502,12 +579,14 @@ function paintTranslateSettings() {
     const v = document.getElementById('tr-key').value.trim();
     if (!v) return;
     setTrKey(v);
+    try { localStorage.removeItem(TR_SPENT); localStorage.removeItem(TR_MODELS); } catch (e) { /* private mode */ }
     trState.result = null;
     paintTranslateSettings();
   });
   const rm = document.getElementById('tr-key-rm');
   if (rm) rm.addEventListener('click', () => {
     setTrKey('');
+    try { localStorage.removeItem(TR_SPENT); } catch (e) { /* private mode */ }
     try { localStorage.removeItem(TR_MODELS); } catch (e) { /* private mode */ }
     trState.result = null;
     paintTranslateSettings();
