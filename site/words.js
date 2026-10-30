@@ -168,7 +168,7 @@ function storyUses(w, max) {
 // ------------------------------------------------------------------ the card
 
 async function pageWord(w) {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await Promise.all([need.words(), optional(need.hsk()), optional(need.winfo()), optional(need.cmnem()), optional(need.stories())]);
   const k = learnKey(w);
   const es = wordEntries(k).length ? wordEntries(k) : wordEntries(w);
@@ -308,7 +308,7 @@ async function pageWords(src, filter, page) {
   src = WORD_SOURCES.some(x => x[0] === src) ? src : 'common';
   filter = ['all', 'unknown', 'learning', 'learned'].includes(filter) ? filter : 'all';
   page = page || 1;
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await Promise.all([need.words(), optional(need.hsk())]);
   let list;
   if (src === 'common') list = HZ.words.slice(0, COMMON_WORDS).map(e => e[0]).filter(w => [...w].length > 1);

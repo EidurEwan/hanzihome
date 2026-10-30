@@ -12,6 +12,8 @@ const GOAL_DEFAULT = 3500;
 
 /* ============================ utilities ============================ */
 
+/* what a page shows while its data loads: three bouncing dots (style.css) */
+const LOADING = '<p class="m-loading" role="status"><span>Loading</span><i></i><i></i><i></i></p>';
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
   c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -907,7 +909,7 @@ function applyStateChange(ch) {
 
 function rerenderKeepingScroll() {
   const y = window.scrollY;
-  Promise.resolve(render(true)).then(() => window.scrollTo(0, y));
+  return Promise.resolve(render(true)).then(() => window.scrollTo(0, y));
 }
 window.addEventListener('hashchange', () => render());
 const currentPath = () => {
@@ -923,9 +925,16 @@ function markNav(path) {
   });
   const due = Store.due().length;
   const b = document.getElementById('due-badge');
+  if (String(due) !== b.textContent && !b.hidden && due) Motion.play(b, 'm-bump');
   b.hidden = !due; b.textContent = due;
-  // the player card at the top of the drawer, as Boxes has it
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  // the player card at the top of the drawer, as Boxes has it (a number that changes bumps)
+  const set = (id, v) => {
+    const el = document.getElementById(id);
+    if (!el || el.textContent === String(v)) return;
+    const was = el.textContent;
+    el.textContent = v;
+    if (was && /\d/.test(v)) Motion.play(el, 'm-bump');
+  };
   set('pc-streak', num(streak().weeks));
   set('pc-learned', num(Store.chars('learned').length));
   set('pc-words', num(Store.words('learned').length));
@@ -1357,6 +1366,7 @@ function wireTileBoard(id, chars, opts) {
       if (decodeURIComponent(t.getAttribute('href').split('/').pop()) !== ch) return;
       t.classList.remove('learned', 'learning');
       if (st) t.classList.add(st);
+      Motion.play(t, 'm-mark');                     // the tile springs as it changes
     });
     relabel();
     return true;
@@ -1382,14 +1392,14 @@ function wireTileBoard(id, chars, opts) {
       return;
     }
     f.querySelectorAll('button[data-f]').forEach(x => x.classList.remove('on'));
-    b.classList.add('on'); filter = b.dataset.f; paint();
+    b.classList.add('on'); filter = b.dataset.f; paint(); Motion.play(document.getElementById(id + '-body'), 'm-tiles', 700);
   });
 }
 
 /* ============================ dashboard ============================ */
 
 async function pageDashboard() {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await optional(need.comps());
   const d = Store.load();
   const learned = Store.chars('learned'), learning = Store.chars('learning');
@@ -1507,7 +1517,7 @@ function writeQuiz(writer, memory, say, done) {
 }
 
 async function pageCharacter(ch) {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem()), optional(need.sounds())]);
   if (!d) {
     app.innerHTML = withRail(`<div class="card"><h1>${esc(ch)}</h1>
@@ -1705,7 +1715,7 @@ async function pageCharacter(ch) {
   document.getElementById('statuspop').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     Store.setStatus(ch, b.dataset.s || null);
-    rerenderKeepingScroll();
+    rerenderKeepingScroll().then(() => Motion.play(document.querySelector('.hero-glyph'), 'm-mark'));
   });
   dd('addlistbtn', 'listpop', pop => {
     const lists = Store.load().lists;
@@ -1821,7 +1831,7 @@ function setReaderText(t, title) {
 }
 
 async function pageReader() {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await optional(need.stories());
   const byLevel = {};
   HZ.stories.forEach(st => (byLevel[st.l] = byLevel[st.l] || []).push(st));
@@ -1914,7 +1924,7 @@ async function paintBooks() {
 }
 
 async function pageBook(id, n) {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await needBooks();
   const book = await optional(Books.get(id));
   if (!book) { app.innerHTML = '<div class="card"><p class="empty">That book isn\'t in this browser.</p></div>'; return; }
@@ -1985,7 +1995,7 @@ let _tab = 'v';
 
 async function pageStory(id) {
   if (id === 'text') return pageText();
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await optional(need.stories());
   const st = (HZ.stories || []).find(x => x.id === id);
   if (!st) {
@@ -2282,7 +2292,7 @@ function pageFrequency() {
 }
 
 async function pageHsk(level) {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await Promise.all([need.hskChars(), need.hsk()]);
   const chars = HZ.hskChars[String(level)] || [];
   const words = HZ.hsk[String(level)] || [];
@@ -2315,7 +2325,7 @@ async function pageHsk(level) {
 }
 
 async function pageRadicals() {
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await Promise.all([optional(need.radicals()), optional(need.cnames())]);
   app.innerHTML = '<h1 class="page-title">The 214 Kangxi radicals</h1>' + withRail(`
     <p class="lede">Every character is filed under one of these. Tick the ones you know —
@@ -2345,7 +2355,7 @@ function wireCompChecks() {
 
 async function pagePhonetic(degree, page) {
   degree = degree === 2 ? 2 : 1; page = page || 1;
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await optional(need.phon(degree));
   const all = HZ.phoneticSets[degree] || [], per = 30;
   const rows = all.slice((page - 1) * per, page * per);
@@ -2368,7 +2378,7 @@ async function pagePhonetic(degree, page) {
 
 async function pageProdComponents(page) {
   page = page || 1;
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await Promise.all([optional(need.components()), optional(need.cnames())]);
   const all = HZ.productiveComponents, per = 100;
   const rows = all.slice((page - 1) * per, page * per);
@@ -2394,7 +2404,7 @@ async function pageProdComponents(page) {
 
 async function pageProdCharacters(page) {
   page = page || 1;
-  app.innerHTML = '<p class="muted">Loading…</p>';
+  app.innerHTML = LOADING;
   await optional(need.prodchars());
   const all = HZ.productiveCharacters, per = 150;
   const rows = all.slice((page - 1) * per, page * per);
@@ -2571,7 +2581,11 @@ function pageSettings() {
       localStorage.removeItem(Store.key); Store.data = null; Store.load(); Store.save(); render();
     }
   });
-  document.getElementById('theme').addEventListener('change', e => { setTheme(e.target.value); render(true); });
+  document.getElementById('theme').addEventListener('change', e => {
+    // light to dark (and back) as a cross-fade, where the browser can
+    const go = () => { setTheme(e.target.value); render(true); };
+    if (document.startViewTransition && !Motion.reduced()) document.startViewTransition(go); else go();
+  });
   document.getElementById('show-tour').addEventListener('click', () => showTour(0));
   document.getElementById('script').addEventListener('change', async e => {
     Store.setCfg({ script: e.target.value });

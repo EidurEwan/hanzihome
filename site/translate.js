@@ -402,8 +402,9 @@ async function runTranslate() {
   trState.busy = true;
   btn.disabled = true;
   btn.textContent = 'Translating…';
-  out.innerHTML = '<section class="card"><p class="muted" id="tr-wait">Translating…</p></section>';
-  const note = msg => { const el = document.getElementById('tr-wait'); if (el) el.textContent = msg; };
+  out.innerHTML = `<section class="card m-skeleton" aria-busy="true"><p class="m-loading" id="tr-wait" role="status"><span>Translating</span><i></i><i></i><i></i></p>
+    <b></b><b></b><b class="short"></b><div class="m-skel-cards">${'<i></i>'.repeat(5)}</div></section>`;
+  const note = msg => { const el = document.querySelector('#tr-wait span'); if (el) el.textContent = msg.replace(/…$/, ''); };
   let result, problem = '';
   try {
     if (trKey()) {

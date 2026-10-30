@@ -805,8 +805,20 @@ function drawStudy() {
       <div id="anki-import"></div>
     </section>`, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
-  app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { Store.learnRemove(b.dataset.rm); redraw(); }));
-  app.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => { Store.prioritize(b.dataset.prio); redraw(); }));
+  // a removed lesson shrinks away before the queue is drawn again; a starred one jumps to the front, spinning
+  app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
+    Store.learnRemove(b.dataset.rm);
+    if (Motion.reduced()) return redraw();
+    b.closest('.lx-q').classList.add('m-out');
+    setTimeout(redraw, 200);
+  }));
+  app.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.prio;
+    Store.prioritize(k);
+    redraw();
+    const star = app.querySelector(`[data-prio="${CSS.escape(k)}"]`);
+    if (star) { Motion.play(star, 'm-spin'); Motion.play(star.closest('.lx-q'), 'm-mark'); }
+  }));
   wireLeeches(redraw);
   drawLearnedChart(document.getElementById('lc-card'), d.items, now);
   app.querySelectorAll('[data-path]').forEach(b => b.addEventListener('click', async () => {

@@ -94,8 +94,12 @@ minutes every day is the way to do it (`site/tour.js`). Settings → Tutorial sh
 one after another and its numbers count up; bars, rings, the coverage donut and the items-learned
 chart fill; popups grow out of what they point at; the drawer's cards follow it in. In lessons and
 reviews each new item is dealt in like a card, a lesson's tabs slide, a right answer pops and a
-wrong one shakes, and finishing a session throws confetti. With the system's "reduce motion"
-setting on, nothing moves.
+wrong one shakes, and finishing a session throws confetti. Cards below the fold wait and rise in as you scroll to
+them; marking a character makes its tile or glyph spring; drawer numbers bump when they change;
+lessons removed from the queue shrink away and starred ones spin to the front; the most common
+characters cascade in; loading shows bouncing dots, and a translation in progress its shape,
+shimmering; the theme changes as a cross-fade. With the system's "reduce motion" setting on,
+nothing moves.
 
 **The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
 size: a card with your week streak and the characters and words you have learned, the three

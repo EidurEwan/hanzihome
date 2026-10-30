@@ -32,7 +32,31 @@ const Motion = (() => {
     clearTimeout(timer);
     timer = setTimeout(() => app.classList.remove('entering', 'first'), 1000);
     watch(app);
-    requestAnimationFrame(() => countUp(app));
+    requestAnimationFrame(() => { later(app); countUp(app); });
+  }
+
+  /* the cards below the fold wait, and rise in (their numbers counting, their bars
+     filling) as they are scrolled to */
+  const CARDS = '.dash > div > *, .home > :not(.home-grid), .home-grid > *';
+  let io = null;
+  function later(app) {
+    if (!window.IntersectionObserver) return;
+    io = io || new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        io.unobserve(e.target);
+        e.target.classList.remove('m-later');
+        e.target.classList.add('m-in');
+        countUp(e.target);
+        setTimeout(() => e.target.classList.remove('m-in'), 1200);
+      }
+    }, { rootMargin: '0px 0px -30px 0px' });
+    const fold = innerHeight - 20;
+    for (const el of app.querySelectorAll(CARDS)) {
+      if (el.dataset.seen) continue;
+      el.dataset.seen = '1';
+      if (el.getBoundingClientRect().top > fold) { el.classList.add('m-later'); io.observe(el); }
+    }
   }
 
   function watch(app) {
@@ -41,7 +65,7 @@ const Motion = (() => {
     observer = new MutationObserver(() => {
       if (queued || !app.classList.contains('entering')) return;
       queued = true;
-      requestAnimationFrame(() => { queued = false; countUp(app); });
+      requestAnimationFrame(() => { queued = false; later(app); countUp(app); });
     });
     observer.observe(app, { childList: true, subtree: true });
   }
@@ -52,7 +76,7 @@ const Motion = (() => {
   function countUp(within) {
     if (reduced()) return;
     for (const el of within.querySelectorAll(COUNTED)) {
-      if (el.dataset.counted || el.children.length) continue;
+      if (el.dataset.counted || el.children.length || el.closest('.m-later')) continue;
       el.dataset.counted = '1';
       const m = /^([\d,]+)(%?)$/.exec(el.textContent.trim());
       if (!m) continue;
