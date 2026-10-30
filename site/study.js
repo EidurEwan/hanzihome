@@ -748,6 +748,7 @@ function drawStudy() {
       <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
         Journeyman without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
       <p><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : ''}
+    <section class="card" id="lc-card" hidden></section>
     <section class="card">
       <h2 class="caps">Upcoming reviews</h2>
       <div class="lx-fc">${fc.map((n, i) => `<div><span>${dayName(i)}</span>
@@ -807,6 +808,7 @@ function drawStudy() {
   app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { Store.learnRemove(b.dataset.rm); redraw(); }));
   app.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => { Store.prioritize(b.dataset.prio); redraw(); }));
   wireLeeches(redraw);
+  drawLearnedChart(document.getElementById('lc-card'), d.items, now);
   app.querySelectorAll('[data-path]').forEach(b => b.addEventListener('click', async () => {
     Store.setCfg({ path: b.dataset.path });
     await fillPath();
@@ -824,6 +826,84 @@ function drawStudy() {
     redraw();
   });
   paintRail();
+}
+
+/* The study page's chart of items learned: a running total for each kind, stacked,
+   day by day since the first lesson (Learn.learnedByDay). The areas are an SVG
+   stretched to the box; the labels are HTML over it, so they keep their size on a
+   phone. A series' key hides or shows it; pointing (or a tap) shows a day's totals. */
+const LC_SERIES = [['sound', 'Sounds'], ['comp', 'Components'], ['char', 'Characters'], ['word', 'Words'],
+  ['known', 'Marked known']];
+const _lcHidden = new Set();
+
+function niceStep(max, lines = 4) {
+  const raw = Math.max(1, max / lines), p = 10 ** Math.floor(Math.log10(raw));
+  return [1, 2, 5, 10].map(m => m * p).find(x => x >= raw);
+}
+
+function drawLearnedChart(box, items, now) {
+  if (!box) return;
+  const { days, series } = Learn.learnedByDay(items, now);
+  const all = LC_SERIES.filter(([k]) => series[k][series[k].length - 1]);
+  if (!all.length) { box.hidden = true; return; }
+  box.hidden = false;
+  const shown = all.filter(([k]) => !_lcHidden.has(k));
+  const n = days.length, W = 1000, H = 300;
+  const total = i => shown.reduce((t, [k]) => t + series[k][i], 0);
+  const step = niceStep(Math.max(1, ...days.map((_, i) => total(i))));
+  const top = step * Math.max(1, Math.ceil(Math.max(1, ...days.map((_, i) => total(i))) / step));
+  const x = i => n === 1 ? (i ? W : 0) : (W * i) / (n - 1);
+  const y = v => H - (H * v) / top;
+  const pts = n === 1 ? [0, 0] : days.map((_, i) => i);           // one day: a flat band
+  // the stack, bottom up: each band between the running totals below and with it
+  let under = days.map(() => 0);
+  const bands = shown.map(([k]) => {
+    const over = under.map((u, i) => u + series[k][i]);
+    const line = pts.map((i, j) => `${x(j && n === 1 ? 1 : i).toFixed(1)},${y(over[i]).toFixed(1)}`);
+    const back = pts.map((i, j) => `${x(j && n === 1 ? 1 : i).toFixed(1)},${y(under[i]).toFixed(1)}`).reverse();
+    under = over;
+    return `<path class="lc-${k}" d="M${line.join('L')}L${back.join('L')}Z"/><path class="lc-${k} lc-line" d="M${line.join('L')}"/>`;
+  }).join('');
+  const grid = [];
+  for (let v = 0; v <= top; v += step) grid.push(v);
+  const fmt = t => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  const nt = (box.clientWidth || 600) < 480 ? 3 : 5;                // date labels: fewer on a phone
+  const ticks = n === 1 ? [0] : [...new Set(Array.from({ length: nt + 1 }, (_, j) => Math.round(j * (n - 1) / nt)))];
+  const pct = i => n === 1 ? 50 : (100 * i) / (n - 1);
+  box.innerHTML = `<h2 class="caps">Items learned</h2>
+    <div class="lc-keys">${all.map(([k, name]) => `<button class="lc-key${_lcHidden.has(k) ? ' off' : ''}" data-lc="${k}"
+      aria-pressed="${!_lcHidden.has(k)}"><i class="lc-${k}"></i>${name}</button>`).join('')}</div>
+    <div class="lc-plot">
+      <div class="lc-y">${grid.map(v => `<span style="bottom:${(100 * v) / top}%">${v.toLocaleString()}</span>`).join('')}</div>
+      <div class="lc-area" tabindex="0" aria-label="Items learned: ${esc(all.map(([k, name]) => `${series[k][n - 1]} ${name.toLowerCase()}`).join(', '))}">
+        <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+          ${grid.map(v => `<line class="lc-grid" x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>`).join('')}${bands}</svg>
+        <i class="lc-cursor" hidden></i><div class="lc-tip" hidden></div>
+        <div class="lc-x">${ticks.map(i => `<span style="left:${pct(i)}%">${esc(fmt(days[i]))}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  box.querySelectorAll('[data-lc]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.lc;
+    if (_lcHidden.has(k)) _lcHidden.delete(k); else if (shown.length > 1) _lcHidden.add(k);
+    drawLearnedChart(box, items, now);
+  }));
+  const area = box.querySelector('.lc-area'), cur = box.querySelector('.lc-cursor'), tip = box.querySelector('.lc-tip');
+  const point = e => {
+    const r = area.getBoundingClientRect();
+    const f = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+    const i = n === 1 ? 0 : Math.round(f * (n - 1));
+    cur.hidden = tip.hidden = false;
+    cur.style.left = pct(i) + '%';
+    tip.innerHTML = `<b>${esc(new Date(days[i]).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }))}</b>
+      ${shown.slice().reverse().map(([k, name]) => `<span><i class="lc-${k}"></i>${name} <b>${series[k][i].toLocaleString()}</b></span>`).join('')}
+      ${shown.length > 1 ? `<span>All <b>${total(i).toLocaleString()}</b></span>` : ''}`;
+    // beside the cursor, on whichever side has room
+    const left = (pct(i) / 100) * r.width;
+    tip.style.left = (left > r.width / 2 ? left - tip.offsetWidth - 10 : left + 10) + 'px';
+  };
+  area.addEventListener('pointermove', point);
+  area.addEventListener('pointerdown', point);
+  area.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') cur.hidden = tip.hidden = true; });
 }
 
 // ------------------------------------------------------------------ lessons

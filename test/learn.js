@@ -350,4 +350,20 @@ check('the optimizer CSV: from the last lesson, a relearning good after an again
   assert.strictEqual(L.reviewLogCsv({ 好: it }).csv.trim().split('\n').length, 2);
 });
 
+check('items learned by day: running totals by kind, from the first lesson', () => {
+  const day0 = L.dayStart(t0);
+  const lesson = (kind, t) => L.finishLesson(L.newItem(kind, {}, t), t, 3);
+  const a = lesson('char', day0 + 10 * 3600e3), b = lesson('word', day0 + DAY + 3600e3), c = lesson('sound', day0 + 2 * DAY + 3600e3);
+  Object.assign(b, { stage: 0 });                                          // learnt again later: still counts from its first lesson
+  L.finishLesson(b, day0 + 2 * DAY + 7200e3, 3);
+  const k = L.known('char', {}, day0 + DAY + 600e3, 0);
+  const waiting = L.newItem('char', {}, day0);                               // no lesson yet: not counted
+  const r = L.learnedByDay({ a, b, c, k, waiting }, day0 + 2 * DAY + 3 * 3600e3);
+  assert.strictEqual(r.days.length, 3);
+  assert.deepStrictEqual([r.series.char, r.series.word, r.series.sound, r.series.known, r.series.comp],
+    [[1, 1, 1], [0, 1, 1], [0, 0, 1], [0, 1, 1], [0, 0, 0]]);
+  assert.strictEqual(L.learnedByDay({ a }, day0 + 400 * DAY, 30).days.length, 30);   // at most `most` days
+  assert.strictEqual(L.learnedByDay({ a }, day0 + 400 * DAY, 30).series.char[0], 1);
+});
+
 console.log(`\n${n} checks passed`);

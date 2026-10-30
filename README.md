@@ -86,6 +86,10 @@ an in-memory sheet on `http://localhost:8787/exec`.
 
 ## What's in it
 
+**The tutorial** — a newcomer's first visit opens a few slides on how Mandarin works
+(components, tones), how HanziHome teaches it (lessons, then FSRS reviews) and why 20–30
+minutes every day is the way to do it (`site/tour.js`). Settings → Tutorial shows it again.
+
 **The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
 size: a card with your week streak and the characters and words you have learned, the three
 main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
@@ -124,7 +128,9 @@ rate the first review. "Stop here and take the quiz" ends early and leaves the r
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
 lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
 what you mix them up with, to learn again from a lesson (which starts its count of misses afresh), give a mnemonic of your own, or rest for
-two weeks. **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
+two weeks. **Items learned**, a chart on the Study page: how many sounds, components, characters
+and words you had learned on each day since your first lesson, stacked, with the characters you
+marked known on top (click a key to hide its series; point at or tap a day for its totals). **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
 type, how well FSRS predicts you (the chance of recall it gave at each review against how often you
 were right), the next two weeks, stages, and the items hardest for you. Enter steps through a lesson and
 on to the next review.
@@ -320,6 +326,7 @@ site/textstory.js       turns any text into what the story reader draws (see "Re
 site/translate.js       the translator: Gemini with your Google AI Studio key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
+site/tour.js            the first-visit tutorial
 test/pinyin.js          checks pinyin.js
 test/grammar.js         checks grammar.js
 test/accuracy.js        scores textstory.js against the hand-glossed stories
@@ -452,7 +459,9 @@ and from the tray it:
   red new;
 * shows the reader's word popup for the word under the pointer while you hold Ctrl, with
   the buttons to mark its characters and to add the word to your lessons (with the line
-  it was on as the example);
+  it was on as the example); on the way from the word to the popup, a safe triangle (from
+  where the pointer left the word to the popup's near edge) keeps the popup from jumping to
+  the words the pointer crosses;
 * opens whatever is on screen in the reader ("On screen now"), or the text you copied
   ("Read copied text").
 

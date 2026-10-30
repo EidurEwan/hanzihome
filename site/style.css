@@ -2197,3 +2197,96 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 .tr-pick:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .tr-result.tr-from-py { margin-bottom: 4px; }
 @media (max-width: 600px) { .tr-py-line, .tr-pick { font-size: 24px; } }
+
+/* ---- the study page's chart of items learned (drawLearnedChart in study.js) ---- */
+:root { --lc-known: #9a9894; }
+.lc-sound { --c: var(--lx-sound); } .lc-comp { --c: var(--lx-comp); } .lc-char { --c: var(--lx-char); }
+.lc-word { --c: var(--lx-word); } .lc-known { --c: var(--lc-known); }
+.lc-keys { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 12px; }
+.lc-key { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 2px 0;
+  font: 600 13px var(--ui); color: var(--ink); cursor: pointer; }
+.lc-key i, .lc-tip i { width: 22px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--c) 40%, transparent);
+  border: 2px solid var(--c); }
+.lc-tip i { width: 10px; }
+.lc-key.off { color: var(--ink-3); text-decoration: line-through; }
+.lc-key.off i { background: none; border-color: var(--line-2); }
+.lc-plot { display: flex; gap: 8px; }
+.lc-y { position: relative; width: 38px; flex: none; height: 220px; }
+.lc-y span { position: absolute; right: 0; transform: translateY(50%); font-size: 11.5px; color: var(--ink-2);
+  font-variant-numeric: tabular-nums; }
+.lc-area { position: relative; flex: 1; min-width: 0; height: 220px; margin-bottom: 26px; touch-action: pan-y; outline: none; }
+.lc-area:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 4px; }
+.lc-area svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.lc-area path { fill: color-mix(in srgb, var(--c) 35%, transparent); stroke: none; }
+.lc-area path.lc-line { fill: none; stroke: var(--c); stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.lc-grid { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.lc-x { position: absolute; left: 0; right: 0; top: 100%; height: 26px; }
+.lc-x span { position: absolute; top: 6px; transform: translateX(-50%); font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+.lc-x span:first-child { transform: none; }
+.lc-x span:last-child:not(:first-child) { transform: translateX(-100%); }
+.lc-cursor { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--ink-3); pointer-events: none; }
+.lc-tip { position: absolute; top: 4px; z-index: 2; pointer-events: none; display: grid; gap: 2px; min-width: 150px;
+  padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line-2);
+  box-shadow: var(--shadow); font-size: 12.5px; white-space: nowrap; }
+.lc-tip span { display: flex; align-items: center; gap: 6px; }
+.lc-tip span b { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { .lc-y, .lc-area { height: 170px; } .lc-y { width: 30px; } }
+
+/* ---- the tutorial (tour.js): slides in a dialog ---- */
+#tour { border: 0; padding: 0; background: none; max-width: min(520px, calc(100vw - 32px)); width: 100%;
+  max-height: calc(100dvh - 32px); overflow: visible; color: var(--ink); }
+#tour::backdrop { background: rgba(20, 18, 12, .55); backdrop-filter: blur(2px); }
+.tour-card { position: relative; background: var(--panel); border-radius: 22px; box-shadow: 0 8px 0 var(--tile-edge), var(--shadow);
+  overflow: auto; max-height: calc(100dvh - 40px); display: flex; flex-direction: column; animation: tour-in .2s ease-out; }
+@keyframes tour-in { from { transform: translateY(8px); opacity: 0; } }
+.tour-x { position: absolute; top: 10px; right: 12px; z-index: 1; width: 36px; height: 36px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, .7); color: #222; font-size: 22px; line-height: 1; cursor: pointer; }
+.tour-art { min-height: 170px; display: grid; place-items: center; padding: 46px 20px 26px; background: var(--yellow);
+  border-bottom: 4px solid var(--yellow-edge); color: #222; }
+.tour-body { padding: 18px 24px 4px; }
+.tour-body h2 { margin: 0 0 8px; font-size: 22px; font-weight: 800; line-height: 1.25; }
+.tour-body p { margin: 0 0 10px; color: var(--ink-2); }
+.tour-body p b { color: var(--ink); }
+.tour-n { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent) !important;
+  margin-bottom: 4px !important; }
+.tour-dots { display: flex; justify-content: center; gap: 4px; padding: 6px 0 0; }
+.tour-dots button { width: 22px; height: 22px; border: 0; padding: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.tour-dots button::before { content: ""; width: 8px; height: 8px; border-radius: 4px; background: var(--line-2); transition: width .15s; }
+.tour-dots button.on::before { width: 20px; background: var(--accent); }
+.tour-nav { display: flex; justify-content: space-between; gap: 12px; padding: 12px 24px 22px; }
+/* the slides' pictures */
+.tu-tiles { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
+.tu-tiles b { display: grid; place-items: center; min-width: 64px; height: 64px; padding: 0 12px; border-radius: 14px;
+  background: var(--lx-char); color: #fff; font: 700 34px var(--han); box-shadow: 0 5px 0 var(--char-edge, #a72d5b); }
+.tu-tiles b.comp { background: var(--lx-comp); box-shadow: 0 5px 0 var(--comp-edge, #146b44); }
+.tu-tiles b.sound { background: var(--lx-sound); box-shadow: 0 5px 0 var(--sound-edge, #5e4a00); font: 700 18px var(--ui); }
+.tu-tiles b.word { background: var(--lx-word); box-shadow: 0 5px 0 var(--word-edge, #2d5ca7); }
+.tu-tiles em { font: 800 24px var(--ui); font-style: normal; color: #6e5600; }
+.tu-tones b { height: 76px; min-width: 60px; grid-template-rows: auto auto; align-content: center; line-height: 1.15; }
+.tu-tones b span { font: 700 26px var(--han); }
+.tu-path b { min-width: 52px; height: 54px; font-size: 26px; }
+.tu-path b.sound { font-size: 16px; }
+.tu-path em { font-size: 18px; }
+.tu-bars { width: 100%; max-width: 320px; display: grid; gap: 7px; }
+.tu-bars div { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 10px; font: 600 12.5px var(--ui); }
+.tu-bars i { display: block; height: 14px; border-radius: 7px; background: var(--lx-word); box-shadow: 0 3px 0 var(--word-edge, #2d5ca7); }
+.tu-goal { display: grid; justify-items: center; line-height: 1.1; }
+.tu-goal img { width: 54px; height: 54px; margin-bottom: 6px; }
+.tu-goal b { font: 900 46px var(--ui); }
+.tu-goal span { font: 600 15px var(--ui); }
+.tu-read { position: relative; display: flex; gap: 2px; font: 600 34px var(--han); padding-bottom: 74px; }
+.tu-read span { padding: 0 3px; border-radius: 6px; }
+.tu-read span.on { background: #fff; box-shadow: 0 3px 0 var(--yellow-edge); }
+.tu-pop { position: absolute; left: 50%; top: 56px; background: #fff; border-radius: 12px; padding: 8px 14px;
+  font: 600 15px var(--ui); box-shadow: 0 4px 0 var(--tile-edge); white-space: nowrap; }
+.tu-pop b { font: 700 18px var(--han); }
+@media (max-width: 480px) {
+  .tour-art { min-height: 140px; padding: 44px 14px 20px; }
+  .tour-body { padding: 14px 18px 2px; }
+  .tour-nav { padding: 10px 18px 18px; }
+  .tu-tiles b { min-width: 54px; height: 54px; font-size: 28px; }
+  .tu-tones b { min-width: 50px; height: 68px; }
+  .tu-path b { min-width: 42px; height: 46px; font-size: 22px; }
+  .tu-read { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .tour-card { animation: none; } }
