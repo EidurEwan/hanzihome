@@ -268,13 +268,13 @@ and place before the verb, 了 after the verb or at the end, measure words, 把,
 **Add the new words to lessons** puts the words you don't know in your lessons, with the sentence;
 **Open in the reader** reads it there.
 
-Google's Gemini translates the whole text, works out the characters for pinyin, and explains
-the grammar: the browser sends the text straight to the Gemini API, asking for JSON held to a
-schema, with little thinking (about 3 s a sentence). It uses the app's built-in free
-[Google AI Studio key](https://aistudio.google.com/app/apikey) (`TR_BUILTIN` in
-`site/translate.js`), shared by everyone using the app and readable by anyone; Settings →
-Translator takes your own instead, kept in that browser only (not in the store, so never synced
-or exported). The free tier limits requests per minute and per day, model by model, so the
+With a [Google AI Studio key](https://aistudio.google.com/app/apikey) (Settings → Translator;
+a free one works, and the "show me how" guide walks through getting one), Google's Gemini
+translates the whole text, works out the characters for pinyin, and explains the grammar: the
+browser sends the text straight to the Gemini API, asking for JSON held to a schema, with little
+thinking (about 3 s a sentence). The key is kept in that browser only: not in the store, so never
+synced or exported. There is no key built in: a key in a public site's code is readable by
+anyone, and Google disables keys it finds published. The free tier limits requests per minute and per day, model by model, so the
 translator asks the key once a day which models it may use (four Flash, newest first, then two
 Flash-Lite), gives each 12 s, tries the one that last worked first and those that were slow or
 gone last, and when one model's limit is reached it tries the next. Only when every model has reached its
@@ -333,7 +333,7 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
-site/translate.js       the translator: Gemini (built-in key, or your own), or offline (see "Translate")
+site/translate.js       the translator: Gemini with your Google AI Studio key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
 site/tour.js            the first-visit tutorial

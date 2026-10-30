@@ -36,11 +36,7 @@ const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 // if the list of models can't be had: Flash models a free key had in October 2026
 const TR_FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-flash-latest'];
 
-// the app's own Google AI Studio key, shared by everyone using HanziHome: used unless
-// you save your own in Settings (which then has its own free requests)
-const TR_BUILTIN = 'AQ.Ab8RN6LAa9MJqdgOUk8RClPiS8tF-ALUi-H4YLbMtmgyIUVxfg';
-const ownKey = () => { try { return JSON.parse(localStorage.getItem(TR_KEY) || '{}').key || ''; } catch (e) { return ''; } };
-const trKey = () => ownKey() || TR_BUILTIN;
+const trKey = () => { try { return JSON.parse(localStorage.getItem(TR_KEY) || '{}').key || ''; } catch (e) { return ''; } };
 function setTrKey(k) {
   try { if (k) localStorage.setItem(TR_KEY, JSON.stringify({ key: k })); else localStorage.removeItem(TR_KEY); }
   catch (e) { /* private mode: nothing kept */ }
@@ -471,7 +467,7 @@ function drawTranslation(r) {
         : `<p class="tr-result">${esc(r.translation)}</p>`;
   } else if ((r.dir === 'zh-en' || r.dir === 'py-en') && r.gloss) {
     top = `<p class="tr-gloss"><b>Word by word:</b> ${esc(r.gloss)}</p>
-      <p class="small muted">A reading of each word in context, not a translation. ${trKey() ? '' : '<a href="#/settings">Add a Google AI Studio key</a> for a whole translation.'}</p>`;
+      <p class="small muted">A reading of each word in context, not a translation. ${trKey() ? '' : '<a href="#/settings">Add a free Google AI Studio key</a> (<button class="linkish" data-guide="api">show me how</button>) for a whole translation.'}</p>`;
   }
 
   // pinyin read offline: the characters, each word that could be another a choice
@@ -504,7 +500,7 @@ function drawTranslation(r) {
     ${(r.lookup || []).length ? `<section class="card">
       <h2 class="caps">Chinese words for each English word</h2>
       <p class="small muted">From the dictionary, commonest first. Offline there is no translation of the whole sentence:
-        word order and grammar differ. ${trKey() ? '' : '<a href="#/settings">Add a Google AI Studio key</a> for a whole translation.'}</p>
+        word order and grammar differ. ${trKey() ? '' : '<a href="#/settings">Add a free Google AI Studio key</a> (<button class="linkish" data-guide="api">show me how</button>) for a whole translation.'}</p>
       ${r.lookup.map(l => `<div class="tr-lookup"><b>${esc(l.term)}</b>
         <div class="tr-cards">${l.hits.length ? l.hits.map(trCard).join('') : '<span class="muted small">nothing found</span>'}</div></div>`).join('')}
     </section>` : ''}
@@ -554,21 +550,20 @@ function paintTranslateSettings() {
   if (!box) return;
   // (the translator used Anthropic's API before: a key kept for it is no longer used)
   try { localStorage.removeItem('hanzihome.anthropic'); } catch (e) { /* private mode */ }
-  const key = ownKey();
+  const key = trKey();
   const spent = Object.entries(ls.get(TR_SPENT) || {}).filter(([, d]) => d === pacificDay()).map(([m]) => m);
   box.innerHTML = `<h2>Translator</h2>
-    <p class="muted small"><a href="#/translate">Translate</a> uses Google’s Gemini to translate whole sentences either
-      way, turn pinyin into characters, and explain the grammar. A free key of your own is at
-      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>.
+    <p class="muted small">With a Google AI Studio key, <a href="#/translate">Translate</a> uses Google’s Gemini to
+      translate whole sentences either way, turn pinyin into characters, and explain the grammar; without one it reads
+      Chinese word by word, offline. Get a free key at
+      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a>
+      (<button class="linkish" data-guide="api">show me how</button>).
       The free tier allows a number of requests per minute and per day for each model; when every model has reached
       its limit, the translator reads offline until the limit resets (midnight Pacific time for the daily one).</p>
     ${key ? `<p>A key is saved on this device, ending <b>…${esc(key.slice(-4))}</b>.${spent.length
         ? ` Today’s free requests are used up on: ${spent.map(esc).join(', ')}.` : ''}</p>
       <p class="row"><button class="btn quiet" id="tr-key-rm">Remove the key</button></p>`
-    : `<p>Translating with HanziHome’s built-in key, shared by everyone who uses the app${spent.length
-        ? `. Today’s free requests are used up on: ${spent.map(esc).join(', ')}` : ''}. If its free requests often
-        run out, add a key of your own:</p>
-      <div class="row tr-key-row"><input id="tr-key" type="password" placeholder="AQ.… or AIza…" autocomplete="off"
+    : `<div class="row tr-key-row"><input id="tr-key" type="password" placeholder="AQ.… or AIza…" autocomplete="off"
         autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Google AI Studio API key">
       <button class="btn" id="tr-key-save">Save</button></div>`}
     <p class="small muted">The key stays in this browser only: it is not synced, not in exports, and not sent anywhere but

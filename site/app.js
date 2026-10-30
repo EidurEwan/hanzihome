@@ -2488,9 +2488,13 @@ function pageSettings() {
           .map(([v, l]) => `<option value="${v}"${Store.cfg().script === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <p class="st-note">How characters and words are shown, on every page and in the stories. Searching, lessons and
           answers work the same either way.</p></div>
-      <div class="st-field"><div class="st-label">Tutorial</div>
-        <button class="btn quiet" id="show-tour">Show the tutorial again</button>
-        <p class="st-note">How learning Mandarin works, and how HanziHome teaches it, in a few slides.</p></div>
+      <div class="st-field"><div class="st-label">Tutorials</div>
+        <div class="row tour-pick">
+          <button class="btn quiet" id="show-tour">How HanziHome works</button>
+          <button class="btn quiet" data-guide="sync">Set up sync</button>
+          <button class="btn quiet" data-guide="api">Get a translator key</button></div>
+        <p class="st-note">A few slides each: how learning Mandarin works and how HanziHome teaches it; syncing your
+          progress between devices with a Google Sheet; and getting a free Google AI Studio key for the translator.</p></div>
     </section>
     <section class="card" id="study-card"></section>
     <section class="card" id="translate-card"></section>
@@ -2661,8 +2665,9 @@ function paintDesktopCard(state) {
 
 function syncCardBody() {
   const c = Sync.cfg();
-  const steps = `<details class="sync-help">
-      <summary>How to set it up (about 5 minutes)</summary>
+  const steps = `<p><button class="btn quiet" data-guide="sync">Show me how, step by step</button></p>
+    <details class="sync-help">
+      <summary>The steps in short (about 5 minutes)</summary>
       <ol>
         <li>Create a new Google Sheet, then choose <b>Extensions → Apps Script</b>.</li>
         <li>Replace the editor's contents with
