@@ -139,7 +139,14 @@ rate the first review. "Stop here and take the quiz" ends early and leaves the r
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
 lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
 what you mix them up with, to learn again from a lesson (which starts its count of misses afresh), give a mnemonic of your own, or rest for
-two weeks. **Items learned**, a chart on the Study page: how many sounds, components, characters
+two weeks. **Look-alikes** (Study → Extra study, `#/lookalikes`, `site/lookalike.js`): rounds of
+twelve on telling apart characters that look alike (未 末, 请 情 清 晴 睛, 己 已 巳), from the ones
+you are learning or know: pick the character for a pinyin and meaning, or the meaning for a
+character, then see the set side by side with the parts that differ marked. The ones you mix up
+come up more (kept on this device); practice doesn't touch the review schedule. Each character
+page lists its look-alikes ("Looks like") with a link to practise them. The look-alikes are
+precomputed by `build/export_lookalikes.js` into `site/data/lookalike.js` (21 KB), from stroke
+counts and breakdowns, with a short list of classic pairs by hand. **Items learned**, a chart on the Study page: how many sounds, components, characters
 and words you had learned on each day since your first lesson, stacked, with the characters you
 marked known on top (click a key to hide its series; point at or tap a day for its totals). **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
 type, how well FSRS predicts you (the chance of recall it gave at each review against how often you
@@ -341,6 +348,7 @@ site/translate.js       the translator: Gemini with your Google AI Studio key, o
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
 site/tour.js            the first-visit tutorial
+site/lookalike.js       look-alike practice
 site/motion.js          animations: page entry, count-ups, confetti
 test/pinyin.js          checks pinyin.js
 test/grammar.js         checks grammar.js

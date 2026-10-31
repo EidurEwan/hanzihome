@@ -918,7 +918,7 @@ const currentPath = () => {
 };
 
 function markNav(path) {
-  path = path.replace(/^\/(lessons|reviews|calibrate|stats)/, '/study');
+  path = path.replace(/^\/(lessons|reviews|calibrate|stats|lookalikes)/, '/study');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
     a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
@@ -1518,7 +1518,8 @@ function writeQuiz(writer, memory, say, done) {
 
 async function pageCharacter(ch) {
   app.innerHTML = LOADING;
-  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem()), optional(need.sounds())]);
+  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem()), optional(need.sounds()),
+    HZ.lookalike ? null : optional(loadScript('data/lookalike.js'))]);
   if (!d) {
     app.innerHTML = withRail(`<div class="card"><h1>${esc(ch)}</h1>
       <p class="empty">No data for this character.</p></div>`);
@@ -1626,6 +1627,8 @@ async function pageCharacter(ch) {
           ${d.gr.map(g => `<span class="gbox han stroke">${esc(g)}</span>`).join('')}</div>
       </div>
     </div>
+
+    ${lookalikeSection(ch)}
 
     ${HZ.cmnem && HZ.cmnem[ch] ? `<h2 class="sec-h">Mnemonic</h2>
     <div class="decomp-box pad"><p class="small muted">Learn it first as <b>${esc(HZ.cmnem[ch][0])}</b>,
@@ -2840,7 +2843,7 @@ function offlineFiles() {
   const hex = n => ('0' + n.toString(16)).slice(-2);
   const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
-    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo', 'sounds'].map(f => `data/${f}.js`)
+    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo', 'sounds', 'lookalike'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
       ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
     .map(f => f + '?v=' + DATA_VERSION);
@@ -2931,6 +2934,7 @@ function render(keepScroll) {
   if (seg[0] === 'translate') return pageTranslate();
   if (seg[0] === 'lessons') return pageLessons();
   if (seg[0] === 'stats') return pageStats();
+  if (seg[0] === 'lookalikes') return pageLookalikes(seg.slice(1).join('/') || null);
   if (seg[0] === 'reviews') return pageReviews();
   if (seg[0] === 'calibrate') return pageCalibrate();
   if (seg[0] === 'reader' && seg[1] === 'book') return pageBook(seg[2], parseInt(seg[3], 10));
