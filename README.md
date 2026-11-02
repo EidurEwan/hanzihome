@@ -535,7 +535,11 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 **Colour themes** (Settings → Appearance): Sunshine, Boxes' yellow, is the default; Mint,
 Ocean, Blossom, Lavender and Tangerine change the button faces and their edges, the accent
-colour, highlights, the logo and a faint tint of the page, each in a light and a dark version.
+colour, highlights, the logo (in the top bar, the browser tab's icon and, in the desktop app,
+the window, taskbar and tray icons) and a faint tint of the page, each in a light and a dark
+version. The desktop app gets the logo drawn by the page at each icon size and keeps it for its
+next start; its built-in icons (`desktop/assets/`, drawn from `site/logo.svg` by
+`desktop/tools/make-icons.js`) are the yellow one, which the installer and the program file use.
 Light or dark is a separate setting (or follows the device). Both are kept on the device
 (localStorage) and applied by `index.html` before the page draws; the themes are the
 "Colour themes" section of `style.css`, generated from one table so every theme sets the same

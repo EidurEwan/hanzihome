@@ -2942,13 +2942,50 @@ function setPalette(p) {
   if (p === 'sunshine') delete document.documentElement.dataset.palette;
   else document.documentElement.dataset.palette = p;
   paintBarColour();
+  paintIcons().catch(() => {});
 }
 /* the browser's bar (a phone's status bar, an installed app's title bar) in the page's colour */
 function paintBarColour() {
   const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   document.querySelectorAll('meta[name="theme-color"]').forEach(m => { if (bg) m.setAttribute('content', bg); });
 }
+
+/* The logo (logo.svg): 字 in a writing-practice square, the square in the theme's colour.
+   The guides are left out at small sizes, where they only blur (favicon.svg). */
+function logoSvg(face, guides = true) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect x="1.5" y="1.5" width="29" height="29" rx="6" fill="${face}" stroke="#222222" stroke-width="2.2"/>
+  ${guides ? '<path d="M16 3v26M3 16h26" stroke="#222222" stroke-width="1" stroke-dasharray="1.6 1.6" opacity=".3"/>' : ''}
+  <g transform="translate(4 3.6) scale(.75)" fill="none" stroke="#222222" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 3.8V6.2"/><path d="M6.5 11V8.2H25.5V11"/><path d="M10.5 13.5H21.5L17 17.5"/>
+  <path d="M16.8 17.5V26.5Q16.8 28.8 14.2 28"/><path d="M6.5 21.2H25.5"/></g></svg>`;
+}
+const logoUrl = (face, guides) => 'data:image/svg+xml,' + encodeURIComponent(logoSvg(face, guides));
+
+/* the logo everywhere outside the page in the theme's colour: the browser tab's icon,
+   and in the desktop app its window, taskbar and tray icons, drawn here at each size
+   (the app can't draw SVG) and handed over; it keeps them for its next start */
+const ICON_SIZES = [16, 20, 24, 32, 48, 64, 256];
+async function paintIcons() {
+  const face = (PALETTES.find(x => x[0] === palette()) || PALETTES[0])[2];
+  const link = document.querySelector('link[rel="icon"]');
+  if (link) { link.type = 'image/svg+xml'; link.href = logoUrl(face, false); }
+  const desk = window.hanzihomeDesktop;
+  if (!desk || !desk.icons) return;
+  const pngs = {};
+  for (const s of ICON_SIZES) {
+    const img = new Image();
+    img.src = logoUrl(face, s > 24);
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = c.height = s;
+    c.getContext('2d').drawImage(img, 0, 0, s, s);
+    pngs[s] = c.toDataURL('image/png');
+  }
+  desk.icons(face, pngs);
+}
 paintBarColour();
+paintIcons().catch(() => {});
 
 /* ============================ dispatch ============================ */
 
