@@ -106,9 +106,44 @@ function keepInApp(contents) {
   });
 }
 
+/* The app's icon at a size: the logo in the colour theme the site last handed over
+   (kept in the user's folder), or the yellow one it ships with. */
+const ICON_SIZES = [16, 20, 24, 32, 48, 64, 256];
+const themedIcons = () => path.join(app.getPath('userData'), 'icons');
 function icon(size) {
-  return nativeImage.createFromPath(path.join(ASSETS, `icon-${size}.png`));
+  const own = nativeImage.createFromPath(path.join(themedIcons(), `icon-${size}.png`));
+  return own.isEmpty() ? nativeImage.createFromPath(path.join(ASSETS, `icon-${size}.png`)) : own;
 }
+function trayImage() {
+  const img = nativeImage.createEmpty();
+  for (const [size, scale] of [[16, 1], [20, 1.25], [24, 1.5], [32, 2]]) {
+    img.addRepresentation({ scaleFactor: scale, buffer: icon(size).toPNG() });
+  }
+  return img;
+}
+
+/* the site's colour theme changed (or the page opened): its logo, drawn at each size,
+   becomes the window's, the taskbar's and the tray's icon, now and at the next start */
+ipcMain.on('app-icons', (e, face, pngs) => {
+  if (!fromPage(e) || !pngs || typeof pngs !== 'object' || !/^#[0-9a-f]{6}$/i.test(face)) return;
+  const dir = themedIcons(), mark = path.join(dir, 'face.txt');
+  try { if (fs.readFileSync(mark, 'utf8') === face) return; } catch (err) { /* none kept yet */ }
+  const imgs = {};
+  for (const s of ICON_SIZES) {
+    const url = pngs[s];
+    if (typeof url !== 'string' || !url.startsWith('data:image/png;base64,') || url.length > 500000) return;
+    const img = nativeImage.createFromDataURL(url);
+    if (img.isEmpty() || img.getSize().width !== s) return;
+    imgs[s] = img;
+  }
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    for (const s of ICON_SIZES) fs.writeFileSync(path.join(dir, `icon-${s}.png`), imgs[s].toPNG());
+    fs.writeFileSync(mark, face);
+  } catch (err) { console.error('icons:', err.message); return; }
+  if (win && !win.isDestroyed()) win.setIcon(icon(256));
+  if (tray && !tray.isDestroyed()) tray.setImage(trayImage());
+});
 
 function createWindow() {
   win = new BrowserWindow({
@@ -405,11 +440,7 @@ ipcMain.on('desktop-update', (e, what) => {
 // ------------------------------------------------------------------- tray
 
 function createTray() {
-  const img = nativeImage.createEmpty();
-  for (const [size, scale] of [[16, 1], [20, 1.25], [24, 1.5], [32, 2]]) {
-    img.addRepresentation({ scaleFactor: scale, buffer: icon(size).toPNG() });
-  }
-  tray = new Tray(img);
+  tray = new Tray(trayImage());
   tray.setToolTip('HanziHome');
   tray.on('click', showWindow);
   buildTrayMenu();

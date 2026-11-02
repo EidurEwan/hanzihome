@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HanziHome — Chinese character dictionary</title>
-<link rel="stylesheet" href="style.css?v=95">
+<link rel="stylesheet" href="style.css?v=98">
 <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest?v=2">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=2">
@@ -17,8 +17,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>
-/* Settings → Appearance: light or dark whatever the device prefers (app.js setTheme) */
+/* Settings → Appearance: light or dark whatever the device prefers (app.js setTheme),
+   and the colour theme (app.js setPalette) */
 try { var _t = localStorage.getItem('hanzihome.theme'); if (_t === 'light' || _t === 'dark') document.documentElement.dataset.theme = _t; } catch (e) {}
+try { var _p = localStorage.getItem('hanzihome.palette'); if (/^[a-z]+$/.test(_p || '')) document.documentElement.dataset.palette = _p; } catch (e) {}
 /* Globals the data files assign into. Everything is loaded with <script>
    tags rather than fetch(), so the site works straight off the filesystem. */
 var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radicalMap: {} };
@@ -29,7 +31,13 @@ var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radica
 <header class="topbar">
   <button id="sidebar-toggle" class="menu-btn" aria-label="Menu" aria-controls="sidebar" aria-expanded="false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-  <a class="brand" href="#/"><img class="logo" src="logo.svg?v=2" alt=""><span>HanziHome</span></a>
+  <a class="brand" href="#/"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+    <!-- logo.svg, inline so its square takes the colour theme's face -->
+    <rect x="1.5" y="1.5" width="29" height="29" rx="6" fill="var(--yellow, #fde24d)" stroke="#222222" stroke-width="2.2"/>
+    <path d="M16 3v26M3 16h26" stroke="#222222" stroke-width="1" stroke-dasharray="1.6 1.6" opacity=".3"/>
+    <g transform="translate(4 3.6) scale(.75)" fill="none" stroke="#222222" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 3.8V6.2"/><path d="M6.5 11V8.2H25.5V11"/><path d="M10.5 13.5H21.5L17 17.5"/>
+      <path d="M16.8 17.5V26.5Q16.8 28.8 14.2 28"/><path d="M6.5 21.2H25.5"/></g></svg><span>HanziHome</span></a>
   <form class="search" id="search-form" role="search" autocomplete="off">
     <input id="q" type="search" placeholder="Look up a Chinese character…" enterkeyhint="search"
            spellcheck="false" autocorrect="off" autocapitalize="off" aria-label="Look up a Chinese character">
@@ -86,11 +94,12 @@ var HZ = { index: {}, chunk: {}, strokes: {}, phoneticSets: {}, meta: {}, radica
 <script src="data/radicalmap.js?v=7"></script>
 <script src="motion.js?v=2"></script>
 <script src="learn.js?v=14"></script>
-<script src="study.js?v=33"></script>
+<script src="study.js?v=34"></script>
 <script src="words.js?v=3"></script>
 <script src="grammar.js?v=1"></script>
 <script src="translate.js?v=8"></script>
-<script src="app.js?v=102"></script>
+<script src="app.js?v=105"></script>
+<script src="lookalike.js?v=1"></script>
 <script src="tour.js?v=3"></script>
 </body>
 </html>

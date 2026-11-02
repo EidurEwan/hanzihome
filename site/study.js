@@ -738,8 +738,9 @@ function drawStudy() {
       ${tile('lessons', 'Lessons', p.lessons.length, lessonNote)}
       ${tile('reviews', 'Reviews', p.reviewsLeft, reviewNote)}
     </div>
-    ${mistakes.length && !p.vacation ? `<p class="lx-extra"><span class="small muted">Extra study:</span>
-      <button class="btn quiet" id="lx-mistakes" title="Missed in the last three days. Practice doesn't change when they come back.">Recent mistakes (${mistakes.length})</button></p>` : ''}
+    ${!p.vacation ? `<p class="lx-extra"><span class="small muted">Extra study:</span>
+      ${mistakes.length ? `<button class="btn quiet" id="lx-mistakes" title="Missed in the last three days. Practice doesn't change when they come back.">Recent mistakes (${mistakes.length})</button>` : ''}
+      <a class="btn quiet" href="#/lookalikes" title="Tell apart characters that look alike, such as 未 and 末. Practice doesn't change when they come back.">Look-alikes</a></p>` : ''}
     <p class="small muted lx-today">Today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
       (${of(p.wordsToday, cfg.lessonLimit && Math.min(cfg.wordLimit, cfg.lessonLimit))} words) ·
       ${of(p.reviewsToday, cfg.reviewLimit)} reviews · <a href="#/stats">Statistics</a> · <a href="#/settings">Settings</a></p>
