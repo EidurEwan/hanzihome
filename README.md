@@ -533,6 +533,14 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 
 ## Typography and colour
 
+**Colour themes** (Settings → Appearance): Sunshine, Boxes' yellow, is the default; Mint,
+Ocean, Blossom, Lavender and Tangerine change the button faces and their edges, the accent
+colour, highlights, the logo and a faint tint of the page, each in a light and a dark version.
+Light or dark is a separate setting (or follows the device). Both are kept on the device
+(localStorage) and applied by `index.html` before the page draws; the themes are the
+"Colour themes" section of `style.css`, generated from one table so every theme sets the same
+variables in light and dark.
+
 After the game look of the Boxes app (`andrewtmitchell/boxes`, its `light-mode-and-game-ui`
 branch): warm paper (`#F6F4EF`) with charcoal text (`#222`), or in the dark charcoal with
 white text; yellow (`#FDE24D`) pill buttons that stand on a darker edge (`#D4B21F`) and sink

@@ -2492,10 +2492,15 @@ function pageSettings() {
     ${window.hanzihomeDesktop ? '<section class="card" id="desktop-card"><h2>Desktop app</h2></section>' : ''}
     <section class="card">
       <h2>Appearance</h2>
-      <div class="st-field"><div class="st-label">Theme</div>
+      <div class="st-field"><div class="st-label">Colour theme</div>
+        <div class="pal-pick" role="radiogroup" aria-label="Colour theme">${PALETTES.map(([id, name, face, edge, light, dark]) =>
+          `<button type="button" class="pal${palette() === id ? ' on' : ''}" data-pal="${id}" role="radio" aria-checked="${palette() === id}"
+            style="--f:${face};--e:${edge};--l:${light};--d:${dark}"><span class="pal-sw"><i></i><i></i></span>${name}</button>`).join('')}</div>
+        <p class="st-note">The colour of buttons, highlights and accents. Each comes in light and dark.</p></div>
+      <div class="st-field"><div class="st-label">Light or dark</div>
         <select class="st-select" id="theme">${[['system', 'Same as this device'], ['light', 'Light'], ['dark', 'Dark']]
           .map(([v, l]) => `<option value="${v}"${theme() === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
-        <p class="st-note">Kept on this device only, so a phone can be dark and a laptop light.</p></div>
+        <p class="st-note">Separate from the colour theme. Both are kept on this device only, so a phone can be dark and a laptop light.</p></div>
       <div class="st-field"><div class="st-label">Characters</div>
         <select class="st-select" id="script">${[['simp', 'Simplified'], ['trad', 'Traditional'], ['both', 'Simplified, with traditional beside it']]
           .map(([v, l]) => `<option value="${v}"${Store.cfg().script === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
@@ -2586,10 +2591,18 @@ function pageSettings() {
   });
   document.getElementById('theme').addEventListener('change', e => {
     // light to dark (and back) as a cross-fade, where the browser can
-    const go = () => { setTheme(e.target.value); render(true); };
+    const go = () => { setTheme(e.target.value); paintBarColour(); render(true); };
     if (document.startViewTransition && !Motion.reduced()) document.startViewTransition(go); else go();
   });
   document.getElementById('show-tour').addEventListener('click', () => showTour(0));
+  app.querySelectorAll('[data-pal]').forEach(b => b.addEventListener('click', () => {
+    const go = () => {
+      setPalette(b.dataset.pal);
+      app.querySelectorAll('[data-pal]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); });
+      render(true);
+    };
+    if (document.startViewTransition && !Motion.reduced()) document.startViewTransition(go); else go();
+  }));
   document.getElementById('script').addEventListener('change', async e => {
     Store.setCfg({ script: e.target.value });
     await optional(needS2t());
@@ -2906,7 +2919,36 @@ function setTheme(t) {
   else document.documentElement.dataset.theme = t;
 }
 // a page drawn with the theme's colours (stroke order) follows the device switching
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (theme() === 'system') render(true); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (theme() === 'system') render(true); paintBarColour(); });
+
+/* The colour theme: the yellow of Boxes, or another colour for the buttons, highlights
+   and accents, each with a light and a dark side (style.css, "Colour themes"). Also
+   this device's own; index.html applies it before the page draws.
+   [id, name, face, edge, light page, dark page] */
+const PALETTE_KEY = 'hanzihome.palette';
+const PALETTES = [
+  ['sunshine', 'Sunshine', '#fde24d', '#d4b21f', '#f6f4ef', '#222222'],
+  ['mint', 'Mint', '#4be3a8', '#24a874', '#f2f7f4', '#1d2421'],
+  ['ocean', 'Ocean', '#6db8ff', '#3a86d4', '#f2f5f9', '#1c2128'],
+  ['blossom', 'Blossom', '#ff9cc2', '#d9609a', '#faf3f5', '#261e22'],
+  ['lavender', 'Lavender', '#b9a6ff', '#8268e0', '#f5f4fa', '#201f28'],
+  ['tangerine', 'Tangerine', '#ffae5c', '#d97b22', '#fbf5ef', '#26211c'],
+];
+function palette() {
+  try { const p = localStorage.getItem(PALETTE_KEY); return PALETTES.some(x => x[0] === p) ? p : 'sunshine'; } catch (e) { return 'sunshine'; }
+}
+function setPalette(p) {
+  try { p === 'sunshine' ? localStorage.removeItem(PALETTE_KEY) : localStorage.setItem(PALETTE_KEY, p); } catch (e) { /* this visit only */ }
+  if (p === 'sunshine') delete document.documentElement.dataset.palette;
+  else document.documentElement.dataset.palette = p;
+  paintBarColour();
+}
+/* the browser's bar (a phone's status bar, an installed app's title bar) in the page's colour */
+function paintBarColour() {
+  const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => { if (bg) m.setAttribute('content', bg); });
+}
+paintBarColour();
 
 /* ============================ dispatch ============================ */
 

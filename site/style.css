@@ -2261,7 +2261,7 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 .tu-tiles b.comp { background: var(--lx-comp); box-shadow: 0 5px 0 var(--comp-edge, #146b44); }
 .tu-tiles b.sound { background: var(--lx-sound); box-shadow: 0 5px 0 var(--sound-edge, #5e4a00); font: 700 18px var(--ui); }
 .tu-tiles b.word { background: var(--lx-word); box-shadow: 0 5px 0 var(--word-edge, #2d5ca7); }
-.tu-tiles em { font: 800 24px var(--ui); font-style: normal; color: #6e5600; }
+.tu-tiles em { font: 800 24px var(--ui); font-style: normal; color: rgba(0, 0, 0, .5); }
 .tu-tones b { height: 76px; min-width: 60px; grid-template-rows: auto auto; align-content: center; line-height: 1.15; }
 .tu-tones b span { font: 700 26px var(--han); }
 .tu-path b { min-width: 52px; height: 54px; font-size: 26px; }
@@ -2515,7 +2515,7 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 .tu-dev.sheet { width: 64px; height: 76px; border-radius: 8px; background: #2da779; box-shadow: 0 4px 0 #1e8c5a;
   grid-template-columns: repeat(2, 1fr); gap: 3px; padding: 10px 8px; align-content: start; }
 .tu-dev.sheet i { height: 9px; background: rgba(255, 255, 255, .85); border-radius: 2px; }
-.tu-link { width: 22px; border-top: 3px dashed #6e5600; }
+.tu-link { width: 22px; border-top: 3px dashed rgba(0, 0, 0, .45); }
 .tu-tiles b.tu-en { font: 700 22px var(--ui); padding: 0 16px; }
 @media (max-width: 480px) { .tu-dev.laptop { width: 66px; height: 48px; } .tu-dev.sheet { width: 54px; height: 66px; } }
 
@@ -2575,3 +2575,173 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
   .la-set { grid-template-columns: repeat(2, 1fr); }
   .la-ask { font-size: 17px; }
 }
+
+/* ======================= Colour themes =======================
+ Settings → Appearance → Colour theme (app.js setPalette; index.html sets data-palette
+ before the page draws). Sunshine, the yellow, is the default: the variables at the top
+ of this file. Each other theme sets the yellow family (button faces and their edges,
+ the accent ink, highlights) and tints the neutrals, once for light and once for dark;
+ light or dark itself is the separate data-theme. Generated from one table, so a theme
+ sets the same variables in both. */
+:root[data-palette="mint"] {
+  --yellow: #4be3a8; --yellow-edge: #24a874; --accent: #0f7a52;
+  --accent-dark: #0a5c3d; --accent-soft: #dcfaee; --hl-hover: #b8f2d9;
+  --word-hover: #d2f7e6; --bg: #f2f7f4; --panel-2: #e3ece6;
+  --line: #dde8e1; --line-2: #d0ddd5; --hover: #eaf2ed;
+  --drawer: #e3ece6; --tile-edge: #c8d6cd; --quiet-edge: #c8d6cd;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="mint"]:not([data-theme="light"]) {
+    --yellow: #4be3a8; --yellow-edge: #1f8f63; --accent: #5ef0b8;
+    --accent-dark: #2fbf88; --accent-soft: rgba(75, 227, 168, .12); --hl-hover: #1d5a44;
+    --word-hover: #1d4537; --bg: #1d2421; --panel-2: #151b18;
+    --line: #33403a; --line-2: #435049; --hover: #2f3a35;
+    --drawer: #151b18; --tile-edge: #111614; --quiet-edge: #111614;
+    --panel: #27302c; --drawer-card: #222b27; --tile-rim: #33403a;
+    --quiet-face: #33403a;
+    color-scheme: dark;
+  }
+}
+:root[data-palette="mint"][data-theme="dark"] {
+  --yellow: #4be3a8; --yellow-edge: #1f8f63; --accent: #5ef0b8;
+  --accent-dark: #2fbf88; --accent-soft: rgba(75, 227, 168, .12); --hl-hover: #1d5a44;
+  --word-hover: #1d4537; --bg: #1d2421; --panel-2: #151b18;
+  --line: #33403a; --line-2: #435049; --hover: #2f3a35;
+  --drawer: #151b18; --tile-edge: #111614; --quiet-edge: #111614;
+  --panel: #27302c; --drawer-card: #222b27; --tile-rim: #33403a;
+  --quiet-face: #33403a;
+  color-scheme: dark;
+}
+:root[data-palette="ocean"] {
+  --yellow: #6db8ff; --yellow-edge: #3a86d4; --accent: #1c5fa8;
+  --accent-dark: #144a85; --accent-soft: #e1f0ff; --hl-hover: #bfe0ff;
+  --word-hover: #d6eaff; --bg: #f2f5f9; --panel-2: #e3e9f1;
+  --line: #dbe3ec; --line-2: #cfd9e4; --hover: #eaf0f6;
+  --drawer: #e3e9f1; --tile-edge: #c5d0dc; --quiet-edge: #c5d0dc;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="ocean"]:not([data-theme="light"]) {
+    --yellow: #6db8ff; --yellow-edge: #2f6fb3; --accent: #8cc8ff;
+    --accent-dark: #5aa6ec; --accent-soft: rgba(109, 184, 255, .13); --hl-hover: #1e3f63;
+    --word-hover: #1c3550; --bg: #1c2128; --panel-2: #14181e;
+    --line: #333d49; --line-2: #434e5b; --hover: #2e3742;
+    --drawer: #14181e; --tile-edge: #10141a; --quiet-edge: #10141a;
+    --panel: #262d36; --drawer-card: #212831; --tile-rim: #333d49;
+    --quiet-face: #333d49;
+    color-scheme: dark;
+  }
+}
+:root[data-palette="ocean"][data-theme="dark"] {
+  --yellow: #6db8ff; --yellow-edge: #2f6fb3; --accent: #8cc8ff;
+  --accent-dark: #5aa6ec; --accent-soft: rgba(109, 184, 255, .13); --hl-hover: #1e3f63;
+  --word-hover: #1c3550; --bg: #1c2128; --panel-2: #14181e;
+  --line: #333d49; --line-2: #434e5b; --hover: #2e3742;
+  --drawer: #14181e; --tile-edge: #10141a; --quiet-edge: #10141a;
+  --panel: #262d36; --drawer-card: #212831; --tile-rim: #333d49;
+  --quiet-face: #333d49;
+  color-scheme: dark;
+}
+:root[data-palette="blossom"] {
+  --yellow: #ff9cc2; --yellow-edge: #d9609a; --accent: #b0275f;
+  --accent-dark: #8a1d4a; --accent-soft: #ffe6f0; --hl-hover: #ffc9de;
+  --word-hover: #ffdcea; --bg: #faf3f5; --panel-2: #f0e4e9;
+  --line: #ebdde3; --line-2: #e0d0d7; --hover: #f5ebef;
+  --drawer: #f0e4e9; --tile-edge: #dccbd2; --quiet-edge: #dccbd2;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="blossom"]:not([data-theme="light"]) {
+    --yellow: #ff9cc2; --yellow-edge: #c0517f; --accent: #ffb3d1;
+    --accent-dark: #f07fac; --accent-soft: rgba(255, 156, 194, .13); --hl-hover: #5a2540;
+    --word-hover: #47213a; --bg: #261e22; --panel-2: #1a1417;
+    --line: #43363c; --line-2: #54444b; --hover: #3a2f34;
+    --drawer: #1a1417; --tile-edge: #150f12; --quiet-edge: #150f12;
+    --panel: #30272b; --drawer-card: #2b2327; --tile-rim: #43363c;
+    --quiet-face: #43363c;
+    color-scheme: dark;
+  }
+}
+:root[data-palette="blossom"][data-theme="dark"] {
+  --yellow: #ff9cc2; --yellow-edge: #c0517f; --accent: #ffb3d1;
+  --accent-dark: #f07fac; --accent-soft: rgba(255, 156, 194, .13); --hl-hover: #5a2540;
+  --word-hover: #47213a; --bg: #261e22; --panel-2: #1a1417;
+  --line: #43363c; --line-2: #54444b; --hover: #3a2f34;
+  --drawer: #1a1417; --tile-edge: #150f12; --quiet-edge: #150f12;
+  --panel: #30272b; --drawer-card: #2b2327; --tile-rim: #43363c;
+  --quiet-face: #43363c;
+  color-scheme: dark;
+}
+:root[data-palette="lavender"] {
+  --yellow: #b9a6ff; --yellow-edge: #8268e0; --accent: #5638c2;
+  --accent-dark: #42289c; --accent-soft: #eee9ff; --hl-hover: #d9cfff;
+  --word-hover: #e6dfff; --bg: #f5f4fa; --panel-2: #e8e5f2;
+  --line: #e1ddee; --line-2: #d5d0e5; --hover: #efedf6;
+  --drawer: #e8e5f2; --tile-edge: #cfc9e0; --quiet-edge: #cfc9e0;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="lavender"]:not([data-theme="light"]) {
+    --yellow: #b9a6ff; --yellow-edge: #6f56cc; --accent: #c9baff;
+    --accent-dark: #a08bf5; --accent-soft: rgba(185, 166, 255, .13); --hl-hover: #3b2f66;
+    --word-hover: #312a52; --bg: #201f28; --panel-2: #16151c;
+    --line: #3b3847; --line-2: #4b4858; --hover: #33313e;
+    --drawer: #16151c; --tile-edge: #111016; --quiet-edge: #111016;
+    --panel: #2a2833; --drawer-card: #25232e; --tile-rim: #3b3847;
+    --quiet-face: #3b3847;
+    color-scheme: dark;
+  }
+}
+:root[data-palette="lavender"][data-theme="dark"] {
+  --yellow: #b9a6ff; --yellow-edge: #6f56cc; --accent: #c9baff;
+  --accent-dark: #a08bf5; --accent-soft: rgba(185, 166, 255, .13); --hl-hover: #3b2f66;
+  --word-hover: #312a52; --bg: #201f28; --panel-2: #16151c;
+  --line: #3b3847; --line-2: #4b4858; --hover: #33313e;
+  --drawer: #16151c; --tile-edge: #111016; --quiet-edge: #111016;
+  --panel: #2a2833; --drawer-card: #25232e; --tile-rim: #3b3847;
+  --quiet-face: #3b3847;
+  color-scheme: dark;
+}
+:root[data-palette="tangerine"] {
+  --yellow: #ffae5c; --yellow-edge: #d97b22; --accent: #a14c00;
+  --accent-dark: #7d3b00; --accent-soft: #fff0e0; --hl-hover: #ffd6ad;
+  --word-hover: #ffe4c7; --bg: #fbf5ef; --panel-2: #f1e7dc;
+  --line: #ece0d3; --line-2: #e2d4c5; --hover: #f6eee5;
+  --drawer: #f1e7dc; --tile-edge: #ddcdbc; --quiet-edge: #ddcdbc;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="tangerine"]:not([data-theme="light"]) {
+    --yellow: #ffae5c; --yellow-edge: #b8661a; --accent: #ffc285;
+    --accent-dark: #f29c48; --accent-soft: rgba(255, 174, 92, .13); --hl-hover: #5a3a1a;
+    --word-hover: #4a3219; --bg: #26211c; --panel-2: #1a1612;
+    --line: #443c33; --line-2: #554b40; --hover: #3a332c;
+    --drawer: #1a1612; --tile-edge: #14110d; --quiet-edge: #14110d;
+    --panel: #302a24; --drawer-card: #2b251f; --tile-rim: #443c33;
+    --quiet-face: #443c33;
+    color-scheme: dark;
+  }
+}
+:root[data-palette="tangerine"][data-theme="dark"] {
+  --yellow: #ffae5c; --yellow-edge: #b8661a; --accent: #ffc285;
+  --accent-dark: #f29c48; --accent-soft: rgba(255, 174, 92, .13); --hl-hover: #5a3a1a;
+  --word-hover: #4a3219; --bg: #26211c; --panel-2: #1a1612;
+  --line: #443c33; --line-2: #554b40; --hover: #3a332c;
+  --drawer: #1a1612; --tile-edge: #14110d; --quiet-edge: #14110d;
+  --panel: #302a24; --drawer-card: #2b251f; --tile-rim: #443c33;
+  --quiet-face: #443c33;
+  color-scheme: dark;
+}
+
+/* the colour theme picker (Settings → Appearance) */
+.pal-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)); gap: 10px; }
+.pal { display: grid; justify-items: center; gap: 6px; padding: 10px 8px 9px; border: 0; border-radius: 16px; cursor: pointer;
+  font: 600 13px var(--ui); color: var(--ink); background: var(--panel-2); box-shadow: inset 0 0 0 2px transparent;
+  transition: transform .12s ease, box-shadow .12s ease; }
+.pal:hover { transform: translateY(-2px); }
+.pal.on { box-shadow: inset 0 0 0 2px var(--ink); }
+.pal:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* a swatch: the button face on its edge, over the light and the dark page */
+.pal-sw { position: relative; display: flex; width: 72px; height: 40px; border-radius: 10px; overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.pal-sw i { flex: 1; background: var(--l); }
+.pal-sw i + i { background: var(--d); }
+.pal-sw::after { content: ""; position: absolute; left: 50%; top: 50%; width: 34px; height: 18px; transform: translate(-50%, -62%);
+  border-radius: 999px; background: var(--f); box-shadow: 0 3px 0 var(--e); }
+.pal.on .pal-sw::after { animation: m-mark .45s var(--m-spring, ease); }
