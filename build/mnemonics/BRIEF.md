@@ -111,31 +111,86 @@ want to split them into **half**, all you need is a *rod* down the middle."
 
 HanziHome now teaches a character the way a good memory palace does: its **sound** and
 its **parts** in one absurd little scene. Each syllable is three pictures, from
-`site/data/sounds.js`: the initial is a PERSON (b- the Baker, sh- the Sheriff, no
-initial the Ghost), the final is a PLACE (-an the Mansion, -ing the Boxing Ring) and
-the tone is a ROOM or spot in that place (1 Rooftop, 2 Staircase, 3 Basement,
-4 Trapdoor, 5 Front Step).
+`site/data/sounds.js`: the initial is a pop-culture FIGURE (b- Batman, sh- Sherlock, no
+initial Casper), the final is a BUILDING (-an the Mansion, -ing the Boxing Ring) and
+the tone is WHERE at that building (1 Front: in front of it, 2 Inside it, 3 its Basement,
+4 its Bathroom, 5 on its Roof). Don't mention one of the other tone places in the scene.
 
 Input: `{c, pin, key, sound, parts, old}`: the character, its reading, the meaning to
-teach, `sound` as `["b- Baker", "-an Mansion", "4 Trapdoor"]`, its components as
+teach, `sound` as `["b- Batman", "-an Mansion", "4 Bathroom"]`, its components as
 `[glyph, picture name]`, and the old, shorter mnemonic (ideas welcome, but rewrite).
 
 Output: `{"c": "半", "m": "…"}`, where `m` is the scene:
 
 * **40 to 80 words**, two to four sentences, present tense, vivid and absurd: something
   happens, with movement, noise, a surprise. Funny beats sensible; the stranger the
-  image, the better it sticks. Nothing gory, sexual, or about real people or brands.
-* **Open with the sound**: the person, in the room, of the place, in the first
-  sentence: "The {Baker} crashes through the {Trapdoor} of the {Mansion} …". Write the
+  image, the better it sticks. Nothing gory or sexual. The only famous names are the cast's fictional figures (section 7): no real people or brands.
+* **Open with the sound**: the figure, at the tone's place, of the building, in the first
+  sentence: "{Batman} glides into the {Bathroom} of the {Mansion} …". Write the
   three sound names between curly braces exactly as given (no "-an" or tone numbers),
   each once.
 * **Use every component**, by its name exactly as given, between single asterisks
   (`*horns*`), as a thing in the scene that does something.
 * **The meaning twice**: the `key` (or a plain form of it: halves, halved) between double
-  asterisks, at least twice, and the scene should make the meaning *happen* (for 半 the
-  Baker saws everything in the mansion in **half**), not just name it at the end.
-* Example, 半 bàn "half", sound b- Baker, -an Mansion, 4 Trapdoor, parts 半 half:
-  "The {Baker} crashes through the {Trapdoor} into the {Mansion}'s cellar with a bread
-  knife and saws everything he finds into two *halves*: barrels, chairs, a grandfather
-  clock. The butler finds the wine rack sliced clean in **half** and faints, also in
-  **half** a second."
+  asterisks, at least twice, and the scene should make the meaning *happen* (for 半
+  Batman's batarang slices everything in the mansion in **half**), not just name it at the end.
+* Example, 半 bàn "half", sound b- Batman, -an Mansion, 4 Bathroom, parts 半 half:
+  "{Batman} glides into the {Bathroom} of the {Mansion} and hurls a
+  batarang that slices everything into two *halves*: barrels, chairs, a grandfather
+  clock. Alfred finds the wine rack cut clean in **half**, and Batman, brooding, growls
+  that crime is now only **half** as bad."
+
+## 7. The cast: scenes built on the figures
+
+The initials were once jobs (the Baker, the Yogi). They are now figures a learner already
+knows. **The scene is themed to its figure: the figure's defining powers, personality and
+mechanics are how the meaning happens.** Gandalf is a wizard, so he gets there by magic;
+Mario gets there by jumping on it and collecting the coin; Yoshi swallows it and lays it as
+an egg; Sherlock deduces it; Charlie Brown has it go wrong for him. Someone who knows the
+character should feel it could only be them. A figure merely standing in the scene while
+something else happens is a failure, however funny.
+
+| initial | figure | he/she | short name | defining powers, personality, mechanics |
+|---|---|---|---|---|
+| none | Casper | he | Casper | friendly ghost: floats through walls, turns invisible, frightens people by accident, only wants a friend |
+| b | Batman | he | Batman | cape and glide, utility belt with a gadget for everything, batarangs, grappling hook, gruff voice, brooding, detective, Batmobile |
+| p | Pikachu | he | Pikachu | small, yellow, cheek sparks, Thunderbolt, says only "Pika!", lives in a Poké Ball, gets caught |
+| m | Mario | he | Mario | plumber, red cap, moustache, stomps on things, head-butts blocks for coins, mushrooms make him grow, warp pipes, "Wahoo!" |
+| f | Frodo | he | Frodo | small hobbit, bare hairy feet, the Ring turns him invisible and tempts him, weary, reluctant, very long walks, loyal friend Sam |
+| d | Darth Vader | he | Vader | black helmet, loud breathing, cape, Force-chokes objects only, lifts things with the Force, red lightsaber, booming disapproval, "I am your father" |
+| t | Tarzan | he | Tarzan | swings on vines, loincloth, jungle yell, raised by apes, talks to animals, baffled by civilisation |
+| n | Naruto | he | Naruto | orange jumpsuit, ninja, shadow clones by the dozen, spinning Rasengan, ramen, loud, never gives up, headband |
+| l | Lara Croft | she | Lara | tomb raider, ponytail, acrobatic, ancient traps and rolling boulders, relics, puzzles, climbs anything (never shoots anyone) |
+| g | Gandalf | he | Gandalf | wizard: grey robes, staff, pointy hat, spells, fireworks, "You shall not pass!", arrives exactly when he means to, pipe, wise and cranky |
+| k | Kermit | he | Kermit | green frog, flailing arms, panicked "Yaaay!", banjo, hops, stage manager of chaos, "it's not easy being green" |
+| h | Homer | he | Homer | bald, doughnuts, "D'oh!", lazy, naps at the nuclear plant, Duff-free: no beer, dim schemes that backfire, "Mmm…" |
+| j | James Bond | he | Bond | tuxedo, gadgets from Q that do one absurd thing, unruffled one-liners, "Bond. James Bond.", shaken not stirred, escapes everything |
+| q | Chewbacca | he | Chewbacca | huge, hairy, roars and growls that only friends understand, bandolier, crossbow, very loyal, rips things apart in a temper, fixes ships |
+| x | Shrek | he | Shrek | green ogre, swamp, onions and layers, grumpy, wants to be left alone, roars, a donkey who will not shut up |
+| zh | the Joker | he | the Joker | purple suit, green hair, huge grin, squirting flower, trick playing cards, cackling, everything is a prank (harmless pranks only) |
+| ch | Charlie Brown | he | Charlie | zigzag shirt, bad luck, kites eaten by trees, the football pulled away, "Good grief", gloomy, never wins, dog Snoopy |
+| sh | Sherlock | he | Sherlock | deerstalker, pipe, magnifying glass, deduces everything from one crumb, "Elementary", violin, smug, Watson trailing |
+| r | Robocop | he | Robocop | steel armour, visor, stiff heavy walk, targeting display, reads out rules and directives, "Dead or alive" not used: arrests everything politely |
+| z | Zorro | he | Zorro | black mask and cape, rapier, slashes a Z into anything, black horse, swings from chandeliers, dashing, vanishes laughing |
+| c | Cookie Monster | he | Cookie Monster | blue, furry, googly eyes, devours everything in a spray of crumbs, "Me want cookie!", talks in "me" |
+| s | Sailor Moon | she | Sailor Moon | long blonde pigtails, sailor uniform, moon wand, long sparkly transformation sequence, speech about justice, tiara thrown, clumsy, cries loudly, talking cat Luna |
+| y | Yoshi | he | Yoshi | green dinosaur, long sticky tongue, swallows anything and lays it as an egg, flutter jump, carries Mario, "Yoshi!" |
+| w | Walter White | he | Walter | bald chemistry teacher, glasses, goatee, black hat, beakers and school experiments, proud of his precise science, RV, "I am the one who knocks" (chemistry class only: never drugs or crime) |
+
+Input is as in section 6, with `old` the present scene. Output `{"c": "半", "m": "…"}`, and
+every rule of section 6 still holds. `old` was made by renaming a job, so treat it as a
+source of ideas only: keep a joke when it suits the figure, and otherwise write afresh.
+
+* The figure's token (`{Batman}`, and `The {Joker}` with its article) appears once, in the
+  first sentence, with the building and tone tokens. Afterwards use the short name, plain.
+* The way the **meaning** happens is one of the figure's own powers or habits from the table,
+  or one you know well from the source: don't reach for the same one every time. Vary them
+  across a batch; each character should have its own use of the figure.
+* The old job goes: no baking Batman, no yoga for Yoshi, no juggling Bond. An old job word
+  may stay only as something else in the scene (a pirate ship passing), never as the figure.
+* Right pronouns for the figure, with other people's kept clear of it. Casper and Robocop
+  are "he", not "it".
+* Every *chip* still acts in the scene, every **meaning** still appears at least twice, and
+  no other tone's place is mentioned.
+* Clean and light, fit for any age. No quotation longer than a catchphrase. Other characters
+  from the figure's world (Sam, Watson, Snoopy) may appear; figures from other rows may not.

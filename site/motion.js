@@ -1,10 +1,11 @@
 /* motion.js — the app's movement, kept in one place.
  *
- * Most of it is CSS (style.css, "Motion"): a page's cards rise in one after another
- * when you go to it, bars and rings fill, popups grow out of where they point.
- * This file does what CSS can't on its own: tells the CSS when a page is new (not
- * just redrawn), counts numbers up as a page comes in, replays a one-off animation
- * on an element, and throws confetti when a session is done.
+ * Most of it is CSS (style.css, "Motion"): bars and rings fill, popups grow out of where
+ * they point, what you press goes down quickly and comes back softly.
+ * This file does what CSS can't on its own: dissolves one page into the next without a
+ * blink, tells the CSS when a page is new (not just redrawn), counts numbers up as a page
+ * comes in, replays a one-off animation on an element, and throws confetti when a session
+ * is done.
  *
  * Everything stands still with the system's "reduce motion" setting. Needs nothing
  * else; app.js calls Motion.enter() from render(). */
@@ -14,23 +15,45 @@
 const Motion = (() => {
   const reduced = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const root = () => document.getElementById('app');
-  let lastPath = null, timer = 0, observer = null;
+  let lastPath = null, timer = 0, observer = null, dissolving = false;
 
-  /* a new page (not a redraw of this one): its parts rise in (#app.entering, in the
-     CSS) and its numbers count up, for those drawn in the next moment too (pages
-     that fill in as their data loads) */
+  /* Going to another page. The old one stays on screen until the new one is drawn (at most
+     HOLD ms: past that, a page still loading its data shows that it is), and the new one then
+     comes up over it (::view-transition in the CSS), so there is never a blank moment. Where
+     browsers can't, or the drawer is closing over the change, the new page just rises in.
+     update() draws the page, and may return a promise for when it has. */
+  const HOLD = 180;
+  function page(update) {
+    // (a dissolve would freeze the drawer part way out, so with the drawer going the page just rises)
+    const drawer = document.getElementById('sidebar');
+    const drawerMoving = drawer && (drawer.classList.contains('open') || drawer.getAnimations().length > 0);
+    const canDissolve = document.startViewTransition && !reduced() && !document.hidden && !drawerMoving;
+    if (!canDissolve) return update();
+    dissolving = true;
+    const vt = document.startViewTransition(() => {
+      // (a page that fails still reaches the app's error page, not just this transition)
+      const drawn = Promise.resolve().then(update).catch(e => { Promise.reject(e); });
+      return Promise.race([drawn, new Promise(ok => setTimeout(ok, HOLD))]).then(() => { dissolving = false; });
+    });
+    // (a transition skipped by the next click, or a hidden tab, isn't a failure)
+    for (const p of [vt.ready, vt.finished, vt.updateCallbackDone]) p.catch(() => {});
+  }
+
+  /* a new page (not a redraw of this one): what it measures fills (#app.entering, in the
+     CSS) and its numbers count up, for those drawn in the next moment too (pages that fill
+     in as their data loads); if it isn't dissolving in, it rises in */
   function enter(path) {
     if (path === lastPath) return;
     const first = lastPath === null;
     lastPath = path;
     const app = root();
     if (!app || reduced()) return;
-    app.classList.remove('entering');
+    app.classList.remove('entering', 'rising');
     void app.offsetWidth;                          // (restarts the animations)
     app.classList.add('entering');
-    if (first) app.classList.add('first');
+    if (first || !dissolving) app.classList.add('rising');
     clearTimeout(timer);
-    timer = setTimeout(() => app.classList.remove('entering', 'first'), 1000);
+    timer = setTimeout(() => app.classList.remove('entering', 'rising'), 1000);
     watch(app);
     requestAnimationFrame(() => { later(app); countUp(app); });
   }
@@ -83,7 +106,7 @@ const Motion = (() => {
       const end = +m[1].replace(/,/g, ''), commas = m[1].includes(',');
       if (end < 2) continue;
       const fmt = v => (commas ? v.toLocaleString('en-US') : String(v)) + m[2];
-      const start = performance.now(), ms = Math.min(1100, 450 + end * 4);
+      const start = performance.now(), ms = Math.min(600, 280 + end * 2);
       const tick = t => {
         if (!el.isConnected) return;
         const f = Math.min(1, (t - start) / ms), e = 1 - (1 - f) ** 3;   // ease out
@@ -148,5 +171,8 @@ const Motion = (() => {
     requestAnimationFrame(frame);
   }
 
-  return { enter, countUp, play, confetti, reduced };
+  return { page, enter, countUp, play, confetti, reduced };
 })();
+
+/* phones only show :active on a press if something is listening for touches */
+document.addEventListener('touchstart', () => {}, { passive: true });

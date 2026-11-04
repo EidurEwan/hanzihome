@@ -19,6 +19,11 @@ for (const name of process.argv.slice(2)) {
     if (ok !== k) return say(`#${i}: ${ok} where ${k} should be`);
     if (n.startsWith('scene')) {
       const m = o.m || '', words = m.split(/\s+/).length;
+      if (/\{(Ghost|Baker|Pirate|Magician|Firefighter|Dentist|Tailor|Ninja|Lifeguard|Gardener|King|Hunter|Juggler|Cheerleader|Shepherd|Jockey|Chef|Sheriff|Robot|Zookeeper|Tsar|Sailor|Yogi|Wizard)\}/.test(m)) say(`${k}: an old job as the person`);
+      const text = m.replace(/\*\*[^*]+\*\*|\*[^*]+\*|\{[^}]+\}/g, '');
+      if (!/\{Roof\}/.test(m) && /\b(roofs?|rooftops?)\b/i.test(text)) say(`${k}: mentions another tone's place: roof`);
+      if (/\btrapdoors?\b/i.test(text)) say(`${k}: mentions an old tone place: trapdoor`);
+      for (const sd of x.sound) if (m.split('{' + sd.replace(/^\S+ /, '') + '}').length > 2) say(`${k}: {${sd.replace(/^\S+ /, '')}} more than once`);
       if (words < 35 || words > 95) say(`${k}: ${words} words`);
       for (const sd of x.sound) if (!m.includes('{' + sd.replace(/^\S+ /, '') + '}')) say(`${k}: no {${sd.replace(/^\S+ /, '')}}`);
       if ((m.match(/\*\*[^*]+\*\*/g) || []).length < 2) say(`${k}: the meaning should be in **…** twice`);

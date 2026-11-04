@@ -79,7 +79,7 @@ function charInfo(c, syl) {
    A character is learnt from its parts, as HanziHero teaches it: its components
    (the first level of its breakdown, or itself when it is a component of others, as
    半 is) and its sound: an initial, a final and a tone (site/data/sounds.js: a person,
-   a place, a room). Each part not known yet gets a short lesson of its own just
+   a building, and where at that building). Each part not known yet gets a short lesson of its own just
    before the character (Learn.plan puts it there), which opens on a Prerequisites
    page showing the character and which of its parts you know.
 
@@ -94,16 +94,34 @@ function itemText(k) {
   if (k.startsWith('c:')) return k.slice(2);
   if (k.startsWith('i:')) return (k.slice(2) || 'Ø') + '-';
   if (k.startsWith('f:')) return '-' + finalText(k.slice(2));
-  if (k.startsWith('t:')) return k.slice(2) === '5' ? '·' : k.slice(2);
+  if (k.startsWith('t:')) return k.slice(2);
   return k;
 }
 const itemHtml = k => partKind(k) === 'sound' ? `<span class="snd-key">${esc(itemText(k))}</span>` : zh(glyphOf(k));
 /* where an item's own page is */
 function itemHref(k) {
   const it = Store.item(k);
-  if (partKind(k) === 'sound') return '#/study';
+  if (partKind(k) === 'sound') return soundHref(k);
   if (it && it.kind === 'word') return '#/word/' + encodeURIComponent(k);
   return '#/character/' + encodeURIComponent(glyphOf(k));
+}
+/* a sound part's page in the sound library (library.js); no initial is "none" */
+const soundHref = k => '#/sounds/' + { i: 'beginning', f: 'ending', t: 'tone' }[k[0]] + '/' + (k.slice(2) || 'none');
+/* A reading's sounds as chips: each syllable's beginning, ending and tone. For a mnemonic
+   that doesn't carry them in its story (words, your own, characters with no scene yet);
+   linked to the library, except in a lesson or review, which a link would walk out of. */
+function soundStrip(pin, link) {
+  if (!HZ.sounds || !pin) return '';
+  const syls = String(pin).trim().split(/\s+/).map(syl => {
+    const parts = soundParts(syl);
+    if (!parts.length) return '';
+    const chip = p => {
+      const inner = `<span class="snd-key">${esc(itemText(p))}</span>${esc(partName(p))}`;
+      return link ? `<a class="mn-chip snd" href="${soundHref(p)}">${inner}</a>` : `<span class="mn-chip snd">${inner}</span>`;
+    };
+    return `<span class="snd-syl"><b>${esc(syl)}</b> ${parts.map(chip).join(' ')}</span>`;
+  }).filter(Boolean);
+  return syls.length ? `<p class="snd-strip">${syls.join('')}</p>` : '';
 }
 /* a sound part's picture: [name, why] */
 function soundInfo(k) {
@@ -188,38 +206,149 @@ function addParts(parts) {
   }
 }
 
-/* The learning path (Settings): each day, the next characters along it go into the
-   lessons, as many as "new characters a day" less the path's lessons still waiting,
-   and no more than that number in a day. Characters known, marked or queued are
-   skipped. Returns how many it added. */
+/* The learning path (Settings) keeps the queue full: the next characters along it, as many as
+   "new characters a day", whatever you have done today (Learn.plan holds back those past the
+   day's number until tomorrow). The queue follows the settings: change the path or the number
+   and what the path put there changes, while what you added, starred or pushed stays
+   (Learn.pathSync). Characters you know, have queued or have taken out are skipped. Returns
+   how many items changed. */
 async function fillPath() {
-  const cfg = Store.cfg();
-  if (!cfg.path || cfg.path === 'off' || !cfg.pathDaily) return 0;
-  const d = Store.load(), day = Learn.dayStart(Date.now());
-  const log = d.study.pathLog && d.study.pathLog.day === day ? d.study.pathLog : { day, n: 0 };
-  const waiting = Object.values(d.items).filter(it => it.path && it.stage === 0).length;
-  let want = Math.min(cfg.pathDaily - waiting, cfg.pathDaily - log.n);
-  if (want <= 0) return 0;
-  let order;
-  if (cfg.path === 'hsk') {
-    await optional(need.hskChars());
+  const first = Store.cfg();
+  // (everything that could wait comes before anything changes, so two calls can't both add)
+  const active = first.path && first.path !== 'off' && first.pathDaily;
+  if (active) await optional(Promise.all([need.cmnem(), need.cnames(), need.sounds()]));
+  if (first.path === 'mix') await optional(need.charorder());
+  if (first.path === 'hsk') await optional(need.hskChars());
+  if (active && first.pathWords !== false) await optional(need.wordorder());
+  const cfg = Store.cfg(), d = Store.load();
+  const { drop, want } = Learn.pathSync(d.items, cfg);
+  dropQueued(drop);
+  const parts = syncParts(cfg);
+  const skipped = new Set(d.study.skip || []);
+  const skip = c => !!(d.items[c] || d.status[c] || skipped.has(c));
+  let order = [];
+  if (want > 0 && cfg.path === 'mix' && HZ.charorder) {
+    // simple, common, early in the HSK, and made of what you know (Learn.pickChars)
+    order = Learn.pickChars(HZ.charorder, want, p => !!(d.items['c:' + p] || d.items[p] || Store.compKnown(p)), skip);
+  } else if (want > 0 && cfg.path === 'hsk') {
     order = Object.keys(HZ.hskChars || {}).sort((a, b) => a - b).flatMap(lv => HZ.hskChars[lv]);
-  } else order = byRank();
-  await optional(Promise.all([need.cmnem(), need.cnames(), need.sounds()]));
+  } else if (want > 0) order = byRank();
   const added = [];
   for (const c of order) {
-    if (want <= 0) break;
-    if (!HZ.index[c] || d.items[c] || d.status[c]) continue;
+    if (added.length >= want) break;
+    if (!HZ.index[c] || skip(c)) continue;
     const it = Store.learnAdd(c, 'char', charInfo(c));
     it.path = cfg.path;
     added.push(c);
-    want--;
   }
-  log.n += added.length;
-  d.study.pathLog = log;
-  Store.save();
+  const words = syncPathWords(cfg, skipped);
+  delete d.study.pathLog;                // (from when the day's number was counted here)
+  if (added.length || drop.length || parts || words) Store.save();
   await Promise.all(added.map(c => rememberParts(c)));
-  return added.length;
+  return added.length + drop.length + parts + words;
+}
+
+/* The path's words, in Learn.wordOrder's order, once all a word's characters have had their
+   lessons. Returns how many changed. */
+function syncPathWords(cfg, skipped) {
+  // (enough queued for all the limit might leave for them)
+  const d = Store.load(), { drop, want } = Learn.pathSync(d.items, { ...cfg, pathDaily: cfg.lessonLimit || cfg.pathDaily }, 'word');
+  dropQueued(drop);
+  if (want <= 0 || !HZ.wordorder) return drop.length;
+  // a word can be learnt once all its characters have had their lessons
+  const env = learnEnv(), charPos = c => ((env.level(c) || 0) >= 1 ? 0 : undefined);
+  const list = Learn.wordOrder(HZ.wordorder, charPos, w => !!d.items[w] || skipped.has(w) || d.wstatus[w] === 'learned');
+  for (const w of list.slice(0, want)) {
+    orderAdd(w, 'word').path = cfg.path;
+  }
+  return drop.length + Math.min(want, list.length);
+}
+
+/* takes queued items out, with any components and sounds only they needed */
+function dropQueued(keys) {
+  const d = Store.load(), parts = new Set();
+  for (const k of keys) {
+    if (!d.items[k]) continue;
+    (d.items[k].parts || []).forEach(p => parts.add(p));
+    delete d.items[k];
+  }
+  if (!parts.size) return;
+  const needed = new Set(Object.values(d.items).filter(it => it.stage === 0).flatMap(it => it.parts || []));
+  for (const p of parts) {
+    const it = d.items[p];
+    if (it && it.stage === 0 && !it.learnt && !needed.has(p) && partKind(p)) delete d.items[p];
+  }
+}
+
+/* "Teach components and sounds first": on, the queue's characters bring theirs; off, those
+   not yet learnt leave the queue. Returns how many changed. */
+function syncParts(cfg) {
+  const d = Store.load();
+  const before = Object.keys(d.items).length;
+  if (!cfg.autoComps) {
+    for (const [k, it] of Object.entries(d.items)) if (partKind(k) && it.stage === 0 && !it.learnt) delete d.items[k];
+  } else if (HZ.cnames && HZ.sounds) {
+    for (const it of Object.values(d.items)) if (it.stage === 0 && it.kind === 'char' && it.parts) addParts(it.parts);
+  }
+  return Math.abs(Object.keys(d.items).length - before);
+}
+
+/* Finishing an HSK level: the progress through each level, a button when one is close,
+   and the push itself, which puts what is left at the front of the lessons. */
+function hskStanding() {
+  const d = Store.load();
+  const isDone = c => d.status[c] === 'learned' || d.status[c] === 'learning' || (d.items[c] && d.items[c].stage >= 1);
+  return Learn.hskProgress(HZ.hskChars, isDone);
+}
+const hskPushed = p => p.left.every(c => { const it = Store.load().items[c]; return it && it.prio; });
+/* the card for a level (p, from hskStanding), or nothing unless it is close to complete */
+function hskPushCard(p) {
+  if (!p || !Learn.hskIsNear(p)) return '';
+  const n = p.left.length, list = p.left.slice(0, 24).map(c => zh(c)).join(' ') + (n > 24 ? ' …' : '');
+  return hskPushed(p)
+    ? `<section class="card hsk-push on"><h2>Finishing HSK ${p.level}</h2>
+        <p class="muted">The last ${n} character${n === 1 ? ' is' : 's are'} at the front of your lessons, within your daily
+          limit. The learning path waits until they are done.</p>
+        <p class="han hsk-push-list">${list}</p>
+        <p class="row"><button class="btn quiet" data-hsk-undo="${p.level}">Stop prioritising</button></p></section>`
+    : `<section class="card hsk-push"><h2>HSK ${p.level} is almost done</h2>
+        <p class="muted">You've learned ${p.done} of its ${p.total} characters. Learn the last ${n} next?</p>
+        <p class="han hsk-push-list">${list}</p>
+        <p class="row"><button class="btn" data-hsk-push="${p.level}">Finish HSK ${p.level}: prioritise ${n} character${n === 1 ? '' : 's'}</button></p></section>`;
+}
+function hskPush(level) {
+  const p = hskStanding().find(x => x.level === level);
+  if (!p) return;
+  const d = Store.load();
+  // commonest first; a character already queued and starred is left as it was
+  for (const c of p.left.slice().sort((a, b) => (HZ.index[a] || [])[0] - (HZ.index[b] || [])[0] || 0)) {
+    if (!HZ.index[c]) continue;
+    const had = d.items[c];
+    if (had && had.prio) continue;
+    const it = had || Store.learnAdd(c, 'char', charInfo(c));
+    it.prio = true;
+    it.hskPush = had ? 'kept' : 'added';
+  }
+  Store.save();
+}
+/* takes the push back: what it added goes (with any parts only they needed), and what
+   was queued already goes back to its place */
+function hskUnpush() {
+  const d = Store.load(), added = [];
+  for (const [k, it] of Object.entries(d.items)) {
+    if (!it.hskPush) continue;
+    // (already learnt, even if it is back for a second lesson: not the push's to take back)
+    if (it.stage !== 0 || it.learnt) { delete it.hskPush; continue; }
+    if (it.hskPush === 'added') added.push(k);
+    else { delete it.prio; delete it.hskPush; }
+  }
+  dropQueued(added);
+  Store.save();
+}
+/* the buttons of hskPushCard, then again(): draws the page anew */
+function wireHskPush(root, again) {
+  root.querySelectorAll('[data-hsk-push]').forEach(b => b.addEventListener('click', () => { hskPush(+b.dataset.hskPush); again(); }));
+  root.querySelectorAll('[data-hsk-undo]').forEach(b => b.addEventListener('click', () => { hskUnpush(); again(); }));
 }
 
 /* before planning with character unlocking on: look up the components not known yet
@@ -240,6 +369,7 @@ const Sound = {
   ctx: null,
   audio() {
     if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (this.ctx.state !== 'running' && this.ctx.resume) this.ctx.resume().catch(() => {});
     return this.ctx;
   },
   ding() {
@@ -285,47 +415,129 @@ const Sound = {
      after another; failing that, the browser's Chinese voice. */
   say(text, force, pin) {
     const cfg = Store.cfg();
-    if ((cfg.muteVoice && !force) || !text || partKind(text)) return;
+    if ((cfg.muteVoice && !force) || !text) return;
+    if (partKind(text) === 'sound') return this.part(text);
+    if (partKind(text)) return;
     if (cfg.audio === 'browser') return this.speak(text, cfg);
     need.audio().then(() => this.recorded(text, pin, cfg) || this.speak(text, cfg), () => this.speak(text, cfg));
+  },
+  /* Say one syllable of the library (ma, 4); the character is the browser voice's fallback.
+     The neutral tone's recordings are few: playFiles falls back to the first tone. */
+  syllable(letters, tone, fallback) {
+    this.playFiles([`audio/s/${letters}${tone || 5}.mp3`], fallback || '', Store.cfg());
+  },
+  /* Say a character in one reading (a pinyin syllable). A character's own recording has
+     only the one reading, so one with several (行 xíng, háng) is said on the syllable's
+     recording. Not in the neutral tone, which few syllables have: that is the word's. */
+  reading(c, pin, several) {
+    const p = Learn.parsePinyin(pin), tone = p.tones[0] || 5;
+    if (!several || tone === 5 || Store.cfg().audio === 'browser') return this.say(c, true, pin);
+    this.syllable(p.letters, tone, c);
+  },
+  /* Say a sound part (i:m, f:ang, t:4), on the syllable data/sounds.js gives for it. The
+     neutral tone has a person's recording only as a word: 吗. */
+  part(k) {
+    const S = HZ.sounds, kind = k[0], v = k.slice(2);
+    if (!S) return;
+    if (kind === 't') return v === '5' ? this.say('吗', true, 'ma') : this.syllable('ma', +v, '妈麻马骂'[v - 1]);
+    const syl = (kind === 'i' ? S.heard.initials : S.heard.finals)[v];
+    if (syl) this.syllable(syl, 1);
   },
   /* play the recording(s) for text; false when there are none to play */
   recorded(text, pin, cfg) {
     if (!HZ.audio) return false;
     const words = this.words || (this.words = new Set(HZ.audio.w.split('|')));
     const k = typeof learnKey === 'function' ? learnKey(text) : text;
+    // (characters whose own recording stops short: their syllable's is whole. HZ.audio.c)
+    const clipped = this.clipped || (this.clipped = new Set((HZ.audio.c || '').split('|')));
+    const own = words.has(k) ? ['audio/w/' + k + '.mp3'] : null;
     let files;
-    if (words.has(k)) files = ['audio/w/' + k + '.mp3'];
+    if (own && !clipped.has(k)) files = own;
     else {
       // the syllables, from the reading the item, the dictionary or the word list gives
       const it = Store.item(k);
       const p = pin || (it && it.pin) || ([...k].length === 1 ? (HZ.index[k] || [])[2]
-        : typeof wordEntries === 'function' && wordEntries(k)[0] ? wordEntries(k)[0][2] : '');
-      if (!p) return false;
+        : (HZ.audio.p || {})[k] || (typeof wordEntries === 'function' && wordEntries(k)[0] ? wordEntries(k)[0][2] : ''));
+      // (no way to say it on syllables: a recording that ends a little short beats the browser's voice)
+      if (!p) { if (!own) return false; this.playFiles(own, text, cfg); return true; }
       files = String(p).trim().split(/\s+/).map(syl => {
         const x = Learn.parsePinyin(syl);
         return 'audio/s/' + x.letters + (x.tones[0] || 5) + '.mp3';
       });
-      if (files.length !== [...k].filter(isHan).length) return false;
+      if (files.length !== [...k].filter(isHan).length) {
+        if (!own) return false;
+        files = own;
+      }
     }
-    if (this.playing) this.playing.pause();
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    this.playFiles(files, text, cfg);
+    return true;
+  },
+  /* Play recordings one after another, on the one element unlock() has opened: phones
+     let an element play without a tap only once a tap has started it, so a new Audio()
+     for each syllable would be refused. If this play is refused too (nothing tapped
+     yet), it waits for the first tap, as long as that comes soon. */
+  playFiles(files, text, cfg) {
+    files = files.slice();
+    const a = this.player(), run = ++this.run;
+    this.waiting = null;
+    a.pause();
+    if (window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel();
     const rate = { slow: 0.75, normal: 1, fast: 1.25 }[cfg.speed] || 1;
     const play = (i, retry) => {
-      if (i >= files.length) return;
-      const a = this.playing = new Audio(files[i] + '?v=1');
-      a.playbackRate = rate;
+      if (run !== this.run || i >= files.length) return;
       a.onended = () => play(i + 1);
       // a neutral tone (5) the collection hasn't got: its first tone, lightly
       a.onerror = () => {
+        if (run !== this.run) return;
         if (!retry && /5\.mp3$/.test(files[i])) { files[i] = files[i].replace(/5\.mp3$/, '1.mp3'); play(i, true); }
-        else if (i === 0) this.speak(text, cfg);
+        // a recording the collection hasn't got (ju4): the voice says the rest, so the
+        // word doesn't just stop there
+        else if (text) this.speak([...text].filter(isHan).slice(i).join('') || text, cfg);
       };
-      a.play().catch(() => {});
+      // loading a new file puts playbackRate back to the default rate
+      a.defaultPlaybackRate = rate;
+      a.src = files[i] + '?v=1';
+      a.playbackRate = rate;
+      const p = a.play();
+      if (p) p.catch(e => {
+        if (e && e.name === 'NotAllowedError' && run === this.run) {
+          this.waiting = { go: () => play(i, retry), at: Date.now() };
+        }
+      });
     };
     play(0);
-    return true;
   },
+  run: 0,
+  el: null,
+  waiting: null,
+  player() {
+    if (!this.el) { this.el = new Audio(); this.el.preload = 'auto'; this.el.setAttribute('playsinline', ''); }
+    return this.el;
+  },
+  /* Called inside every tap and key press. Phones start audio only from one: this opens
+     the sound effects' context (a phone creates it suspended, and suspends it again
+     when the page is put away), the recordings' element and the browser's voice, and
+     plays whatever was refused a moment ago. */
+  unlock() {
+    if (this.ctx && this.ctx.state !== 'running' && this.ctx.resume) this.ctx.resume().catch(() => {});
+    const w = this.waiting;
+    if (w) {
+      this.waiting = null;
+      if (Date.now() - w.at < 15000) { w.go(); this.opened = true; return; }
+    }
+    if (this.opened) return;
+    this.opened = true;
+    const a = this.player();
+    if (!a.paused) return;              // already speaking: it needs no opening, and no cutting off
+    // a moment of silence
+    a.src ='data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQ4AAAAAAAAAAAAAAAAAAAAAAA==';
+    const p = a.play();
+    if (p) p.then(() => { if (a.src.startsWith('data:')) a.pause(); }).catch(e => { if (e && e.name === 'NotAllowedError') this.opened = false; });
+    if (window.speechSynthesis && !speechSynthesis.speaking) {
+      try { const u = new SpeechSynthesisUtterance(''); u.volume = 0; speechSynthesis.speak(u); } catch (e) { /* no voice: nothing to open */ }
+    }
+  },
+  opened: false,
   /* can this device say things: recordings (on unless Settings says the browser's voice),
      or a Chinese voice in the browser */
   canSay() { return Store.cfg().audio !== 'browser' || this.voices().length > 0; },
@@ -334,12 +546,16 @@ const Sound = {
     const u = new SpeechSynthesisUtterance(text);
     const v = this.voice();
     if (v) u.voice = v;
-    u.lang = v ? v.lang : 'zh-CN';
+    u.lang = v ? v.lang.replace('_', '-') : 'zh-CN';   // (Android writes zh_CN)
     u.rate = { slow: 0.7, normal: 1, fast: 1.3 }[cfg.speed] || 1;
-    speechSynthesis.cancel();
+    // cancelling when nothing is speaking makes Android's voice drop what comes next
+    if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     speechSynthesis.speak(u);
   },
 };
+for (const ev of ['touchend', 'click', 'keydown']) {
+  document.addEventListener(ev, () => Sound.unlock(), { capture: true, passive: true });
+}
 if (window.speechSynthesis) speechSynthesis.addEventListener('voiceschanged', () => {
   if (document.getElementById('st-voice-note')) paintStudySettings();
 });
@@ -388,13 +604,14 @@ async function itemFacts(k, it) {
   const f = { parts: [], comps: [], sounds: [], words: [], sound: null, mn: '', ex: [], subs: [] };
   // HanziHome's own mnemonics, the components' picture names and the sound cast
   await Promise.all([optional(need.cnames()), optional(need.sounds()),
-    optional(it.kind === 'word' ? need.winfo() : need.cmnem())]);
+    optional(it.kind === 'word' ? need.winfo() : need.cmnem()), it.kind === 'char' ? optional(need.charex()) : null]);
   if (it.kind === 'word') {
     f.mn = builtinMnemonic(k);
     if (HZ.winfo && HZ.winfo[k]) f.ex = HZ.winfo[k][2];
     f.parts = [...k].filter(isHan).map(c => [c, partGloss(c)]);
   } else if (it.kind === 'char') {
     f.mn = builtinMnemonic(k);
+    if (HZ.charex && HZ.charex[k]) f.ex = HZ.charex[k];
     const d = await charData(k);
     if (d) {
       f.words = (d.w || []).slice(0, 6).map(w => [w[0], w[2]]);
@@ -688,17 +905,44 @@ function ankiPreview(box, name, deck, cols, redraw) {
 
 // ---------------------------------------------------------------------- hub
 
+/* Extra study, on the Study page: practice that doesn't change when anything comes back */
+function extraStudy(weak) {
+  const icon = paths => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  const body = (ico, colour, title, note) => `<span class="ico ${colour}">${icon(ico)}</span>
+    <span class="xs-text"><b>${title}</b><small>${note}</small></span>`;
+  const doneToday = (Store.load().grammar._daily || {}).day === today();
+  return `<section class="xs" aria-labelledby="xs-h">
+    <h2 class="sec-h" id="xs-h">Extra study</h2>
+    <div class="xs-grid">
+      <a class="xs-tile daily" href="#/grammar/daily">${body(doneToday ? '<path d="m5 12.5 4.5 4.5L19 7.5"/>' : '<path d="M4 7h7v4H4zM13 7h7v4h-7zM8 15h8v4H8z"/>', 'white',
+        'Daily grammar practice', doneToday ? 'Done for today. Fancy another round?' : 'A short round. Anything new is taught first.')}</a>
+      <a class="xs-tile wide" href="#/weak">${body('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>', 'pink',
+        'Weak spots', weak ? `${weak} to work on` : 'Nothing yet. What you keep missing will show up here.')}</a>
+      <a class="xs-tile" href="#/grammar">${body('<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/>', 'mint',
+        'Grammar', 'Explanations and practice')}</a>
+      <a class="xs-tile" href="#/phrases">${body('<path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5"/>', 'pink',
+        'Phrases', 'Common phrases, questions and answers')}</a>
+      <a class="xs-tile" href="#/tones">${body('<path d="M3 12h2l2-6 3 13 3-16 3 13 2-4h3"/>', 'yellow',
+        'Tones', 'Train your ear to hear the four tones')}</a>
+      <a class="xs-tile" href="#/lookalikes">${body('<rect x="3.5" y="3.5" width="11" height="11" rx="2"/><path d="M9.5 18.5v.5a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 19 9.5h-.5"/>', 'sky',
+        'Look-alikes', 'Tell apart 未 and 末')}</a>
+    </div>
+  </section>`;
+}
+
 function pageStudy() {
   drawStudy();
   // today's characters from the learning path, and the parts of what is queued
   fillPath().then(n => fillParts().then(changed => {
     if ((n || changed) && currentPath() === '/study') drawStudy();
   }));
+  // (the HSK lists, for the button that finishes a level)
+  if (!HZ.hskChars) optional(need.hskChars()).then(() => { if (HZ.hskChars && currentPath() === '/study') drawStudy(); });
 }
 
 function drawStudy() {
   const d = Store.load(), cfg = Store.cfg(), items = Object.entries(d.items), now = Date.now();
-  const p = Store.plan(), mistakes = recentMistakes(), unsorted = calibrationSets().unsorted.length;
+  const p = Store.plan(), unsorted = calibrationSets().unsorted.length;
   const fc = Learn.forecast(items.map(e => e[1]), now, 7);
   const max = Math.max(1, ...fc);
   const dayName = i => i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
@@ -709,6 +953,7 @@ function drawStudy() {
   // the tiles: what you can start now, and why not when it's nothing
   const nLocked = Object.keys(p.locked).length;
   const lessonNote = p.vacation ? 'On vacation' : p.lessons.length || !p.waiting.length ? ''
+    : p.tomorrow.length === p.waiting.length ? 'Words open tomorrow'
     : nLocked === p.waiting.length ? 'Waiting to unlock' : 'Today\'s limit reached';
   const overLimit = !p.vacation && p.due.length && !p.reviewsLeft;
   const reviewNote = p.vacation ? 'On vacation' : overLimit ? `Today's limit reached · ${p.due.length} due` : '';
@@ -716,11 +961,11 @@ function drawStudy() {
     <b>${name}</b><span>${n}</span>${note ? `<em>${esc(note)}</em>` : ''}</a>`;
   const of = (n, lim) => lim ? `${n} of ${lim}` : String(n);
 
-  // what locked lessons wait for that isn't in your lessons yet
-  const missing = [...new Set([].concat(...Object.values(p.locked)))].filter(c => HZ.index[c] && !d.items[c]);
+  const nextTen = typeof nextUp === 'function' ? nextUp(10) : [];
   const why = k => {
     const it = d.items[k];
     if (p.locked[k]) {
+      if (p.tomorrow.includes(k)) return `Opens tomorrow: ${p.locked[k].join(' ')} ${p.locked[k].length === 1 ? 'was' : 'were'} learned today`;
       const need = it.kind === 'word' ? cfg.wordUnlock : cfg.charUnlock;
       return `Waits for ${p.locked[k].join(' ')} to be ${need}`;
     }
@@ -738,12 +983,10 @@ function drawStudy() {
       ${tile('lessons', 'Lessons', p.lessons.length, lessonNote)}
       ${tile('reviews', 'Reviews', p.reviewsLeft, reviewNote)}
     </div>
-    ${!p.vacation ? `<p class="lx-extra"><span class="small muted">Extra study:</span>
-      ${mistakes.length ? `<button class="btn quiet" id="lx-mistakes" title="Missed in the last three days. Practice doesn't change when they come back.">Recent mistakes (${mistakes.length})</button>` : ''}
-      <a class="btn quiet" href="#/lookalikes" title="Tell apart characters that look alike, such as 未 and 末. Practice doesn't change when they come back.">Look-alikes</a></p>` : ''}
     <p class="small muted lx-today">Today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
-      (${of(p.wordsToday, cfg.lessonLimit && Math.min(cfg.wordLimit, cfg.lessonLimit))} words) ·
-      ${of(p.reviewsToday, cfg.reviewLimit)} reviews · <a href="#/stats">Statistics</a> · <a href="#/settings">Settings</a></p>
+      (${p.wordsToday} words) ·
+      ${of(p.reviewsToday, cfg.reviewLimit)} reviews · ${learnedCount(learnedToday()) ? `<a href="#/learned">Learned today (${learnedCount(learnedToday())})</a> · ` : ''}<a href="#/stats">Statistics</a> · <a href="#/settings">Settings</a></p>
+    ${!p.vacation ? extraStudy(wkCount()) : ''}
     ${unsorted ? `<section class="card cb-cta">
       <h2>Sort your learned characters</h2>
       <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
@@ -759,28 +1002,19 @@ function drawStudy() {
       <h2 class="caps">Nothing to learn next?</h2>
       <p class="muted">Let HanziHome fill your lessons each day, ${cfg.pathDaily} new characters at a time, with their
         components and sounds before them.</p>
-      <p class="row"><button class="btn" data-path="common">Most common first</button>
+      <p class="row"><button class="btn" data-path="mix">Balanced</button>
+        <button class="btn quiet" data-path="common">Most common first</button>
         <button class="btn quiet" data-path="hsk">HSK 1 to 6</button>
         <a class="small" href="#/settings">More in Settings</a></p></section>` : ''}
-    ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-today">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : 'the most common characters'},
+    ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-today">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
       ${cfg.pathDaily} a day · <a href="#/settings">change</a></p>` : ''}
+    ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
     ${leechCard(d, now)}
     <section class="card">
-      <h2 class="caps">Lesson queue (${p.waiting.length})</h2>
-      ${p.waiting.length ? `<div class="lx-queue">${p.waiting.map(k => {
-        const it = d.items[k];
-        return `<span class="lx-q ${it.kind}${it.prio ? ' prio' : ''}${p.locked[k] ? ' locked' : ''}" title="${esc(why(k))}">
-          <button data-prio="${esc(k)}" class="lx-star" aria-label="${it.prio ? 'Stop prioritizing' : 'Prioritize'} ${esc(k)}"
-            title="${it.prio ? 'Prioritized' : 'Prioritize'}">${it.prio ? '★' : '☆'}</button>
-          <a class="han" href="${itemHref(k)}">${p.locked[k] ? '🔒' : ''}${itemHtml(k)}</a>
-          <button data-rm="${esc(k)}" aria-label="Remove ${esc(k)}">×</button></span>`;
-      }).join('')}</div>
-      <p class="small muted">In the order they come: ☆ puts one at the front. 🔒 waits to unlock
-        (hover to see for what).</p>
-      ${missing.length ? `<p class="small">Some locked lessons wait for characters that aren't in your lessons:
-        <button class="btn quiet" id="lx-addmissing">＋ Add ${esc(missing.join(' '))}</button></p>` : ''}`
-      : `<p class="empty small">Nothing yet. Use <b>Add to lessons</b> on a character's page,
-        or in the reader when you point at a word.</p>`}
+      <h2 class="caps">Lesson queue</h2>
+      ${nextTen.length ? `<div class="lx-queue">${nextTen.map(k => `<a class="lx-q ${d.items[k] ? d.items[k].kind : 'char'} han" href="#/queue">${zh(k)}</a>`).join('')}</div>`
+      : '<p class="empty small">Nothing yet. Turn on a learning path, or use <b>Add to lessons</b> on a character\'s page.</p>'}
+      <p class="lx-queue-more"><a class="btn quiet" href="#/queue">See upcoming characters and words</a></p>
     </section>
     <section class="card">
       <h2 class="caps">Stages</h2>
@@ -806,38 +1040,21 @@ function drawStudy() {
       <div id="anki-import"></div>
     </section>`, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
-  // a removed lesson shrinks away before the queue is drawn again; a starred one jumps to the front, spinning
-  app.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => {
-    Store.learnRemove(b.dataset.rm);
-    if (Motion.reduced()) return redraw();
-    b.closest('.lx-q').classList.add('m-out');
-    setTimeout(redraw, 200);
-  }));
-  app.querySelectorAll('[data-prio]').forEach(b => b.addEventListener('click', () => {
-    const k = b.dataset.prio;
-    Store.prioritize(k);
-    redraw();
-    const star = app.querySelector(`[data-prio="${CSS.escape(k)}"]`);
-    if (star) { Motion.play(star, 'm-spin'); Motion.play(star.closest('.lx-q'), 'm-mark'); }
-  }));
   wireLeeches(redraw);
+  // (at once, then again when the parts of what was added have been looked up)
+  wireHskPush(app, () => {
+    redraw();
+    fillParts().then(changed => { if (changed && currentPath() === '/study') redraw(); });
+  });
   drawLearnedChart(document.getElementById('lc-card'), d.items, now);
   app.querySelectorAll('[data-path]').forEach(b => b.addEventListener('click', async () => {
     Store.setCfg({ path: b.dataset.path });
     await fillPath();
     redraw();
   }));
-  const mis = document.getElementById('lx-mistakes');
-  if (mis) mis.addEventListener('click', () => startPractice(mistakes));
   const back = document.getElementById('lx-back');
   if (back) back.addEventListener('click', () => { Store.vacation(false); redraw(); });
   wireAnki(redraw);
-  const add = document.getElementById('lx-addmissing');
-  if (add) add.addEventListener('click', () => {
-    for (const c of missing) { Store.learnAdd(c, 'char', charInfo(c)).prio = true; }
-    Store.save();
-    redraw();
-  });
   paintRail();
 }
 
@@ -933,15 +1150,18 @@ async function pageLessons() {
         : !p.waiting.length ? `<p class="empty">No lessons waiting.</p>
           <p class="small muted">Add characters and words with <b>Add to lessons</b> on a character's page
             or in the reader's word popup.</p>`
+        : p.tomorrow.length === p.waiting.length ? `<p class="empty">Your ${p.waiting.length} word${p.waiting.length === 1 ? ' opens' : 's open'} tomorrow.</p>
+            <p class="small muted">A word's lesson comes the day after its characters', so they have time to settle.</p>`
         : nLocked === p.waiting.length ? `<p class="empty">Your ${p.waiting.length} lesson${p.waiting.length === 1 ? ' is' : 's are'}
             waiting to unlock.</p><p class="small muted">Words wait for their characters, as set in Settings;
             the Study page shows what each one waits for.</p>`
         : `<p class="empty">That's today's lessons done.</p><p class="small muted">Your daily limit is
-            ${cfg.lessonLimit} (${Math.min(cfg.wordLimit, cfg.lessonLimit)} of them words); ${p.waiting.length - nLocked}
+            ${cfg.lessonLimit}; ${p.waiting.length - nLocked}
             more are ready for tomorrow.</p>`;
       app.innerHTML = '<h1 class="page-title">Lessons</h1>' + withRail(`<div class="card">
         ${why}
-        <p><a class="btn" href="#/study">Back to study</a></p></div>`, true);
+        <p class="row">${learnedCount(learnedToday()) ? `<a class="btn" href="#/learned">See what you learned today</a>` : ''}
+          <a class="btn${learnedCount(learnedToday()) ? ' quiet' : ''}" href="#/study">Back to study</a></p></div>`, true);
       paintRail();
       return;
     }
@@ -980,7 +1200,7 @@ async function pageLessons() {
       : `<h3>Component composition</h3><p class="muted">This character is made of these components. Can you see where they are?</p>
          ${f.comps.length ? chips(f.comps, 'comp') : '<p class="muted small">It has no components with a name of their own.</p>'}
          ${f.sounds.length ? `<h3>Sound composition</h3><p class="muted">Its pronunciation, <b>${esc(it.pin)}</b>, is these three
-           sounds: a person, a place and a room. Can you hear how they make the syllable?</p>${chips(f.sounds, 'snd')}` : ''}
+           sounds: its beginning is a person, its ending a building, and its tone where at that building (1 in front, 2 inside, 3 basement, 4 bathroom, 5 roof). Can you hear how they make the syllable?</p>${chips(f.sounds, 'snd')}` : ''}
          ${f.sound ? `<p class="muted small"><span class="han">${esc(f.sound[0])}</span> ${esc(f.sound[1])} also hints at the sound.</p>` : ''}`;
   } else if (s.tab === 1) {
     const scaffold = it.kind === 'word' ? f.parts.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ')
@@ -989,13 +1209,15 @@ async function pageLessons() {
     body = `<h3>Mnemonic</h3>
       ${scaffold || it.kind === 'char' ? `<p class="muted">${scaffold ? scaffold + ' → ' : ''}<b class="han">${esc(itemText(k))}</b> ${esc(primary(it))}
         ${it.pin ? `· sounds <b>${esc(it.pin)}</b>` : ''}</p>` : ''}
-      ${f.mn ? `<div class="mn lx-mn-builtin">${mnHtml(f.mn, ctx)}</div>
-        <p class="small muted">Picture it for a moment. Or write a story of your own, which is shown instead:</p>` : ''}
+      ${f.mn ? `<div class="mn lx-mn-builtin">${mnHtml(f.mn, ctx)}</div>` : ''}
+      ${(it.kind === 'char' || it.kind === 'word') && !/\{[^}]+\}/.test(f.mn || '') ? soundStrip(it.pin) : ''}
+      ${f.mn ? `<p class="small muted">Picture it for a moment. Or write a story of your own, which is shown instead:</p>` : ''}
       <textarea id="lx-mn" rows="${f.mn ? 2 : 4}" placeholder="${f.mn ? 'Your own mnemonic (optional)…' : 'Make up a little story that joins the parts, the meaning and the sound…'}">${esc(it.mnemonic || '')}</textarea>
       <p class="small muted" id="lx-mn-state">Saved as you type.</p>
       <h3>${part ? 'Name' : 'Meaning'}</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
         <dt>Alternatives</dt><dd>${others(it).length ? esc(others(it).join(', ')) : '<span class="muted">none</span>'}</dd></dl>
+      ${it.kind === 'sound' ? `<p><button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button></p>` : ''}
       ${part ? '' : `<h3>Pronunciation</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}
         ${Sound.canSay() ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`}`;
@@ -1005,7 +1227,7 @@ async function pageLessons() {
       : it.kind === 'sound' ? `<p class="muted">Common characters with this sound:</p>${chips(f.words)}`
       : `${it.ex && it.ex.text ? `<p class="muted">Where you found it:</p>${foundIn(k, it)}` : ''}
       ${f.ex.length ? `<p class="muted">How it is used:</p>${f.ex.map(ex => `<div class="example">${exampleHtml(ex, k)}</div>`).join('')}
-        ${HZ.winfo[k][3] ? `<p class="word-use"><b>Good to know:</b> ${esc(HZ.winfo[k][3])}</p>` : ''}` : ''}
+        ${it.kind === 'word' && HZ.winfo[k][3] ? `<p class="word-use"><b>Good to know:</b> ${esc(HZ.winfo[k][3])}</p>` : ''}` : ''}
       ${f.words.length ? `<p class="muted">Words it is in:</p>
         <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/word/' + encodeURIComponent(w))).join('')}</div>` : ''}
       ${!(it.ex && it.ex.text) && !f.words.length && !f.ex.length ? '<p class="muted">No examples yet.</p>' : ''}
@@ -1653,6 +1875,7 @@ function infoPanel(k, it, q) {
       !(q === 'pinyin' && pending('meaning')))}
     ${sec('Mnemonic', s.edit === 'mnemonic' ? editing('mnemonic', it.mnemonic || '', 'A little story that joins the parts, the meaning and the sound…')
       : `${it.mnemonic ? `<p class="rv-text">${esc(it.mnemonic)}</p>` : f.mn ? `<div class="rv-text mn">${mnHtml(f.mn, mnCtx(k, it, f))}</div>` : '<p class="muted">No mnemonic yet.</p>'}
+        ${(it.kind === 'char' || it.kind === 'word') && (it.mnemonic || !/\{[^}]+\}/.test(f.mn || '')) ? soundStrip(it.pin) : ''}
         <p><button class="btn quiet" data-edit="mnemonic">${it.mnemonic ? 'Edit' : 'Write your own'}</button></p>`, true)}
     ${sec('Notes', s.edit === 'note' ? editing('note', note, 'Anything to remember about it…')
       : `${note ? `<p class="rv-text">${esc(note)}</p>` : ''}
@@ -1773,6 +1996,7 @@ function nextQuestion() {
 function reviewsDone() {
   const s = reviewState;
   reviewState = null;
+  if (s.onDone) return s.onDone(s);        // (a part of something longer: Weak spots)
   if (!s.practice) { Store.logDay({ s: Math.round((Date.now() - s.start) / 1000) }); Store.save(); }
   const d = Store.load(), p = Store.plan(), now = Date.now();
   const done = s.right.length + s.wrong.length;
@@ -1787,14 +2011,17 @@ function reviewsDone() {
   const gradeTag = g => g ? `<span class="rs-grade g${g}" title="${esc(GRADE_WHY[g])}">${Learn.GRADE_NAMES[g]}</span>` : '';
 
   const stage = st => `<span class="rs-stage ${Learn.group(st).toLowerCase()}">${esc(Learn.stageName(st))}</span>`;
+  const typedFor = k => (s.typed[k] || []).map(t => `${{ pinyin: 'pronunciation', listen: 'meaning by ear', write: 'writing' }[t.q] || 'meaning'}
+      ${t.q === 'write' ? 'needed a hint' : t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
+  // the end of a lesson quiz: all that was learned today, in place of the lists of right and missed
+  const sheet = s.mode === 'lessonquiz' && done > 0;
   const tile = k => {
     const it = d.items[k];
     if (!it) return '';
     const before = s.before[k], after = it.stage;
     const move = stage(after) + (s.practice ? '' : after > before ? `<small class="up">↑ from ${esc(Learn.stageName(before))}</small>`
       : after < before ? `<small class="down">↓ from ${esc(Learn.stageName(before))}</small>` : '<small>stays</small>');
-    const typed = (s.typed[k] || []).map(t => `${{ pinyin: 'pronunciation', listen: 'meaning by ear', write: 'writing' }[t.q] || 'meaning'}
-      ${t.q === 'write' ? 'needed a hint' : t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
+    const typed = typedFor(k);
     const m = !s.practice && Learn.memory(it, now);
     return `<a class="rs-item ${it.kind}" href="${itemHref(k)}">
       <span class="rs-glyph han">${itemHtml(k)}</span>
@@ -1858,10 +2085,11 @@ function reviewsDone() {
         back to learning until ${slipped.length === 1 ? 'it climbs' : 'they climb'} again.</p>` : ''}
     </section>` : ''}
     ${!done ? '<section class="card"><p class="empty">Nothing was finished in this session.</p></section>' : ''}
+    ${sheet ? `<h2 class="ls-title">Learned today</h2><div id="learned-sheet"></div>` : `
     ${s.wrong.length ? `<section class="card"><h2 class="caps">Missed (${s.wrong.length})</h2>
       <div class="rs-grid">${s.wrong.map(tile).join('')}</div></section>` : ''}
     ${s.right.length ? `<section class="card"><h2 class="caps">Right (${s.right.length})</h2>
-      <div class="rs-grid">${s.right.map(tile).join('')}</div></section>` : ''}
+      <div class="rs-grid">${s.right.map(tile).join('')}</div></section>` : ''}`}
     <p class="small muted rs-next">${more ? `${more} more due now. ` : ''}${upcoming.length
       ? `The next review is ${when(upcoming[0])}; ${soon} in the next 24 hours.` : 'No reviews coming up.'}</p>`, true);
 
@@ -1884,6 +2112,31 @@ function reviewsDone() {
   Motion.countUp(app);
   if (done) Motion.confetti(app.querySelector('.rs-ring'));
   paintRail();
+  if (sheet) fillLearned(document.getElementById('learned-sheet'));
+}
+
+/* Learned today: every character, word, component and sound that had its lesson today, as it
+   looks and nothing else. Each opens its own page in a new tab. At the end of a lesson quiz,
+   and at #/learned. */
+const LEARNED_GROUPS = [['char', 'Characters'], ['word', 'Words'], ['comp', 'Components'], ['sound', 'Sounds']];
+const learnedToday = () => Learn.learnedOn(Store.load().items, Date.now());
+const learnedCount = by => LEARNED_GROUPS.reduce((n, [g]) => n + by[g].length, 0);
+
+function fillLearned(box) {
+  const by = learnedToday();
+  box.innerHTML = !learnedCount(by) ? '<section class="card"><p class="empty">Nothing learned yet today.</p></section>'
+    : LEARNED_GROUPS.filter(([g]) => by[g].length).map(([g, title]) => `<section class="ls-group"><h2 class="sec-h">${title} <span class="muted">${by[g].length}</span></h2>
+        <div class="ls-tiles">${by[g].map(k => `<a class="ls-tile ${g} han" href="${itemHref(k)}" target="_blank" rel="noopener" aria-label="${esc(itemText(k))}, opens in a new tab">${itemHtml(k)}</a>`).join('')}</div></section>`).join('');
+}
+
+function pageLearned() {
+  const more = Store.plan().lessons.length;
+  app.innerHTML = '<h1 class="page-title">Learned today</h1>' + withRail(`
+    <p class="row ls-actions">${more ? `<a class="btn" href="#/lessons">More lessons (${more})</a>` : ''}
+      <a class="btn${more ? ' quiet' : ''}" href="#/study">Back to study</a></p>
+    <div id="learned-sheet"></div>`, true);
+  paintRail();
+  fillLearned(document.getElementById('learned-sheet'));
 }
 
 /* a stability (days) in words */
@@ -1917,16 +2170,6 @@ const GRADE_WHY = [null,
 function startPractice(keys) {
   reviewState = newSession(shuffle(keys.slice()), 'practice');
   if (currentPath() === '/reviews') pageReviews(); else go('/reviews');
-}
-
-/* items whose latest review was a miss, in the last three days (HanziHero's extra
-   study: recent mistakes) */
-function recentMistakes() {
-  const d = Store.load(), since = Learn.dayStart(Date.now()) - 2 * Learn.DAY;
-  return Object.keys(d.items).filter(k => {
-    const it = d.items[k], h = it.hist || [];
-    return it.stage >= 1 && it.last >= since && h.length && h[h.length - 1] === false;
-  });
 }
 
 // -------------------------------------------------------------- calibration
@@ -2013,6 +2256,73 @@ function reschedule(retention) {
 
 /* The Settings page's "Lessons and reviews" card: HanziHero's application settings,
    saved as you change them (in the store, so they sync) */
+/* Settings: what each learning path is good and bad at, with when each HSK level is complete
+   (Learn.PATH_FACTS) and how long that is at the number a day chosen. */
+function pathCompare(c) {
+  const F = Learn.PATH_FACTS, daily = c.pathDaily || 5;
+  const cols = [['mix', 'Balanced'], ['common', 'Most common'], ['hsk', 'HSK order']];
+  const span = pos => {
+    const days = Math.ceil(pos / daily);
+    if (days < 60) return days + ' days';
+    const months = days / 30.4;
+    return months < 24 ? Math.round(months) + ' months' : (Math.round(months / 12 * 2) / 2) + ' years';
+  };
+  const cell = (id, html) => `<td class="${c.path === id ? 'on' : ''}">${html}</td>`;
+  const when = i => cols.map(([id]) => {
+    const pos = F[id].hsk[i];
+    return cell(id, pos === Infinity ? 'never*' : `<b>#${pos.toLocaleString()}</b><small>${span(pos)}</small>`);
+  }).join('');
+  const mode = (id, name, good, bad) => `<div class="pc-mode ${c.path === id ? 'on' : ''}">
+    <h4>${name}${c.path === id ? ' <small>your path</small>' : ''}</h4>
+    <ul>${good.map(x => `<li class="good">${x}</li>`).join('')}${bad.map(x => `<li class="bad">${x}</li>`).join('')}</ul></div>`;
+  return `<details class="path-compare" open>
+    <summary>Compare the learning paths</summary>
+    <div class="pc-scroll"><table>
+      <thead><tr><th>HSK level complete at</th>${cols.map(([id, l]) => `<th class="${c.path === id ? 'on' : ''}">${l}</th>`).join('')}</tr></thead>
+      <tbody>${[0, 1, 2, 3, 4, 5].map(i => `<tr><th>HSK ${i + 1}</th>${when(i)}</tr>`).join('')}
+        <tr class="pc-gap"><th>Share of everyday text you can recognise, after 500 characters</th>${cols.map(([id]) => cell(id, F[id].cover[500] + '%')).join('')}</tr>
+        <tr><th>…after 1,000 characters</th>${cols.map(([id]) => cell(id, F[id].cover[1000] + '%')).join('')}</tr>
+        <tr><th>New components per character (first 1,000)</th>${cols.map(([id]) => cell(id, F[id].newComps.toFixed(2))).join('')}</tr>
+      </tbody></table></div>
+    <p class="st-note">Times are at ${daily} new characters a day, if you do them all every day. * 啰 has no frequency rank, so this path never
+      reaches it; it has the rest of HSK 6 by #4,771.</p>
+    ${mode('mix', 'Balanced', [
+      'Finishes the first HSK levels early: HSK 1 by #388 and HSK 2 by #664, instead of waiting until after #2,400.',
+      'Nearly as good for reading as most common: 85.9% of everyday text after 1,000 characters, against 89.1%.',
+      'Goes on past the HSK: the 5,911 characters it can teach include common ones the HSK leaves out.',
+    ], [
+      'Levels overlap: you\'ll be learning HSK 3 before HSK 1 is done, so there\'s no single level to focus on.',
+      'Finishes each level later than HSK order does, HSK 6 especially (#3,354 against #2,632).',
+      'Doesn\'t make characters easier: stroke counts and new components are about the same as most common, because those count for little in its score.',
+    ])}
+    ${mode('common', 'Most common first', [
+      'The fastest way to read real Chinese: 75.8% of everyday text after 500 characters and 89.1% after 1,000, the most of any path.',
+      'Every character you learn is one you\'ll see often, so reviews get help from everything you read.',
+    ], [
+      'Very late for HSK: HSK 1 isn\'t complete until #2,478, because everyday words like 苹 (apple), 喂 (hello) and 猫 (cat) are rare in writing.',
+      'Poor for an exam: only 57 of HSK 1\'s 178 characters come in the first 100.',
+      'Includes names and foreign-word sounds early (罗, 尼, 伊), which are common in text but not much use to a beginner.',
+    ])}
+    ${mode('hsk', 'HSK 1 to 6, level by level', [
+      'Finishes every level first: HSK 1 by #178, HSK 2 by #346, HSK 6 by #2,632. The best choice for an exam.',
+      'One level at a time, with clear milestones, and the everyday words textbooks teach (猫, 苹果) come early.',
+    ], [
+      'The slowest for reading: 66.5% of everyday text after 500 characters and 83.1% after 1,000.',
+      'The most new components per character, 0.35 against 0.30, so lessons are a little heavier.',
+      'Stops after HSK 6: common characters outside the lists (107 of the top 2,000, such as 刘, 剑) never come up. Add those yourself.',
+    ])}
+    ${mode('off', 'Off', [
+      'You choose everything: add characters from what you\'re reading, a textbook or a class.',
+      'Nothing joins your lessons that you didn\'t ask for.',
+    ], [
+      'No lessons appear on their own, so progress depends on you adding them.',
+      'No order to follow: you may miss common characters, and an HSK level finishes only if you make sure of it.',
+    ])}
+    <p class="st-note">Whichever you choose, when an HSK level is nearly done (at least 75% learned and at most 50 characters left), the Study page and that
+      level's page offer a button that puts the rest at the front of your lessons.</p>
+  </details>`;
+}
+
 function paintStudySettings() {
   const box = document.getElementById('study-card');
   if (!box) return;
@@ -2039,37 +2349,33 @@ function paintStudySettings() {
       and sync with the rest of your progress.</p>
     ${field('Lesson batch size', range('batch', 1, 20), 'How many characters and words a batch holds; the components and sounds they need come with them. Batches follow one another until today\'s lessons are done, then all of them are quizzed together.')}
     ${field('Daily lesson limit', sel('lessonLimit', limits, 'int'), c.lessonLimit
-      ? `You'll have about <b>${c.lessonLimit * 10} reviews</b> a day once they settle in.`
+      ? `How many things you learn a day: first your new characters and the new components they bring, then words with whatever is left. You'll have about <b>${c.lessonLimit * 10} reviews</b> a day once they settle in.`
       : 'Every lesson in your queue is ready as soon as it unlocks.')}
-    ${c.lessonLimit ? field('Daily word limit', range('wordLimit', 0, c.lessonLimit),
-      `We recommend <b>${Math.round(c.lessonLimit * 2 / 3)} words</b> for a good balance with characters.`) : ''}
     ${field('Desired retention', `<div class="st-range"><input type="range" data-k="retention" data-t="pct" min="80" max="97"
       value="${Math.round(c.retention * 100)}"><output>${Math.round(c.retention * 100)}%</output></div>`,
       'Reviews are scheduled by FSRS: an item comes back when your chance of recalling it has fallen to this. Higher means '
       + 'more reviews, each easier; 90% is FSRS’s own choice. The rating of each review (again, hard, good, easy) isn’t asked: '
       + 'it comes from your answers. Wrong is again; a slip of tone or a long think (over ' + Learn.SLOW / 1000 + ' seconds '
       + 'before you start typing) is hard; right is good; right and started within ' + Learn.QUICK / 1000 + ' seconds is easy.')}
-    ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['common', 'The most common characters first'],
+    ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['mix', 'Balanced: simple, common, early HSK, parts you know'], ['common', 'The most common characters first'],
       ['hsk', 'HSK 1 to 6, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
-      'Puts the next characters of the path in your lessons each day, skipping the ones you know or have queued, with their new components and sounds before them. It tops up to the daily number: lessons you haven\'t done yet count towards it.')}
+      'Keeps the next characters of the path in your lesson queue, skipping the ones you know, with their new components and sounds before them. The daily number is how many it keeps there, and how many become ready each day. Change either setting and the queue changes straight away; what you added yourself or prioritised stays. See and change the order on the <a href="#/queue">Upcoming page</a>.')}
+    ${field('Words in the path', tog('pathWords', 'Also learn words with what is left of the daily limit'), 'A word can be learned once all its characters have had their lessons. Off: the path teaches characters only, and you add words yourself.')}
+    ${pathCompare(c)}
     ${field('Daily review limit', sel('reviewLimit', reviewLimits, 'int'),
       'A soft limit: a session stops there, and once today\'s are done the Reviews tile greys out. You can still start another session.')}
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
       ['learned', 'Unlock when its components are learned'], ['familiar', 'Unlock when its components are familiar']]),
       'A component counts once you mark it known on the Productive Components page or mark it learned, or once it has had its own lesson (learned) or reached Apprentice I (familiar).')}
     ${field('Components and sounds first', tog('autoComps', 'Teach a character\'s new components and sounds first'),
-      'A character you add brings the parts of it you don\'t know yet: its components (by their picture names) and its sounds (the initial as a person, the final as a place, the tone as a room). Each gets a short lesson just before the character, which opens on a Prerequisites page showing them, known and new. Parts don\'t count against the daily lesson limit.')}
-    ${field('Word unlocking', `${tog('wordWait', 'Words wait for their characters')}
-      ${tog('autoChars', 'Automatically prioritize characters')}
-      ${sel('wordUnlock', [['familiar', 'Unlock when characters are familiar'], ['learned', 'Unlock when characters are learned']])}`,
-      'Familiar: its characters have reached Apprentice I, two right reviews on different days. Learned: they have had their lessons, so you learn the word alongside them. Automatically prioritizing puts the characters of a word you add, the ones you don\'t know yet, at the front of your lessons.')}
+      'A character you add brings the parts of it you don\'t know yet: its components (by their picture names) and its sounds (the beginning as a person, the ending as a building, the tone as where at that building: in front, inside, basement, bathroom or roof). Each gets a short lesson just before the character, which opens on a Prerequisites page showing them, known and new. Parts don\'t count against the daily lesson limit.')}
+    ${field('Word unlocking', tog('autoChars', 'Automatically prioritize characters'),
+      'A word can be learned once all its characters have had their lessons. Automatically prioritizing puts the characters of a word you add, the ones you don\'t know yet, at the front of your lessons.')}
     ${field('Item question order', sel('questionOrder', [['pinyin', 'Pair pronunciation, then meaning'],
       ['random', 'Select questions randomly']]),
       'Either way, an item’s meaning is only asked once its pronunciation is right.')}
-    ${field('Lesson order', sel('lessonOrder', [['words', 'Words first, then characters'],
-      ['chars', 'Characters first, then words'], ['mix', 'Mix characters and words']]))}
-    ${field('Priority queue', tog('prioRespect', 'Respect daily limits and lesson order'),
-      'On: prioritized lessons (☆ on the Study page, and characters a word brought along) come first within the lesson order and count towards your limits. Off: they come before everything else, whatever the limits.')}
+    ${field('Priority queue', tog('prioRespect', 'Respect daily limits'),
+      'Prioritised lessons (from the Upcoming page, and characters a word brought along) always come before the rest of the queue. On: they count towards your daily limits. Off: they are ready whatever the limits.')}
     ${field('Review order', sel('reviewOrder', [['random', 'Random'], ['type', 'Characters, then words'],
       ['oldest', 'Oldest first'], ['newest', 'Newest first'], ['easiest', 'Easiest first'], ['lowest', 'Lowest SRS stage first']]))}
     <div class="st-field">
@@ -2130,12 +2436,12 @@ function paintStudySettings() {
     }
     el.addEventListener('change', () => {
       const patch = { [k]: value() };
-      // the word limit is at most the lesson limit
-      if (k === 'lessonLimit' && patch.lessonLimit && c.wordLimit > patch.lessonLimit) patch.wordLimit = patch.lessonLimit;
       Store.setCfg(patch);
       if (k === 'retention') reschedule(patch.retention);
       markNav(currentPath());
-      if (['lessonLimit', 'voice'].includes(k)) paintStudySettings();
+      if (['lessonLimit', 'voice', 'path', 'pathDaily'].includes(k)) paintStudySettings();
+      // the queue follows these at once
+      if (['path', 'pathDaily', 'pathWords', 'autoComps', 'lessonLimit'].includes(k)) fillPath().then(fillParts).then(() => markNav(currentPath()));
       saved();
     });
   });

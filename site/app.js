@@ -28,7 +28,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 7;
+const DATA_VERSION = 18;
 
 const _loading = {};
 function loadScript(src) {
@@ -92,6 +92,8 @@ const need = {
   words: () => HZ.words ? Promise.resolve() : loadScript('data/words.js'),
   hsk: () => HZ.hsk ? Promise.resolve() : loadScript('data/hsk.js'),
   hskChars: () => HZ.hskChars ? Promise.resolve() : loadScript('data/hskchars.js'),
+  charorder: () => HZ.charorder ? Promise.resolve() : loadScript('data/charorder.js'),
+  wordorder: () => HZ.wordorder ? Promise.resolve() : loadScript('data/wordorder.js'),
   radicals: () => HZ.radicals ? Promise.resolve() : loadScript('data/radicals.js'),
   components: () => HZ.productiveComponents ? Promise.resolve() : loadScript('data/components.js'),
   prodchars: () => HZ.productiveCharacters ? Promise.resolve() : loadScript('data/prodchars.js'),
@@ -104,6 +106,11 @@ const need = {
   audio: () => HZ.audio ? Promise.resolve() : loadScript('data/audio.js'),
   cmnem: () => HZ.cmnem ? Promise.resolve() : loadScript('data/cmnem.js'),
   winfo: () => HZ.winfo ? Promise.resolve() : loadScript('data/winfo.js'),
+  // sentences for a character's lesson and page, as winfo's
+  charex: () => HZ.charex ? Promise.resolve() : loadScript('data/charex.js'),
+  gpoints: () => HZ.gpoints ? Promise.resolve() : loadScript('data/gpoints.js'),
+  phrases: () => HZ.phrases ? Promise.resolve() : loadScript('data/phrases.js'),
+  tones: () => HZ.tones ? Promise.resolve() : loadScript('data/tones.js'),
   // the reader for pasted text: the engine, every character's readings, and the
   // word list with frequencies (~9 MB, so only when someone reads their own text)
   textStory: () => Promise.all([
@@ -147,6 +154,10 @@ const Store = {
     d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT; d.study = d.study || {};
     d.wstatus = d.wstatus || {};      // words: 'learning' | 'learned', as status is for characters
     d.log = d.log || {};              // study by day: {date: {r: reviews, ok: right first time, l: lessons, s: seconds}}
+    d.grammar = d.grammar || {};      // grammar practice, noted and never scheduled: {point: {runs, best, last}}
+    d.phrases = d.phrases || {};      // phrases learned, and their practice (phrases.js)
+    d.tones = d.tones || {};          // the tone trainer's scores, and how your ear does with each tone (tones.js)
+    d.weak = d.weak || {};            // what you got right in Weak spots lately (weak.js)
     // The old Study flashcards (srs) gave way to lessons and reviews: a character
     // that was marked Learning joins the reviews at Novice I, due when it was due.
     for (const c of Object.keys(d.srs || {})) {
@@ -161,6 +172,15 @@ const Store = {
     d.srs = {};
     // items reviewed before FSRS: a stability from the stage they had reached
     for (const it of Object.values(d.items)) Learn.adopt(it);
+    // (the day's lessons are now characters first, words with what is left, and a word waits
+    // until its characters have had their lessons: what these settings used to choose)
+    for (const k of ['lessonOrder', 'wordLimit', 'wordWait', 'wordUnlock']) delete d.study[k];
+    // so were the initials: from jobs to the figures, in lessons taken or waiting
+    Learn.recastSounds(d.items);
+    // the tone places were renamed: lessons of them already taken or waiting take the new name
+    for (const [k, was, now] of [['t:1', 'Rooftop', 'Front'], ['t:2', 'Staircase', 'Inside'], ['t:4', 'Trapdoor', 'Bathroom'], ['t:5', 'Front Step', 'Roof']]) {
+      if (d.items[k] && d.items[k].mean === was) d.items[k].mean = now;
+    }
     // Characters marked Learned are in the reviews too, from Journeyman I. The ones
     // that aren't yet (from before, or from a device that didn't do this) get their
     // first reviews spread over the next month, most common first, 20 a day at most.
@@ -264,6 +284,7 @@ const Store = {
   learnAdd(k, kind, info) {
     const d = this.load(), now = Date.now();
     if (!d.items[k]) {
+      if (d.study.skip && d.study.skip.includes(k)) d.study.skip = d.study.skip.filter(x => x !== k);   // asked for after all
       d.items[k] = Learn.newItem(kind, info, now);
       if (kind === 'char') rememberParts(k);
       // a word brings along the characters in it you don't know yet, prioritized
@@ -271,7 +292,7 @@ const Store = {
       if (kind === 'word' && this.cfg().autoChars) {
         const syl = String(info.pin || '').split(/\s+/), written = [...((info.ex && info.ex.w) || k)];
         [...k].filter(isHan).forEach((c, i) => {
-          if (!HZ.index[c] || d.items[c] || d.status[c] === 'learned') return;
+          if (!HZ.index[c] || d.items[c] || d.status[c] === 'learned' || (d.study.skip || []).includes(c)) return;
           const it = d.items[c] = Learn.newItem('char', charInfo(c, syl[i]), now);
           it.prio = true;
           if (info.ex) it.ex = { text: info.ex.text, w: written.filter(isHan)[i] || c, t: info.ex.t };
@@ -282,7 +303,13 @@ const Store = {
     this.touch();
     return d.items[k];
   },
-  learnRemove(k) { delete this.load().items[k]; this.save(); },
+  learnRemove(k) {
+    const d = this.load();
+    // taken out of what the path chose: it won't choose it again
+    if (d.items[k] && d.items[k].path) d.study.skip = [...new Set([...(d.study.skip || []), k])];
+    delete d.items[k];
+    this.save();
+  },
   prioritize(k) {
     const it = this.item(k);
     if (!it) return;
@@ -842,7 +869,7 @@ function merge3(base, local, remote) {
   new Set([...Object.keys(b), ...Object.keys(local), ...Object.keys(remote)]).forEach(k => {
     // (items: each character or word learnt changes on its own; study: each setting;
     //  srs is the old flashcards)
-    if (['status', 'wstatus', 'comps', 'notes', 'srs', 'items', 'study'].includes(k)) out[k] = map(b[k], local[k], remote[k]);
+    if (['status', 'wstatus', 'comps', 'notes', 'srs', 'items', 'study', 'grammar', 'phrases', 'tones', 'weak'].includes(k)) out[k] = map(b[k], local[k], remote[k]);
     else if (k === 'lists') out[k] = lists();
     else if (k === 'history') out[k] = history();
     else if (k === 'days') out[k] = days();
@@ -911,14 +938,62 @@ function rerenderKeepingScroll() {
   const y = window.scrollY;
   return Promise.resolve(render(true)).then(() => window.scrollTo(0, y));
 }
-window.addEventListener('hashchange', () => render());
+/* Each place in the history remembers how far down you were, so Back returns you there and
+   not to the top. (An entry with our mark has been visited: it is Back or Forward.) */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+const scrollOf = new Map();
+let placeId = 0, placeSeq = 0;
+const newPlace = () => {
+  placeId = ++placeSeq + Date.now();
+  history.replaceState({ ...history.state, hzPlace: placeId }, '');
+};
+newPlace();
+window.addEventListener('hashchange', () => {
+  scrollOf.set(placeId, window.scrollY);
+  const back = history.state && history.state.hzPlace;
+  if (back) placeId = back; else newPlace();
+  const y = back ? scrollOf.get(back) : undefined;
+  Motion.page(() => (y === undefined ? render() : Promise.resolve(render(true)).then(() => window.scrollTo(0, y))));
+});
 const currentPath = () => {
   const h = decodeURIComponent(location.hash.replace(/^#/, ''));
   return h.startsWith('/') ? h : '/dashboard';
 };
 
+/* pages the menu keeps under one entry, with tabs along the top of each. Every page keeps
+   its own address, so links to them go on working. */
+const HUBS = [
+  { nav: '/explore', label: 'Explore', tabs: [
+    ['HSK', '/hsk-1', /^\/hsk-/], ['Most Common', '/frequency'], ['Radicals', '/radicals'],
+    ['Components', '/productive-components'], ['Characters', '/productive-characters'],
+    ['Phonetic Sets', '/phonetic-sets'], ['Sounds', '/sounds'],
+  ] },
+  { nav: '/grammar', label: 'Grammar and phrases', tabs: [
+    ['Grammar', '/grammar', /^\/grammar(\/(?!daily$)[^/]+)?$/], ['Phrases', '/phrases', /^\/phrases(\/[^/]+)?$/],
+  ] },
+  { nav: '/yours', label: 'Lists and notes', tabs: [['Lists', '/lists'], ['Notes', '/notes'], ['History', '/history']] },
+];
+const hubTabHit = ([, to, re], path) => (re ? re.test(path) : path === to || path.startsWith(to + '/'));
+const hubOf = path => HUBS.find(h => h.tabs.some(t => hubTabHit(t, path)));
+/* the tabs for this page: drawn outside #app, so a page redrawing itself keeps them */
+function paintHub(path) {
+  const box = document.getElementById('hub-tabs'), hub = hubOf(path);
+  box.hidden = !hub;
+  document.body.classList.toggle('in-hub', !!hub);
+  if (!hub) { box.innerHTML = ''; return; }
+  box.setAttribute('aria-label', hub.label);
+  box.innerHTML = hub.tabs.map(t => {
+    const on = hubTabHit(t, path);
+    return `<a class="${on ? 'on' : ''}" href="#${t[1]}"${on ? ' aria-current="page"' : ''}>${t[0]}</a>`;
+  }).join('');
+  const on = box.querySelector('.on');
+  if (on && box.scrollWidth > box.clientWidth) box.scrollLeft = on.offsetLeft - (box.clientWidth - on.offsetWidth) / 2;
+}
+
 function markNav(path) {
-  path = path.replace(/^\/(lessons|reviews|calibrate|stats|lookalikes)/, '/study');
+  const hub = hubOf(path);
+  if (hub) path = hub.nav;
+  path = path.replace(/^\/phrases/, '/grammar').replace(/^\/(lessons|learned|reviews|calibrate|stats|lookalikes|queue|tones|weak)/, '/study');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
     a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
@@ -1516,9 +1591,45 @@ function writeQuiz(writer, memory, say, done) {
   });
 }
 
+/* The bar under the top of a character or word page: its sections, and where you are among them.
+   items: [section id, label, hidden until the section appears] */
+function pageJump(items) {
+  return `<nav class="filters page-jump" id="page-jump" aria-label="On this page">${items.filter(Boolean).map(([id, label, later]) =>
+    `<button type="button" data-to="${id}"${later ? ' hidden' : ''}>${label}</button>`).join('')}</nav>`;
+}
+let pageJumpWatch = null;
+function wirePageJump() {
+  if (pageJumpWatch) pageJumpWatch.disconnect();
+  const bar = document.getElementById('page-jump');
+  if (!bar) return;
+  const btns = [...bar.querySelectorAll('button')], secs = btns.map(b => document.getElementById(b.dataset.to)).filter(Boolean);
+  const inView = new Set();
+  const mark = sec => btns.forEach(b => {
+    const on = !!sec && b.dataset.to === sec.id;
+    b.classList.toggle('on', on);
+    if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    if (on && bar.scrollWidth > bar.clientWidth) bar.scrollLeft = b.offsetLeft - (bar.clientWidth - b.offsetWidth) / 2;
+  });
+  btns.forEach(b => b.addEventListener('click', () => {
+    const sec = document.getElementById(b.dataset.to);
+    if (!sec) return;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    sec.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    sec.focus({ preventScroll: true });
+    mark(sec);        // (the last section may be too short to scroll up to the line below)
+  }));
+  if (!window.IntersectionObserver) return;
+  // the section crossing a line just under the bar is the one you are reading
+  pageJumpWatch = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) inView.add(e.target); else inView.delete(e.target); });
+    mark(secs.find(x => inView.has(x)));
+  }, { rootMargin: '-130px 0px -70% 0px' });
+  secs.forEach(x => pageJumpWatch.observe(x));
+}
+
 async function pageCharacter(ch) {
   app.innerHTML = LOADING;
-  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem()), optional(need.sounds()),
+  const [d] = await Promise.all([charData(ch), optional(need.cnames()), optional(need.cmnem()), optional(need.charex()), optional(need.sounds()),
     HZ.lookalike ? null : optional(loadScript('data/lookalike.js'))]);
   if (!d) {
     app.innerHTML = withRail(`<div class="card"><h1>${esc(ch)}</h1>
@@ -1529,6 +1640,8 @@ async function pageCharacter(ch) {
   Store.visit(ch);
   const store = Store.load();
   const first = d.rd[0];
+  // the reading to say first: the one lessons teach
+  const mainPin = (HZ.cmnem && HZ.cmnem[ch] && HZ.cmnem[ch][2]) || (first && first[1]) || (HZ.index[ch] || [])[2] || '';
   const status = Store.status(ch);
   const ranked = byRank();
   const i = d.r ? ranked.indexOf(ch) : -1;
@@ -1552,6 +1665,17 @@ async function pageCharacter(ch) {
   if (d.kr) fact('radical', `Radical: ${charLink(d.kr, 'han')} <span class="muted">${esc(glossOf(d.kr))}</span>`);
   if (d.h) fact('hsk', `<b>HSK ${d.h}</b> vocabulary`);
 
+  // what the top of the page says it means: the reading lessons teach
+  const mainRd = d.rd.find(r => r[1] === mainPin) || first;
+  const gloss = mainRd ? mainRd[2].slice(0, 3).join('; ') : '';
+  const APPEARS_SHOWN = 24, WORDS_SHOWN = 12;
+  const related = lookalikeSection(ch) + (d.ai.length ? `<h3 class="sub-h">Appears In</h3>
+    <div class="decomp-box pad">
+      <p class="muted small">${esc(ch)} is a component of these characters:</p>
+      <div class="chips">${d.ai.slice(0, APPEARS_SHOWN).map(m => chip(m[0], m[2])).join('')}</div>
+      ${d.ai.length > APPEARS_SHOWN ? `<p style="margin-top:8px"><button class="more"
+         data-chips='${esc(JSON.stringify(d.ai.slice(APPEARS_SHOWN)))}'>Show ${d.ai.length - APPEARS_SHOWN} more</button></p>` : ''}</div>` : '');
+
   const words = { 0: [], 1: [], 2: [] };
   d.w.forEach(w => words[w[3]].push(w));
   const group = (title, list, initial) => {
@@ -1563,35 +1687,78 @@ async function pageCharacter(ch) {
          data-g="${title}" data-from="${initial}">Show ${list.length - initial} more</button></p>` : ''}</div>`;
   };
 
-  app.innerHTML = `<p class="crumb"><a href="#/dashboard">Home</a> / <span class="han">${esc(ch)}</span></p>`
+  app.innerHTML = `<div class="crumb-row"><p class="crumb"><a href="#/dashboard">Home</a> / <span class="han">${esc(ch)}</span></p>
+      ${prev || next ? `<p class="neighbours">${prev ? `<span>Previous ${charLink(prev)}</span>` : ''}${next ? `<span>Next ${charLink(next)}</span>` : ''}</p>` : ''}</div>`
   + withRail(`
-    <div class="chartab han">${zhOne(ch)}</div>
-    <section class="card chartop">
-      <div class="hero-row">
+    <section class="card pg-hero">
+      <div class="pg-id">
         <div class="hero-glyph ${status || ''}">${zhOne(ch)}</div>
-        <div class="hero-actions">
-          <div class="dd">
-            <button class="btn status-btn ${status || 'none'}" id="statusbtn">
-              Status: ${status ? status[0].toUpperCase() + status.slice(1) : 'Not started'} ▾</button>
-            <div class="dd-pop" id="statuspop" hidden>
-              <button data-s="">Not started</button>
-              <button data-s="learning">Learning</button>
-              <button data-s="learned">Learned</button>
-            </div>
-          </div>
-          <div class="dd">
-            <button class="btn addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
-            <div class="dd-pop" id="listpop" hidden></div>
-          </div>
-          ${learnButton(ch)}
+        <div class="pg-title">
+          ${mainPin ? `<p class="pg-pin">${esc(mainPin)}${Sound.canSay() ? ` <button class="btn quiet pg-say" data-say="${esc(mainPin)}" aria-label="Hear ${esc(ch)}, ${esc(mainPin)}">▶</button>` : ''}</p>` : ''}
+          ${gloss ? `<p class="pg-gloss">${esc(gloss)}</p>` : ''}
         </div>
       </div>
-      <p class="neighbours">${prev ? `Previous (${charLink(prev)})` : ''}
-        ${next ? `Next (${charLink(next)})` : ''}</p>
+      <div class="hero-actions pg-actions">
+        <div class="dd">
+          <button class="btn status-btn ${status || 'none'}" id="statusbtn">
+            Status: ${status ? status[0].toUpperCase() + status.slice(1) : 'Not started'} ▾</button>
+          <div class="dd-pop" id="statuspop" hidden>
+            <button data-s="">Not started</button>
+            <button data-s="learning">Learning</button>
+            <button data-s="learned">Learned</button>
+          </div>
+        </div>
+        <div class="dd">
+          <button class="btn addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
+          <div class="dd-pop" id="listpop" hidden></div>
+        </div>
+        ${learnButton(ch)}
+      </div>
       <ul class="facts">${facts.join('')}</ul>
     </section>
 
-    <section id="stroke-sec" hidden>
+    ${pageJump([['sec-meaning', 'Meaning'], ['sec-mnemonic', 'Mnemonic'], ['sec-examples', 'Examples'], ['stroke-sec', 'Stroke order', true], ['sec-parts', 'Parts'],
+      related ? ['sec-related', 'Related'] : null])}
+
+    <section class="pg-sec" id="sec-meaning" tabindex="-1">
+      <h2 class="sec-h">Pinyin &amp; Meaning</h2>
+      <div class="decomp-box pad">
+        ${d.rd.map((r, n) => `<div class="reading">
+          <p class="r-head">${n + 1}. ${esc(r[1])} <span>(${esc(r[0])})</span>${Sound.canSay() ? `<button type="button" class="btn quiet lx-say" data-say="${esc(r[1])}" aria-label="Hear ${esc(r[1])}">▶</button>` : ''}</p>
+          <p class="r-defs">${r[2].map(esc).join(' • ')}</p></div>`).join('')
+          || '<p class="empty">No dictionary entry.</p>'}
+      </div>
+    </section>
+
+    <section class="pg-sec" id="sec-mnemonic" tabindex="-1">
+      <h2 class="sec-h">Mnemonic</h2>
+      <div class="decomp-box pad pg-stack">
+        ${HZ.cmnem && HZ.cmnem[ch] ? `<div><p class="small muted">Learn it first as <b>${esc(HZ.cmnem[ch][0])}</b>,
+          <b>${esc(HZ.cmnem[ch][2] || (HZ.index[ch] || [])[2] || '')}</b>.</p><div class="mn">${mnHtml(HZ.cmnem[ch][1], mnContext(ch, d))}</div>
+          ${HZ.cnames && HZ.cnames[ch] ? `<p class="small muted">As a part of other characters it is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p>` : ''}</div>`
+          : HZ.cnames && HZ.cnames[ch] ? `<div><h3 class="sub-h">Picture name</h3><p>As a part of other characters this is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p></div>` : ''}
+        ${(() => { const s = soundStrip((HZ.cmnem && HZ.cmnem[ch] && HZ.cmnem[ch][2]) || (HZ.index[ch] || [])[2], true);
+          return s ? `<div><h3 class="sub-h">Sound</h3>${s}
+            <p class="small muted">Its beginning, ending and tone, in the <a href="#/sounds">sound library</a>.</p></div>` : ''; })()}
+        <div><h3 class="sub-h"><label for="note">Your note</label></h3>
+          <textarea id="note" rows="3" class="note-box"
+            placeholder="A mnemonic, an example sentence, anything…">${esc(store.notes[ch] || '')}</textarea>
+          <p class="small muted" id="note-state">Saved automatically.</p></div>
+      </div>
+    </section>
+
+    <section class="pg-sec" id="sec-examples" tabindex="-1">
+      <h2 class="sec-h">Examples</h2>
+      ${HZ.charex && HZ.charex[ch] ? `<h3 class="sub-h">Sentences</h3>
+      <div class="decomp-box pad">${HZ.charex[ch].map(ex => `<div class="example">${exampleHtml(ex, ch)}</div>`).join('')}</div>` : ''}
+      <h3 class="sub-h">Words</h3>
+      <div class="decomp-box pad">
+        ${(group('Common', words[0], WORDS_SHOWN) + group('Uncommon', words[1], WORDS_SHOWN) +
+           group('Rare', words[2], 0)) || '<p class="empty">No words recorded.</p>'}
+      </div>
+    </section>
+
+    <section class="pg-sec" id="stroke-sec" tabindex="-1" hidden>
       <h2 class="sec-h">Stroke order</h2>
       <div class="decomp-box pad stroke-box">
         ${writerBox('writer')}
@@ -1606,85 +1773,59 @@ async function pageCharacter(ch) {
       </div>
     </section>
 
-    <h2 class="sec-h">Decomposition</h2>
-    <p class="tip"><i class="info-i">i</i> Components you have marked as known are
-       outlined in green — click one in row 2 to mark it.</p>
-    <div class="decomp-box">
-      <div class="decomp-row">
-        <div class="decomp-label"><span class="n">1</span> Breakdown <i class="info-i" title="The character split into its parts, and those parts split again down to named components">i</i></div>
-        <div class="decomp-body tree-h">${renderTree(d.bd, true)}</div>
+    <section class="pg-sec" id="sec-parts" tabindex="-1">
+      <h2 class="sec-h">Parts</h2>
+      <h3 class="sub-h">Decomposition</h3>
+      <p class="tip"><i class="info-i">i</i> Components you have marked as known are
+         outlined in green — click one in row 2 to mark it.</p>
+      <div class="decomp-box">
+        <div class="decomp-row">
+          <div class="decomp-label"><span class="n">1</span> Breakdown <i class="info-i" title="The character split into its parts, and those parts split again down to named components">i</i></div>
+          <div class="decomp-body tree-h">${renderTree(d.bd, true)}</div>
+        </div>
+        <div class="decomp-row">
+          <div class="decomp-label"><span class="n">2</span> Components <i class="info-i" title="The named building blocks this character is made of">i</i></div>
+          <div class="decomp-body glyphs"><span class="gbox han ${Store.compKnown(ch) ? 'known' : ''}">${esc(ch)}</span><span class="arrow">→</span>
+            ${d.cm.map(c => `<button class="gbox comp-btn ${Store.compKnown(c) ? 'known' : ''}" data-c="${esc(c)}">
+                <span class="han">${esc(c)}</span><small title="${esc((HZ.cnames && HZ.cnames[c] && HZ.cnames[c][1]) || '')}">${esc(compName(c) || 'N/A')}</small></button>`).join('')
+              || '<span class="empty">Atomic — no components.</span>'}</div>
+        </div>
+        <div class="decomp-row">
+          <div class="decomp-label"><span class="n">3</span> Graphical <i class="info-i" title="The same character taken all the way down to individual strokes">i</i></div>
+          <div class="decomp-body glyphs"><span class="gbox han ${Store.compKnown(ch) ? 'known' : ''}">${esc(ch)}</span><span class="arrow">→</span>
+            ${d.gr.map(g => `<span class="gbox han stroke">${esc(g)}</span>`).join('')}</div>
+        </div>
       </div>
-      <div class="decomp-row">
-        <div class="decomp-label"><span class="n">2</span> Components <i class="info-i" title="The named building blocks this character is made of">i</i></div>
-        <div class="decomp-body glyphs"><span class="gbox han ${Store.compKnown(ch) ? 'known' : ''}">${esc(ch)}</span><span class="arrow">→</span>
-          ${d.cm.map(c => `<button class="gbox comp-btn ${Store.compKnown(c) ? 'known' : ''}" data-c="${esc(c)}">
-              <span class="han">${esc(c)}</span><small title="${esc((HZ.cnames && HZ.cnames[c] && HZ.cnames[c][1]) || '')}">${esc(compName(c) || 'N/A')}</small></button>`).join('')
-            || '<span class="empty">Atomic — no components.</span>'}</div>
-      </div>
-      <div class="decomp-row">
-        <div class="decomp-label"><span class="n">3</span> Graphical <i class="info-i" title="The same character taken all the way down to individual strokes">i</i></div>
-        <div class="decomp-body glyphs"><span class="gbox han ${Store.compKnown(ch) ? 'known' : ''}">${esc(ch)}</span><span class="arrow">→</span>
-          ${d.gr.map(g => `<span class="gbox han stroke">${esc(g)}</span>`).join('')}</div>
-      </div>
-    </div>
 
-    ${lookalikeSection(ch)}
-
-    ${HZ.cmnem && HZ.cmnem[ch] ? `<h2 class="sec-h">Mnemonic</h2>
-    <div class="decomp-box pad"><p class="small muted">Learn it first as <b>${esc(HZ.cmnem[ch][0])}</b>,
-      <b>${esc(HZ.cmnem[ch][2] || (HZ.index[ch] || [])[2] || '')}</b>.</p><div class="mn">${mnHtml(HZ.cmnem[ch][1], mnContext(ch, d))}</div>
-      ${HZ.cnames && HZ.cnames[ch] ? `<p class="small muted">As a part of other characters it is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p>` : ''}</div>`
-      : HZ.cnames && HZ.cnames[ch] ? `<h2 class="sec-h">Picture name</h2>
-    <div class="decomp-box pad"><p>As a part of other characters this is the <b>${esc(HZ.cnames[ch][0])}</b>: ${esc(HZ.cnames[ch][1])}</p></div>` : ''}
-
-    <h2 class="sec-h">Pinyin &amp; Meaning</h2>
-    <div class="decomp-box pad">
-      ${d.rd.map((r, n) => `<div class="reading">
-        <p class="r-head">${n + 1}. ${esc(r[1])} <span>(${esc(r[0])})</span></p>
-        <p class="r-defs">${r[2].map(esc).join(' • ')}</p></div>`).join('')
-        || '<p class="empty">No dictionary entry.</p>'}
-    </div>
-
-    <h2 class="sec-h">Phonetic Components</h2>
-    <p class="tip"><i class="info-i">i</i> A phonetic component hints at how the
-       character is pronounced.</p>
-    <div class="decomp-box pad">
-      ${d.ph.length ? d.ph.map((p, n) => `<div class="clue">
-        <p>${n + 1}. ${charLink(ch, 'han')} <b>${esc(first ? first[1] : '')}</b> has component
-          ${charLink(p.c, 'han')} <b>${esc(p.t)}</b>.
-          <span class="rel-${p.r}">${esc(REL[p.r])}</span></p>
-        ${p.m.length ? `<p class="muted small" style="margin:0 0 6px">${esc(p.c)} is also a clue in:</p>
-          <div class="chips">${p.m.slice(0, 12).map(m => chip(m[0], m[2])).join('')}</div>
-          ${p.m.length > 12 ? `<p style="margin-top:8px"><button class="more"
-             data-chips='${esc(JSON.stringify(p.m.slice(12)))}'>Show ${p.m.length - 12} more</button></p>` : ''}` : ''}
-        </div>`).join('')
-        : '<p class="empty">There are no phonetic clues for this character.</p>'}
-    </div>
-
-    ${d.ai.length ? `<h2 class="sec-h">Appears In</h2>
+      <h3 class="sub-h">Phonetic Components</h3>
+      <p class="tip"><i class="info-i">i</i> A phonetic component hints at how the
+         character is pronounced.</p>
       <div class="decomp-box pad">
-        <p class="muted small">${esc(ch)} is a component of these characters:</p>
-        <div class="chips">${d.ai.slice(0, 60).map(m => chip(m[0], m[2])).join('')}</div></div>` : ''}
+        ${d.ph.length ? d.ph.map((p, n) => `<div class="clue">
+          <p>${n + 1}. ${charLink(ch, 'han')} <b>${esc(first ? first[1] : '')}</b> has component
+            ${charLink(p.c, 'han')} <b>${esc(p.t)}</b>.
+            <span class="rel-${p.r}">${esc(REL[p.r])}</span></p>
+          ${p.m.length ? `<p class="muted small" style="margin:0 0 6px">${esc(p.c)} is also a clue in:</p>
+            <div class="chips">${p.m.slice(0, 12).map(m => chip(m[0], m[2])).join('')}</div>
+            ${p.m.length > 12 ? `<p style="margin-top:8px"><button class="more"
+               data-chips='${esc(JSON.stringify(p.m.slice(12)))}'>Show ${p.m.length - 12} more</button></p>` : ''}` : ''}
+          </div>`).join('')
+          : '<p class="empty">There are no phonetic clues for this character.</p>'}
+      </div>
+    </section>
 
-    <h2 class="sec-h">Example Words</h2>
-    <div class="decomp-box pad">
-      ${(group('Common', words[0], 40) + group('Uncommon', words[1], 40) +
-         group('Rare', words[2], 0)) || '<p class="empty">No words recorded.</p>'}
-    </div>
-
-    <h2 class="sec-h">Your Note</h2>
-    <div class="decomp-box pad">
-      <textarea id="note" rows="3" style="width:100%;font-family:inherit;padding:10px;
-        border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"
-        placeholder="A mnemonic, an example sentence, anything…">${esc(store.notes[ch] || '')}</textarea>
-      <p class="small muted" id="note-state">Saved automatically.</p>
-    </div>`);
+    ${related ? `<section class="pg-sec" id="sec-related" tabindex="-1">
+      <h2 class="sec-h">Related</h2>
+      ${related}
+    </section>` : ''}`);
 
   // stroke order: play it, trace it, or write it from memory
   makeWriter('writer', ch, 220, { showOutline: true }).then(writer => {
     const sec = document.getElementById('stroke-sec');
     if (!writer || !sec) return;
     sec.hidden = false;
+    const jump = app.querySelector('#page-jump [data-to="stroke-sec"]');
+    if (jump) jump.hidden = false;
     const msg = document.getElementById('writer-msg');
     const n = strokeCount(ch);
     const intro = `${n ? n + ' strokes. ' : ''}The radical's strokes are in red. Play them in order, then write it yourself.`;
@@ -1713,6 +1854,7 @@ async function pageCharacter(ch) {
     pop.addEventListener('click', e => e.stopPropagation());
   };
   dd('statusbtn', 'statuspop');
+  app.querySelectorAll('[data-say]').forEach(b => b.addEventListener('click', () => Sound.reading(ch, b.dataset.say, d.rd.length > 1)));
   wireLearnButton(ch, () => ({ pin: first ? first[1] : '', mean: first ? first[2].slice(0, 2).join('; ') : '',
     alts: first ? first[2].slice(0, 6) : [] }));
   document.getElementById('statuspop').addEventListener('click', e => {
@@ -1760,6 +1902,7 @@ async function pageCharacter(ch) {
       document.getElementById('note-state').textContent = 'Saved.';
     }, 400);
   });
+  wirePageJump();
   paintRail();
 }
 
@@ -2306,6 +2449,7 @@ async function pageHsk(level) {
        characters it introduces, then its vocabulary.</p>
     <div class="tabs">${[1, 2, 3, 4, 5, 6].map(n =>
       `<a class="${n === level ? 'on' : ''}" href="#/hsk-${n}">HSK ${n}</a>`).join('')}</div>
+    ${hskPushCard(hskStanding().find(p => p.level === level))}
     <section class="card">
       <h2>Characters introduced at HSK ${level}</h2>
       ${chars.length ? tileBoard('hsk', chars) : '<p class="empty">No characters listed.</p>'}
@@ -2323,6 +2467,7 @@ async function pageHsk(level) {
       </tbody></table>
     </section>`);
   wireWordSegs(app);
+  wireHskPush(app, () => { markNav(currentPath()); pageHsk(level); });
   if (chars.length) wireTileBoard('hsk', chars, { band: 100, label: c => (HZ.index[c] || [])[0] || '' });
   paintRail();
 }
@@ -2611,12 +2756,106 @@ function pageSettings() {
   wireSyncCard();
   if (offlineCan()) paintOffline();
   paintStudySettings();
+  paintSettingsNav();
   paintTranslateSettings();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
 }
 
 /* the app's version, and what its updates are doing (desktop/src/updates.js) */
+/* The side panel of Settings: every section and setting, from the page's own headings, so
+   it can't fall out of step. It follows the page as you scroll. On a narrow screen it folds
+   away into a menu at the top. */
+function paintSettingsNav() {
+  const dash = app.querySelector('.dash'), title = app.querySelector('.page-title');
+  if (!dash || !title) return;
+  const layout = document.createElement('div'), main = document.createElement('div');
+  layout.className = 'st-layout';
+  main.className = 'st-main';
+  const nav = document.createElement('details');
+  nav.className = 'st-nav';
+  const wide = window.matchMedia('(min-width: 900px)');
+  nav.open = wide.matches;
+  app.insertBefore(layout, title);
+  main.append(title, dash);
+  layout.append(nav, main);
+
+  let targets = [], signature = '', pinned = -1;
+  const textOf = el => (el.childNodes[0] && el.childNodes[0].textContent || el.textContent).trim();
+  const build = () => {
+    pinned = -1;
+    const sections = [...dash.querySelectorAll('section.card')].map(card => {
+      const h = card.querySelector('h2');
+      if (!h) return null;
+      const subs = [...card.querySelectorAll('.st-label, h3.st-h, details.path-compare > summary')];
+      return { h, subs };
+    }).filter(Boolean);
+    const sig = sections.map(s => textOf(s.h) + ':' + s.subs.map(textOf).join(',')).join('|');
+    // the same headings, redrawn: the links stay, and point at the new ones
+    if (sig === signature) {
+      targets = sections.flatMap(s => [s.h, ...s.subs]).map((el, i) => ({ el, i }));
+      spy();
+      return;
+    }
+    signature = sig;
+    targets = [];
+    const link = (el, cls) => { targets.push({ el, i: targets.length }); return `<button type="button" class="${cls}" data-to="${targets.length - 1}">${esc(textOf(el))}</button>`; };
+    nav.innerHTML = `<summary>On this page</summary><div class="st-nav-list">${sections.map(s => `<div class="st-nav-sec">${link(s.h, 'st-nav-h')}
+      ${s.subs.map(el => link(el, 'st-nav-sub')).join('')}</div>`).join('')}</div>`;
+    nav.querySelectorAll('[data-to]').forEach(b => b.addEventListener('click', () => {
+      const t = targets[+b.dataset.to];
+      if (!t) return;
+      if (!wide.matches) nav.open = false;      // (first: the menu's height moves the page)
+      t.el.scrollIntoView({ block: 'start' });
+      // the last sections can't reach the top of the screen: the one you chose stays marked
+      // until you scroll yourself
+      pinned = +b.dataset.to;
+      spy();
+    }));
+    spy();
+  };
+  // the one you are at: the last heading that has reached the top of the screen
+  const spy = () => {
+    if (!nav.isConnected) { window.removeEventListener('scroll', onScroll); return; }
+    let at = 0;
+    targets.forEach((t, i) => { if (t.el.isConnected && t.el.getBoundingClientRect().top <= 110) at = i; });
+    if (pinned >= 0) at = pinned;
+    nav.querySelectorAll('[data-to]').forEach(b => {
+      const on = +b.dataset.to === at;
+      if (on === b.classList.contains('on')) return;
+      b.classList.toggle('on', on);
+      if (on) {
+        b.setAttribute('aria-current', 'true');
+        // keep it in view in the panel, without moving the page
+        const list = nav.querySelector('.st-nav-list');
+        if (wide.matches && list) {
+          const r = b.getBoundingClientRect(), box = list.getBoundingClientRect();
+          if (r.top < box.top || r.bottom > box.bottom) list.scrollTop += r.top - box.top - box.height / 2;
+        }
+      } else b.removeAttribute('aria-current');
+    });
+  };
+  let queued = false;
+  const onScroll = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; spy(); });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  // scrolling yourself, by any means, lets go of the one you chose (not in the panel's own list)
+  const unpin = e => {
+    if (!nav.isConnected) { for (const ev of ['wheel', 'touchmove', 'keydown']) window.removeEventListener(ev, unpin); return; }
+    if (pinned >= 0 && !(e.target instanceof Node && nav.contains(e.target))) { pinned = -1; onScroll(); }
+  };
+  for (const ev of ['wheel', 'touchmove', 'keydown']) window.addEventListener(ev, unpin, { passive: true });
+  build();
+  // sections fill in after the page opens, and Settings redraws its own as you change them
+  let timer = 0;
+  new MutationObserver(() => { clearTimeout(timer); timer = setTimeout(() => { if (nav.isConnected) build(); }, 80); })
+    .observe(dash, { childList: true, subtree: true });
+  wide.addEventListener('change', e => { if (nav.isConnected) nav.open = e.matches; });
+}
+
 function desktopUpdateLine(state) {
   const u = state.update || {};
   if (!state.version) return '';
@@ -2856,7 +3095,7 @@ function offlineFiles() {
   const hex = n => ('0' + n.toString(16)).slice(-2);
   const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
   return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
-    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo', 'sounds', 'lookalike'].map(f => `data/${f}.js`)
+    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo', 'charex', 'gpoints', 'phrases', 'tones', 'sounds', 'audio', 'lookalike', 'charorder', 'wordorder'].map(f => `data/${f}.js`)
     .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
       ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
     .map(f => f + '?v=' + DATA_VERSION);
@@ -2993,6 +3232,7 @@ function render(keepScroll) {
   _boardUpdate = null;
   const path = currentPath();
   markNav(path);
+  paintHub(path);
   setNav(false);
   Motion.enter(path);
   // the floating menus belong to the page they were opened on (on a phone or iPad
@@ -3010,8 +3250,10 @@ function render(keepScroll) {
   if (seg[0] === 'word') return pageWord(seg.slice(1).join('/'));
   if (seg[0] === 'words') return pageWords(seg[1], seg[2], n(3));
   if (seg[0] === 'study') return pageStudy();
+  if (seg[0] === 'queue') return pageQueue(seg[1], parseInt(seg[2], 10) || 1);
   if (seg[0] === 'translate') return pageTranslate();
   if (seg[0] === 'lessons') return pageLessons();
+  if (seg[0] === 'learned') return pageLearned();
   if (seg[0] === 'stats') return pageStats();
   if (seg[0] === 'lookalikes') return pageLookalikes(seg.slice(1).join('/') || null);
   if (seg[0] === 'reviews') return pageReviews();
@@ -3022,6 +3264,11 @@ function render(keepScroll) {
   if (seg[0] === 'screen') return pageScreen();
   if (seg[0] === 'frequency') return pageFrequency();
   if (seg[0] === 'radicals') return pageRadicals();
+  if (seg[0] === 'sounds') return pageSounds(seg[1], seg[2], parseInt(seg[3], 10) || 1);
+  if (seg[0] === 'grammar') return pageGrammar(seg[1], seg[2]);
+  if (seg[0] === 'phrases') return pagePhrases(seg[1], seg[2]);
+  if (seg[0] === 'tones') return pageTones(seg[1], seg[2]);
+  if (seg[0] === 'weak') return pageWeak(seg[1]);
   if (seg[0] === 'phonetic-sets') return pagePhonetic(n(1), n(2));
   if (seg[0] === 'productive-components') return pageProdComponents(n(1));
   if (seg[0] === 'productive-characters') return pageProdCharacters(n(1));

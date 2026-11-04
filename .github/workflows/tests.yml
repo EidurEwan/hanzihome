@@ -25,6 +25,11 @@ jobs:
           node-version: 22
       - run: node test/learn.js
       - run: node test/grammar.js
+      - run: node test/sounds.js
+      - run: node test/charex.js
+      - run: node test/gpoints.js
+      - run: node test/phrases.js
+      - run: node test/tones.js
       - run: node test/pinyin.js
       - run: node test/sync.js
       - run: node test/polyphones.js

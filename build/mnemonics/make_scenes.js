@@ -1,7 +1,7 @@
 /* The second round of mnemonics, in HanziHero's lesson order: a character is learnt
  * from its components (the first level of its breakdown, each a picture name) and its
- * sound (an initial, a final and a tone from site/data/sounds.js, a person, a place
- * and a room). Writes build/mnemonics/in/:
+ * sound (an initial, a final and a tone from site/data/sounds.js, a person, a building
+ * and where at that building). Writes build/mnemonics/in/:
  *   components-2.json   first-level parts of the commonest characters with no picture
  *                       name yet (named as in BRIEF.md section 1)
  * and, once those are named (node build/mnemonics/make_scenes.js scenes):
