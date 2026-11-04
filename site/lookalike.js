@@ -2,16 +2,15 @@
  *
  * The look-alikes come from data/lookalike.js (build/export_lookalikes.js): for each
  * common character, the common characters that look like it, 请 情 清 晴 睛, 未 末,
- * 己 已 巳. A round is twelve questions on the characters you are learning or know (or,
- * before you have any, the most common ones), each set beside up to three of its
- * look-alikes:
+ * 己 已 巳. A round is twelve questions, using only characters you have learned
+ * (Learn.knownChars), each set beside up to three of its look-alikes you have learned too:
  *   pick: "Which is qíng, feelings?", choosing among the characters;
  *   mean: a character, choosing its meaning among theirs.
  * After each answer the set is shown side by side, each with its pinyin, meaning and
  * parts, the parts that tell them apart marked.
  *
- * #/lookalikes/<characters> practises those characters and their look-alikes (the
- * character page's "Looks like" links there). Practice doesn't touch the review
+ * #/lookalikes/<characters> practises those characters and their look-alikes, the learned
+ * ones again (the character page's "Looks like" links there). Practice doesn't touch the review
  * schedule; how often you mix each character up is kept on this device
  * (localStorage), so the ones you miss come up more. Needs app.js and study.js. */
 
@@ -36,48 +35,35 @@ function laLog(c, ok) {
 
 const laPin = c => (HZ.index[c] || [])[2] || '';
 const laMean = c => String((HZ.index[c] || [])[3] || '').split(/;\s*/)[0].replace(/\s*\(.*?\)\s*/g, ' ').trim();
-const laRank = c => (HZ.index[c] || [])[0] || 1e9;
 const laLike = c => [...((HZ.lookalike || {})[c] || '')];
 
-/* the characters you are learning or know: lesson items and statuses */
-function laKnown() {
-  const d = Store.load(), known = new Set();
-  for (const [k, it] of Object.entries(d.items)) if ((it.kind || 'char') === 'char' && it.stage >= 1) known.add(k);
-  for (const [c, s] of Object.entries(d.status)) if (s) known.add(c);
-  return known;
-}
+const laKnown = () => Learn.knownChars(Store.load());
+/* the look-alikes of a character that you have learned */
+const laKnownLike = (c, known) => laLike(c).filter(x => known.has(x));
 
 /* a round: which characters to ask, the ones mixed up most (and not seen lately)
    first, then a little at random */
 function laRound(only) {
   const known = laKnown(), stats = laStats(), now = Date.now();
-  let pool, common = false;
-  if (only) pool = [...new Set([...only].flatMap(c => [c, ...laLike(c)]))].filter(c => laLike(c).length);
-  else {
-    pool = [...known].filter(c => laLike(c).length);
-    if (pool.length < 4) {
-      common = true;
-      pool = pool.concat(Object.keys(HZ.lookalike).filter(c => laRank(c) <= 600 && !pool.includes(c)));
-    }
-  }
+  const pool = (only ? [...new Set([...only].flatMap(c => [c, ...laLike(c)]))] : [...known])
+    .filter(c => known.has(c) && laKnownLike(c, known).length);
   const weight = c => {
     const [r, w, t] = stats[c] || [0, 0, 0];
     const fresh = Math.min(1, (now - t) / 864e5);              // seen today: less likely
-    return (1 + 3 * w / (r + w + 1)) * (0.4 + 0.6 * fresh) * (known.has(c) ? 1.5 : 1) * (0.5 + Math.random());
+    return (1 + 3 * w / (r + w + 1)) * (0.4 + 0.6 * fresh) * (0.5 + Math.random());
   };
   const picks = pool.map(c => [c, weight(c)]).sort((a, b) => b[1] - a[1]).map(x => x[0]);
   const qs = [];
   for (let i = 0; qs.length < LA_ROUND && picks.length; i++) {
     const t = picks[i % picks.length];
-    // its look-alikes: the ones you know first, then the most alike
-    const others = laLike(t).sort((a, b) => known.has(b) - known.has(a)).slice(0, 3);
+    const others = laKnownLike(t, known).slice(0, 3);   // the most alike first
     const opts = shuffle([t, ...others]);
     const means = new Set(opts.map(laMean));
     const kind = means.size === opts.length && Math.random() < 0.4 ? 'mean' : 'pick';
     qs.push({ t, opts, kind });
     if (i >= picks.length * 3) break;
   }
-  return { qs, i: 0, right: 0, missed: [], answered: null, common, only };
+  return { qs, i: 0, right: 0, missed: [], answered: null, only };
 }
 
 async function pageLookalikes(only) {
@@ -105,10 +91,10 @@ function drawLookalike() {
   const s = laState;
   if (!s || !s.qs.length) {
     app.innerHTML = '<h1 class="page-title">Look-alikes</h1>' + withRail(`<section class="card">
-      <p class="empty">No look-alikes to practise yet.</p><p><a class="btn quiet" href="#/study">Back to study</a></p></section>`, true);
+      <p class="empty">No look-alikes to practise yet: you need to have learned two characters that look alike, in lessons or marked Learning or Learned.</p><p><a class="btn quiet" href="#/study">Back to study</a></p></section>`, true);
     return;
   }
-  if (s.i >= s.qs.length) return laDone();
+  if (s.i >= s.qs.length) return s.onDone ? s.onDone(s) : laDone();
   const q = s.qs[s.i], a = s.answered;
   const head = `<div class="la-top"><span>Look-alikes${s.only ? `: ${zhOne(s.only)}` : ''}</span>
     <span class="la-prog" style="--p:${(100 * s.i) / s.qs.length}%"><i></i></span>
@@ -176,7 +162,6 @@ function laDone() {
           <div class="ok"><b>${s.right}</b><span>right</span></div>
           <div class="bad"><b>${n - s.right}</b><span>mixed up</span></div>
         </div>
-        ${s.common ? '<p class="small muted">These were common look-alikes: once you have characters in your lessons, rounds use yours.</p>' : ''}
         <div class="rs-actions"><button class="btn" id="la-again">Another round</button>
           <a class="btn quiet" href="#/study">Back to study</a></div>
       </div>
@@ -197,7 +182,7 @@ function laDone() {
 /* keys: 1 to 4 answer, Enter goes on */
 document.addEventListener('keydown', e => {
   const s = laState;
-  if (!s || !/^\/lookalikes/.test(currentPath()) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (!s || !/^\/(lookalikes|weak)/.test(currentPath()) || e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.target.closest('input, textarea, select')) return;
   const q = s.qs[s.i];
   if (!q) return;
@@ -209,10 +194,12 @@ document.addEventListener('keydown', e => {
 function lookalikeSection(ch) {
   const like = laLike(ch);
   if (!like.length) return '';
-  return `<h2 class="sec-h">Looks like</h2>
+  return `<h3 class="sub-h">Looks like</h3>
     <div class="decomp-box pad">
       <p class="muted small">Characters easily mixed up with ${zhOne(ch)}:</p>
       <div class="chips">${like.map(c => chip(c)).join('')}</div>
-      <p style="margin-top:12px"><a class="btn quiet" href="#/lookalikes/${encodeURIComponent(ch)}">Practise telling them apart</a></p>
+      ${laKnownLike(ch, laKnown()).length && laKnown().has(ch)
+        ? `<p style="margin-top:12px"><a class="btn quiet" href="#/lookalikes/${encodeURIComponent(ch)}">Practise telling them apart</a></p>`
+        : '<p class="small muted" style="margin-top:12px">You can practise these once you have learned this character and one of them.</p>'}
     </div>`;
 }

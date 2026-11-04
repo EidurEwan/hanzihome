@@ -1,28 +1,29 @@
 /* HanziHome's sound cast: every Mandarin syllable is an initial, a final and a tone,
  * and each gets a picture, so a mnemonic can carry the sound as well as the meaning:
- * the initial is a PERSON, the final a PLACE, the tone a ROOM (or spot) in that place.
- * 半 bàn is the Baker (b-), at the Mansion (-an), coming down through the Trapdoor (4).
+ * the initial is a pop-culture FIGURE, the final a BUILDING, the tone WHERE at that building:
+ * 1 in Front of it, 2 Inside it, 3 its Basement, 4 its Bathroom, 5 on its Roof.
+ * 半 bàn is Batman (b-), at the Mansion (-an), in its Bathroom (4).
  * Written for HanziHome; build/mnemonics/BRIEF.md says how the mnemonics use them.
  * Keys as Learn.soundOf() gives them: finals with v for ü, "ih" for the buzzing -i of
  * zhi chi shi ri zi ci si, "" for no initial. [name, why it fits, label] */
 HZ.sounds = {
   initials: {
-    '': ['Ghost', 'No one stands at the front of the syllable: only a ghost.', 'Ø'],
-    b: ['Baker', 'b as in Baker.'], p: ['Pirate', 'p as in Pirate.'], m: ['Magician', 'm as in Magician.'],
-    f: ['Firefighter', 'f as in Firefighter.'], d: ['Dentist', 'd as in Dentist.'], t: ['Tailor', 't as in Tailor.'],
-    n: ['Ninja', 'n as in Ninja.'], l: ['Lifeguard', 'l as in Lifeguard.'], g: ['Gardener', 'g as in Gardener.'],
-    k: ['King', 'k as in King.'], h: ['Hunter', 'h as in Hunter, a breathy h from the throat.'],
-    j: ['Juggler', 'j as in Juggler, the tongue flat behind the lower teeth.'],
-    q: ['Cheerleader', 'q sounds like the ch of Cheerleader, with a puff of air.'],
-    x: ['Shepherd', 'x sounds like the sh of Shepherd, said with a smile.'],
-    zh: ['Jockey', 'zh sounds like the j of Jockey, the tongue curled back.'],
-    ch: ['Chef', 'ch as in Chef, the tongue curled back, with a puff of air.'],
-    sh: ['Sheriff', 'sh as in Sheriff, the tongue curled back.'],
-    r: ['Robot', 'r as in Robot, the tongue curled back.'],
-    z: ['Zookeeper', 'z sounds like the ds at the end of "kids".'],
-    c: ['Tsar', 'c sounds like the ts of Tsar, with a puff of air.'],
-    s: ['Sailor', 's as in Sailor.'],
-    y: ['Yogi', 'y as in Yogi.'], w: ['Wizard', 'w as in Wizard.'],
+    '': ['Casper', 'No one stands at the front of the syllable: only Casper the ghost.', 'Ø'],
+    b: ['Batman', 'b as in Batman.'], p: ['Pikachu', 'p as in Pikachu.'], m: ['Mario', 'm as in Mario.'],
+    f: ['Frodo', 'f as in Frodo.'], d: ['Darth Vader', 'd as in Darth Vader.'], t: ['Tarzan', 't as in Tarzan.'],
+    n: ['Naruto', 'n as in Naruto.'], l: ['Lara Croft', 'l as in Lara Croft.'], g: ['Gandalf', 'g as in Gandalf.'],
+    k: ['Kermit', 'k as in Kermit.'], h: ['Homer', 'h as in Homer, a breathy h from the throat.'],
+    j: ['James Bond', 'j as in James Bond, the tongue flat behind the lower teeth.'],
+    q: ['Chewbacca', 'q sounds like the ch of Chewbacca, with a puff of air.'],
+    x: ['Shrek', 'x sounds like the sh of Shrek, said with a smile.'],
+    zh: ['Joker', 'zh sounds like the j of Joker, the tongue curled back.'],
+    ch: ['Charlie Brown', 'ch as in Charlie Brown, the tongue curled back, with a puff of air.'],
+    sh: ['Sherlock', 'sh as in Sherlock, the tongue curled back.'],
+    r: ['Robocop', 'r as in Robocop, the tongue curled back.'],
+    z: ['Zorro', 'z as in Zorro, but softer: the ds at the end of "kids".'],
+    c: ['Cookie Monster', 'c sounds like the ts of "eats", which is all Cookie Monster does, with a puff of air.'],
+    s: ['Sailor Moon', 's as in Sailor Moon.'],
+    y: ['Yoshi', 'y as in Yoshi.'], w: ['Walter White', 'w as in Walter White.'],
   },
   finals: {
     a: ['Spa', '-a sounds like the "ah" of a relaxing spa.'],
@@ -63,10 +64,25 @@ HZ.sounds = {
     vn: ['Dunes', 'ün sounds like "yewn", across the Dunes.'],
   },
   tones: {
-    1: ['Rooftop', 'The first tone is high and level, like the Rooftop.'],
-    2: ['Staircase', 'The second tone rises, like climbing the Staircase.'],
-    3: ['Basement', 'The third tone dips low, down in the Basement.'],
-    4: ['Trapdoor', 'The fourth tone falls sharply, through the Trapdoor.'],
-    5: ['Front Step', 'The neutral tone is light and quick, out on the Front Step.'],
+    1: ['Front', 'First tone: the scene happens in front of the building.'],
+    2: ['Inside', 'Second tone: the scene happens inside the building.'],
+    3: ['Basement', 'Third tone: the scene happens in the basement of the building.'],
+    4: ['Bathroom', 'Fourth tone: the scene happens in the bathroom of the building.'],
+    5: ['Roof', 'Fifth (neutral) tone: the scene happens on the roof of the building.'],
+  },
+  /* the syllable to hear each one on (site/audio/s/, first tone): a beginning can't be
+     said alone, so the customary bo po mo fo; an ending alone where it can be, else as it
+     is spelt at the start of a syllable (-ia: ya) */
+  heard: {
+    initials: {
+      '': 'a', b: 'bo', p: 'po', m: 'mo', f: 'fo', d: 'de', t: 'te', n: 'ne', l: 'le', g: 'ge', k: 'ke', h: 'he',
+      j: 'ji', q: 'qi', x: 'xi', zh: 'zhi', ch: 'chi', sh: 'shi', r: 'ri', z: 'zi', c: 'ci', s: 'si', y: 'yi', w: 'wu',
+    },
+    finals: {
+      a: 'a', o: 'o', e: 'e', ai: 'ai', ei: 'ei', ao: 'ao', ou: 'ou', an: 'an', en: 'en', ang: 'ang', eng: 'eng',
+      ong: 'dong', er: 'er', i: 'yi', ih: 'shi', ia: 'ya', ie: 'ye', iao: 'yao', iu: 'you', ian: 'yan', in: 'yin',
+      iang: 'yang', ing: 'ying', iong: 'yong', u: 'wu', ua: 'wa', uo: 'wo', uai: 'wai', ui: 'wei', uan: 'wan',
+      un: 'wen', uang: 'wang', v: 'yu', ve: 'yue', van: 'yuan', vn: 'yun',
+    },
   },
 };

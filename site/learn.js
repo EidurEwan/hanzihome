@@ -248,6 +248,24 @@
     || (item.hist || []).slice(-8).filter(r => !r).length >= 4);
   const waiting = item => item.stage === 0;
 
+  /* What you keep missing, worst first, for Weak spots: a leech, recent misses, lapses, and
+     above all a last answer that was wrong. Something you just got right in Weak spots
+     (practised: {key: when}) steps back for WEAK_REST, so the next round isn't the same one. */
+  const WEAK_REST = 3 * DAY;
+  function weakItems(items, now, practised = {}) {
+    const scored = [];
+    for (const k of Object.keys(items)) {
+      const it = items[k], h = it.hist || [];
+      if (!(it.stage >= 1) || it.rest > now) continue;
+      const misses = h.slice(-5).filter(r => !r).length, lastMissed = h.length > 0 && !h[h.length - 1];
+      if (!isLeech(it) && !lastMissed && misses < 2) continue;
+      const score = (isLeech(it) ? 6 : 0) + misses * 2 + (lastMissed ? 3 : 0) + Math.min(it.lapses || 0, 5);
+      const stepped = practised[k] && now - practised[k] < WEAK_REST ? 1 : 0;
+      scored.push([k, score, it.last || 0, stepped]);
+    }
+    return scored.sort((a, b) => a[3] - b[3] || b[1] - a[1] || b[2] - a[2]).map(x => x[0]);
+  }
+
   /* how many reviews fall due on each of the next `days` days (index 0 = today, from now) */
   function forecast(items, now, n = 7) {
     const start = dayStart(now);
@@ -336,6 +354,18 @@
      knew it without one, in its own series ('known': characters marked learned on the
      rest of the site). From the first day anything was learned to today, `most` days at
      most. -> {days: [day starts], series: {sound, comp, char, word, known: [running totals]}} */
+  /* What had its lesson today, by kind, in the order learned. An item sent back to lessons since
+     (stage 0) doesn't count until it is learned again. */
+  function learnedOn(items, now) {
+    const from = dayStart(now), out = { char: [], word: [], comp: [], sound: [] };
+    const today = Object.keys(items).filter(k => items[k].stage >= 1 && items[k].learnt >= from);
+    for (const k of today.sort((a, b) => items[a].learnt - items[b].learnt)) {
+      const kind = items[k].kind || 'char';
+      if (out[kind]) out[kind].push(k);
+    }
+    return out;
+  }
+
   const LEARNED_KINDS = ['sound', 'comp', 'char', 'word', 'known'];
   function learnedByDay(items, now, most = 365) {
     const when = [];
@@ -388,19 +418,20 @@
      one you added yourself, so there is no course, dictionary queue or skipping) */
   const DEFAULTS = {
     batch: 5,                  // lessons per batch
-    lessonLimit: 10,           // lessons a day (0: no limit)
-    wordLimit: 7,              // how many of those may be words
+    lessonLimit: 15,           // lessons a day (0: no limit)
+    wordLimit: Infinity,       // how many of those may be words (all that the characters leave)
     reviewLimit: 0,            // a soft limit on reviews a day (0: none)
     retention: 0.9,            // FSRS: review when the chance of recall has fallen to this
     charUnlock: 'now',         // a character waits for its components: 'now' | 'learned' | 'familiar'
     wordWait: true,            // a word waits for its characters...
-    wordUnlock: 'familiar',    // ...until they are 'familiar' or 'learned' (lesson done)
+    wordUnlock: 'learned',     // ...until they have all had their lessons ('familiar': reviewed too), on an earlier day
     autoChars: true,           // adding a word adds its characters too, prioritized
     autoComps: true,           // adding a character adds its new components too, learnt first
-    path: 'off',               // a learning path that fills the lessons: 'off' | 'common' | 'hsk'
+    path: 'off',               // a learning path that fills the lessons: 'off' | 'mix' | 'common' | 'hsk'
     pathDaily: 5,              // ...with this many new characters a day
+    pathWords: true,           // ...and words with what is left of the lesson limit
     questionOrder: 'pinyin',   // 'pinyin': pronunciation then meaning, in pairs; 'random': shuffled
-    lessonOrder: 'words',      // 'words' first | 'chars' first | 'mix'
+    lessonOrder: 'chars',      // 'chars' first | 'words' first | 'mix'
     prioRespect: true,         // prioritized items keep to the limits and the lesson order
     reviewOrder: 'random',     // 'random' | 'type' | 'oldest' | 'newest' | 'easiest' | 'lowest'
     showPct: true, showCount: true,
@@ -416,6 +447,41 @@
   const settings = s => Object.assign({}, DEFAULTS, s || {});
 
   const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
+
+  /* The initials were once jobs, and a sound's item keeps the name its lesson teaches, so
+     items made back then still ask for the job. [sound's key]: [old name, name now] */
+  const OLD_CAST = {
+    'i:': ['Ghost', 'Casper'], 'i:b': ['Baker', 'Batman'], 'i:p': ['Pirate', 'Pikachu'], 'i:m': ['Magician', 'Mario'],
+    'i:f': ['Firefighter', 'Frodo'], 'i:d': ['Dentist', 'Darth Vader'], 'i:t': ['Tailor', 'Tarzan'], 'i:n': ['Ninja', 'Naruto'],
+    'i:l': ['Lifeguard', 'Lara Croft'], 'i:g': ['Gardener', 'Gandalf'], 'i:k': ['King', 'Kermit'], 'i:h': ['Hunter', 'Homer'],
+    'i:j': ['Juggler', 'James Bond'], 'i:q': ['Cheerleader', 'Chewbacca'], 'i:x': ['Shepherd', 'Shrek'], 'i:zh': ['Jockey', 'Joker'],
+    'i:ch': ['Chef', 'Charlie Brown'], 'i:sh': ['Sheriff', 'Sherlock'], 'i:r': ['Robot', 'Robocop'], 'i:z': ['Zookeeper', 'Zorro'],
+    'i:c': ['Tsar', 'Cookie Monster'], 'i:s': ['Sailor', 'Sailor Moon'], 'i:y': ['Yogi', 'Yoshi'], 'i:w': ['Wizard', 'Walter White'],
+  };
+  /* gives the items made under the old cast the names they have now; how many it changed */
+  function recastSounds(items) {
+    let changed = 0;
+    for (const [k, [was, now]] of Object.entries(OLD_CAST)) {
+      if (items[k] && items[k].mean === was) { items[k].mean = now; changed++; }
+    }
+    return changed;
+  }
+
+  /* the characters extra practice may use (d is the store): those whose lesson is done or
+     marked Learning or Learned, and those of a word that is. Not one still waiting for its lesson. */
+  function knownChars(d) {
+    const known = new Set();
+    const addWord = w => { for (const c of w) if (isHan(c)) known.add(c); };
+    for (const [k, it] of Object.entries(d.items || {})) {
+      if (!(it.stage >= 1)) continue;
+      const kind = it.kind || 'char';
+      if (kind === 'char') known.add(k);
+      else if (kind === 'word') addWord(k);
+    }
+    for (const [c, s] of Object.entries(d.status || {})) if (s) known.add(c);
+    for (const [w, s] of Object.entries(d.wstatus || {})) if (s) addWord(w);
+    return known;
+  }
 
   function shuffle(a, rnd) {
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -450,14 +516,16 @@
      env.compOk(c, stage): whether a component counts as known at that stage.
      -> {lessons: ready now in order, waiting: every queued key in order, locked: {key:
         [what it waits for]}, lessonsToday, wordsToday, due, reviews (due, in order),
-        reviewsToday, reviewsLeft (under the soft limit), vacation} */
+        reviewsToday, reviewsLeft (under the soft limit), vacation, tomorrow: the locked words
+        held back only by characters learned today, so they open tomorrow} */
   function plan(items, cfg, now, env, rnd = Math.random) {
     cfg = settings(cfg);
     const start = dayStart(now), keys = Object.keys(items), it = k => items[k];
     const today = keys.filter(k => it(k).learnt >= start);
     const out = {
-      lessons: [], waiting: [], locked: {},
-      lessonsToday: today.length, wordsToday: today.filter(k => it(k).kind === 'word').length,
+      lessons: [], waiting: [], locked: {}, tomorrow: [],
+      // (a sound is no lesson to count: there are few, and each is learnt once)
+      lessonsToday: today.filter(k => it(k).kind !== 'sound').length, wordsToday: today.filter(k => it(k).kind === 'word').length,
       // (an item whose last time was its lesson was learnt today, not reviewed)
       due: [], reviews: [], reviewsToday: keys.filter(k => it(k).last >= start && it(k).last !== it(k).learnt).length,
       reviewsLeft: 0,
@@ -469,10 +537,15 @@
     for (const k of queued) {
       let wait = [];
       if (it(k).kind === 'word' && cfg.wordWait) {
-        wait = [...new Set([...k].filter(isHan))].filter(c => {
+        const chars = [...new Set([...k].filter(isHan))];
+        wait = chars.filter(c => {
           const l = env.level(c);
           return l != null && l < need[cfg.wordUnlock];
         });
+        // nor is a word learned the day its characters are: that waits for the next day's lessons
+        const newToday = chars.filter(c => items[c] && items[c].learnt >= start);
+        if (newToday.length && !wait.length) out.tomorrow.push(k);
+        wait = [...new Set([...wait, ...newToday])];
       } else if (it(k).kind !== 'word' && need[cfg.charUnlock]) {
         wait = (env.comps(k) || []).filter(c => !env.compOk(c, need[cfg.charUnlock]));
       }
@@ -493,9 +566,8 @@
       }
       return mixed;
     };
-    // with the priority queue absolute, prioritized items go before everything
-    out.waiting = cfg.prioRespect ? order(queued)
-      : order(queued.filter(k => it(k).prio)).concat(order(queued.filter(k => !it(k).prio)));
+    // prioritized items go before everything else, whichever the lesson order puts first
+    out.waiting = order(queued.filter(k => it(k).prio)).concat(order(queued.filter(k => !it(k).prio)));
     // then in a sensible order: what an item is made of (a character's components, a
     // word's characters) comes just before it when that is waiting for its lesson too
     const inQueue = new Set(queued), placed = new Set(), seq = [];
@@ -516,15 +588,32 @@
 
     let left = cfg.lessonLimit ? Math.max(0, cfg.lessonLimit - out.lessonsToday) : Infinity;
     let words = cfg.lessonLimit ? Math.max(0, Math.min(cfg.wordLimit, cfg.lessonLimit) - out.wordsToday) : Infinity;
-    // characters and words, within the limits...
-    const offered = new Set();
+    // the path's characters: the queue always holds the next ones, but only so many a day
+    // are ready (a star, or a lesson being taken again, doesn't count)
+    let pathLeft = cfg.path && cfg.path !== 'off'
+      ? Math.max(0, cfg.pathDaily - today.filter(k => it(k).path && it(k).kind === 'char').length) : Infinity;
+    // The day's limit: first the characters, each with the new components it brings, then
+    // words with what is left. A character that doesn't fit ends the characters for the day,
+    // unless it is the first: a big one mustn't hold everything up for ever.
+    const offered = new Set(), costed = new Set();
+    let charsDone = false;
     for (const k of out.waiting) {
       if (out.locked[k] || isPart.has(k) || it(k).kind === 'comp' || it(k).kind === 'sound') continue;
       const word = it(k).kind === 'word';
       if (it(k).prio && !cfg.prioRespect) { offered.add(k); continue; }
-      if (left <= 0 || (word && words <= 0)) continue;
+      if (word && words <= 0) continue;
+      if (!word && charsDone) continue;
+      const fromPath = !word && it(k).path && !it(k).prio && !it(k).learnt;
+      if (fromPath && pathLeft <= 0) continue;
+      const fresh = word ? [] : partsOf(k, it(k)).filter(p => p !== k && inQueue.has(p) && it(p).kind === 'comp' && !costed.has(p));
+      if (1 + fresh.length > left) {
+        if (word) continue;
+        if (out.lessonsToday || offered.size) { charsDone = true; continue; }
+      }
+      fresh.forEach(p => costed.add(p));
+      left = Math.max(0, left - 1 - fresh.length);
+      if (fromPath) pathLeft--;
       offered.add(k);
-      left--;
       if (word) words--;
     }
     // ...and the components and sounds of those (small lessons on the way to a character:
@@ -536,6 +625,25 @@
       || (!out.locked[k] && (it(k).kind === 'comp' || it(k).kind === 'sound')
         && (!needers[k] || needers[k].some(n => offered.has(n)))));
 
+    // The limit fills with characters first, but the lessons themselves go: what you
+    // prioritised, then words, then characters, each with the parts it brings just before it.
+    // (A word whose characters are in today's lessons too stays after them.)
+    {
+      const inToday = new Set(out.lessons), groups = [];
+      let parts = [];
+      for (const k of out.lessons) {
+        if (it(k).kind === 'comp' || it(k).kind === 'sound') { parts.push(k); continue; }
+        groups.push({ k, keys: [...parts, k] });
+        parts = [];
+      }
+      const rank = g => {
+        if (it(g.k).prio) return 0;
+        const word = it(g.k).kind === 'word' && !partsOf(g.k, it(g.k)).some(p => inToday.has(p));
+        return word ? 1 : 2;
+      };
+      out.lessons = [0, 1, 2].flatMap(r => groups.filter(g => rank(g) === r).flatMap(g => g.keys)).concat(parts);
+    }
+
     out.due = keys.filter(k => isDue(it(k), now));
     out.reviews = reviewOrder(out.due, items, cfg.reviewOrder, now, rnd);
     out.reviewsLeft = cfg.reviewLimit ? Math.min(out.due.length, Math.max(0, cfg.reviewLimit - out.reviewsToday))
@@ -543,6 +651,125 @@
     if (out.vacation) { out.lessons = []; out.reviews = []; out.reviewsLeft = 0; }
     return out;
   }
+
+  // ------------------------------------------------------------ the balanced path
+
+  /* How much each thing counts in choosing the next character. Each score is 0 to 1. */
+  const PICK_WEIGHTS = { common: 0.55, hsk: 0.4, simple: 0.05, known: 0.05 };
+  const PICK_MAX_RANK = 10000, PICK_MAX_STROKES = 25;
+
+  /* row [rank, HSK level or 0, strokes, 'components'] -> the scores of a character:
+     common by rank on a log scale (the first hundred count far apart, the last thousand
+     hardly), HSK 1 most and none least, fewer strokes more, and known the share of its
+     components already known (a character with none needs nothing first: all of it) */
+  function pickScores(row, isKnown) {
+    const [rank, hsk, strokes, comps] = row, list = [...(comps || '')];
+    return {
+      common: rank ? Math.max(0, 1 - Math.log(rank) / Math.log(PICK_MAX_RANK)) : 0,
+      hsk: hsk ? (7 - hsk) / 6 : 0,
+      simple: strokes ? Math.max(0, 1 - (strokes - 1) / (PICK_MAX_STROKES - 1)) : 0,
+      known: list.length ? list.filter(isKnown).length / list.length : 1,
+    };
+  }
+  const pickScore = (row, isKnown) => {
+    const s = pickScores(row, isKnown);
+    return Object.keys(PICK_WEIGHTS).reduce((sum, k) => sum + PICK_WEIGHTS[k] * s[k], 0);
+  };
+
+  /* The next n characters for the balanced path, from rows ({char: row}), skipping what
+     skip(c) says. Each one chosen counts as known for the next, so 女 and 子 lift 好 in
+     the same day's choice; each character also counts as a component once chosen. */
+  function pickChars(rows, n, isKnown, skip) {
+    // (a component learnt on the way isn't the character itself: 女 can still be chosen after 好)
+    const chosen = new Set(), learnt = new Set(), known = c => learnt.has(c) || isKnown(c), out = [];
+    const open = Object.keys(rows).filter(c => !skip || !skip(c));
+    while (out.length < n) {
+      let best = null, top = -1;
+      for (const c of open) {
+        if (chosen.has(c)) continue;
+        const score = pickScore(rows[c], known);
+        // (a tie goes to the commoner)
+        if (score > top || (score === top && (rows[c][0] || 1e9) < (rows[best][0] || 1e9))) { top = score; best = c; }
+      }
+      if (best === null) break;
+      chosen.add(best);
+      learnt.add(best);
+      for (const p of rows[best][3] || '') learnt.add(p);   // its components come with it
+      out.push(best);
+    }
+    return out;
+  }
+
+  /* What the settings ask of the queue. Only what the path put there follows them: anything
+     you added, starred or pushed to finish an HSK level stays, and so does a lesson being
+     taken again. -> {drop: the keys that no longer belong, want: how many the path should add} */
+  function pathSync(items, cfg, kind = 'char') {
+    const active = !!(cfg.path && cfg.path !== 'off' && cfg.pathDaily && (kind !== 'word' || cfg.pathWords !== false));
+    const keys = Object.keys(items).filter(k => (items[k].kind || 'char') === kind);
+    const auto = k => { const it = items[k]; return it.path && it.stage === 0 && !it.learnt && !it.prio && !it.hskPush; };
+    const drop = keys.filter(k => auto(k) && (!active || items[k].path !== cfg.path));
+    if (!active) return { drop, want: 0 };
+    const gone = new Set(drop);
+    const waiting = keys.filter(k => {
+      const it = items[k];
+      return !gone.has(k) && it.stage === 0 && !it.learnt && (it.path || it.hskPush);
+    });
+    // too many for the number chosen: the last the path added go first
+    const extra = waiting.length - cfg.pathDaily;
+    if (extra > 0) {
+      const newest = waiting.filter(auto).map((k, i) => [k, i])
+        .sort((a, b) => items[b[0]].added - items[a[0]].added || b[1] - a[1]).slice(0, extra).map(x => x[0]);
+      drop.push(...newest);
+      return { drop, want: Math.max(0, cfg.pathDaily - (waiting.length - newest.length)) };
+    }
+    return { drop, want: cfg.pathDaily - waiting.length };
+  }
+
+  /* The order words will be learnt in. A word can't come before its characters, so each
+     comes just after the last of them: charPos(c) is where a character comes in the
+     character order (0: known already; undefined: never, which rules the word out). Among
+     words waiting on the same character, the commonest and earliest in the HSK go first.
+     rows {word: [rank, HSK level or 0, …]} -> [words in order] */
+  function wordOrder(rows, charPos, skip) {
+    const score = ([rank, hsk]) => 0.55 * (rank ? Math.max(0, 1 - Math.log(rank) / Math.log(100000)) : 0) + 0.4 * (hsk ? (7 - hsk) / 6 : 0);
+    const out = [];
+    for (const w of Object.keys(rows)) {
+      if (skip && skip(w)) continue;
+      let pos = 0;
+      for (const c of w) {
+        const p = charPos(c);
+        if (p === undefined) { pos = -1; break; }
+        if (p > pos) pos = p;
+      }
+      if (pos >= 0) out.push([w, pos, score(rows[w])]);
+    }
+    return out.sort((a, b) => a[1] - b[1] || b[2] - a[2]).map(x => x[0]);
+  }
+
+  /* What each learning path does, measured on the data (test/learn.js checks them):
+     hsk: the character each HSK level is complete at (Infinity: never). cover: how much of
+     running text the characters so far make up, by character. newComps: new components
+     needed per character over the first 1,000. */
+  const PATH_FACTS = {
+    mix: { hsk: [388, 664, 1063, 1497, 2038, 3354], cover: { 500: 69.9, 1000: 85.9 }, newComps: 0.30 },
+    common: { hsk: [2478, 2607, 3110, 3650, 3897, Infinity], cover: { 500: 75.8, 1000: 89.1 }, newComps: 0.30 },
+    hsk: { hsk: [178, 346, 618, 1071, 1710, 2632], cover: { 500: 66.5, 1000: 83.1 }, newComps: 0.35 },
+  };
+
+  /* An HSK level counts as nearly done with at least this share learned and at most this
+     many left: enough to be worth a push, and few enough to be over soon */
+  const HSK_NEAR_SHARE = 0.75, HSK_NEAR_LEFT = 50;
+
+  /* {level: [characters]}, isDone(c) -> [{level, total, done, left: [characters]}], by level */
+  function hskProgress(lists, isDone) {
+    return Object.keys(lists || {}).sort((a, b) => a - b).map(level => {
+      const chars = [...new Set(lists[level])], left = chars.filter(c => !isDone(c));
+      return { level: +level, total: chars.length, done: chars.length - left.length, left };
+    });
+  }
+  const hskIsNear = p => p.left.length > 0 && p.left.length <= HSK_NEAR_LEFT && p.done / p.total >= HSK_NEAR_SHARE;
+  /* the first level close to complete, or null */
+  const hskNearlyDone = progress => progress.find(hskIsNear) || null;
 
   // ------------------------------------------------------------ answers
 
@@ -708,7 +935,8 @@
 
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
-    review, known, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, LEARNED_KINDS, isDue, isLeech, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    pickChars, pickScores, pathSync, wordOrder, PATH_FACTS, hskProgress, hskIsNear, hskNearlyDone,
+    review, known, knownChars, recastSounds, OLD_CAST, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,

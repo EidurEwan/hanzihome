@@ -1,602 +1,150 @@
-[
- {
-  "c": "荆",
-  "m": "The {Juggler} bounces on the {Rooftop} above the {Boxing Ring}, juggling sprigs of purple **chaste tree** blossom. He loses his balance and lands in the town *stocks*, wedged among tall *grass*. The boxers below wave branches of **chaste tree** at him like fans, and bees buzz round his trapped head."
- },
- {
-  "c": "崔",
-  "m": "The {Tsar} climbs onto the {Rooftop} of the {Waiting Room}, which sits on a *lofty peak* above the clouds. He plants a flag that reads **Cui**, the family name of everyone who lives up here. Snow falls, the flag freezes, and goats from the whole mountain come to bleat \"**Cui**!\" at the top of their voices."
- },
- {
-  "c": "雁",
-  "m": "The {Yogi} sits by the {Trapdoor} at the edge of the {Mansion}'s *cliff* when a *wild goose* waddles out of it, honking. Behind it come a hundred more, in a perfect V. The yogi joins the end of the line, flapping his arms, and the leading **wild goose** carries him south with the other **wild goose** travellers."
- },
- {
-  "c": "绅",
-  "m": "The {Sheriff} rides the Ferris wheel up to the {Rooftop} of the {Funfair}, where the **gentry** are having a picnic in top hats. Their sashes are made of *silk thread* and pinned with a golden *skewer*. They serve him a single grape on a silver tray, and he decides he would make fine **gentry** himself."
- },
- {
-  "c": "珊",
-  "m": "The {Sheriff} stands on the {Rooftop} of the {Mansion}, which has sunk to the bottom of the sea. The sea *king* swims up holding a *bamboo book* whose pages have turned to pink **coral**. Fish nibble the words, and the sheriff arrests a crab for stealing a chapter of **coral**."
- },
- {
-  "c": "榜",
-  "m": "The {Baker} rushes into the {Basement} of the {Hangar} where a *list of names* hangs on a *tree* growing beside the *roadside* door. He scans the **list of names** for the winners of the cake contest. His name is last, so he bakes a giant cake, nails it to the tree and adds himself to the top of the **list of names**."
- },
- {
-  "c": "诵",
-  "m": "The {Sailor} pops out of a {Trapdoor} on the {Lagoon} jetty and stands at the mouth of a *tunnel*. He **recites** a sea poem, and each line floats out as a *small speech bubble* that echoes down the tunnel. The fish learn every word and **recite** it back to him, bubbling."
- },
- {
-  "c": "傍",
-  "m": "The {Baker} hides by the {Trapdoor} of the {Hangar}, standing very **near** a *standing person* who is selling buns at the *roadside*. He creeps closer and closer, until he is so **near** that their noses touch. Then he whispers: \"Your buns are too small,\" and drops through the trapdoor."
- },
- {
-  "c": "彦",
-  "m": "The {Yogi} rises through the {Trapdoor} of the {Mansion} to greet a *gentleman* who can paint, sing, fence and bake, all at once. He is so **accomplished** that he juggles the yogi's teapots while reciting a sonnet. The yogi tries to look **accomplished** too and stands on his head, then falls over."
- },
- {
-  "c": "醇",
-  "m": "The {Chef} wobbles down the {Staircase} of the {Casino} hugging a *wine jug* for the *feast*. A drop of strong **alcohol** splashes on the roulette wheel, and it spins faster and faster. The gamblers sniff the air, giggle, and the whole casino sways, dizzy with **alcohol** fumes."
- },
- {
-  "c": "笛",
-  "m": "The {Dentist} sits on the wooden {Staircase} down to the {Beach}, carving a stick of *bamboo* into a **flute**. She blows a note, and a *sprouting field* of seaweed pops up from the sand to dance. She plays faster, and crabs line up to have their claws drilled into tiny **flutes** too."
- },
- {
-  "c": "禽",
-  "m": "The {Cheerleader} bounces up the {Staircase} of the {Inn} with her pompoms, and a flock of *fowl* follows her, flapping and clucking. Hens, ducks and one confused goose form a pyramid on the landing. The guests cheer the dancing **fowl**, and the innkeeper serves breakfast to every **fowl** in the building."
- },
- {
-  "c": "勿",
-  "m": "The {Wizard} stands over the {Trapdoor} of the {Pool}, waving a red *pennant* that says **do not**. **Do not** dive, it says; do not splash, do not open the trapdoor. Then he trips, the trapdoor bursts open, and a whale leaps out."
- },
- {
-  "c": "娟",
-  "m": "The {Juggler} tiptoes across the {Rooftop} of the {Mint}, where a *woman* dances among glittering coins. She spins on one toe, light as a *silkworm*'s thread, so **graceful** that the coins pause mid-air to watch. The juggler tries to copy her and falls into a bucket, the least **graceful** moment in history."
- },
- {
-  "c": "瞄",
-  "m": "The {Magician} crouches on the {Staircase} of the {Cat Café}, closing one *eye* to **take aim** at a mouse hiding in a pot of *young crop*. He flicks his wand, but the cats leap first. All twenty of them **take aim** at the mouse, and the mouse takes aim at the cheese."
- },
- {
-  "c": "幢",
-  "m": "The {Jockey} rides through the {Trapdoor} into the {Swamp} and counts the houses on stilts: one **building counter**, two, three. Each **building counter** is marked by a *towel* hung from its roof. A *schoolkid* paddles past, laughing, and swaps the towels around so he has to count all over again."
- },
- {
-  "c": "寇",
-  "m": "The {King} rows into the {Boathouse} and finds bandits dropping through the {Trapdoor} to **plunder** his treasure. They tear off the *roof*, grab golden oars and crowns and **plunder** even his rubber duck. The king splashes after them shouting, but they sail away laughing."
- },
- {
-  "c": "睹",
-  "m": "The {Dentist} hides in the {Basement} of the {Pool}, pressing one *eye* to a peephole to **observe** a *busy man* who is polishing every tile with a toothbrush. She takes notes, then **observes** him brushing a duck's teeth too. She hires him on the spot."
- },
- {
-  "c": "贿",
-  "m": "The {Hunter} sits in the {Waiting Room} as a sly man pops up from the {Trapdoor} *holding meat* in one hand and a pearly *shell* in the other. He slides them to the receptionist: pure **bribery**, to jump the queue. She takes the meat but throws the shell, and everyone boos the **bribery**."
- },
- {
-  "c": "踩",
-  "m": "The {Tsar} stomps into the {Basement} of a hut on the {Island}, where a *fruit picker* has left mangoes all over the floor. The tsar's *kicking foot* comes down and **steps on** one: splat! Juice flies. He slips, slides and **steps on** every mango in the room."
- },
- {
-  "c": "霆",
-  "m": "The {Tailor} sews on the {Staircase} beside the {Boxing Ring} as *rain* pours into the open *courtyard*. Suddenly a **clap of thunder** booms so loud her needle flies into the ring and knocks out the champion. The crowd roars like a second **clap of thunder**."
- },
- {
-  "c": "呜",
-  "m": "The {Wizard} sits on the {Rooftop} of the {Pool}, where a soggy *crow* opens its *mouth* and lets out a sad **whimper**. Its feathers are wet. The wizard dries it with a hot spell, but singes its tail, and the crow gives an even longer **whimper**."
- },
- {
-  "c": "拱",
-  "m": "The {Gardener} kneels in the {Basement} of a hut by the {Lagoon} and puts his *joined hands* together to **cup hands** under a dripping pipe. A *helping hand* from his neighbour **cups hands** below his, and soon they have a tower of cupped hands holding a goldfish."
- },
- {
-  "c": "妃",
-  "m": "The {Firefighter} climbs onto the {Rooftop} of a palace on the {Lake} to rescue the **imperial consort**. The *woman* has tied her silk sashes into a *coiled rope* and swings down past the firefighter. She saves herself, the emperor and a cat, the most daring **imperial consort** ever."
- },
- {
-  "c": "蔑",
-  "m": "The {Magician} rises through the {Trapdoor} of the {Yeti Cave} to perform his best trick. The yeti yawns, picks a blade of *grass* from its teeth and says, \"Is that all?\" It loves to **belittle** everything. The magician turns it into a snowman, which goes on to **belittle** the snow."
- },
- {
-  "c": "谕",
-  "m": "The {Yogi} drops through the {Trapdoor} of the {Museum} in a *dugout canoe*. A *small speech bubble* floats out of the emperor's statue: a royal **decree**. \"Everyone must paddle!\" So the visitors climb into canoes and row across the marble floor, obeying the **decree**."
- },
- {
-  "c": "缚",
-  "m": "The {Firefighter} falls through the {Trapdoor} of the {Pool} and lands on a royal *proclamation* floating in the water. A spider swims up and **binds** her ankles with *silk thread*. She wriggles free and uses the thread to **bind** the spider to a lilo."
- },
- {
-  "c": "诡",
-  "m": "The {Gardener} sneaks down to the {Basement} of the {Waiting Room}, where a *teetering man* is whispering a *small speech bubble* into the ear of a potted plant. He is a **sly** fox in a suit. He swaps all the waiting tickets so he goes first. The plant winks: just as **sly**."
- },
- {
-  "c": "篷",
-  "m": "The {Pirate} climbs a vine {Staircase} in the {Jungle} and has a *chance meeting* with a panda weaving *bamboo* into a giant **sail**. Together they lash it to a hollow log, and the wind fills the **sail**. Off they rush through the trees, steering past monkeys."
- },
- {
-  "c": "淹",
-  "m": "The {Yogi} meditates on the {Rooftop} of the {Mansion} when a *sudden flash* of lightning splits the sky. *Water drops* pour down until the lawn, the gardens and the ground floor **flood**. The rising water lifts him, still cross-legged, and he floats on as the whole valley **floods**."
- },
- {
-  "c": "腕",
-  "m": "The {Wizard} falls through the {Trapdoor} of the {Mansion} clutching a *rice bowl* in the light of the *moon*. He lands and twists his **wrist**. He waves his wand to heal it, but his **wrist** now spins like a propeller and stirs the rice into soup."
- },
- {
-  "c": "煮",
-  "m": "The {Jockey} lights *embers* in the {Basement} of the {Pool} and sets a giant pot on top. A *busy man* tosses in noodles, eggs and a rubber duck to **boil**. The water bubbles so hard that the whole swimming pool starts to **boil** too, and the swimmers come out as dumplings."
- },
- {
-  "c": "倩",
-  "m": "The {Cheerleader} slides down through the {Trapdoor} of the {Yen Exchange} and lands beside a *standing person* in a dress made of *moss*. She is so **pretty** that the bank clerks forget to count. The cheerleader paints herself green to look **pretty** too, and a frog proposes to her."
- },
- {
-  "c": "卒",
-  "m": "The {Zookeeper} climbs the {Staircase} out of the {Pool} and finds a *pawn* from a giant chessboard in a tiny helmet. It salutes: a brave **soldier**. It marches into the deep end, gurgles, and twenty more **soldier** pawns follow it in."
- },
- {
-  "c": "勘",
-  "m": "The {King} stands on the {Rooftop} of the {Mansion} with a telescope to **survey** his land. His *strong arm* holds an *overflowing bowl* of soup in the other hand. He **surveys** the hills, the river, then spills soup on the gardener, who surveys him back angrily."
- },
- {
-  "c": "馨",
-  "m": "The {Shepherd} lights *incense* on the {Rooftop} of the {Inn} and taps a *chime stone*: ding! The smoke spreads, so **fragrant** that the guests float up in their pyjamas, sniffing. The sheep in the yard below start to smell **fragrant** too, like roses, and bees follow them home in a buzzing cloud."
- },
- {
-  "c": "逗",
-  "m": "The {Dentist} drops a *bean* down the {Trapdoor} of the {Boathouse} to **tease** a hungry duck. It quacks, she pulls the bean away on a string, it waddles after it down the *road*. She **teases** it all the way to the bakery, then gives it a whole loaf."
- },
- {
-  "c": "甸",
-  "m": "The {Dentist} pops out of a {Trapdoor} in the {Yen Exchange} and finds herself far out in the **outskirts** of town, among *rice field* after rice field. Farmers wrapped in a *blanket* swap pennies for rice. Even the money changers moved to the **outskirts**, where the rent is lower."
- },
- {
-  "c": "贱",
-  "m": "The {Juggler} drops through the {Trapdoor} of the {Yen Exchange} into a *bargain bin* full of gold watches. Everything is so **cheap** that he buys a crown for one coin and a castle for two. Then the bin sells him for a penny, and he finds out he is **cheap** too."
- },
- {
-  "c": "炒",
-  "m": "The {Chef} lights a *campfire* in the {Basement} of the {Tower} and tosses noodles in a wok to **stir-fry** them. He adds a *pinch* of chilli, and the noodles leap out and **stir-fry** themselves, swirling round the room like a tornado of dinner."
- },
- {
-  "c": "灿",
-  "m": "The {Tsar} pops up through a {Trapdoor} in the {Mansion} lawn and lights a *campfire* on a *mountain* of firewood. It blazes so high the night turns gold: **glorious**! He sings, the fireworks join in, and the sunrise arrives early just to see the **glorious** blaze."
- },
- {
-  "c": "敞",
-  "m": "The {Chef} goes down into the {Basement} of the {Hangar} with a *cane* and knocks out every wall, then climbs into the *attic* and knocks out the ceiling. Now the basement is so **spacious** he can cook for an army. Planes taxi in for lunch, it is that **spacious**."
- },
- {
-  "c": "蜡",
-  "m": "The {Lifeguard} drops through the {Trapdoor} of the {Spa}, where a *bug* coats a slab of *sun-dried meat* in yellow **wax**. The steam melts it, and the guests get slathered in hot **wax** instead. They come out shiny, smooth and smelling of honey."
- },
- {
-  "c": "囚",
-  "m": "The {Cheerleader} bounces down the {Staircase} of the {Youth Hostel} and finds a *person* locked inside a *fence* in the hallway: a **prisoner** of the laundry rules. She cheers him up with a dance and passes him a spoon. He digs out, and now she is the **prisoner**."
- },
- {
-  "c": "栗",
-  "m": "The {Lifeguard} opens a {Trapdoor} on the {Beach} and finds a *cabinet* hidden under a *tree*. It's crammed with spiky **chestnuts**. A squirrel pops out and pelts her with them. She roasts a **chestnut** on the sand and offers it back as a peace gift."
- },
- {
-  "c": "辜",
-  "m": "The {Gardener} climbs onto the {Rooftop} of the {Pool} and finds an *antique* vase stuffed with *chili* peppers. Someone has committed a **crime**: the vase was stolen from the museum. A detective arrives, sniffs, sneezes, and arrests the chili for the **crime**."
- },
- {
-  "c": "垫",
-  "m": "The {Dentist} falls through the {Trapdoor} of the {Yen Exchange}, landing on a giant **cushion** of soft *soil*. A guard snaps *handcuffs* on her for breaking in, but she is so comfy she refuses to get up. The guard sits down on the **cushion** too and falls asleep."
- },
- {
-  "c": "妒",
-  "m": "The {Dentist} peeks up through the {Trapdoor} of the {Pool} and sees a *woman* behind a glass *door* in a golden swimsuit. The dentist turns green with **envy**. She steals the suit, but now the lifeguard **envies** her, then the ducks, then the trapdoor."
- },
- {
-  "c": "魁",
-  "m": "The {King} climbs the {Staircase} of the {Waiting Room}, where a crowd of ghosts argue about who is boss. The biggest *ghost* grabs the *dipper* of soup and serves himself first: he is the **chief**. The king tries to take it, but the ghosts vote and the soup ladle stays with the **chief**."
- },
- {
-  "c": "谣",
-  "m": "The {Yogi} meditates on the {Staircase} of the {Tower} when a *small speech bubble* floats up the steps whispering a **rumor**: \"The tower is made of cheese.\" Every floor passes it on, the **rumor** gets bigger, and by the top a mouse is nibbling the walls."
- },
- {
-  "c": "寞",
-  "m": "The {Magician} sits alone by the {Trapdoor} of the {Fort} under a leaky *roof*, watching the *sunset*. Nobody came to his magic show. He pulls a rabbit from his hat for company, but it hops away too, and he feels even more **lonesome**. The fort's cannon sighs, just as **lonesome**, and puffs a little smoke ring for him."
- },
- {
-  "c": "蜀",
-  "m": "The {Sheriff} wades into the {Basement} of the {Pool} with a *fishing net* and scoops up a *curled worm* wearing a tiny map of **Sichuan**. The worm uncurls and points to the mountains of **Sichuan**, then breathes out chilli fire. The sheriff's moustache sizzles and the pool water starts to taste of hot pot."
- },
- {
-  "c": "甩",
-  "m": "The {Sheriff} swings a *bucket* round his head in the {Basement} of the {Wine Cellar} and **flings** it across the room. It lands on a *ski* that zooms off down the barrels. Excited, he starts to **fling** everything: bottles, corks, his hat, and finally himself onto the ski."
- },
- {
-  "c": "涯",
-  "m": "The {Yogi} climbs the {Staircase} of the {Spa} to a *cliff edge* where *water drops* spray up from the sea far below. He stares out to the **horizon**, where the sky meets the water. He stretches his arms so far that his fingertips touch the **horizon**, and the sun sits in his palm like a peach."
- },
- {
-  "c": "枕",
-  "m": "The {Jockey} sneaks into the {Basement} of the {Funfair} and finds a *tree* stump carved into a *pillow*. He lays his head on it, but it is hard as rock. So he stuffs it with candyfloss, and now the **pillow** is pink and sticky. The ghost-train skeletons queue up to borrow the **pillow** for a nap."
- },
- {
-  "c": "丐",
-  "m": "The {Gardener} rows to the {Island} and opens a {Trapdoor} in the sand, where a *begging bowl* sits on the bottom step. A **beggar** pops up and holds it out to her. She drops in a seed, it sprouts into a coconut tree, and the **beggar** becomes the richest man on the island."
- },
- {
-  "c": "泳",
-  "m": "The {Yogi} jumps into the {Basement} of a hut by the {Lagoon}, where a *stream* runs straight across the floor. He kicks *water drops* everywhere and starts to **swim**, cross-legged, in circles. Fish join him, then a crab, then the furniture, until even the armchair can **swim**."
- },
- {
-  "c": "奎",
-  "m": "The {King} climbs the {Staircase} of the {Waiting Room}, where a *big man* stands with his legs wide apart, blocking the way. The king ducks to crawl through the gap at his **crotch**, holding a *jade tablet* over his head like a shield. The big man giggles, his **crotch** is ticklish, and he topples down the stairs."
- },
- {
-  "c": "泌",
-  "m": "The {Magician} opens a {Trapdoor} on the {Beach}, and inside a giant *pinned heart* is slowly oozing *water drops*. It **secretes** them like sweat on a hot day. The magician catches the drops in a bottle, and they turn to perfume. Now the crabs **secrete** perfume too."
- },
- {
-  "c": "逾",
-  "m": "The {Yogi} paddles a *dugout canoe* up the {Staircase} of the {Museum}, along a *road* painted on the floor. The sign says \"Speed limit: slow\", but he **exceeds** it, whooshing past dinosaurs. The guards chase him, and they **exceed** the limit too."
- },
- {
-  "c": "叮",
-  "m": "The {Dentist} stands on the {Rooftop} of the {Boxing Ring} when a mosquito with a *mouth* sharp as a *nail* buzzes in. It **stings** her right on the nose. She swats, misses, and it **stings** the champion below, who punches the referee by mistake."
- },
- {
-  "c": "黛",
-  "m": "The {Dentist} hides beneath the {Trapdoor} of a hut on the {Island} while her *stand-in* goes out on stage. Before the show, she mixes *soot* with oil into **eyebrow paint** and draws two thick black arches on the stand-in's face. The crowd gasps, and every parrot wants **eyebrow paint** too."
- },
- {
-  "c": "燥",
-  "m": "The {Zookeeper} opens the {Trapdoor} of the {Tower}, and a hot wind from the *campfire* below blasts out. The air is so **dry** that the morning *birdsong* cracks into croaks. The parrots' feathers crackle, the lizards cough, and the zookeeper's sandwiches turn **dry** as toast."
- },
- {
-  "c": "掷",
-  "m": "The {Jockey} pops up from the {Trapdoor} of the {Beehive} and **throws** a *pitcher* of honey at the angry bees. A *helping hand* grabs a second pitcher and **throws** it too. The bees catch the honey mid-air, lick it, and decide they love the jockey after all."
- },
- {
-  "c": "藉",
-  "m": "The {Juggler} skips down the {Staircase} to the {Beach}, where *grass* grows in a *ploughed field* by the sea. He tries not to **tread on** the seedlings, but with every hop he juggles and loses track. He **treads on** a tomato, a melon and finally a sleeping crab."
- },
- {
-  "c": "枢",
-  "m": "The {Sheriff} climbs onto the {Rooftop} of the {Pool}, where a *tree* holds up a giant gate. He checks the *district map*, then oils the squeaky **hinge**. The gate swings so fast the whole roof spins like a door on its **hinge**."
- },
- {
-  "c": "憎",
-  "m": "The {Zookeeper} stands on the {Rooftop} of a hut in the {Jungle} beside a bamboo *steamer*. His *standing heart* burns: he **detests** dumplings, and the monkeys keep stealing his bananas to fill them. He **detests** the monkeys too, until they offer him one, and then it is delicious."
- },
- {
-  "c": "鲸",
-  "m": "The {Juggler} balances on the {Rooftop} above the {Boxing Ring} when a **whale** crashes up through the floor. It's a *fish* so big it carries a *palace* on its back. The boxers bounce on the **whale** like a trampoline, and it sprays water from its blowhole to cheer them on."
- },
- {
-  "c": "弘",
-  "m": "The {Hunter} climbs the {Staircase} beside the {Lagoon} with a *bow* taller than a house. He draws it back past his *elbow*, and the arrow flies so far it circles the world: a **great** shot. The fish jump to applaud, and the arrow returns to hit the same tree, a **great** bullseye."
- },
- {
-  "c": "倚",
-  "m": "The {Yogi} relaxes in the {Basement} of a {Beach} hut and starts to **lean on** a *standing person* who's an *oddball*: he never moves. When the yogi falls asleep, the oddball **leans on** him too, and they hold each other up like two playing cards."
- },
- {
-  "c": "侮",
-  "m": "The {Wizard} splashes in the {Basement} of the {Pool} when a *standing person* comes down to **insult** him: \"Your beard looks like seaweed!\" The *busy mother* who runs the pool hears this, marches over and **insults** the insulter's goggles, and everyone goes quiet."
- },
- {
-  "c": "藩",
-  "m": "The {Firefighter} climbs to the {Rooftop} of the {Mansion} and sees the garden ringed by a **hedge** made of *grass* and twigs. A goat knocks over a *slop bucket*, and the **hedge** eats the slops, growing fat. Soon the hedge is taller than the mansion, and the firefighter sprays it back."
- },
- {
-  "c": "拂",
-  "m": "The {Firefighter} sweeps the {Staircase} of the {Pool} when a *dollar sign* floats up and sticks to her sleeve. A *helping hand* flicks out to **brush off** the money. More dollars stick, she **brushes off** each one, and the pool fills with swimmers diving for the cash."
- },
- {
-  "c": "鹤",
-  "m": "The {Hunter} pokes his head through the {Trapdoor} of the {Hut} and finds a tall white *crane* standing on one leg. A smaller *bird* tries to copy it and falls over. The hunter tries too, and soon he, the bird and the **crane** stand in a wobbly row until the **crane** lifts off and leaves them."
- },
- {
-  "c": "蚀",
-  "m": "The {Sheriff} sits on the {Staircase} of the {Beehive} with a *side dish* of honey cakes. A greedy *bug* starts to **eat into** them, crumb by crumb. Then it starts to **eat into** the staircase, the hive and the sheriff's boots."
- },
- {
-  "c": "浆",
-  "m": "The {Juggler} stands on the {Rooftop} of the {Stadium} stirring flour into a barrel of *water*. It turns into a gloopy **thick liquid** that he tosses at the crowd. Everyone gets sticky, and the football players slide around the pitch on the **thick liquid**, scoring by accident."
- },
- {
-  "c": "芙",
-  "m": "The {Firefighter} slides down the {Staircase} into the {Pool} where *grass* grows round a pink **lotus**. A *husband* in swim trunks sits on the lotus, refusing to come out. She sprays him with her hose, and he bobs away on the **lotus** like a little boat."
- },
- {
-  "c": "垃",
-  "m": "The {Lifeguard} climbs onto the {Rooftop} of the {Spa} and finds a mountain of **garbage**: banana skins, old towels, *soil* from potted plants. A *podium* sits on top. She stands on it and delivers a speech about recycling, and the **garbage** cheers and sorts itself."
- },
- {
-  "c": "烤",
-  "m": "The {King} lights a *campfire* in the {Basement} of the {Tower} to **roast** marshmallows while studying for an *exam*. He gets distracted reading, and the marshmallows **roast** black. He eats them anyway and fails, but the examiner gives him extra points for crispy marshmallows."
- },
- {
-  "c": "晒",
-  "m": "The {Sheriff} climbs out of the {Trapdoor} on the {Island} to **bask** in the hot *sun*. He lies so still that a bird builds a *bird nest* on his chest. The chicks hatch, and they **bask** too, lined up like little sunbathers."
- },
- {
-  "c": "霜",
-  "m": "The {Sheriff} climbs onto the {Rooftop} of a hut in the {Swamp} after a night of freezing *rain*. Everything sparkles white with **frost**. From his *lookout* he sees frogs skating on the frozen water, and the alligators have **frost** on their eyelashes."
- },
- {
-  "c": "剿",
-  "m": "The {Juggler} creeps into the {Basement} of the {Cat Café} with a *standing knife* to **wipe out** a *nest* of mice. But the mice are juggling too, better than him. Instead of fighting he joins them, and together they **wipe out** every cheese in the kitchen."
- },
- {
-  "c": "蕴",
-  "m": "The {Yogi} opens a {Trapdoor} in the {Dunes} and starts to **store up** for winter: bales of dry *grass*, blankets of *cotton padding*, jars of honey. He **stores up** so much that the trapdoor won't shut, and the camels move in for the season."
- },
- {
-  "c": "圾",
-  "m": "The {Juggler} lands on the {Rooftop} of a {Beach} café piled with **rubbish**, where a *chaser* sprints across the *soil* after plastic bags. The juggler grabs the **rubbish** and juggles it into the bin, and the seagulls clap their wings."
- },
- {
-  "c": "绸",
-  "m": "The {Chef} skips down the {Staircase} of the {Boathouse} wrapped in shining **silk**. A spider weaves *silk thread* round and round in a *circuit*, making more and more cloth. Soon the boats are wrapped in **silk** too and slip into the water like smooth fish."
- },
- {
-  "c": "屿",
-  "m": "The {Yogi} meditates in the {Basement} of the {Museum} when the floor splits and a tiny *mountain* pops up, wrapped like a *gift*. Water fills the room, and the mountain becomes an **islet**. A crab moves in, a palm tree sprouts, and the curators argue over who owns the **islet**."
- },
- {
-  "c": "氢",
-  "m": "The {Cheerleader} pumps *steam* into a balloon on the {Rooftop} of the {Boxing Ring}. It's **hydrogen**, the lightest gas, and the balloon rises, taking her with it. She cheers in a squeaky voice, filled with **hydrogen**, as the boxers watch her float away."
- },
- {
-  "c": "驼",
-  "m": "The {Tailor} leads a *horse* up the {Staircase} of the {Warehouse} and notices it now has a hump. A *serpent* has curled up under its blanket! The tailor sews a saddle round the hump, and it becomes a **camel**. The **camel** spits at the serpent, which slithers off."
- },
- {
-  "c": "妆",
-  "m": "The {Jockey} sits on the {Rooftop} of a hut in the {Swamp} beside a *woman* perched on a *split log*. She paints her face with mud and petals: swamp **makeup**. The frogs line up for **makeup** too and hop away with pink cheeks."
- },
- {
-  "c": "捆",
-  "m": "The {King} sneaks into the {Basement} of the {Casino} and finds a *trapped tree* tied with rope. A *helping hand* passes him a **bundle** of banknotes. He ties them to the branches, and soon the tree is a **bundle** of money, blooming with cash."
- },
- {
-  "c": "铅",
-  "m": "The {Cheerleader} jumps on the {Rooftop} of the {Yen Exchange}, waving *gold coins* that are really grey **lead** painted yellow. They are so heavy that the roof cracks. She falls through into the vault, and the bankers find the **lead** coins sinking in their coffee."
- },
- {
-  "c": "逛",
-  "m": "The {Gardener} pops out of the {Trapdoor} in the {Swamp} and starts to **stroll** along a muddy *road*. A *mad dog* barks and races after him, so he breaks into a sprint, then remembers to **stroll** and walks backwards, slowly, while the dog laughs."
- },
- {
-  "c": "淑",
-  "m": "The {Sheriff} sits on the {Rooftop} of the {Pool} beside his *uncle*, who is so **gentle** he catches *water drops* in a teacup so they won't hit the swimmers. He pats a wasp on the head and sings to the ducks: the most **gentle** man in town."
- },
- {
-  "c": "榴",
-  "m": "The {Lifeguard} climbs the {Staircase} of the {Youth Hostel} where a *tree* grows a single **pomegranate**. She keeps it as a *keepsake*, but it bursts open and red seeds rain on every bed. The backpackers eat them, and the **pomegranate** tree grows another."
- },
- {
-  "c": "丙",
-  "m": "The {Baker} hides in the {Basement} beneath the {Boxing Ring} and props up a cake on a *tripod*. The cake comes **third** in the contest: not first, not second, but **third**. He sulks, then eats it, and the tripod wobbles away in protest."
- },
- {
-  "c": "痒",
-  "m": "The {Yogi} lies on a *sickbed* in the {Basement} of the {Hangar} when a *sheep* wanders in and rubs its wool on his feet. His toes start to **itch**. He scratches, giggles and falls off the bed, and now the whole hangar's planes **itch** too, scratching their wings."
- },
- {
-  "c": "钞",
-  "m": "The {Chef} stands on the {Rooftop} of the {Tower} with a pot of *gold coins*. He melts them, adds a *pinch* of salt, and rolls them flat into **paper money**. He hangs the **paper money** out to dry, and pigeons fly off with banknotes in their beaks."
- },
- {
-  "c": "蹄",
-  "m": "The {Tailor} kneels on the {Staircase} to the {Beach} fitting a *kicking foot* with a golden shoe. It belongs to a horse sent by the *sky god*, and the **hoof** glows. When it kicks, sand flies, and the tailor sews a second shoe for its other **hoof**."
- },
- {
-  "c": "犬",
-  "m": "The {Cheerleader} sneaks into the {Basement} of the {Mint}, where a *dog* is guarding a mountain of coins. She cheers, and the **dog** wags its tail so hard coins fly everywhere. The bankers chase them, the **dog** chases the bankers."
- },
- {
-  "c": "躬",
-  "m": "The {Gardener} stands on the {Rooftop} of a hut by the {Lagoon} and bends his *torso* low like a *bow*: he **bows** to the sunrise. He bows so deep that his nose touches his toes and he tips into the water. The fish **bow** back politely."
- },
- {
-  "c": "昼",
-  "m": "The {Jockey} pops up through the {Trapdoor} of the {Boathouse} at *sunrise* and lays a giant *ruler* across the river to measure the light. Inch by inch the sun climbs until it is full **daytime**. He gallops off to race, but the ruler says the **daytime** has only nine inches left, so he hurries."
- },
- {
-  "c": "藻",
-  "m": "The {Zookeeper} fills a *bath* in the {Basement} of the {Tower} for the penguins, but green *grass* sprouts from the plughole. It's **aquatic grass**, waving like hair underwater. The penguins dive in and wear the **aquatic grass** as wigs, and the zookeeper has to comb them all one by one."
- },
- {
-  "c": "蛛",
-  "m": "The {Jockey} rides onto the {Rooftop} of the {Pool} and finds a huge **spider** painted in shiny *red lacquer*, spinning a web between the chimneys. A little *bug* is stuck in it, waving. The jockey cuts it free, and the **spider** knits him a racing jersey as a thank-you."
- },
- {
-  "c": "褐",
-  "m": "The {Hunter} drops through the {Trapdoor} of the {Hut} into a muddy cellar. His white *shirt* turns a deep chocolate **brown**, and a *question mark* pops above his head: where did the white go? He shakes himself like a dog, and now the walls, the cat and the ceiling are **brown** too."
- },
- {
-  "c": "颊",
-  "m": "The {Juggler} sits on the {Staircase} of the {Piazza}, drawing a face on a *page*. A pigeon lands on his head, and he pinches its beak with *tongs* by mistake. It pecks his **cheek**, which swells pink and round. The crowd laughs, and a child paints a pigeon on her own **cheek**."
- },
- {
-  "c": "奠",
-  "m": "The {Dentist} drops through the {Trapdoor} of the {Yen Exchange} into a vault where a *chieftain* and a *big man* argue over a heap of gold. She slams a giant tooth down between them to **settle** the fight once and for all. The gold coins **settle** into two neat piles, and everyone shakes hands."
- },
- {
-  "c": "募",
-  "m": "The {Magician} stands by the {Trapdoor} of the {Pool} at *sunset*, waving a bucket with his *strong arm* to **raise funds** for a new diving board. Every coin dropped in turns into a fish. Soon the pool is overflowing with fish, and he has to **raise funds** all over again to buy a net."
- },
- {
-  "c": "耽",
-  "m": "The {Dentist} lies on the {Rooftop} of the {Mansion} with one *ear* buried in a fluffy *pillow*. Patients wait below, but she snoozes and **delays** the appointments. \"Five more minutes,\" she mumbles. The patients' teeth fall asleep too, and the whole mansion **delays** lunch until sunset."
- },
- {
-  "c": "蹈",
-  "m": "The {Dentist} dances in the {Basement} of the {Tower}, where her *kicking foot* starts to **tread** on piles of rice. She scoops the rice up with a *rice scoop* and throws it in the air like confetti. Stamping and twirling, she **treads** the whole harvest into flour."
- },
- {
-  "c": "陋",
-  "m": "The {Lifeguard} opens the {Trapdoor} of the {Boathouse} and finds a tiny shack on a bare *hillside* inside. It's **humble**: one stool, one candle, one sock. A happy old man lives there, and when she offers him a palace, he says his **humble** sock is all he needs."
- },
- {
-  "c": "侣",
-  "m": "The {Lifeguard} patrols the {Basement} of the {Museum}, where a *standing person* is made of only a *spine*: a skeleton on display. Every night it wakes up lonely, so she becomes its **companion**, and they play chess with bones. The dinosaur skeleton gets jealous and wants a **companion** too."
- },
- {
-  "c": "魅",
-  "m": "The {Magician} pops out of the {Trapdoor} by the {Lake} and finds a *ghost* hiding inside a *sapling*. The ghost has such **charm** that the ducks swoon and the frogs propose. The magician tries to steal the ghost's **charm**, but only manages to make the sapling blush."
- },
- {
-  "c": "岚",
-  "m": "The {Lifeguard} climbs the {Staircase} to the top of the {Mansion}, which sits on a *mountain*. The *wind* blows, and thick grey **mountain mist** swirls round her ankles. She blows her whistle, and the **mountain mist** curls up into the shape of a fluffy lifeguard and whistles back."
- },
- {
-  "c": "侄",
-  "m": "The {Jockey} gallops up the {Staircase} of the {Beehive}, where a *standing person* waits at the *arrow landing*, holding a bow. It's his **nephew**, a tiny boy dressed as a bee. The **nephew** fires a candy arrow, and the bees chase the jockey for the sugar."
- },
- {
-  "c": "虐",
-  "m": "The {Ninja} drops through the {Trapdoor} into the {Ice Rink}, where a *tiger* on skates is bullying the penguins. It is **brutal**: it steals their fish and knocks over their snowmen. The ninja ties its skates together, and the tiger slides into a snowbank, a **brutal** ending for a bully."
- },
- {
-  "c": "堕",
-  "m": "The {Dentist} steps onto a {Trapdoor} in the {Warehouse}, and it gives way in a *landslide* of *soil* and boxes. She starts to **fall**, past shelves, past pipes, past a surprised mole. She keeps **falling** until she lands on a mattress delivery, safe and dusty."
- },
- {
-  "c": "陛",
-  "m": "The {Baker} opens a {Trapdoor} on the {Beach} and finds *throne steps* carved into a sandy *hillside*. He climbs the **throne steps** carrying a loaf for the sand king. The king is a crab, who bows and invites him to sit on the top of the **throne steps**."
- },
- {
-  "c": "莹",
-  "m": "The {Yogi} meditates on the {Staircase} of the {Boxing Ring}, where morning dew lies on the *grass* growing in the corners. Each drop glows so **lustrous** that it lights the room. The boxers stop fighting to polish their gloves until they shine, **lustrous** as pearls."
- },
- {
-  "c": "荫",
-  "m": "The {Yogi} meditates on the {Rooftop} of the {Inn}, under a tree with *grass* growing round its roots. Its leaves make a cool **shade**, and he never moves. The sun gets jealous and tries to sneak in, but the *shade* grows bigger and swallows it. Now the whole inn sits in **shade**."
- },
- {
-  "c": "狡",
-  "m": "The {Juggler} sits with *crossed legs* in the {Basement} of the {Cat Café} when a *prowling dog* sneaks in. It is **cunning**: it pretends to be a cat, meows, and steals the cats' milk. The cats look at each other, then trick it back, and the dog runs off, beaten at its own **cunning** game."
- },
- {
-  "c": "阀",
-  "m": "The {Firefighter} climbs the {Staircase} of the {Spa} to a *gate* guarded by a *lumberjack*. Behind it, a **clique** of rich guests sips tea and refuses to let anyone in. She hoses the gate down, and the members of the **clique** are dripping wet, just like everyone else."
- },
- {
-  "c": "绞",
-  "m": "The {Juggler} hides in the {Basement} of the {Cat Café} with *crossed legs*, playing with *silk thread*. The cats **twist** the thread round chair legs, the lamp and the juggler. He **twists** his body to escape, but now he is tied like a pretzel."
- },
- {
-  "c": "膏",
-  "m": "The {Gardener} climbs to the {Rooftop} of the {Tower} with a jar of thick white **ointment** for her sunburnt nose. She rubs it on, then the pigeons beg for some, then the chimney. Soon everything on the roof is coated in shining **ointment** and nothing will ever sunburn again."
- },
- {
-  "c": "垮",
-  "m": "The {King} wanders into the {Basement} of the {Water Park}, where a *show-off* is stacking *soil* into a huge sandcastle to impress him. The king sneezes, the castle starts to wobble and **collapses**. Then the show-off **collapses** too, sobbing, onto the soggy heap."
- },
- {
-  "c": "茎",
-  "m": "The {Juggler} stands on the {Rooftop} of the {Boxing Ring} holding a flower by its long green **stem**. The *grass* at his feet grows taller to see. He juggles flowers, and every **stem** grows longer until they twine round the ring ropes like vines."
- },
- {
-  "c": "缅",
-  "m": "The {Magician} sits in the {Basement} of the {Yen Exchange} winding *silk thread* round a portrait of a smiling *face*. The face belongs to a friend on a **remote** island, so far that letters take a year. The magician tugs the thread, and the face winks back, smiling from far, far **remote** waters."
- },
- {
-  "c": "喇",
-  "m": "The {Lifeguard} sneaks into the {Basement} of the {Spa} and blows a *trumpet* with her *mouth*: \"**La**!\" The steam rooms echo back \"**La**!\", and every guest wrapped in a towel starts to sing scales. The sauna door bangs in time, the hot tub bubbles along, and soon the whole spa is one giant choir singing nothing but \"la, la, la\"."
- },
- {
-  "c": "绒",
-  "m": "The {Robot} clanks up the {Staircase} beside the {Lagoon} wearing a suit of soft **velvet** woven from *silk thread*. A *soldier* tries to salute, but strokes the robot's arm instead and purrs: so smooth. The robot blushes, and the soldier orders a **velvet** uniform for the whole army."
- },
- {
-  "c": "搅",
-  "m": "The {Juggler} hides in the {Basement} of the {Cat Café} trying to nap, but a *helping hand* shakes an *alarm clock* by his ear. It rings and rings to **disturb** him. The cats wake up and **disturb** the customers, and soon the café is full of yowls."
- },
- {
-  "c": "凳",
-  "m": "The {Dentist} drops through the {Trapdoor} into the {Jungle}, where she plops down on a little **stool** with *spread feet*. A monkey steals it, then a tiger, then an elephant who flattens the **stool** into a pancake. The dentist sits on the pancake."
- },
- {
-  "c": "梭",
-  "m": "The {Sailor} sits on the {Rooftop} of the {Warehouse} at a loom carved from a *tree*. A *handsome man* passes the wooden **shuttle** back and forth, weaving sails at top speed. The **shuttle** flies so fast that it shoots off the roof and lands on a passing ship."
- },
- {
-  "c": "丫",
-  "m": "The {Yogi} meditates on the {Rooftop} of the {Spa} holding a *pole* with two *horns* on top: a **fork**. He uses it to scoop clouds into his mouth. A pigeon lands between the horns, and now the **fork** is a nest."
- },
- {
-  "c": "姬",
-  "m": "The {Juggler} skips across the {Rooftop} of a palace on the {Beach}, where a noble **lady** sits with her *chin* held high. She is a *woman* so elegant that the seagulls bow. She juggles sandwiches with him, then the **lady** catches him and politely puts him on the tea table."
- },
- {
-  "c": "诏",
-  "m": "The {Jockey} pops out of the {Trapdoor} of the {Tower} with a scroll: an **imperial edict**. A *town crier* reads it aloud, and a *small speech bubble* floats over the crowd: \"Everyone must ride backwards on Tuesdays!\" The horses neigh, and the **imperial edict** blows away in the wind."
- },
- {
-  "c": "钮",
-  "m": "The {Ninja} creeps into the {Basement} of the {Youth Hostel} and meets a *clown* sewing *gold coins* onto his coat as **buttons**. One pops off and bounces up the stairs, ringing like a bell. The ninja catches the **button** and sews it back on, perfectly silent."
- },
- {
-  "c": "棺",
-  "m": "The {Gardener} trims a *tree* on the {Rooftop} by the {Swan Pond} when an *official* in black arrives with a measuring tape. He measures the gardener for a **coffin**. Shocked, the gardener jumps into the pond, and the swans use the empty **coffin** as a boat."
- },
- {
-  "c": "耿",
-  "m": "The {Gardener} sits in the {Basement} of a hut in the {Jungle}, his *ear* glowing red beside a *campfire*. A monkey asks who ate the bananas, and he's so **honest** that he admits it at once. The monkeys clap and give him more bananas for being **honest**."
- },
- {
-  "c": "缔",
-  "m": "The {Dentist} drops through the {Trapdoor} on the {Beach} and finds two crabs who want to **form a union**. She ties their claws with *silk thread*, and the *sky god* thunders his blessing. The crabs dance, and the starfish line up to **form a union** too."
- },
- {
-  "c": "懈",
-  "m": "The {Shepherd} sneaks down through the {Trapdoor} of the {Yeti Cave}, where the guard yeti has gone **lax**. Its *standing heart* snores, and its belt hangs in an *untied knot*. The shepherd tiptoes past with his sheep, and even the sheep get **lax** and start napping."
- },
- {
-  "c": "嫉",
-  "m": "The {Juggler} skips down the {Staircase} to the {Beach}, where a *woman* lies sunbathing with a *fever* of anger. She is **jealous** of the juggler's three golden balls. She grabs them, juggles them better, and now he is **jealous** of her."
- },
- {
-  "c": "灶",
-  "m": "The {Zookeeper} opens the {Trapdoor} of the {Tower} and finds a **stove** made from a ring of baked *soil* with a *campfire* inside. He cooks soup for the lions on it. The lions want the **stove** too, so they carry it off and cook a zookeeper-shaped cake."
- },
- {
-  "c": "匀",
-  "m": "The {Yogi} sits on the {Staircase} of a palace in the {Dunes}, sharing out sand into *even shares*. Every camel gets the same pile, perfectly **even**. One camel complains, so the yogi weighs every grain, and the piles are even more **even**."
- },
- {
-  "c": "嗣",
-  "m": "The {Sailor} drops through the {Trapdoor} of the {Beehive}, where the old queen bee, the *boss*, is retiring. Her crown passes to her son, the sailor's pet bee, who will **inherit** the whole hive. The sailor helps the bee **inherit** a honey throne."
- },
- {
-  "c": "鸽",
-  "m": "The {Gardener} sits on the {Rooftop} of the {Hut} when a **pigeon** lands on a jar with a *fitted lid*. It pecks and pecks until the lid pops off. The *bird* finds seeds inside and calls a hundred friends, and every **pigeon** in town lands on the roof."
- },
- {
-  "c": "澡",
-  "m": "The {Zookeeper} fills a giant *bath* in the {Basement} of the {Tower} for the elephants. One climbs in, and water floods out the windows. They splash, spray and blow bubbles: the best **bath** ever. Then the zookeeper gets in too, and now everyone needs another **bath**."
- },
- {
-  "c": "凿",
-  "m": "The {Zookeeper} stands on a *scaffold* on the {Staircase} of the {Tower}, tapping a **chisel** into the stone. Chips fly, and out comes a giraffe statue that sneezes. He keeps working, and the **chisel** carves a zoo full of stone animals that walk off."
- },
- {
-  "c": "纬",
-  "m": "The {Wizard} sits in the {Basement} of a cabin by the {Lake}, winding *silk thread* round a globe and fixing it with a *leather strap*. Each thread marks a line of **latitude**. He pulls one, and the whole world spins, sliding along its **latitude** lines."
- },
- {
-  "c": "沸",
-  "m": "The {Firefighter} lifts the {Trapdoor} by the {Lake}, and *water drops* fly out of a giant kettle. The water has started to **boil**, bubbling so hard that it spits a *dollar sign* of steam. She tries to cool it, but her hose water **boils** too, and the lake becomes soup."
- },
- {
-  "c": "畴",
-  "m": "The {Chef} skips down the {Staircase} of the {Boathouse} into an **arable field**, where every *rice field* is lined with peach trees. He picks a *longevity peach*, takes a bite and becomes a farmer, ploughing the **arable field** with a ladle."
- },
- {
-  "c": "刃",
-  "m": "The {Robot} pops out of the {Trapdoor} at the {Funfair} and polishes its arm into a gleaming *blade edge*. The **blade edge** is so sharp that it slices candyfloss into perfect squares. The robot ends up the champion of sushi, cutting with its **blade edge**."
- }
-]
+[{"c":"荆","m":"{James Bond} strolls in {Front} of the {Boxing Ring} in his tuxedo and presses a gadget from Q, a wristwatch that grows one **chaste tree** on command. Purple blossom bursts through the *grass* and hoists the town *stocks* into the air, with a furious referee locked in them. Bond straightens his bow tie, snips a sprig of **chaste tree** for his lapel and murmurs, 'Branching out.'"},
+{"c":"崔","m":"{Cookie Monster} sits in {Front} of the {Waiting Room} and devours a giant cookie iced with one word, the family name **Cui**. The *lofty peak* beneath him is furious, shaking him by the bottom and booming its owners' name through a spray of crumbs. 'Me want more **Cui**!' he roars, and he starts on the snowy summit, which tastes of vanilla."},
+{"c":"雁","m":"{Yoshi} flutter-jumps up a *cliff* to the {Bathroom} of the {Mansion} and his sticky tongue snatches a *wild goose* out of the sky mid-honk. Gulp, and he lays it as a speckled egg, which cracks open on a furious **wild goose**. The *cliff* shakes as the whole V of geese dive-bombs him, and every **wild goose** honks his name back at him."},
+{"c":"绅","m":"{Sherlock} raises his magnifying glass in {Front} of the {Funfair} and studies one crumb of caviar on a candyfloss stick. 'Elementary, Watson: **gentry**,' he says, smugly. A *silk thread* trails from the crumb to a duke's sash, pinned by a golden *skewer* that yanks him off the dodgems, and all the **gentry** tumble after him in their top hats."},
+{"c":"珊","m":"{Sherlock} stands in {Front} of the {Mansion}, sunk on the sea floor, his pipe blowing bubbles as he squints at a pink twig. A weeping *king* swims up, and his *bamboo book* has turned to **coral**, page by page. One glance at the barnacled bookmark and Sherlock deduces it all: the *king* reads in the bath, and now even Watson's moustache is sprouting **coral**."},
+{"c":"榜","m":"{Batman} fires his grappling hook in the {Basement} of the {Hangar} and hauls a whole *tree* in from the *roadside*, then pins a **list of names** to its trunk with a batarang. The *roadside* comes along too, honking with traffic and flapping its signs. He growls every villain's name in his gruff voice, and at the bottom of the **list of names** he finds his own, in Alfred's handwriting."},
+{"c":"诵","m":"{Sailor Moon} twirls through her long sparkly transformation in the {Bathroom} of the {Lagoon}, then begins to **recite** her speech about justice, word for word. Each line pops out as a *small speech bubble* and drifts into a *tunnel*, which echoes it back wrong. She forgets line nine and howls with tears until Luna the cat whispers it, and the fish **recite** the rest in chorus."},
+{"c":"傍","m":"{Batman} glides into the {Bathroom} of the {Hangar} holding a gadget from his utility belt that beeps when he is **near** a suspect. It shrieks beside a *standing person* selling buns, and a strip of *roadside* rolls in under the door to give the stall somewhere to park. Batman edges closer, cape brushing noses, and growls that this is how **near** justice gets."},
+{"c":"彦","m":"{Yoshi} licks up a *gentleman* in the {Bathroom} of the {Mansion} with one swipe of his sticky tongue, swallows him and lays him as an egg. The egg is even more **accomplished** than he was: it plays the violin, fences with a toothbrush and recites sonnets through its shell. The *gentleman* hatches and bows, and Yoshi, the least **accomplished** dinosaur present, says his own name."},
+{"c":"醇","m":"{Charlie Brown} trudges {Inside} the {Casino} hugging a *wine jug* for the *feast*, and naturally a croupier whips it away like a football at the last second. Charlie flies through the air, lands flat, and a splash of strong **alcohol** soaks his zigzag shirt. The *feast* slides off its table in the fumes, the roulette wheel spins dizzily, and all that **alcohol** only makes him sigh, 'Good grief.'"},
+{"c":"笛","m":"{Darth Vader} raises one black glove {Inside} the {Beach}, and the Force hollows a stalk of *bamboo* into a **flute**. It floats up to his helmet, and his loud breathing plays through it, one long gloomy note after another. A *sprouting field* bursts through the sand and sways in time, while he booms his disapproval at every wrong note from the **flute**."},
+{"c":"禽","m":"{Chewbacca} growls {Inside} the {Inn} while fixing a ship's engine on the landing, and only the *fowl* understand him. Hens pass the spanners, ducks hold the torch and a goose dangles from his bandolier. When a bolt snaps he roars and rips a sack of corn in half, and each loyal **fowl** roars right back, until the last **fowl** tightens the bolt with its beak."},
+{"c":"勿","m":"{Walter White} stands in the {Bathroom} of the {Pool} in goggles, teaching his chemistry class, and a red *pennant* snaps up over each beaker, reading **do not** mix. A student reaches for the blue flask, and the *pennant* whacks his wrist. Walter taps the glass, announces that he is the one who knocks, and chalks a precise new rule on the wall: **do not** knock."},
+{"c":"娟","m":"{James Bond} straightens his tuxedo in {Front} of the {Mint} and steps into Q's latest shoes, which make the wearer **graceful** for exactly ten seconds. He pirouettes past a *woman* dancing on a line spun by a tiny *silkworm*, and the *silkworm* applauds with all its legs. At second eleven he lands in a coin bucket, unruffled, and remarks that being **graceful** is overrated."},
+{"c":"瞄","m":"{Mario} crouches {Inside} the {Cat Café}, shuts one *eye* and tries to **take aim** for the perfect stomp on a mushroom thief hiding in a pot of *young crop*. The sprouts of *young crop* shuffle sideways to hide him. 'Wahoo!' Mario leaps, and in mid-air all twenty cats **take aim** at his red cap, so he lands on none of them and bags one coin."},
+{"c":"幢","m":"The {Joker} cackles in the {Bathroom} of the {Swamp}, clicking a giant **building counter** as he deals a trick playing card onto each stilt house. A *towel* whips down from a ceiling and snatches the cards away, and a *schoolkid* paddles past, swapping all the houses round. The Joker squirts his flower at the **building counter**, it resets to zero, and he howls with delight."},
+{"c":"寇","m":"{Kermit} flails his arms in the {Bathroom} of the {Boathouse}, clipboard out, as bandits drop through the *roof* to **plunder** his show. He stage-manages it anyway, yelling cues, and they **plunder** the props in perfect time: golden oars, crowns, one rubber duck. The *roof* flaps shut behind them like a curtain, and Kermit strums his banjo and sighs that it's not easy being robbed."},
+{"c":"睹","m":"{Darth Vader} breathes loudly in the {Basement} of the {Pool} and uses the Force to float one huge glass *eye* behind a *busy man*, so he can **observe** him in secret. The man polishes each tile with a tiny cloth, then polishes a duck. Vader goes on to **observe** every stroke, booms his disapproval of the grouting, and the *busy man* polishes the eye."},
+{"c":"贿","m":"{Homer} naps in the {Bathroom} of the {Waiting Room} until a sly clerk appears *holding meat* and offers him a pearly *shell* to move up the queue. 'Mmm, **bribery**,' says Homer, and he hatches a dim scheme of his own, stuffing a half-eaten doughnut in the *shell* for the receptionist. She reports the **bribery**, the doughnut is confiscated, and Homer wails, 'D'oh!'"},
+{"c":"踩","m":"{Cookie Monster} thunders into the {Basement} of the {Island} after a trail of crumbs, just as a *fruit picker* spills a basket of cookies across the floor. His *kicking foot* comes down to **step on** one: crunch. 'Me **step on** cookie!' he wails, googly eyes spinning, and he devours the foot-shaped crumbs, the basket and the mango the picker was holding."},
+{"c":"霆","m":"{Tarzan} swings on a vine {Inside} the {Boxing Ring} and lets out his jungle yell, which arrives as a **clap of thunder**. The *rain* falls down in shock, pouring into the *courtyard* next door until it spills over the ropes. Baffled by the bell, Tarzan asks the elephants what it wants, yells again, and a second **clap of thunder** knocks out the champion."},
+{"c":"呜","m":"{Walter White} adjusts his glasses in {Front} of the {Pool} and sets a soggy *crow* on the lab bench, a thermometer in its *mouth*. It lets out a tiny **whimper**, and he captures it in a beaker, proud of the precise pitch. He heats it gently, explains the science to his class, and the **whimper** boils into a long sad steam that the bird sniffles back up."},
+{"c":"拱","m":"{Gandalf} mutters a spell in the {Basement} of the {Lagoon} when a pipe starts to drip, and a floating *helping hand* appears from the tip of his staff. It joins his own *joined hands* to **cup hands** under the leak. Crankily he sets off a tiny firework in the water they hold, and a goldfish rises up to **cup hands** with its fins."},
+{"c":"妃","m":"{Frodo} trudges on bare hairy feet in {Front} of the {Lake}, and a *woman* in phoenix robes, the **imperial consort**, demands his Ring for her crown. He slips it on and turns invisible, but she flicks a *coiled rope* that lassoes his ankle anyway. Sam wades in with a frying pan, and the **imperial consort** wins nothing but a very long walk home."},
+{"c":"蔑","m":"{Mario} head-butts a block in the {Bathroom} of the {Yeti Cave}, out pops a coin, and the yeti yawns. It loves to **belittle** everything, even the mushroom that makes him grow ten feet tall. A blade of *grass* between its teeth chimes in, sneering at his moustache, so Mario stomps them both with a 'Wahoo!' and the flattened yeti carries on to **belittle** the stomp."},
+{"c":"谕","m":"{Yoshi} paddles a *dugout canoe* into the {Bathroom} of the {Museum} when a *small speech bubble* drifts from the emperor's statue, carrying a royal **decree**. His tongue shoots out, gulps it down, and he lays it as an egg stamped with a red seal. The egg cracks and bellows the **decree** that everyone must paddle, and the *dugout canoe* starts rowing itself round the marble hall, towing the curators."},
+{"c":"缚","m":"{Frodo} limps into the {Bathroom} of the {Pool}, and a giant spider, the very sort he dreads, pounces to **bind** him in *silk thread* from hairy toes to curly head. A *proclamation* flutters down declaring that all hobbits shall be wrapped. Loyal Sam arrives, shouts his name and unwinds him, then uses the same thread to **bind** the spider to a lilo."},
+{"c":"诡","m":"{Gandalf} arrives in the {Basement} of the {Waiting Room} exactly when he means to, and catches a *teetering man* slipping a *small speech bubble* to the clerk. It whispers that the man has waited a hundred years, which is **sly**, since he came at noon. 'You shall not pass!' cries Gandalf, tapping his staff, and the bubble becomes a toad, even more **sly**, who slips him a ticket."},
+{"c":"篷","m":"{Pikachu} sparks {Inside} the {Jungle} and weaves *bamboo* into a tiny **sail**, lashing it to his Poké Ball to make a boat. A *chance meeting* with a startled parrot ends in a 'Pika!' and a Thunderbolt that crackles through the air. The **sail** fills with electric wind, and off he bowls through the trees, cheeks fizzing, with the parrot perched on top."},
+{"c":"淹","m":"{Yoshi} gulps down the whole fountain in {Front} of the {Mansion} just as a *sudden flash* of lightning startles him into laying it as an egg. The egg splits, *water drops* burst out by the billion, and they **flood** the lawn, the gardens and the ground floor. He flutter-jumps above the waves crying his own name while the rising water goes on to **flood** the valley."},
+{"c":"腕","m":"{Walter White} stands in the {Bathroom} of the {Mansion} in his goggles, stirring a glowing solution in a *rice bowl* with a flick of his **wrist**, exactly forty turns. The *moon* in the window pulls the liquid up like a tide. He taps the glass and proudly notes that only a scientist's **wrist** could manage it, and then the rice sets into a solid white cuff."},
+{"c":"煮","m":"The {Joker} cackles in the {Basement} of the {Pool}, blowing on *embers* under a giant pot and tricking a *busy man* into tossing in all his noodles. A label on the pot says never **boil**, which is the joke, since he squirts his flower on the coals and it starts to **boil** at once. Rubber ducks pop out wearing green wigs, and the man keeps stirring."},
+{"c":"倩","m":"{Chewbacca} squeezes into the {Bathroom} of the {Yen Exchange} and gapes at a *standing person* in a gown of fresh *moss*, so **pretty** the clerks forget to count. He growls a compliment only friends could understand, then rips the mirror off the wall in a temper at his own reflection. The *moss* creeps across his fur, he looks almost **pretty**, and a frog proposes."},
+{"c":"卒","m":"{Zorro} swings from a chandelier {Inside} the {Pool} and, with three flicks of his rapier, slashes a Z across a wooden *pawn* from a giant chessboard. It snaps to attention, a real **soldier** in a tiny helmet. The *pawn* marches into the deep end, gurgling salutes, and twenty more follow, each a Z-marked **soldier**, as Zorro vanishes laughing over the diving board."},
+{"c":"勘","m":"{Kermit} hops about in {Front} of the {Mansion} with a telescope to **survey** the grounds for tonight's show, flailing his one *strong arm*. That arm is gripping an *overflowing bowl* of soup, and each flail soaks another member of the cast. He hops up on the sundial to **survey** the wreckage, screams 'Yaaay!' and strums a panicked banjo chord as the chorus line slides away."},
+{"c":"馨","m":"{Shrek} roars in {Front} of the {Inn} because someone has lit *incense* and rung a *chime stone*, and the air has turned horribly **fragrant**. All he wanted was to be left alone with his swamp stink. He bites a raw onion to fight back, but Donkey will not shut up, the *chime stone* keeps ringing, and even his layers now smell **fragrant**."},
+{"c":"逗","m":"{Darth Vader} raises one glove in the {Bathroom} of the {Boathouse} and lifts a *bean* with the Force to **tease** a hungry duck. Each time its beak gets near, the bean floats a little further down the *road*, which curls along like a lazy river. Breathing loudly, he booms his disapproval of the duck's effort and goes on to **tease** it all the way to the bakery."},
+{"c":"甸","m":"{Darth Vader} lifts the whole {Bathroom} of the {Yen Exchange} with the Force and sets it down far out in the **outskirts**, among mile after mile of *rice field*. A farmer's *blanket* flaps off in the blast of his breathing and wraps round his helmet. Out here in the **outskirts** nobody is impressed, so he tells the *rice field* he is its father, and it only rustles."},
+{"c":"贱","m":"{James Bond} falls down a chute into the {Bathroom} of the {Yen Exchange} and lands in a *bargain bin*, where Q has stocked this mission's gadgets. Everything is **cheap**: the exploding pen only squeaks, the jet pack is a fan, the tuxedo is a paper bag. The *bargain bin* slaps a one-coin sticker on his forehead and he sighs, 'Bond. **Cheap** Bond.'"},
+{"c":"炒","m":"{Charlie Brown} lights a *campfire* in the {Basement} of the {Tower} and tosses noodles in a wok to **stir-fry** them for Snoopy. He adds a *pinch* of chilli, and at the last second the noodles leap away from his spoon like that football, so he falls flat on his back. They **stir-fry** themselves in a whirlwind round the room, and he sighs, 'Good grief.'"},
+{"c":"灿","m":"{Cookie Monster} bursts into the {Bathroom} of the {Mansion} and lights a *campfire* under a *mountain* of cookies, to toast them all at once. The blaze turns the night gold, **glorious**, and the *mountain* glows like a sunrise made of chocolate chips. 'Me think this **glorious**!' he bellows, spraying crumbs, and he eats the mountain, the firelight and most of the door."},
+{"c":"敞","m":"{Charlie Brown} goes down to the {Basement} of the {Hangar} with a *cane* and knocks out each wall, because here, at last, it is so **spacious** that no tree can catch his kite. The *attic* crashes down in a heap of dust, and planes taxi in for a look. The kite rises beautifully in all that **spacious** air, and a tree sprouts through the floor and eats it."},
+{"c":"蜡","m":"{Lara Croft} somersaults into the {Bathroom} of the {Spa} and finds an ancient relic sealed in yellow **wax**, guarded by a *bug* the size of a boot. It gnaws a slab of *sun-dried meat* on a pressure plate, and she snatches the meat away, which springs the trap. Hot **wax** gushes from the walls, and she climbs out, ponytail shining, over the coated guests."},
+{"c":"囚","m":"{Chewbacca} storms {Inside} the {Youth Hostel} and finds a *person* locked behind a *fence* in the hallway, a **prisoner** of the laundry rules. Roaring with loyalty, he rips the *fence* apart with his bare paws and hugs him. The freed man weeps, because now he must do laundry, so Chewbacca fixes the fence around himself and sits down, a very hairy **prisoner**."},
+{"c":"栗","m":"{Lara Croft} opens a *cabinet* in the {Bathroom} of the {Beach}, lifts out a golden relic and hears a click. A giant spiky **chestnut** drops from a *tree* and rolls down a stone chute after her like the boulder in every tomb she has ever raided. She flips, cartwheels and vaults clear, ponytail flying, and the **chestnut** bursts on the sand and roasts in the sun."},
+{"c":"辜","m":"{Gandalf} strides up in {Front} of the {Pool}, smells smoke, and taps an *antique* vase with his staff, because a spell can reveal any **crime**. Out spray fireworks and a *chili* that glows with guilt. 'You shall not pass!' he thunders at it, and the chili sneezes sparks. Crankily lighting his pipe on it, he declares the **crime** solved and arrests the vase as well."},
+{"c":"垫","m":"{Darth Vader} lowers himself in the {Bathroom} of the {Yen Exchange}, lifting a heap of *soil* with the Force and shaping it into a giant **cushion**. A guard snaps *handcuffs* on him, and he Force-chokes the *handcuffs* until they squeal and drop off. Then he sinks into the **cushion**, cape spread, his loud breathing slowing to a snore that rattles the vault."},
+{"c":"妒","m":"{Darth Vader} stalks into the {Bathroom} of the {Pool}, breathing loudly, and sees a *woman* behind a glass *door*, twirling a sparkly pool noodle that outshines his red lightsaber. He starts to **envy** it so hard that the *door* rattles in the Force. He booms his disapproval and lifts the noodle away, and now the ducks all **envy** him."},
+{"c":"魁","m":"{Kermit} flails {Inside} the {Waiting Room} with his clipboard, auditioning a crowd of spirits to be **chief** of tonight's show. The biggest *ghost* grabs the *dipper* and ladles soup over the others without waiting for a cue, which settles it: that one is **chief**. Kermit screams 'Yaaay!', plays a banjo fanfare, and the rest of the chorus bows, dripping."},
+{"c":"谣","m":"{Yoshi} sits {Inside} the {Tower} and says the only thing he can say, his own name, and a *small speech bubble* carries it up the stairs as a **rumor**. By the second floor it says the tower is cheese. By the top, the **rumor** says the tower is a giant egg he laid, so he licks the wall with his long tongue, just to check."},
+{"c":"寞","m":"{Mario} stomps the last enemy in the {Bathroom} of the {Fort} and looks up through the leaky *roof* at the *sunset*, which sinks without a word. A note says the princess is in another castle, and he feels terribly **lonesome**. He head-butts a block for company, but even the coin hops away, leaving him the most **lonesome** plumber alive, whispering a tiny 'Wahoo.'"},
+{"c":"蜀","m":"{Sherlock} wades into the {Basement} of the {Pool} with a *fishing net* and scoops up a *curled worm*, which he studies through his magnifying glass. One tingling peppercorn on its tail is enough: 'Elementary, Watson, it has come from **Sichuan**.' The worm uncurls, burps chilli fire across his deerstalker, and the whole pool begins to taste of **Sichuan** hot pot."},
+{"c":"甩","m":"{Sherlock} tests a theory in the {Basement} of the {Wine Cellar} by swinging a *bucket* round his head, because the only way to read a stain is to **fling** something. It flies off, lands on a *ski* and zooms across the barrels, and he deduces the rest from its path. Thrilled, he starts to **fling** bottles, corks and his pipe, while Watson dives for cover."},
+{"c":"涯","m":"{Yoshi} flutter-jumps {Inside} the {Spa} off a *cliff edge*, where *water drops* spray up from a painted sea, and he shoots his sticky tongue out at the **horizon**. It sticks. He reels the whole **horizon** in like a green noodle, swallows it and lays it as one long flat egg, and the *cliff edge* teeters, having nothing left to look at."},
+{"c":"枕","m":"The {Joker} sneaks into the {Basement} of the {Funfair} and carves a *tree* stump into a *pillow*, then hides a squeaker in it as a prank. Each ghost-train skeleton who lies on the **pillow** lets out a rude honk and sits up mortified. He cackles so hard that his green hair stands on end, and he deals out a trick card for every **pillow** he has rigged."},
+{"c":"丐","m":"{Gandalf} rows up to the {Bathroom} of the {Island} and a **beggar** holds out a *begging bowl*, asking for a pinch of pipe-weed. Cranky but wise, Gandalf taps the *begging bowl* with his staff and mutters a spell. Fireworks fizz up, gold pours out and a coconut tree sprouts, and the **beggar** is now the richest man around, still begging for pipe-weed."},
+{"c":"泳","m":"{Yoshi} tumbles into the {Basement} of the {Lagoon}, where a *stream* sweeps across the floor, and he suddenly remembers he cannot **swim**. He flutter-jumps in panic, kicking *water drops* everywhere, and gulps down fish after fish, laying each as an egg that floats. Perched on his raft of eggs, he watches the little fish hatch and **swim** circles round him."},
+{"c":"奎","m":"{Kermit} hops {Inside} the {Waiting Room} with his banjo, late for his own show, and a *big man* with his legs planted wide blocks the way. He flails, holds a *jade tablet* over his head like a shield and leaps straight at the **crotch** of those enormous trousers. Rrrip goes the **crotch**, the big man giggles, and Kermit shrieks 'Yaaay!' from the far side."},
+{"c":"泌","m":"{Mario} kneels in the {Bathroom} of the {Beach} with his plumber's wrench, because a giant *pinned heart* has sprung a leak. It starts to **secrete** *water drops* like sweat, and each one he stops pops up somewhere else. He stomps the valve, a coin flies out, and now the heart begins to **secrete** perfume, so the crabs line up and Mario sighs, 'Wahoo.'"},
+{"c":"逾","m":"{Yoshi} paddles a *dugout canoe* {Inside} the {Museum} along a *road* painted across the floor, where a sign sets the limit at slow. He flutter-jumps clean over the rope, canoe and all, and goes on to **exceed** it by a mile. The *road* curls up after him, the guards give chase, and each egg he throws makes them **exceed** it too."},
+{"c":"叮","m":"{Darth Vader} stands in {Front} of the {Boxing Ring} when a mosquito whose *mouth* is tipped with a rusty *nail* tries to **sting** his helmet. Clank, clank. Vader Force-chokes the *nail* until it squeaks and booms his disapproval, so the mosquito drifts off to **sting** the champion on the nose, and the champion punches the referee."},
+{"c":"黛","m":"{Darth Vader} looms in the {Bathroom} of the {Island} and with the Force he stirs *soot* and oil into **eyebrow paint**, floating a brush through the air. It draws two thick black arches on his helmet, so he looks permanently surprised. His *stand-in* walks on stage wearing them too, the crowd gasps, and every parrot squawks for **eyebrow paint**."},
+{"c":"燥","m":"{Zorro} flings open the {Bathroom} of the {Tower} with a swish of his cape, and a hot wind from a *campfire* blasts out, the air so **dry** that his rapier throws sparks. He slashes a Z on the wall and it crumbles to dust. The morning *birdsong* cracks into croaks, the parrots crackle, and his moustache goes **dry** as toast, yet he vanishes, laughing hoarsely."},
+{"c":"掷","m":"The {Joker} pops out of the {Bathroom} of the {Beehive} and starts to **throw** trick playing cards at the bees, cackling. A *helping hand* springs from his sleeve on a spring and grabs a *pitcher* of honey, and he goes on to **throw** that too. It bursts on his own purple suit, so the bees forgive him and he grins, sticky and thrilled."},
+{"c":"藉","m":"{James Bond} strolls {Inside} the {Beach} in Q's newest spring-loaded shoes, which can only **tread on** things. The sand gives way to a *ploughed field*, whose furrows ripple to trip him, while *grass* whips at his ankles in protest. He has to **tread on** a tomato, a melon and a sleeping crab before stepping off, unruffled, to say, 'Mind the step.'"},
+{"c":"枢","m":"{Sherlock} stops in {Front} of the {Pool} at a giant gate held up by a *tree*, pulls out his magnifying glass and hears one squeak. A glance at the *district map* and a sniff of oil, and he deduces it: 'Elementary, Watson, the **hinge**.' He gives the **hinge** a smug tap with his pipe, and the gate spins so fast that Watson flies off."},
+{"c":"憎","m":"{Zorro} leaps from his black horse in {Front} of the {Jungle}, his *standing heart* burning, and slashes a Z through a bamboo *steamer*, for he must **detest** dumplings with all his dashing soul. The monkeys only steam more of them. He goes on to **detest** the monkeys too, until one hands him a dumpling, and he vanishes laughing with his mouth full."},
+{"c":"鲸","m":"{James Bond} adjusts his cufflinks in {Front} of the {Boxing Ring} when a **whale** bursts through the canvas and swallows him, tuxedo and all. This *fish* carries a tiny *palace* on its back, whose chandeliers rattle at every gulp. Bond inflates Q's pocket submarine, sails out of the **whale** through its blowhole, lands on the palace balcony and says it was a whale of a time."},
+{"c":"弘","m":"{Homer} wanders {Inside} the {Lagoon} with a *bow* taller than a house and a dim scheme: fire a doughnut far enough to feed him for life. He draws it back past his *elbow*, and the shot is a **great** one, circling the whole planet. 'Mmm, **great**,' he says, mouth open, and it comes round again and bonks him on the head. 'D'oh!'"},
+{"c":"倚","m":"{Yoshi} curls up in the {Basement} of the {Beach} and starts to **lean on** a *standing person*, who never moves, ever. The *oddball* opens one eye and leans back, so they prop each other up like two playing cards. Yoshi yawns, stretches his long tongue and lays a startled egg, and now all three **lean on** one another."},
+{"c":"侮","m":"{Walter White} measures chlorine in the {Basement} of the {Pool} when a *standing person* comes down to **insult** his goatee, calling it seaweed. Walter pushes up his glasses and takes it as a chemistry problem, weighing every word on his precise scale. The *busy mother* who runs the pool marches over to **insult** the insulter, and Walter records the reaction, proud of the data."},
+{"c":"藩","m":"{Frodo} plods in {Front} of the {Mansion} on bare hairy feet, weary from a very long walk, and finds his way barred by a **hedge** of *grass* and twigs. A goat kicks over a *slop bucket*, and the **hedge** gobbles the slops and swells taller than the chimneys. Frodo slips on the Ring to sneak through, while loyal Sam sighs and picks up the shears."},
+{"c":"拂","m":"{Frodo} tiptoes {Inside} the {Pool} on bare feet when a *dollar sign* floats up and sticks in the hair on his toes, tempting him like the Ring. A *helping hand* darts out to **brush off** the money, but more arrive, whispering sweetly. Weary but stubborn, he goes on to **brush off** each one, and the swimmers dive after them, leaving him alone with Sam."},
+{"c":"鹤","m":"{Homer} pokes his head into the {Bathroom} of the {Hut} and spots a tall white *crane* napping on one leg, which gives him a dim idea. A smaller *bird* tries to copy it and falls over, and Homer tries too, doughnut in hand. 'D'oh!' he yells as he topples, and the **crane** gulps the doughnut, while another **crane** lifts off and leaves him."},
+{"c":"蚀","m":"{Sherlock} sits {Inside} the {Beehive} with a *side dish* of honey cakes, and his magnifying glass finds one neat tiny hole. 'Elementary,' he says smugly, for a greedy *bug* has begun to **eat into** the cake, crumb by crumb. He follows the trail with his pipe as it goes on to **eat into** the staircase, the hive and finally Watson's boots."},
+{"c":"浆","m":"{James Bond} stands in {Front} of the {Stadium} and orders his *water* shaken, not stirred, with a spoon of flour in Q's cocktail shaker. The shaker whirrs until the *water* thickens to a gloopy **thick liquid** that glugs out over the pitch. Footballers slide past on their bellies, the goalposts sink, and Bond, spotless, sips some **thick liquid** and calls it a sticky situation."},
+{"c":"芙","m":"{Frodo} wades {Inside} the {Pool} on his hairy feet, longing for one flat place to rest, and clambers onto a pink **lotus** ringed with *grass*. A *husband* in swim trunks is already sitting on it and refuses to budge, so Frodo slips on the Ring and sits on him invisibly. The man yelps, and the **lotus** bobs off like a boat."},
+{"c":"垃","m":"{Lara Croft} rappels down in {Front} of the {Spa} and finds a towering mound of **garbage** that she treats like a lost tomb, banana skins and *soil* from potted plants forming its walls. She climbs it hand over hand, ponytail swinging, to a *podium* at the peak. Lifting the relic, an old slipper, sets off the trap, and **garbage** rolls after her like a boulder."},
+{"c":"烤","m":"{Kermit} lights a *campfire* in the {Basement} of the {Tower} to **roast** flies on a stick while cramming for his stage-management *exam*. The *exam* paper catches a spark and flaps round the room, and he hops after it with his arms flailing. 'Yaaay!' he screams as the flies **roast** black, and he strums a banjo chord, eating them anyway."},
+{"c":"晒","m":"{Sherlock} climbs out of the {Bathroom} of the {Island} to **bask** in the hot *sun*, smug as ever, pipe in mouth, deducing nothing at all. He lies so still that a bird builds a *bird nest* in his deerstalker, and Watson takes notes. One sunburn line on his nose tells him all he needs, and the chicks **bask** beside him in a row."},
+{"c":"霜","m":"{Sherlock} strides out in {Front} of the {Swamp} after a night of freezing *rain*, and his magnifying glass settles on one white crystal of **frost**. From his *lookout* he deduces the culprit: 'Elementary, Watson, the alligators have been skating.' Sure enough, they glide past with **frost** on their eyelashes, and he plays his violin at them until his bow freezes."},
+{"c":"剿","m":"{James Bond} slips into the {Basement} of the {Cat Café} with Q's latest gadget, a pen that can **wipe out** anything it circles. He circles a *nest* of wind-up mice, and it vanishes with a polite pop. A *standing knife* leaps off the table to defend the crumbs, so he circles that too, clicks the pen shut and says, 'Nothing left to **wipe out**.'"},
+{"c":"蕴","m":"{Yoshi} trots through the {Bathroom} of the {Dunes} with a line of eggs bouncing behind him, the way he always does, to **store up** for winter. He swallows dry *grass*, gulps bales of *cotton padding* and lays each as an egg that joins the queue. Soon he can **store up** no more: the *cotton padding* eggs swell soft and the *grass* ones sprout."},
+{"c":"圾","m":"{James Bond} parachutes down in {Front} of the {Beach} and opens Q's briefcase, which does nothing but suck up **rubbish**. Bags, bottles and a wet boot whoosh past, pursued by a *chaser* who sprints across the *soil* shouting for his bin. The case bursts, **rubbish** rains on the tuxedo, and Bond flicks away one banana skin and says, 'Waste not.'"},
+{"c":"绸","m":"{Charlie Brown} trudges {Inside} the {Boathouse} with a new kite of shining **silk**, certain that this time it will fly. A spider runs a *silk thread* round and round in a *circuit*, and at once the kite is wrapped to a post. 'Good grief,' he sighs, tugging, and he ends up wound in **silk** himself, while Snoopy glides past on a boat."},
+{"c":"屿","m":"{Yoshi} unwraps a *gift* in the {Basement} of the {Museum}, finds a tiny *mountain* and gulps it down with one flick of his tongue. He lays it as a huge spotted egg, the egg sinks into the flooded floor, and its top pokes out: an **islet**. A palm tree sprouts, a crab moves in, and the *mountain* grumbles from under the **islet** about the damp."},
+{"c":"氢","m":"{Chewbacca} tries to fix a ship's fuel tank in {Front} of the {Boxing Ring}, and in a temper he rips it open, and a cloud of *steam* and pure **hydrogen** whooshes out. He breathes it in, and his mighty roar comes out as a tiny squeak. Only friends understand him now, as all that **hydrogen** lifts him and his bandolier gently over the crowd."},
+{"c":"驼","m":"{Tarzan} swings on a vine {Inside} the {Warehouse} and lands on a *horse* that suddenly has a hump. He asks it what is wrong in its own language, and a *serpent* hisses from under its blanket. Baffled by the crate labels, he reads the stamp and yells: this is a **camel** now. The **camel** spits at the serpent, which slithers off."},
+{"c":"妆","m":"The {Joker} perches in {Front} of the {Swamp} with a huge grin, offering free **makeup** to a *woman* sitting on a *split log*. He paints her face white, gives her green eyebrows and a smile to match his own, then squirts his flower to rinse the brush. The *split log* snaps shut with laughter, and the frogs queue for **makeup** with pink cheeks."},
+{"c":"捆","m":"{Kermit} sneaks into the {Basement} of the {Casino}, where a *helping hand* passes him a **bundle** of banknotes from a *trapped tree* tied up in rope. Arms flailing, he snaps a banjo string and tries to tie the notes down, but the branches burst loose and bloom with cash. He screams 'Yaaay!', and every leaf falls as another **bundle**."},
+{"c":"铅","m":"{Chewbacca} storms up in {Front} of the {Yen Exchange} waving *gold coins* that weigh far too much, and in a temper he rips one apart with his teeth. It is grey **lead**, painted yellow. He growls his outrage, which only his friends understand, and hurls the coins down, and all that heavy **lead** cracks the pavement and drops him into the vault."},
+{"c":"逛","m":"{Gandalf} pops out of the {Bathroom} of the {Swamp} and starts to **stroll** along a muddy *road*, puffing his pipe and arriving exactly nowhere on purpose. A *mad dog* races up, barking. 'You shall not pass!' he says, and he taps his staff, and the dog is compelled to **stroll** beside him, wearing a small grey hat."},
+{"c":"淑","m":"{Sherlock} sits in {Front} of the {Pool} beside his *uncle* and, glancing at one damp teacup, deduces the whole man: so **gentle** that he catches *water drops* so they will not hit the swimmers. 'Elementary,' he sniffs, unimpressed, as his *uncle* pats a wasp on the head. Watson weeps at the sight of anyone so **gentle** while Sherlock plays a smug tune on his violin."},
+{"c":"榴","m":"{Lara Croft} vaults {Inside} the {Youth Hostel} to a *tree* growing on a stone altar, with one **pomegranate** hanging like a holy relic. She swaps it for a bag of sand, keeping it as a *keepsake*, and the floor starts to shake. The **pomegranate** bursts, red seeds rain down the stairs, and she flips away over the bunks, ponytail flying."},
+{"c":"丙","m":"{Batman} broods in the {Basement} of the {Boxing Ring}, setting a camera on a *tripod* to check the Batmobile's time in the race. It comes **third**: not first, not second, but **third**, beaten by a milk cart. The *tripod* wobbles away in shame while Batman growls into his cape, and he checks his utility belt for a gadget that fixes this."},
+{"c":"痒","m":"{Yoshi} lies on a *sickbed* in the {Basement} of the {Hangar} when a *sheep* rubs its wool on his feet and they begin to **itch**. His sticky tongue shoots out to scratch, licks up the sheep by mistake, and he lays it as a woolly egg. Now the egg makes him **itch**, the *sickbed* wriggles with laughter, and the planes scratch their wings."},
+{"c":"钞","m":"{Charlie Brown} stands in {Front} of the {Tower} with a pot of *gold coins*, melts them, adds a *pinch* of salt and rolls them flat into **paper money**. At last, he thinks, his luck has turned. He pegs the **paper money** out to dry, and a gust carries it all up into a kite-eating tree. 'Good grief,' he says, and Snoopy buys the tree."},
+{"c":"蹄","m":"{Tarzan} swings on a vine {Inside} the {Beach} and lands beside a horse sent by the *sky god*, and asks it in its own language why it looks so glum. Its *kicking foot* lashes out, showing a golden **hoof** with no shoe. He has never seen a shoe, baffled by the whole idea, so he ties a coconut to the **hoof**, and the horse neighs thunder."},
+{"c":"犬","m":"{Chewbacca} squeezes into the {Basement} of the {Mint}, where a *dog* guards a mountain of coins, and he lets out a mighty roar. The **dog** understands him at once, being a loyal friend, and howls back. Bankers come running, the *dog* wags so hard that coins fly everywhere, and Chewbacca hugs the **dog** and straps it to his bandolier."},
+{"c":"躬","m":"{Gandalf} stands in {Front} of the {Lagoon} and cranky as ever taps his staff, casting a spell that forces all to **bow** to the sunrise. His own *torso* bends like a *bow*, and his pointy hat tips off into the water. He bends lower with a grumble until his nose meets his toes, and the fish **bow** back politely."},
+{"c":"昼","m":"The {Joker} pops up in the {Bathroom} of the {Boathouse} at *sunrise* and lays a giant *ruler* across the river, sneering at how slowly the light climbs. He flips a trick playing card, and suddenly the sun is a joke sun, jumping to full **daytime** in a blink. The *ruler* snaps with laughter, and all **daytime** long he cackles at the sleepy owls."},
+{"c":"藻","m":"{Zorro} crashes through a window into the {Basement} of the {Tower} and lands in a *bath*, where green *grass* sprouts from the plughole: **aquatic grass**, waving like hair. He draws his rapier and slashes a Z through it, but the Z grows back as more. His black horse wades in, wearing **aquatic grass** as a wig, and Zorro vanishes laughing."},
+{"c":"蛛","m":"The {Joker} tiptoes in {Front} of the {Pool} and dangles a huge fake **spider**, painted in shiny *red lacquer*, right over the swimmers, cackling. A little *bug* stuck to it waves for help. The swimmers shriek, then a real **spider** drops down, tuts at the workmanship and knits him a purple scarf, which tickles so much that his grin grows wider."},
+{"c":"褐","m":"{Homer} drops a chocolate doughnut in the {Bathroom} of the {Hut} and, lunging for it, smears his white *shirt* a deep gooey **brown**. A *question mark* pops up over his bald head as he tries to work out where the white went. 'D'oh!' He licks the shirt, 'Mmm', and shakes himself like a dog, and the cat and the walls turn **brown** too."},
+{"c":"颊","m":"{James Bond} lounges {Inside} the {Piazza} and flicks open Q's newest *tongs*, built to do only one thing: pinch a **cheek**. They clamp onto his own, and the *page* of instructions flutters off, pursued by pigeons. His **cheek** swells round and pink, yet he escapes by pinching the tongs back, and he says, unruffled, 'Cheeky.'"},
+{"c":"奠","m":"{Darth Vader} drops into the {Bathroom} of the {Yen Exchange}, where a *chieftain* and a *big man* are arguing over a heap of gold. He raises one glove and lifts them both with the Force, and they dangle, still shouting. Breathing loudly, he booms that he will **settle** this, and the gold floats into two piles and they **settle** down, very quiet."},
+{"c":"募","m":"{Mario} head-butts blocks by the {Bathroom} of the {Pool} at *sunset* to **raise funds** for a new diving board, and each block spits out a coin. His *strong arm* waves a bucket, the coins ring in, and he shouts 'Wahoo!' But each coin turns into a fish, so he has to stomp more blocks and **raise funds** all over again to buy a net."},
+{"c":"耽","m":"{Darth Vader} reclines in {Front} of the {Mansion} with his helmet's *ear* sunk in a fluffy *pillow*, and he reaches out with the Force to hold back the hands of each clock. He will **delay** lunch, the Empire and the afternoon. The *pillow* wheezes in time with his loud breathing, and even the sunset has to **delay** until he wakes."},
+{"c":"蹈","m":"{Darth Vader} stamps through the {Basement} of the {Tower} to his own marching music, and his *kicking foot* starts to **tread** on piles of rice with a boom at each step. A *rice scoop*, lifted by the Force, flies round him, tossing more under his boots. He breathes in time, cape swirling, and goes on to **tread** the whole harvest into flour."},
+{"c":"陋","m":"{Lara Croft} leaps across a spike pit into the {Bathroom} of the {Boathouse} and solves a door puzzle, only to find a shack on a bare *hillside*. Her treasure is **humble**: one stool, one candle, one sock. The *hillside* rumbles a warning as she lifts the sock, the old man who lives there beams, and she leaves him his **humble** relic and climbs out."},
+{"c":"侣","m":"{Lara Croft} cartwheels through the {Basement} of the {Museum} and finds a *standing person* made of nothing but a *spine*, a skeleton chained to an old stone puzzle. She cracks the puzzle, ponytail flicking, and it steps free, her new **companion** on every climb. The *spine* clicks with joy, and the dinosaur skeleton rattles its cage, begging for a **companion** too."},
+{"c":"魅","m":"{Mario} leaps out of the {Bathroom} of the {Lake} and meets a *ghost* hiding shyly behind a *sapling*, covering its eyes the moment he looks. It has such **charm** that the ducks swoon and the frogs propose. He tries to stomp it, but it fades, so he head-butts a block and gets one coin, and the *sapling* blushes, overcome by **charm**."},
+{"c":"岚","m":"{Lara Croft} climbs {Inside} the {Mansion} up a sheer indoor *mountain*, hand over hand, her ponytail streaming in the *wind*. Thick grey **mountain mist** swirls round her ankles and hides the traps, a rolling boulder rumbling somewhere within it. She backflips over the boulder, lands on a relic, and the **mountain mist** curls into the shape of a tiny ancient guardian, who applauds."},
+{"c":"侄","m":"The {Joker} tiptoes {Inside} the {Beehive} with a squirting flower, cackling, and a *standing person* waits at the *arrow landing* holding a bow: his **nephew**, a tiny boy with green hair and an even bigger grin. The **nephew** fires a candy arrow, the flower squirts back, and the bees chase them both round the combs, howling with delight."},
+{"c":"虐","m":"{Naruto} bursts into the {Bathroom} of the {Ice Rink} in his orange jumpsuit, because a *tiger* on skates is being **brutal** to the penguins and stealing their ramen. Fifty shadow clones skid in, shouting that they never give up, and a spinning Rasengan twirls the bully like a top. It slides into a snowbank, a **brutal** defeat, and the penguins get their noodles back."},
+{"c":"堕","m":"{Darth Vader} steps into the {Bathroom} of the {Warehouse} and the floor gives way in a *landslide* of boxes and *soil*. He starts to **fall**, cape flapping, breathing loudly, past shelves, pipes and a surprised mole. He reaches out with the Force, but only the boxes float, leaving him to **fall** on, and on the way he tells the mole he is its father."},
+{"c":"陛","m":"{Batman} fires his grappling hook in the {Bathroom} of the {Beach} and swings across to *throne steps* carved into a sandy *hillside*. The *hillside* slides under his boots, and he broods all the way up the **throne steps**, utility belt rattling. At the top sits the sand king, a crab, who has hidden a clue under the last of the **throne steps**, and Batman growls with approval."},
+{"c":"莹","m":"{Yoshi} sticks out his tongue {Inside} the {Boxing Ring} and licks dew off the *grass* growing in the corners, then lays one perfect egg. It is so **lustrous** that the boxers see their faces in it and stop fighting to comb their hair. The *grass* leans in to admire itself, and the champion begs for gloves as **lustrous** as that shell."},
+{"c":"荫","m":"{Yoshi} flutter-jumps in {Front} of the {Inn} and swallows a whole leafy tree, *grass* and all, then lays it as an enormous egg that casts a cool **shade**. The jealous sun tries to sneak under it, but the *shade* stretches out and gulps it like his own tongue. He curls up in the **shade**, crying his name happily."},
+{"c":"狡","m":"{James Bond} sits with *crossed legs* in the {Basement} of the {Cat Café}, playing cards against a *prowling dog* in a tiny tuxedo. The dog is **cunning**: it has swapped Q's card-shooting shoe, hidden under his *crossed legs*, for a squeaky toy. Bond raises one eyebrow, wins anyway with a shirt-cuff ace and remarks that he was once as **cunning** himself."},
+{"c":"阀","m":"{Frodo} plods {Inside} the {Spa} to a *gate* guarded by a *lumberjack*, behind which a **clique** of rich guests sips tea and lets nobody in. He slips on the Ring and tiptoes past invisibly on his hairy feet, stealing one scone for Sam. The *lumberjack* sniffs and chops the gate down, and the whole **clique** shrieks to find no one there."},
+{"c":"绞","m":"{James Bond} is tied to a chair in the {Basement} of the {Cat Café}, and a villainous kitten turns a winch to **twist** his *crossed legs* into a pretzel. Bond fires Q's cufflink, and out shoots a *silk thread* that loops round the winch. With one neat **twist** he is free, the kitten wears a bow, and he adjusts his tie and murmurs, 'Plot twist.'"},
+{"c":"膏","m":"{Gandalf} strides up in {Front} of the {Tower} with a sunburnt nose, unscrews a jar of thick white **ointment** and mutters a spell over it, because a wizard never settles for plain cream. It bubbles up in fireworks and leaps out of the jar. Soon the pigeons, the lamp post and his pointy hat are shining with **ointment**, and he crankily lights his pipe."},
+{"c":"垮","m":"{Kermit} flails into the {Basement} of the {Water Park}, clipboard high, where a *show-off* is stacking *soil* into a stage for tonight's show. One shrill 'Yaaay!' sets it wobbling, and it starts to **collapse**. Then the curtain, the banjo stand and the *show-off* all **collapse** too, and Kermit calls out, hopping on the heap, that it was supposed to happen."},
+{"c":"茎","m":"{James Bond} stands in {Front} of the {Boxing Ring} and presses the **stem** of the rose in his lapel, Q's latest gadget. The **stem** shoots out like a green grappling line, hooks the ring post and drags him, tuxedo spotless, through the tall *grass*, which bows as he passes. He lands on the ropes, brushes off a petal and says, 'Blooming marvellous.'"},
+{"c":"缅","m":"{Mario} dives down a warp pipe in the {Basement} of the {Yen Exchange} to reach a friend on an island so **remote** that letters take a year. A *silk thread* trails behind him, tied to a portrait of a smiling *face* so he can find his way home. He pops out, 'Wahoo!', and the *face* winks at him from those far, **remote** waters."},
+{"c":"喇","m":"{Lara Croft} flips down into the {Basement} of the {Spa} and pulls a dented *trumpet* from an ancient trapped chest, which slams shut behind her. She jams it to her *mouth* and blasts '**La**-ba!', because 喇 is the **la** in 喇叭, trumpet. The hot tubs bubble over, a stone boulder starts to roll, and she vaults away still honking."},
+{"c":"绒","m":"{Robocop} clanks stiffly {Inside} the {Lagoon} when his targeting display flags a *soldier* for illegal softness, in a uniform of **velvet** woven from *silk thread*. He reads out a directive on correct uniforms and politely arrests the jacket. The *silk thread* winds round his steel arm, and his visor flickers as he strokes the **velvet** and purrs, off duty at last."},
+{"c":"搅","m":"{James Bond} reclines in the {Basement} of the {Cat Café} in a silk bed, tuxedo on, under a sign that says do not **disturb**. A *helping hand* pokes through the wall and shakes an *alarm clock* at his ear. He presses Q's button and the bed ejects him, the clock and twenty cats, but nothing can **disturb** his bow tie."},
+{"c":"凳","m":"{Darth Vader} sweeps into the {Bathroom} of the {Jungle} and with one glove summons a tiny **stool** through the air. It lands on *spread feet*, then bolts away on them, squeaking. A monkey rides it past, then a tiger, so he Force-chokes the **stool** until its legs buckle, and he sits on a squashed pancake, breathing loudly."},
+{"c":"梭","m":"{Sailor Moon} sparkles through her transformation in {Front} of the {Warehouse}, then throws her tiara, which flies back and forth like a wooden **shuttle** through a loom carved from a *tree*. A *handsome man* is weaving sails and swoons so hard that he lets go. The **shuttle** whizzes off and hits a ship, and she bursts into loud tears while Luna the cat sighs."},
+{"c":"丫","m":"{Yoshi} swallows a *pole* topped with two *horns* in {Front} of the {Spa} and lays it as an egg. The egg cracks, and out sticks a perfect **fork**, so he grabs it with his tongue. The *pole* wobbles, the *horns* spear a passing cloud, and he slurps it down, then lays a little cloud egg on the **fork**, crying his own name."},
+{"c":"姬","m":"{James Bond} arrives by speedboat in {Front} of the {Beach}, where a noble **lady** waits with her *chin* raised so high that gulls perch on it. She is the one *woman* who sees through him, plucking Q's exploding teapot out of his sleeve. 'Bond. James Bond,' he says, and the **lady** simply hands it back and tells him to pour."},
+{"c":"诏","m":"The {Joker} bursts out of the {Bathroom} of the {Tower} with a forged **imperial edict**, and he hands it to a *town crier* with a huge grin. The crier bellows it, a *small speech bubble* floats over the crowd, and all must ride backwards on Tuesdays. Horses neigh, a flower squirts, and the **imperial edict** turns into a trick playing card, which he cackles at."},
+{"c":"钮","m":"{Naruto} creeps into the {Basement} of the {Youth Hostel} and meets a *clown* whose coat has lost every **button**, so he shouts 'Shadow Clone!' and fifty of him appear. They sew *gold coins* on, one each, arguing loudly over the thread and slurping ramen. The last **button** pops off and rolls away, and all fifty dive after it, refusing to give up."},
+{"c":"棺","m":"{Gandalf} strides up in {Front} of the {Swan Pond} and an *official* in black is measuring him for a **coffin** made from a *tree*, because the rumour says he has fallen. Crankily, Gandalf taps his staff, declares he arrives exactly when he means to, and turns the **coffin** into a boat with one spell. The swans climb aboard, setting off his fireworks."},
+{"c":"耿","m":"{Gandalf} sits in the {Basement} of the {Jungle} with his *ear* glowing red beside a *campfire*, because his spell makes everyone in earshot **honest**. A monkey asks who ate the bananas, and the wizard hears himself confess it at once. Crankily he puffs his pipe, the *campfire* sends up honest fireworks, and the monkeys clap for the most **honest** wizard alive."},
+{"c":"缔","m":"{Darth Vader} looms in the {Bathroom} of the {Beach} and offers his glove to two quarrelling crabs, booming that together they will **form a union**. With the Force he flies a *silk thread* round their claws. The *sky god* rumbles a blessing over his loud breathing, and all the starfish line up to **form a union** and rule the sand."},
+{"c":"懈","m":"{Shrek} stomps into the {Bathroom} of the {Yeti Cave} demanding to be left alone, and finds the guard yeti has gone **lax**, its *standing heart* snoring, its belt hanging in an *untied knot*. Donkey will not shut up about it. Even Shrek's roar comes out as a yawn, his swamp seems far away, and soon the pair of them are **lax** as old onions."},
+{"c":"嫉","m":"{James Bond} sunbathes {Inside} the {Beach} wearing Q's gold-plated tuxedo, and a *woman* on the next towel turns green, **jealous** of its shine. Her *fever* rises until the thermometer pops and the sand steams. She presses a button on a bigger gadget of her own and out rolls a diamond tuxedo, and now Bond is the **jealous** one, though he hides it with a one-liner."},
+{"c":"灶","m":"{Zorro} flings open the {Bathroom} of the {Tower} and finds a **stove** of baked *soil* with a *campfire* blazing in its belly. He slashes a Z into its side with his rapier, and the flames roar out through it, cooking soup in a flash. The lions rush up to steal the **stove**, so he swings from a chandelier, cape flying, and vanishes laughing."},
+{"c":"匀","m":"{Yoshi} swallows a heap of sand {Inside} the {Dunes} and lays it back as a row of eggs for the camels, in *even shares*. One camel grumbles, so he licks up each egg, swallows them again and lays them perfectly **even**, with the same number of spots. The *even shares* stand in a row, so **even** that the camels cannot tell whose is whose."},
+{"c":"嗣","m":"{Sailor Moon} tumbles into the {Bathroom} of the {Beehive}, where the old queen bee, the *boss*, is retiring, and her son is to **inherit** the hive. She waves her moon wand through a long sparkly ceremony and delivers a speech about justice. The prince trips, she cries loudly, and Luna the cat points out that he will **inherit** nothing but honey on his crown."},
+{"c":"鸽","m":"{Gandalf} sits in {Front} of the {Hut} puffing his pipe when he waves his staff and pulls a **pigeon** from his pointy hat, instead of a moth. It lands on a jar with a *fitted lid* and pecks until the lid flies off with a firework. The *bird* calls a hundred friends, and each **pigeon** settles on his robes, delivering a cranky message."},
+{"c":"澡","m":"{Zorro} rides his black horse down to the {Basement} of the {Tower} and fills a giant *bath*, slashing a Z through the tap with one flick of his rapier. The horse leaps in and water floods the stairs: the best **bath** ever. Zorro swings in on a chandelier, cape and all, then his mask runs, and now everyone needs another **bath**."},
+{"c":"凿","m":"{Zorro} leaps onto a *scaffold* {Inside} the {Tower} and, with no time for tools, uses his rapier as a **chisel**, slashing Zs into the stone. Chips fly, and out comes a statue of his own horse, which sneezes and walks off. The *scaffold* rocks as he bows, tosses the **chisel** away with a flourish and vanishes laughing."},
+{"c":"纬","m":"{Walter White} stands at a bench in the {Basement} of the {Lake} in glasses and goggles, winding *silk thread* round a glass globe and fixing it with a *leather strap*. Each thread marks a line of **latitude**, proud and exact to the decimal. He tells his class science is precise, then tugs one, and the globe spins, sliding along its **latitude** lines into the beaker."},
+{"c":"沸","m":"{Frodo} staggers into the {Bathroom} of the {Lake} and the Ring round his neck burns hot, as if he has reached the fires of the mountain at last. *water drops* spit from a kettle and begin to **boil**, and a *dollar sign* of steam tempts him. Weary and reluctant, he dips one hairy toe, and Sam's soup, the kettle and the lake all **boil**."},
+{"c":"畴","m":"{Charlie Brown} trudges {Inside} the {Boathouse}, which somehow holds an **arable field**, with one *rice field* beside it for Snoopy. He plants kite seeds, because this year must be his year. Up comes a *longevity peach* tree, which eats the kite, and the *rice field* floods his shoes. 'Good grief,' he sighs, the only farmer whose **arable field** grows bad luck."},
+{"c":"刃","m":"{Robocop} clanks stiffly into the {Bathroom} of the {Funfair}, and a steel spike with a gleaming *blade edge* slides from his fist. His targeting display locks onto a candyfloss cone and reads out a directive that all snacks be square. The **blade edge** slices it in four neat cuts, and he politely arrests the crumbs, holding up that **blade edge** for inspection."}]

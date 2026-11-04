@@ -71,8 +71,8 @@ function hskOf(w) {
 
 /* A mnemonic, drawn: **meanings** in bold, *component names* and {sound names} as
    chips with the glyph or the sound they stand for, when ctx says which ({comps:
-   [[glyph, name]], sounds: [[label, name]]}): 半 half, b- Baker. A name matches as
-   written or with an ending (halves, Bakers). */
+   [[glyph, name]], sounds: [[label, name]]}): 半 half, b- Batman. A name matches as
+   written or with an ending (halves, Batmans). */
 function mnHtml(m, ctx) {
   ctx = ctx || {};
   const find = (list, said) => {
@@ -89,9 +89,22 @@ function mnHtml(m, ctx) {
       return hit ? `<span class="mn-chip comp"><span class="han">${esc(hit[0])}</span>${said}</span>` : `<span class="mn-part">${said}</span>`;
     })
     .replace(/\{([^}]+)\}/g, (all, said) => {
-      const hit = find(ctx.sounds, said);
-      return `<span class="mn-chip snd">${hit ? `<span class="snd-key">${esc(hit[0])}</span>` : ''}${said}</span>`;
+      const hit = find(ctx.sounds, said), key = hit ? hit[0] : soundKeyOf(said);
+      return `<span class="mn-chip snd">${key ? `<span class="snd-key">${esc(key)}</span>` : ''}${said}</span>`;
     });
+}
+/* the sound a picture name stands for, wherever a mnemonic is drawn without its
+   character to hand: Hangar -> -ang, Bathroom -> 4 */
+let _soundKeys = null;
+function soundKeyOf(said) {
+  if (!HZ.sounds) return '';
+  if (!_soundKeys) {
+    _soundKeys = {};
+    for (const [pre, set] of [['i:', HZ.sounds.initials], ['f:', HZ.sounds.finals], ['t:', HZ.sounds.tones]]) {
+      for (const [v, row] of Object.entries(set)) _soundKeys[row[0].toLowerCase()] = itemText(pre + v);
+    }
+  }
+  return _soundKeys[String(said).toLowerCase()] || '';
 }
 /* the chips' context for a character: its components and sounds */
 function mnContext(c, cd) {
@@ -128,7 +141,8 @@ function wireWordSegs(root, then) {
 
 // ------------------------------------------------------------ example sentences
 
-/* a sentence split into words, each with its pinyin under it; the word itself marked.
+/* a sentence split into words, each with its pinyin under it; the word itself marked,
+   or a character (w) inside the word it is part of.
    ex: ['我|的|电脑|太|慢|了|。', 'wǒ|de|diàn nǎo|tài|màn|le|', 'My computer is too slow.'] */
 function exampleHtml(ex, w) {
   const zs = ex[0].split('|'), ps = ex[1].split('|');
@@ -136,8 +150,12 @@ function exampleHtml(ex, w) {
     const han = [...z].some(isHan);
     if (!han) return `<span class="ex-p">${zh(z)}</span>`;
     const tag = z === w ? 'mark' : 'a';
+    let shown = zh(z);
+    if (z !== w && [...w].length === 1 && z.includes(w)) {
+      for (const x of new Set([w, toTrad(w)])) shown = shown.split(x).join(`<b class="ex-c">${x}</b>`);
+    }
     const href = z === w ? '' : ` href="#/${[...z].length > 1 ? 'word' : 'character'}/${encodeURIComponent(z)}"`;
-    return `<${tag} class="ex-w"${href}><ruby>${zh(z)}<rt>${esc(ps[i] || '')}</rt></ruby></${tag}>`;
+    return `<${tag} class="ex-w"${href}><ruby>${shown}<rt>${esc(ps[i] || '')}</rt></ruby></${tag}>`;
   }).join('')}</div><p class="ex-en">${esc(ex[2])}</p>`;
 }
 
@@ -169,7 +187,7 @@ function storyUses(w, max) {
 
 async function pageWord(w) {
   app.innerHTML = LOADING;
-  await Promise.all([need.words(), optional(need.hsk()), optional(need.winfo()), optional(need.cmnem()), optional(need.stories())]);
+  await Promise.all([need.words(), optional(need.hsk()), optional(need.winfo()), optional(need.cmnem()), optional(need.sounds()), optional(need.stories())]);
   const k = learnKey(w);
   const es = wordEntries(k).length ? wordEntries(k) : wordEntries(w);
   if (!es.length) {
@@ -209,72 +227,91 @@ async function pageWord(w) {
   const uses = storyUses(simp, 4);
   const mn = info ? info[1] : '';
   const note = Store.load().notes[simp] || '';
+  const gloss = plainMeaning(es[0][3]).split(/;\s*/).slice(0, 3).join('; ');
+  const sound = soundStrip(es[0] && es[0][2], true);
+  const hasRelated = longer.length || chars.some(c => withChar[c].length);
 
   app.innerHTML = `<p class="crumb"><a href="#/words">Words</a> / <span class="han">${zh(simp)}</span></p>` + withRail(`
-    <section class="card chartop">
-      <div class="hero-row">
-        <div class="word-hero">
-          <div class="hero-glyph word-glyph ${status || ''}">${zh(simp)}</div>
-          <p class="word-pin">${esc(es.map(e => e[2]).filter((p, i, a) => a.indexOf(p) === i).join(' / '))}
-            <button class="btn quiet" id="w-say" aria-label="Hear it">▶</button></p>
+    <section class="card pg-hero">
+      <div class="pg-id">
+        <div class="hero-glyph word-glyph ${status || ''}">${zh(simp)}</div>
+        <div class="pg-title">
+          <p class="pg-pin">${esc(es.map(e => e[2]).filter((p, i, a) => a.indexOf(p) === i).join(' / '))}
+            <button class="btn quiet pg-say" id="w-say" aria-label="Hear it">▶</button></p>
+          ${gloss ? `<p class="pg-gloss">${esc(gloss)}</p>` : ''}
         </div>
-        <div class="hero-actions">
-          <div class="dd">
-            <button class="btn status-btn ${status || 'none'}" id="wstatusbtn">
-              Status: ${status ? status[0].toUpperCase() + status.slice(1) : 'Not known'} ▾</button>
-            <div class="dd-pop" id="wstatuspop" hidden>
-              <button data-s="">Not known</button>
-              <button data-s="learning">Learning</button>
-              <button data-s="learned">Learned</button>
-            </div>
+      </div>
+      <div class="hero-actions pg-actions">
+        <div class="dd">
+          <button class="btn status-btn ${status || 'none'}" id="wstatusbtn">
+            Status: ${status ? status[0].toUpperCase() + status.slice(1) : 'Not known'} ▾</button>
+          <div class="dd-pop" id="wstatuspop" hidden>
+            <button data-s="">Not known</button>
+            <button data-s="learning">Learning</button>
+            <button data-s="learned">Learned</button>
           </div>
-          ${learnButton(simp)}
         </div>
+        ${learnButton(simp)}
       </div>
       <ul class="facts">${facts.join('')}</ul>
     </section>
 
-    <h2 class="sec-h">Meaning</h2>
-    <div class="decomp-box pad">
-      ${es.map((e, n) => `<div class="reading">
-        <p class="r-head">${es.length > 1 ? (n + 1) + '. ' : ''}${esc(e[2])}</p>
-        <p class="r-defs">${plainMeaning(e[3]).split(/;\s*/).map(esc).join(' • ')}</p></div>`).join('')}
-      ${info && info[3] ? `<p class="word-use"><b>Good to know:</b> ${esc(info[3])}</p>` : ''}
-    </div>
+    ${pageJump([['sec-meaning', 'Meaning'], ['sec-mnemonic', 'Mnemonic'], ['sec-examples', 'Examples'], ['sec-chars', 'Characters'],
+      hasRelated ? ['sec-related', 'Related'] : null])}
 
-    <h2 class="sec-h">Mnemonic</h2>
-    <div class="decomp-box pad">
-      ${mn ? `<p class="mn">${mnHtml(mn)}</p>` : '<p class="muted">No mnemonic for this word yet.</p>'}
-      <textarea id="note" rows="2" class="note-box"
-        placeholder="Your own mnemonic or note…">${esc(note)}</textarea>
-      <p class="small muted" id="note-state">Saved automatically.</p>
-    </div>
+    <section class="pg-sec" id="sec-meaning" tabindex="-1">
+      <h2 class="sec-h">Meaning</h2>
+      <div class="decomp-box pad">
+        ${es.map((e, n) => `<div class="reading">
+          <p class="r-head">${es.length > 1 ? (n + 1) + '. ' : ''}${esc(e[2])}</p>
+          <p class="r-defs">${plainMeaning(e[3]).split(/;\s*/).map(esc).join(' • ')}</p></div>`).join('')}
+        ${info && info[3] ? `<p class="word-use"><b>Good to know:</b> ${esc(info[3])}</p>` : ''}
+      </div>
+    </section>
 
-    <h2 class="sec-h">Examples</h2>
-    <div class="decomp-box pad">
-      ${info && info[2].length ? info[2].map(ex => `<div class="example">${exampleHtml(ex, simp)}</div>`).join('') : ''}
-      ${uses.length ? `<p class="muted small" style="margin-top:12px">In the stories:</p>
-        ${uses.map(u => `<p class="story-use han">${u.tokens.map(t => t === simp ? `<mark>${zh(t)}</mark>` : zh(t)).join('')}
-          <a class="small" href="#/reader/${encodeURIComponent(u.id)}">${zhOne(u.title)} →</a></p>`).join('')}` : ''}
-      ${!(info && info[2].length) && !uses.length ? '<p class="empty">No examples yet.</p>' : ''}
-    </div>
+    <section class="pg-sec" id="sec-mnemonic" tabindex="-1">
+      <h2 class="sec-h">Mnemonic</h2>
+      <div class="decomp-box pad pg-stack">
+        <div>${mn ? `<p class="mn">${mnHtml(mn)}</p>` : '<p class="muted">No mnemonic for this word yet.</p>'}</div>
+        ${sound ? `<div><h3 class="sub-h">Sound</h3>${sound}</div>` : ''}
+        <div><h3 class="sub-h"><label for="note">Your note</label></h3>
+          <textarea id="note" rows="2" class="note-box"
+            placeholder="Your own mnemonic or note…">${esc(note)}</textarea>
+          <p class="small muted" id="note-state">Saved automatically.</p></div>
+      </div>
+    </section>
 
-    <h2 class="sec-h">Characters</h2>
-    <div class="decomp-box pad word-chars">
-      ${chars.map(c => {
-        const e = HZ.index[c] || [], cm = HZ.cmnem && HZ.cmnem[c];
-        return `<div class="word-char">${tile(c)}<div><b>${esc(e[2] || '')}</b>
-          <span class="muted">${esc(cm ? cm[0] : String(e[3] || '').split(';')[0])}</span>
-          ${cm ? `<p class="small mn">${mnHtml(cm[1])}</p>` : ''}</div></div>`;
-      }).join('')}
-    </div>
+    <section class="pg-sec" id="sec-examples" tabindex="-1">
+      <h2 class="sec-h">Examples</h2>
+      <div class="decomp-box pad">
+        ${info && info[2].length ? info[2].map(ex => `<div class="example">${exampleHtml(ex, simp)}</div>`).join('') : ''}
+        ${uses.length ? `<p class="muted small" style="margin-top:12px">In the stories:</p>
+          ${uses.map(u => `<p class="story-use han">${u.tokens.map(t => t === simp ? `<mark>${zh(t)}</mark>` : zh(t)).join('')}
+            <a class="small" href="#/reader/${encodeURIComponent(u.id)}">${zhOne(u.title)} →</a></p>`).join('')}` : ''}
+        ${!(info && info[2].length) && !uses.length ? '<p class="empty">No examples yet.</p>' : ''}
+      </div>
+    </section>
 
-    ${longer.length || chars.some(c => withChar[c].length) ? `<h2 class="sec-h">Related words</h2>
-    <div class="decomp-box pad">
-      ${longer.length ? `<div class="wordgroup"><h3>Longer words with ${zh(simp)}</h3><div class="words">${longer.map(relChip).join('')}</div></div>` : ''}
-      ${chars.filter((c, i) => chars.indexOf(c) === i && withChar[c].length).map(c => `<div class="wordgroup"><h3>Other words with ${zh(c)}</h3>
-        <div class="words">${withChar[c].map(relChip).join('')}</div></div>`).join('')}
-    </div>` : ''}`, true);
+    <section class="pg-sec" id="sec-chars" tabindex="-1">
+      <h2 class="sec-h">Characters</h2>
+      <div class="decomp-box pad word-chars">
+        ${chars.map(c => {
+          const e = HZ.index[c] || [], cm = HZ.cmnem && HZ.cmnem[c];
+          return `<div class="word-char">${tile(c)}<div><b>${esc(e[2] || '')}</b>
+            <span class="muted">${esc(cm ? cm[0] : String(e[3] || '').split(';')[0])}</span>
+            ${cm ? `<p class="small mn">${mnHtml(cm[1])}</p>` : ''}</div></div>`;
+        }).join('')}
+      </div>
+    </section>
+
+    ${hasRelated ? `<section class="pg-sec" id="sec-related" tabindex="-1">
+      <h2 class="sec-h">Related words</h2>
+      <div class="decomp-box pad">
+        ${longer.length ? `<div class="wordgroup"><h3>Longer words with ${zh(simp)}</h3><div class="words">${longer.map(relChip).join('')}</div></div>` : ''}
+        ${chars.filter((c, i) => chars.indexOf(c) === i && withChar[c].length).map(c => `<div class="wordgroup"><h3>Other words with ${zh(c)}</h3>
+          <div class="words">${withChar[c].map(relChip).join('')}</div></div>`).join('')}
+      </div>
+    </section>` : ''}`, true);
 
   document.getElementById('w-say').addEventListener('click', () => Sound.say(simp, true));
   const btn = document.getElementById('wstatusbtn'), pop = document.getElementById('wstatuspop');
@@ -294,6 +331,7 @@ async function pageWord(w) {
     document.getElementById('note-state').textContent = 'Saving…';
     timer = setTimeout(() => { Store.note(simp, ta.value); document.getElementById('note-state').textContent = 'Saved.'; }, 500);
   });
+  wirePageJump();
   paintRail();
 }
 

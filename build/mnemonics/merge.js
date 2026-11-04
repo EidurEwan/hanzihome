@@ -2,6 +2,7 @@
  *   site/data/cnames.js   HZ.cnames = {component: [picture name, why, mnemonic]}
  *   site/data/cmnem.js    HZ.cmnem  = {character: [keyword, mnemonic, reading if not the index's]}
  *   site/data/winfo.js    HZ.winfo  = {word: [part of speech, mnemonic, examples, note]}
+ *   site/data/charex.js   HZ.charex = {character: [example, …]}
  * Each example is ['我|的|电脑|…', 'wǒ|de|diàn nǎo|…', 'English']: the sentence cut into
  * words by textstory.js, the reader's own segmenter, with each word's pinyin as it reads
  * there, so the page needn't load the 9 MB dictionary to show it.
@@ -88,4 +89,61 @@ for (const f of files.filter(f => f.startsWith('words-'))) for (const x of read(
   winfo[x.w] = [x.pos || '', x.m.trim(), x.ex.slice(0, 3).map(([zh, en]) => [...cut(zh.trim(), x.w), en.trim()]), (x.use || '').trim()];
 }
 write('winfo.js', 'winfo', winfo);
+
+/* HZ.charex = {character: [example, …]}, as winfo's: the sentences a character's lesson and
+   page show. A word's sentences are about that word, and no word in winfo is one character
+   long, so this picks for each of the 3,000 characters from all of them: first where it
+   stands alone, then in its commonest words, always with the reading taught. out/charex.json
+   ([{c, ex: [[zh, en], …]}]) fills in for characters those sentences don't reach. */
+const CHAREX = 3;
+const flat = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const taught = c => cmnem[c][2] || HZ.index[c][2];
+/* said as taught: the same syllable and tone, or the toneless form a word can give it (东西 xi) */
+const sameSound = (said, c) => { const s = said.toLowerCase(), t = taught(c).toLowerCase(); return s === t || (s === flat(s) && s === flat(t)); };
+/* how an example uses a character: 2 alone, 1 inside a word, 0 not or with another reading */
+function useIn(ex, c) {
+  const zs = ex[0].split('|'), ps = ex[1].split('|');
+  let best = 0;
+  zs.forEach((z, i) => {
+    const cs = [...z], sy = (ps[i] || '').split(/\s+/);
+    cs.forEach((x, j) => { if (x === c && cs.length === sy.length && sameSound(sy[j], c)) best = Math.max(best, cs.length === 1 ? 2 : 1); });
+  });
+  return best;
+}
+const hanLen = ex => ex[0].replace(/[^一-鿿]/g, '').length;
+const pool = {};   // character -> [{ex, use, from, order}], commonest source word first
+Object.entries(winfo).forEach(([w, e], order) => e[2].forEach(ex => {
+  for (const c of new Set([...ex[0]])) {
+    if (!cmnem[c]) continue;
+    const use = useIn(ex, c);
+    if (use) (pool[c] = pool[c] || []).push({ ex, use, from: w, order });
+  }
+}));
+const charex = {};
+for (const c of Object.keys(cmnem)) {
+  const own = [];
+  for (const x of read('charex.json') || []) if (x.c === c) for (const [zh, en] of x.ex || []) {
+    if (!zh.includes(c)) { skipped.push(`charex ${c}: ${zh}`); continue; }
+    const ex = [...cut(zh.trim(), c), en.trim()];
+    // written for the reading taught, so alone it reads that way (the segmenter says 药|铺 pū);
+    // inside a word it keeps the word's own reading (钥匙 yào shi)
+    const zs = ex[0].split('|'), ps = ex[1].split('|');
+    zs.forEach((z, i) => { if (z === c) ps[i] = taught(c); });
+    ex[1] = ps.join('|');
+    own.push(ex);
+  }
+  // short sentences first within a kind; one sentence per source word, so the uses differ
+  const sorted = (pool[c] || []).slice().sort((a, b) => b.use - a.use
+    || (hanLen(a.ex) > 16) - (hanLen(b.ex) > 16) || a.order - b.order);
+  const picked = [...own], from = new Set(), seen = new Set(own.map(e => e[0]));
+  for (const x of sorted) {
+    if (picked.length >= CHAREX) break;
+    if (seen.has(x.ex[0]) || from.has(x.from)) continue;
+    picked.push(x.ex); seen.add(x.ex[0]); from.add(x.from);
+  }
+  if (picked.length) charex[c] = picked;
+}
+write('charex.js', 'charex', charex);
+const gaps = Object.keys(cmnem).filter(c => !charex[c]);
+if (gaps.length) console.log(`no sentence yet for ${gaps.length} characters`);
 if (skipped.length) console.log(`skipped ${skipped.length}: ${skipped.slice(0, 40).join(' ')}`);

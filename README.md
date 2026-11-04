@@ -101,7 +101,10 @@ characters cascade in; loading shows bouncing dots, and a translation in progres
 shimmering; the theme changes as a cross-fade. With the system's "reduce motion" setting on,
 nothing moves.
 
-**The menu** — as in Boxes, a drawer behind the menu button at the top left, at every screen
+**The menu** — Study, Words, Reader, Translate, Home, Grammar & Phrases, Explore, Lists & Notes and Settings. **Explore**
+holds HSK, Most Common, Radicals, Components, Characters, Phonetic Sets and Sounds, and **Lists & Notes** holds
+Lists, Notes and History, as tabs over each page (`HUBS` in `site/app.js`); each keeps its own address. As in
+Boxes, it is a drawer behind the menu button at the top left, at every screen
 size: a card with your week streak and the characters and words you have learned, the three
 main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
 
@@ -115,6 +118,14 @@ The progress cards:
   characters account for, using real corpus frequencies.
 * **Study next** — suggestions picked because *you already know both parts* of a character,
   or because it buys the most reading coverage.
+
+**Feel** (`site/motion.js`, the end of `site/style.css`) — one page dissolves into the next (View Transitions): the old page stays until the new one is drawn, for 180 ms at most, under a top bar that doesn't move. What you press goes down at once and comes back softly. Back returns you to where you were on the page. Everything stands still with the system's reduce-motion setting.
+
+**Weak spots** (`#/weak`, `site/weak.js`) — one short round on what you keep missing: the characters, words, components and sounds that keep slipping (`Learn.weakItems`), the look-alikes you mix up, and the tone your ear is worst at with the one it hears it as. Extra study: it doesn't change when reviews come back. It replaces the Study page's Recent mistakes, which are part of it.
+
+**Learned today** (`#/learned`, also the end of a lesson quiz) shows every character, word, component and sound that had its lesson today, just as it looks; each opens its page in a new tab. The Study page links to it.
+
+**Character and word pages** run in the same order, with a bar of their sections that stays on screen: the character or word with its pinyin, meaning, actions and facts; meaning; mnemonic, sound and your note; examples; (for characters) stroke order; parts, or a word's characters; related.
 
 **Character pages** — stroke order (played stroke by stroke, the radical's strokes in red,
 with practice tracing over it or writing it from memory, checked stroke by stroke), breakdown
@@ -130,9 +141,25 @@ word's characters), a mnemonic (HanziHome's own, or one you write on a scaffold 
 its meanings and pronunciation, and examples, then asks you to type its pinyin (tone numbers:
 `ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
 
-**A learning path** (Settings, or the Study page when nothing is queued) fills the lessons each
-day with the next characters of the most common or of HSK 1 to 6, as many a day as you choose,
-each with its new components and sounds. **When today's lessons are done comes a quiz** over all of
+**A learning path** (Settings, or the Study page when nothing is queued) keeps the lesson queue
+full with the next characters of the most common or of HSK 1 to 6, or **balanced**, as many as you
+choose, each with its new components and sounds; that many become ready each day. Change the path or
+the number and what the path queued changes at once, while what you added yourself or starred stays
+(`Learn.pathSync`). **The daily lesson limit** is filled first with new characters and the new components
+they bring (sounds are free), then with words, which can be learned the day after all their characters have had
+their lessons. The lessons themselves come in this order: what you prioritised, then words, then
+characters. Settings has a side panel of its sections (a menu on a phone), built from the page's own headings. The Study page's queue shows the next ten characters and words; **Upcoming** (`#/queue`,
+`site/order.js`) shows the character order and the word order on two tabs (each word comes just after the
+last of its characters: `Learn.wordOrder`, from `site/data/wordorder.js`, written by
+`build/export_wordorder.js`). Tap one to prioritise it, so it is learnt before the rest of the queue, or
+skip it, so it is never taught. Balanced scores each character on how common
+it is (weight 55), how early in the HSK (40), how few its strokes (5) and how many of its components you
+know (5): that finishes HSK 1 by the 388th character and HSK 2 by the 664th, scoring again after each choice, so that learning 女 and 子 lifts 好 (`Learn.pickChars`,
+from `site/data/charorder.js`, written by `build/export_charorder.js`). Settings compares the paths:
+when each finishes each HSK level, how much text each lets you read, and what each is good and bad at
+(`Learn.PATH_FACTS`, which `test/learn.js` checks against the real orders). **An HSK level nearly done**
+(75% learned and at most 50 left) gets a button, on the Study page and its own, that puts the rest at the
+front of the lessons; the path waits until they're done, and it can be taken back. **When today's lessons are done comes a quiz** over all of
 them, mixed, in the reviews' page (batch after batch first: a batch holds that many characters and
 words, with the components and sounds they need); its first answers (with each lesson's own check)
 rate the first review. "Stop here and take the quiz" ends early and leaves the rest queued. **A missed review opens the mnemonic**, unless it would give away a question still to come,
@@ -143,7 +170,8 @@ two weeks. **Look-alikes** (Study → Extra study, `#/lookalikes`, `site/lookali
 twelve on telling apart characters that look alike (未 末, 请 情 清 晴 睛, 己 已 巳), from the ones
 you are learning or know: pick the character for a pinyin and meaning, or the meaning for a
 character, then see the set side by side with the parts that differ marked. The ones you mix up
-come up more (kept on this device); practice doesn't touch the review schedule. Each character
+come up more (kept on this device); practice doesn't touch the review schedule, and uses only characters
+you have learned (`Learn.knownChars`: a finished lesson, or marked Learning or Learned, or in such a word). Each character
 page lists its look-alikes ("Looks like") with a link to practise them. The look-alikes are
 precomputed by `build/export_lookalikes.js` into `site/data/lookalike.js` (21 KB), from stroke
 counts and breakdowns, with a short list of classic pairs by hand. **Items learned**, a chart on the Study page: how many sounds, components, characters
@@ -156,7 +184,16 @@ on to the next review.
 **Pronunciation** is a person's recording where there is one: the 8,500 words and characters of
 the HSK lists, and every other word read syllable by syllable (`site/audio/`, from audio-cmn by
 Chen Wang and Yue Tan, CC BY-SA: see `site/audio/LICENSE.md`); the browser's Chinese voice reads
-the rest, or everything if Settings says so.
+the rest, or everything if Settings says so. Phones only start sound from a tap, so the first tap
+opens the audio, and a sound refused just before it plays then (`Sound.unlock` in `site/study.js`).
+About 4% of the recordings sound cut off: they stop dead, the voice falls away in 25 ms or less, or the
+sound starts with no silence before it (`build/tones/cutoffs.js` measures them). Characters and words
+whose syllable recordings are whole say those instead (`c` in `site/data/audio.js`); a word with a tone
+change or a neutral tone keeps its own, as syllables would say it wrongly. The tone trainer leaves out
+all of them. `ju4` and `yo1` aren't in the collection: the browser's voice says what is left of the word.
+
+Run from your computer, `start-hanzihome.bat` serves the site at `http://127.0.0.1:8765`. Leave its
+window open: the recordings are fetched as they're first played, so they stop when it closes.
 
 **Words** — a word has a status of its own (Not known, Learning, Learned), which its lessons and
 reviews set as they do a character's, and a card (`#/word/电脑`): its readings and meanings, part
@@ -167,22 +204,52 @@ them to your lessons; the reader colours a word by its own status once it has on
 
 **Prerequisites first** — a character is learnt from its parts: its components (the first level
 of its breakdown: 伴 is 亻 standing person + 半 half) and its sound, an initial, a final and a tone,
-which HanziHome pictures as a person, a place and a room (`site/data/sounds.js`: b- the Baker, -an
-the Mansion, 4 the Trapdoor). A character's lesson opens on a Prerequisites page that shows them,
+which HanziHome pictures as a person, a building, and where at that building (`site/data/sounds.js`:
+b- Batman, -an the Mansion; tone 1 in Front of it, 2 Inside it, 3 its Basement, 4 its Bathroom,
+5 on its Roof). A character's lesson opens on a Prerequisites page that shows them,
 known and new, with Learn or Skip; each new part then gets a short lesson of its own (asked its
-name), and the character's Composition tab shows its component and sound composition. Parts don't
-count against the daily limit; Settings → Lessons and reviews can turn this off.
+name), and the character's Composition tab shows its component and sound composition. Components
+count towards the daily limit and sounds don't; Settings → Lessons and reviews can turn this off.
 
 **Mnemonics** — 1,066 components have picture names (氵 water drops, 勺 ladle, 丷 horns), 897 of them
 a mnemonic from their own parts, and each of the 3,000 commonest characters a scene of 40 to 80
-words: the person in the room of the place, doing something absurd with its components, so the
-sound and the meaning come together ("The {Baker} tumbles through the {Trapdoor} of the {Mansion}
-and finds a *standing person* sawn in *half*…"), components and sounds shown as chips; the 7,000 commonest words (and every HSK
-word) have a mnemonic, two example sentences and a usage note. They were written for HanziHome
+words: the pop-culture figure at the tone's place in the building, doing something absurd with its components, so the
+sound and the meaning come together ("{Batman} tumbles into the {Bathroom} of the {Mansion}
+and finds a *standing person* sawn in *half*…"), components and sounds shown as chips (-an Mansion, 4 Bathroom).
+A mnemonic with no sounds in its story (a word's, your own, or a rarer character with no scene) has its
+syllables' sounds shown as chips beside it. The 7,000 commonest words (and every HSK
+word) have a mnemonic, two example sentences and a usage note, and the 3,000 commonest characters
+up to three example sentences of their own (`site/data/charex.js`), on their page and in their lesson: picked
+from the words' sentences where the character stands alone, then in its common words, with the reading
+taught, and written for it (`out/charex.json`) where those don't reach. They were written for HanziHome
 by Claude agents, commonest first, to the brief in `build/mnemonics/BRIEF.md`:
 `build/mnemonics/make_inputs.js [chars] [words]` and `make_scenes.js` write the batches, `check.js` checks an
 agent's output, and `merge.js` makes `site/data/cnames.js`, `cmnem.js` and `winfo.js` (giving the
-example sentences their pinyin with the reader's own segmenter).
+example sentences their pinyin with the reader's own segmenter). `retone.js` moved the scenes to
+the present tone places, with `retone-fixes.json` for what its rules couldn't word, and `recast.js` moved them from jobs to the present cast of figures, each scene then rewritten around its figure (BRIEF.md section 7).
+
+**Grammar** (`#/grammar`, `site/grammarstudy.js`) — short explanations of the patterns a beginner needs, each with
+examples and the common mistake, and practice at filling gaps, ordering word tiles and spotting the correct sentence, using only characters you
+have learned (`Learn.knownChars`). It is extra study for whenever you like: nothing is scheduled, and it doesn't count towards lessons, reviews
+or limits. **Daily grammar practice** on the Study page is one button for a short mixed round: at most one new point a
+day, taught first if you haven't read it, then the points you have left longest. The points are in `build/grammar/points.json`; `build/grammar/build.js` makes `site/data/gpoints.js`.
+
+**Phrases** (`#/phrases`, `site/phrases.js`) — common phrases, questions and answers by category: greetings, small
+talk, food, work, shopping, travel, entertainment, humour, feelings and health, with pinyin, English and sound. Learn
+a few at a time, then practise what you have learned: what it means, putting it together from word tiles, and the
+best reply to a question. Extra study, like Grammar. The content is `build/phrases/phrases.json`;
+`build/phrases/build.js` makes `site/data/phrases.js`.
+
+**Tones** (`#/tones`, `site/tones.js`) — ear training on the people's recordings: hear one syllable and pick its tone,
+hear a two-syllable word and pick both, or hear a word with a tone change (你好, 不是, 一起) and pick what is actually
+said. After a wrong answer you can hear yours beside the right one, and the page keeps how your ear does with each tone.
+Extra study, like Grammar; it asks about sounds, not characters, so it doesn't wait for what you have learned.
+`build/tones/` makes `site/data/tones.js`, and only lets in recordings whose measured pitch agrees with the answer
+(`pitch.js` measures in a browser, `classify.js` writes `checked.json`, `build.js` builds).
+
+**Sound library** (`#/sounds`, `site/library.js`) — the five tones, the 24 beginnings of a syllable
+(m-, zh-) and the 36 endings (-ang, -ao), and the syllables they make. Each can be played and shows
+its picture, and the syllables and characters that use it.
 
 Reviews are scheduled by [FSRS](https://github.com/open-spaced-repetition) (version 5, its
 default weights), checked against the reference implementation in `test/learn.js`. Each item
@@ -352,6 +419,10 @@ site/lookalike.js       look-alike practice
 site/motion.js          animations: page entry, count-ups, confetti
 test/pinyin.js          checks pinyin.js
 test/grammar.js         checks grammar.js
+test/gpoints.js         checks the Grammar page's points and exercises
+test/phrases.js         checks the phrases
+test/tones.js           checks the tone trainer's words, recordings and rounds, and which tones are weak
+test/charex.js          checks the characters' example sentences
 test/accuracy.js        scores textstory.js against the hand-glossed stories
 sync/Code.gs            optional Google Apps Script that syncs progress through a Sheet
 sync/mock-server.js     runs Code.gs locally for testing, no Google account needed
