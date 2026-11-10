@@ -920,6 +920,15 @@ function streak() {
 
 const go = p => { location.hash = '#' + p; };
 
+/* Say msg to a screen reader, politely (the page itself is redrawn too often for a live
+   region inside it to be heard): #sr-live, in index.html. */
+function announce(msg) {
+  const el = document.getElementById('sr-live');
+  if (!el) return;
+  el.textContent = '';
+  setTimeout(() => { el.textContent = msg; }, 60);
+}
+
 /* Changing a character's state re-renders the page it is on. Hold the scroll
    position across that: marking something 2,000 rows down the list should
    leave you looking at it, not back at the top. The page functions are async,
@@ -3317,10 +3326,25 @@ document.addEventListener('pointerdown', e => {
 }, true);
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  // closing the menu from the keyboard puts focus back on the button that opened it
+  if (document.body.classList.contains('nav-open')) document.getElementById('sidebar-toggle').focus();
   setNav(false);
   if (_menuEl) _menuEl.hidden = true;
   if (_wpEl) _wpEl.hidden = true;
 });
+
+/* "Skip to content" (index.html): a plain #app link would be taken for a route */
+document.querySelector('.skip-link').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('app').focus();
+});
+
+/* After a page change, focus left on a link the page no longer has goes back to the top of
+   the new page, so a keyboard or screen reader carries on from there, not from nowhere. */
+window.addEventListener('hashchange', () => setTimeout(() => {
+  const a = document.activeElement;
+  if (!a || a === document.body || !a.isConnected) document.getElementById('app').focus({ preventScroll: true });
+}, 0));
 
 initSearch();
 if (!location.hash) location.hash = '#/dashboard';

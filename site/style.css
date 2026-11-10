@@ -25,7 +25,7 @@
   --panel-2: #ebe8e1;       /* deep: wells, fields */
   --ink: #222222;
   --ink-2: #6b6b6b;
-  --ink-3: #9a9894;
+  --ink-3: #73716d;          /* faint text, still readable (WCAG AA on paper and cards) */
   --line: #e6e2d9;
   --line-2: #dcd8cf;
   --accent: #8a6c00;        /* the yellow as ink: a deep gold, readable on paper */
@@ -1391,7 +1391,7 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
   --panel-2: #181818;
   --ink: #ffffff;
   --ink-2: #adadad;
-  --ink-3: #7a7a7a;
+  --ink-3: #8a8a8a;
   --line: #3a3a3a;
   --line-2: #4a4a4a;
   --accent: #fde24d;
@@ -1433,7 +1433,7 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
   --panel-2: #181818;
   --ink: #ffffff;
   --ink-2: #adadad;
-  --ink-3: #7a7a7a;
+  --ink-3: #8a8a8a;
   --line: #3a3a3a;
   --line-2: #4a4a4a;
   --accent: #fde24d;
@@ -3143,3 +3143,93 @@ body.nav-open::after { opacity: 1; pointer-events: auto; transition-duration: .2
 .ls-tile.wk-tone { color: var(--ink); background: var(--panel-2); }
 .ls-tile.wk-tone .tn-shape { width: 38px; height: 26px; }
 .wk-done .rs-stats { margin-bottom: 4px; }
+
+/* =====================================================================
+   Phones and accessibility
+   ---------------------------------------------------------------------
+   Lessons on a phone: the steps' tabs scroll in one row instead of
+   spilling off the edge, the small ‹ › arrows beside the card give way to
+   a Back / Next bar the thumb reaches (it stays at the bottom of the
+   screen), and the keyboard hint becomes a swipe hint. Reviews get a Next
+   button, since a read-only answer box brings up no keyboard to press
+   Enter on. Plus a skip link, a screen-reader-only live region, and a
+   visible focus ring everywhere a keyboard can go.
+   ===================================================================== */
+.sr-only {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: fixed; left: 12px; top: max(10px, env(safe-area-inset-top)); z-index: 200; padding: 10px 16px; border-radius: 12px;
+  background: var(--yellow); color: #222; font-weight: 700; text-decoration: none; box-shadow: 0 3px 0 var(--yellow-edge);
+}
+.skip-link:not(:focus) { clip-path: inset(50%); width: 1px; height: 1px; padding: 0; overflow: hidden; white-space: nowrap; box-shadow: none; }
+.skip-link:focus { outline: 2px solid var(--ink); outline-offset: 2px; }
+#app:focus { outline: none; }
+
+/* a focus ring for whatever has none of its own (only from the keyboard, not on a tap) */
+a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:not(#app):focus-visible,
+.lx-tabs button:focus-visible, .rv-tool:focus-visible, .lx-arrow:focus-visible {
+  outline: 2px solid var(--ink); outline-offset: 2px;
+}
+
+/* the step bar and the swipe hint: only where they are wanted */
+.lx-step { display: none; }
+.lx-keys .touch { display: none; }
+.lx-keys .touch:empty { display: none !important; }
+.lx-body { touch-action: pan-y; }
+@media (hover: none) {
+  .lx-keys .kb, .rv-enter-hint { display: none; }
+  .lx-keys .touch { display: inline; }
+}
+.rv-after .row { align-items: center; gap: 10px; }
+
+@media (max-width: 720px), (pointer: coarse) and (max-width: 1024px) {
+  /* the tabs: a stepper of equal parts across the width, all of them in sight
+     (on the narrowest screens they scroll sideways, the open one kept in the middle: study.js) */
+  .lx-tabs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(max-content, 1fr); gap: 6px;
+    margin: 6px 0 12px; padding: 2px 2px 6px; overflow-x: auto; scrollbar-width: none; }
+  .lx-tabs::-webkit-scrollbar { display: none; }
+  .lx-tabs button { padding: 6px 8px; font-size: 13px; }
+
+  /* the card: full width, no arrows eating its sides */
+  .lx-arrow { display: none; }
+  .lx-body { padding: 18px 16px; }
+
+  /* Back / Next, at the bottom of the screen while the lesson is open */
+  .lx-step {
+    display: flex; gap: 10px; position: sticky; z-index: 20;
+    bottom: 0; margin: 12px calc(-1 * var(--gutter, 12px)) 0;
+    padding: 10px var(--gutter, 12px) calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(to bottom, transparent, var(--bg) 14px);
+  }
+  .lx-step .btn { flex: 1; min-height: 50px; font-size: 16px; justify-content: center; }
+  .lx-step .lx-back { flex: 0 0 auto; min-width: 96px; }
+  .lx-step .lx-back[disabled] { display: none; }
+  .lx-step:has(.lx-back[disabled]):not(:has(.lx-fwd)) { display: none; }
+
+  /* Prerequisites: Skip and Learn stay in reach, however many parts there are */
+  .intro-go {
+    position: sticky; bottom: 0; z-index: 20; margin: 14px -16px -18px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(to bottom, transparent, var(--panel) 14px); border-radius: 0 0 22px 22px;
+  }
+  .intro-go .btn { flex: 1; min-height: 50px; justify-content: center; }
+  .intro-parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+  .intro-part { width: auto; }
+
+  /* the quiz: the answer box and Check, full width and big enough for a thumb */
+  #lx-quiz .btn { width: 100%; min-height: 50px; justify-content: center; margin-top: 6px; }
+  .lx-input, .rv-input { font-size: max(16px, 1em); }   /* 16px or more: iOS doesn't zoom in on focus */
+  .lx-main textarea { font-size: 16px; }
+  .lx-batch { margin: 10px 0; }
+  .lx-batch span { font-size: 14px; padding: 5px 8px; }
+
+  /* reviews: Next as wide as the answer */
+  .rv-after .row { flex-direction: column; align-items: stretch; }
+  .rv-after .rv-next { min-height: 50px; justify-content: center; }
+}
+.lx-tab-short { display: none; }
+@media (max-width: 420px) {
+  .lx-tab-long { display: none; }
+  .lx-tab-short { display: inline; }
+}

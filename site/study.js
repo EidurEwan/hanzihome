@@ -1241,21 +1241,28 @@ async function pageLessons() {
         : 'First its <b>pronunciation</b>, with tone numbers (like pin1yin1). Its meaning comes after.'}</p>
       <form id="lx-quiz" autocomplete="off">
         ${part ? '' : `<input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
-          autocapitalize="off" autocorrect="off" autocomplete="off" lang="en"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>`}
-        ${pinDone ? `<input id="lx-mean" class="lx-input" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en">` : ''}
-        <div id="lx-verdict"></div>
+          autocapitalize="off" autocorrect="off" autocomplete="off" lang="en" enterkeyhint="go" aria-label="Pronunciation, with tone numbers"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>`}
+        ${pinDone ? `<input id="lx-mean" class="lx-input" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en" enterkeyhint="go" aria-label="${part ? 'Name' : 'Meaning'}">` : ''}
+        <div id="lx-verdict" aria-live="assertive"></div>
         <button class="btn" type="submit">Check</button>
       </form>`;
   }
 
   app.innerHTML = band(k, it, !quiz) + `
-    <nav class="lx-tabs">${tabs.map((t, i) => i < first ? '' : `<button data-t="${i}" class="${i === s.tab ? 'on' : ''}">${t}</button>`).join('')}</nav>
+    <nav class="lx-tabs" role="tablist" aria-label="Lesson steps">${tabs.map((t, i) => i < first ? '' : `<button type="button" role="tab"
+      data-t="${i}" class="${i === s.tab ? 'on' : ''}" aria-selected="${i === s.tab}" aria-controls="lx-panel" aria-label="${t}"
+      >${SHORT_TAB[t] ? `<span class="lx-tab-long">${t}</span><span class="lx-tab-short">${SHORT_TAB[t]}</span>` : t}</button>`).join('')}</nav>
     <div class="lx-body">
-      <button class="lx-arrow prev" ${s.tab === first ? 'disabled' : ''} aria-label="Back">‹</button>
-      <div class="lx-main">${body}</div>
-      <button class="lx-arrow next" ${quiz ? 'disabled' : ''} aria-label="Next">›</button>
+      <button type="button" class="lx-arrow prev" ${s.tab === first ? 'disabled' : ''} aria-label="Previous step">‹</button>
+      <div class="lx-main" id="lx-panel" role="tabpanel" aria-label="${tabs[s.tab]}">${body}</div>
+      <button type="button" class="lx-arrow next" ${quiz ? 'disabled' : ''} aria-label="Next step">›</button>
     </div>
-    <p class="lx-keys small muted">${quiz ? 'Enter checks your answer' : 'Enter or → for the next step · ← back'}</p>
+    <div class="lx-step">
+      <button type="button" class="btn quiet lx-back" ${s.tab === first ? 'disabled' : ''}>‹ Back</button>
+      ${quiz ? '' : `<button type="button" class="btn lx-fwd">${s.tab === 2 ? 'Quiz me' : 'Next'} ›</button>`}
+    </div>
+    <p class="lx-keys small muted"><span class="kb">${quiz ? 'Enter checks your answer' : 'Enter or → for the next step · ← back'}</span>
+      <span class="touch">${quiz ? '' : 'Swipe sideways to move between steps'}</span></p>
     ${batchStrip(s)}
     ${quizNow(s)}`;
 
@@ -1263,11 +1270,40 @@ async function pageLessons() {
   // a new item is dealt in; another tab slides in from the side it is on
   if (!s.drawn || s.drawn.k !== k) Motion.play(app.querySelector('.lx-band'), 'm-deal');
   else if (s.drawn.tab !== s.tab) Motion.play(app.querySelector('.lx-main'), s.tab > s.drawn.tab ? 'm-next' : 'm-prev');
+  // (a phone scrolled down to the last step's end would open the next one half-way down)
+  if (!s.drawn || s.drawn.k !== k || s.drawn.tab !== s.tab) toLessonTop();
   s.drawn = { k, tab: s.tab };
-  const go2 = t => { s.tab = Math.max(first, Math.min(3, t)); pageLessons(); };
+  const go2 = t => {
+    t = Math.max(first, Math.min(3, t));
+    if (t === s.tab) return;
+    s.tab = t;
+    pageLessons().then(() => {
+      // keyboard and screen reader users stay where they were: on the step's tab
+      const on = app.querySelector('.lx-tabs button.on');
+      if (on && document.activeElement === document.body && !document.getElementById('lx-quiz')) on.focus({ preventScroll: true });
+    });
+  };
   app.querySelectorAll('.lx-tabs button').forEach(b => b.addEventListener('click', () => go2(+b.dataset.t)));
+  // arrow keys along the tabs, as a tablist has them
+  const tabBar = app.querySelector('.lx-tabs');
+  // (on a phone the tabs scroll sideways: the open one in the middle)
+  const onTab = tabBar.querySelector('.on');
+  if (onTab && tabBar.scrollWidth > tabBar.clientWidth) {
+    const r = onTab.getBoundingClientRect(), box = tabBar.getBoundingClientRect();
+    tabBar.scrollLeft += r.left - box.left - (box.width - r.width) / 2;
+  }
+  tabBar.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    e.stopPropagation();
+    go2(e.key === 'Home' ? first : e.key === 'End' ? 3 : s.tab + (e.key === 'ArrowRight' ? 1 : -1));
+  });
   app.querySelector('.lx-arrow.prev').addEventListener('click', () => go2(s.tab - 1));
   app.querySelector('.lx-arrow.next').addEventListener('click', () => go2(s.tab + 1));
+  app.querySelector('.lx-back').addEventListener('click', () => go2(s.tab - 1));
+  const fwd = app.querySelector('.lx-fwd');
+  if (fwd) fwd.addEventListener('click', () => go2(s.tab + 1));
+  onSwipe(app.querySelector('.lx-body'), dir => { if (dir > 0 ? !quiz : s.tab > first) go2(s.tab + dir); });
 
   // read the item aloud once, when its lesson opens
   if (s.said !== k) { s.said = k; Sound.say(k); }
@@ -1300,6 +1336,7 @@ async function pageLessons() {
         if (Learn.checkPinyin(pa, it.pin)) {
           Sound.ding();
           Sound.say(k);
+          announce('Right. Now its meaning.');
           s.pinOk = k;
           s.pinAnswer = pa;
           return pageLessons();
@@ -1356,8 +1393,39 @@ function wireQuizNow(s) {
 
 /* the batch, under the lesson: each item, the one open, the ones done */
 function batchStrip(s, goal) {
-  return `<div class="lx-batch">${s.batch.map((b, i) => `<span class="${Store.item(b) ? Store.item(b).kind : ''}
-    ${i === s.i ? 'on' : ''} ${b === goal ? 'goal' : ''} ${s.done.includes(b) ? 'done' : ''}">${esc(itemText(b))}</span>`).join('')}</div>`;
+  return `<div class="lx-batch" role="list" aria-label="This batch: ${s.done.length} of ${s.batch.length} done">${s.batch.map((b, i) =>
+    `<span role="listitem" class="${Store.item(b) ? Store.item(b).kind : ''}
+    ${i === s.i ? 'on' : ''} ${b === goal ? 'goal' : ''} ${s.done.includes(b) ? 'done' : ''}"${i === s.i ? ' aria-current="step"' : ''}>${esc(itemText(b))}</span>`).join('')}</div>`;
+}
+
+/* the lesson tabs' names on the narrowest phones, where four long ones don't fit */
+const SHORT_TAB = { Composition: 'Parts', Characters: 'Parts', Confirmation: 'Check' };
+
+/* back up to the lesson's band, if the page is scrolled past it */
+function toLessonTop() {
+  const band = app.querySelector('.lx-band');
+  if (band && band.getBoundingClientRect().top < 0) window.scrollTo(0, Math.max(0, window.scrollY + band.getBoundingClientRect().top - 70));
+}
+
+/* A sideways swipe on el: fn(+1) for right-to-left (next), fn(-1) for back. Not from a
+   box being typed in, nor a mostly-vertical scroll, nor a text selection. */
+function onSwipe(el, fn) {
+  if (!el) return;
+  let x0 = null, y0 = 0, t0 = 0;
+  el.addEventListener('touchstart', e => {
+    const t = e.target;
+    if (e.touches.length !== 1 || (t.closest && t.closest('input, textarea, select, [contenteditable], .lx-chips'))) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now();
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Date.now() - t0 > 700 || Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+    const sel = window.getSelection && String(window.getSelection());
+    if (sel) return;
+    fn(dx < 0 ? 1 : -1);
+  }, { passive: true });
 }
 
 /* The Prerequisites page to show before lesson k, if any: for a character or word,
@@ -1410,8 +1478,9 @@ async function lessonIntro(goal, k, s) {
     ${batchStrip(s, goal)}
     ${quizNow(s)}`;
   wireQuizNow(s);
+  toLessonTop();
   const go = document.getElementById('lx-intro-go');
-  go.focus();
+  go.focus({ preventScroll: true });
   go.addEventListener('click', () => { s.intro.push(goal); pageLessons(); });
   document.getElementById('lx-intro-skip').addEventListener('click', () => {
     // to the back of the queue, with the parts nothing else waiting needs
@@ -1566,7 +1635,8 @@ async function pageReviews() {
     <form id="rv-form" autocomplete="off"${q === 'write' ? ' class="rv-writing"' : ''}>
       ${q === 'write' ? `<p class="rv-write-msg" id="rv-write-msg">${shown ? '' : 'Draw each stroke in order. After three misses on a stroke, its outline shows.'}</p>
         <button class="rv-enter" ${shown ? '' : 'hidden'}>Next</button>` : `
-      <input id="rv-in" class="rv-input ${shown ? (shown.ok ? 'ok' : 'bad') : ''}"
+      <input id="rv-in" class="rv-input ${shown ? (shown.ok ? 'ok' : 'bad') : ''}" enterkeyhint="go"
+        aria-label="${q === 'pinyin' ? 'Pronunciation, with tone numbers' : it.kind === 'comp' ? 'Name' : 'Meaning'}${shown ? (shown.ok ? ': right' : ': wrong') : ''}"
         placeholder="${q === 'pinyin' ? 'pin1yin1' : it.kind === 'comp' ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en"
         ${shown ? 'readonly' : ''} value="${shown ? esc(shown.answer) : ''}">
       <p class="rv-hint" id="rv-hint" hidden>That isn't pinyin. Check it and try again.</p>`}
@@ -1581,7 +1651,8 @@ async function pageReviews() {
           ${esc((Store.item(shown.mixed) || {}).pin || '')}: compare them on the Study page.</span>` : ''}</p>`}
       <p class="row">
         ${!shown.ok && (q === 'meaning' || q === 'listen') && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
-        <span class="small muted">Enter for the next one</span></p>
+        ${q === 'write' ? '' : '<button type="button" class="btn rv-next" id="rv-next">Next ›</button>'}
+        <span class="small muted rv-enter-hint">Enter for the next one</span></p>
     </div>` : ''}
     <div class="rv-tools">${TOOLS.map(t => `<button type="button" class="rv-tool${s.panel === t || (t === 'wrap' && s.wrap) ? ' on' : ''}"
       data-tool="${t}" title="${esc(labels[t])}" aria-label="${esc(labels[t])}"${can[t] ? '' : ' disabled'}>${toolIcon(t)}</button>`).join('')}</div>
@@ -1592,7 +1663,11 @@ async function pageReviews() {
   const fresh = s.asked !== s.i;
   // a new question is dealt in; an answer just given pops (right) or shakes (wrong)
   if (fresh) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  const nextBtn = document.getElementById('rv-next');
+  if (nextBtn) nextBtn.addEventListener('click', () => nextQuestion());
   if (s.judged) {
+    const wrong = app.querySelector('.rv-after .lx-wrong');
+    announce(s.shown && s.shown.ok ? 'Right.' : 'Not quite. ' + (wrong ? wrong.textContent.replace(/\s+/g, ' ').trim() : ''));
     Motion.play(document.getElementById('rv-in'), s.shown && s.shown.ok ? 'm-pop' : 'm-shake');
     Motion.play(app.querySelector('.rv-after'), 'm-rise');
     s.judged = false;
