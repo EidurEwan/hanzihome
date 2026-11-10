@@ -3224,12 +3224,36 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:not(#ap
   .lx-batch { margin: 10px 0; }
   .lx-batch span { font-size: 14px; padding: 5px 8px; }
 
-  /* reviews: Next as wide as the answer */
+  /* reviews: Next pinned to the bottom of the screen once a question is answered. A miss
+     scrolls down to the mnemonic, and the answer box, read-only now, brings no keyboard up
+     to press Enter on: without this, going on would mean scrolling back up for the button. */
   .rv-after .row { flex-direction: column; align-items: stretch; }
-  .rv-after .rv-next { min-height: 50px; justify-content: center; }
+  .rv-after .rv-next {
+    position: fixed; z-index: 30; top: auto; left: max(var(--gutter, 12px), env(safe-area-inset-left));
+    right: max(var(--gutter, 12px), env(safe-area-inset-right)); bottom: calc(12px + env(safe-area-inset-bottom));
+    min-height: 52px; justify-content: center; font-size: 17px;
+  }
+  #app:has(.rv-next) { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  html.kb-open .rv-after .rv-next { display: none; }      /* typing a synonym: Enter goes on */
 }
 .lx-tab-short { display: none; }
 @media (max-width: 420px) {
   .lx-tab-long { display: none; }
   .lx-tab-short { display: inline; }
 }
+
+/* The on-screen keyboard is up (html.kb-open, app.js): what is left above it goes to the
+   question and the answer. The Back / Next bar would sit on top of the answer box; the
+   band shrinks so the character and the box fit together; Enter (the keyboard's Go key)
+   checks, so the Check button may go under the keyboard. */
+html.kb-open .lx-step, html.kb-open .lx-keys, html.kb-open .intro-go { display: none; }
+html.kb-open .lx-band { padding: 8px 12px 10px; margin-bottom: 8px; }
+html.kb-open .lx-glyph { font-size: 56px; }
+html.kb-open .lx-sentence .lx-glyph { font-size: 22px; padding: 2px 6px 4px; }
+html.kb-open .lx-pin { font-size: 15px; min-height: 0; }
+html.kb-open .lx-mean { font-size: 20px; margin-top: 0; }
+html.kb-open .lx-kind { display: none; }
+html.kb-open .lx-tabs { margin: 0 0 8px; }
+html.kb-open .lx-body { padding-top: 12px; }
+html.kb-open .rv-top { margin-bottom: 4px; }
+html.kb-open .rv-prompt { margin: 4px 0 0; }
