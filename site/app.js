@@ -920,6 +920,15 @@ function streak() {
 
 const go = p => { location.hash = '#' + p; };
 
+/* Say msg to a screen reader, politely (the page itself is redrawn too often for a live
+   region inside it to be heard): #sr-live, in index.html. */
+function announce(msg) {
+  const el = document.getElementById('sr-live');
+  if (!el) return;
+  el.textContent = '';
+  setTimeout(() => { el.textContent = msg; }, 60);
+}
+
 /* Changing a character's state re-renders the page it is on. Hold the scroll
    position across that: marking something 2,000 rows down the list should
    leave you looking at it, not back at the top. The page functions are async,
@@ -3317,10 +3326,79 @@ document.addEventListener('pointerdown', e => {
 }, true);
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
+  // closing the menu from the keyboard puts focus back on the button that opened it
+  if (document.body.classList.contains('nav-open')) document.getElementById('sidebar-toggle').focus();
   setNav(false);
   if (_menuEl) _menuEl.hidden = true;
   if (_wpEl) _wpEl.hidden = true;
 });
+
+/* The on-screen keyboard. A phone's keyboard covers half the screen without telling the
+   page; while one is up (a box that takes typing has the focus, on a touch screen),
+   html.kb-open lets the page make room: the lesson's Back / Next bar steps aside and the
+   card above an answer shrinks (style.css). An answer box in a lesson or review is
+   scrolled so the character being asked about stays in sight above it, not pushed off
+   the top by the browser bringing the box into view. visualViewport, where there is one,
+   says when the keyboard has gone again with the box still focused (Android's back key). */
+const _touchOnly = matchMedia('(hover: none) and (pointer: coarse)');
+const takesTyping = el => !!el && !el.readOnly && !el.disabled && (el.tagName === 'TEXTAREA' || el.isContentEditable
+  || (el.tagName === 'INPUT' && /^(text|search|email|url|tel|password|number)$/.test(el.type)));
+let _kbTimer = 0, _kbSeen = false;
+function setKb(on) {
+  document.documentElement.classList.toggle('kb-open', on);
+  if (!on) _kbSeen = false;
+}
+document.addEventListener('focusin', e => {
+  if (!_touchOnly.matches || !takesTyping(e.target)) return;
+  clearTimeout(_kbTimer);
+  setKb(true);
+  keepAnswerInView(e.target);
+});
+document.addEventListener('focusout', () => {
+  clearTimeout(_kbTimer);
+  // (focus moving from one box to the next, or a box redrawn, keeps the keyboard up)
+  _kbTimer = setTimeout(() => { if (!takesTyping(document.activeElement)) setKb(false); }, 150);
+});
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const el = document.activeElement;
+    if (!_touchOnly.matches || !takesTyping(el)) return;
+    const shrunk = window.visualViewport.height < document.documentElement.clientHeight * 0.8;
+    if (shrunk) { _kbSeen = true; setKb(true); keepAnswerInView(el); }
+    else if (_kbSeen) setKb(false);             // the keyboard went, the box kept its focus
+  });
+}
+
+/* the question's band and the answer box both in what can be seen above the keyboard:
+   the band's top at the top if the box fits under it, else the box just above the keyboard */
+function keepAnswerInView(el) {
+  const band = document.querySelector('#app .lx-band');
+  if (!band || !el.closest('#lx-quiz, #rv-form')) return;
+  const fit = () => {
+    if (document.activeElement !== el || !band.isConnected) return;
+    const vv = window.visualViewport, top = vv ? vv.offsetTop : 0, h = vv ? vv.height : window.innerHeight;
+    const b = band.getBoundingClientRect(), r = el.getBoundingClientRect();
+    let d = b.top - top - 8;
+    if (r.bottom - d > top + h - 8) d = r.bottom - (top + h - 8);
+    if (Math.abs(d) > 2) window.scrollBy(0, d);
+  };
+  // once the page has made room, and again once the keyboard has finished coming up
+  requestAnimationFrame(fit);
+  setTimeout(fit, 350);
+}
+
+/* "Skip to content" (index.html): a plain #app link would be taken for a route */
+document.querySelector('.skip-link').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('app').focus();
+});
+
+/* After a page change, focus left on a link the page no longer has goes back to the top of
+   the new page, so a keyboard or screen reader carries on from there, not from nowhere. */
+window.addEventListener('hashchange', () => setTimeout(() => {
+  const a = document.activeElement;
+  if (!a || a === document.body || !a.isConnected) document.getElementById('app').focus({ preventScroll: true });
+}, 0));
 
 initSearch();
 if (!location.hash) location.hash = '#/dashboard';
