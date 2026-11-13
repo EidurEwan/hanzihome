@@ -1,8 +1,14 @@
 # HanziHome
 
-A personal, offline rebuild of [hanzicraft.com](https://hanzicraft.com) — the character
-dictionary *and* the logged-in dashboard: decomposition, phonetic clues, frequency data,
-example words, and progress tracking over the characters you have learned.
+A daily course in Chinese characters and words, with a reader: lessons that teach each
+character from its parts, reviews scheduled by FSRS, graded stories and any text of your own to
+read, a translator, and a character and word dictionary behind it all. It runs in the browser,
+offline, with your progress kept on your own device.
+
+It began as a personal, offline rebuild of [hanzicraft.com](https://hanzicraft.com) — the
+character dictionary *and* the logged-in dashboard: decomposition, phonetic clues, frequency
+data, example words, and progress tracking over the characters you have learned. All of that is
+still here, as the pages you look things up on.
 
 Nothing was copied from the original site. Every fact is derived at build time from open
 datasets, so this is a reimplementation of the idea with its own data pipeline.
@@ -88,7 +94,13 @@ an in-memory sheet on `http://localhost:8787/exec`.
 
 **The tutorial** — a newcomer's first visit opens a few slides on how Mandarin works
 (components, tones), how HanziHome teaches it (lessons, then FSRS reviews) and why 20–30
-minutes every day is the way to do it (`site/tour.js`). Settings → Tutorial shows it again.
+minutes every day is the way to do it (`site/tour.js`). Its last slide asks which **learning
+path** to follow (balanced, most common first, or HSK 1 to 6), so it ends on Today with the first
+lessons ready; "Decide later", or skipping the tutorial, leaves the same choice as the first card
+on Today, and on the Lessons page while it is empty (`pathPick` in `site/study.js`). The very
+first lesson opens on three more slides, **how the mnemonic pictures work**: a component's
+picture name, and a sound's figure, place and spot at that place (`picturesFirst`), since the
+first page of that lesson is a list of them. Settings → Tutorials shows either again.
 
 **Motion** (`site/motion.js`, and the Motion section of `style.css`) — a new page's cards rise in
 one after another and its numbers count up; bars, rings, the coverage donut and the items-learned
@@ -101,29 +113,43 @@ characters cascade in; loading shows bouncing dots, and a translation in progres
 shimmering; the theme changes as a cross-fade. With the system's "reduce motion" setting on,
 nothing moves.
 
-**The menu** — Study, Words, Reader, Translate, Home, Grammar & Phrases, Explore, Lists & Notes and Settings. **Explore**
-holds HSK, Most Common, Radicals, Components, Characters, Phonetic Sets and Sounds, and **Lists & Notes** holds
-Lists, Notes and History, as tabs over each page (`HUBS` in `site/app.js`); each keeps its own address. As in
-Boxes, it is a drawer behind the menu button at the top left, at every screen
-size: a card with your week streak and the characters and words you have learned, the three
-main places (Study, Words, Reader) as cards, the rest as rows, and where your data is kept.
+**The menu** — by what you came to do. **Learn**: Today and Practice. **Read**: Reader and
+Translate (and, in the desktop app, On screen now). **Look up**: Words, and Characters & lists.
+**Yours**: Lists & Notes, Statistics and Settings. **Practice** holds Grammar, Phrases, Tones and
+Weak spots as tabs, with Look-alikes on its first page (`#/practice`); **Characters & lists** holds
+HSK, Most Common, Radicals, Top Components, Word Builders, Phonetic Sets and Sounds; and **Lists &
+Notes** holds Lists, Notes and History (`HUBS` in `site/app.js`); each page keeps its own address.
+As in Boxes, the menu is a drawer behind the menu button at the top left, at every screen size: a
+card with your week streak and the characters and words you have learned, the groups (Learn and
+Read as cards, the rest as rows), and where your data is kept. The search box at the top finds
+characters and words, by character, pinyin or English.
 
-**Today** (the home page) — today's lessons and reviews first, then the week streak and counts
-of what you are learning versus what you have learned, the progress cards two by two, and the
-most common characters as a tile grid you can filter by All / Not known / Learning / Learned.
-The progress cards:
+**Today** (`#/study`, the home page; the old `#/dashboard` opens it too) — what to do now, first.
+For a newcomer that is the choice of a learning path. Then the Lessons and Reviews tiles, with what
+the lessons ready now are made of (sounds are lessons too, but short ones the daily limit doesn't
+count, so the tile can say more than the limit) and what has been done today. Once both are done
+for the day, **something to read**: the hardest story you can mostly read (four of its characters
+in five learned) among those you haven't opened, or else the one you know most of, and the card
+says which (`storyForYou` in `site/app.js`); the review summary and the end of the day's lessons
+offer the same. Then the week streak, Practice (the daily grammar round and Weak spots; the rest is
+on the Practice page), the chart of items learned, upcoming reviews, the lesson queue, the progress
+cards two by two, the stages, and Anki. The progress cards:
 
 * **Character progress** — searched, components known, learning, learned.
 * **Reading coverage** — a donut showing what share of ordinary running text your learned
-  characters account for, using real corpus frequencies.
+  characters account for, using real corpus frequencies, and how far you are towards your
+  character goal (Settings), with a link to Most Common to mark the ones you already know.
 * **Study next** — suggestions picked because *you already know both parts* of a character,
   or because it buys the most reading coverage.
 
+The most common characters as a tile grid, filtered by All / Not known / Learning / Learned, are
+Characters & lists → Most Common.
+
 **Feel** (`site/motion.js`, the end of `site/style.css`) — one page dissolves into the next (View Transitions): the old page stays until the new one is drawn, for 180 ms at most, under a top bar that doesn't move. What you press goes down at once and comes back softly. Back returns you to where you were on the page. Everything stands still with the system's reduce-motion setting.
 
-**Weak spots** (`#/weak`, `site/weak.js`) — one short round on what you keep missing: the characters, words, components and sounds that keep slipping (`Learn.weakItems`), the look-alikes you mix up, and the tone your ear is worst at with the one it hears it as. Extra study: it doesn't change when reviews come back. It replaces the Study page's Recent mistakes, which are part of it.
+**Weak spots** (`#/weak`, `site/weak.js`) — one short round on what you keep missing: the characters, words, components and sounds that keep slipping (`Learn.weakItems`), the look-alikes you mix up, and the tone your ear is worst at with the one it hears it as. Extra study: it doesn't change when reviews come back. It replaces Today's Recent mistakes, which are part of it.
 
-**Learned today** (`#/learned`, also the end of a lesson quiz) shows every character, word, component and sound that had its lesson today, just as it looks; each opens its page in a new tab. The Study page links to it.
+**Learned today** (`#/learned`, also the end of a lesson quiz) shows every character, word, component and sound that had its lesson today, just as it looks; each opens its page in a new tab. Today links to it.
 
 **Character and word pages** run in the same order, with a bar of their sections that stays on screen: the character or word with its pinyin, meaning, actions and facts; meaning; mnemonic, sound and your note; examples; (for characters) stroke order; parts, or a word's characters; related.
 
@@ -141,14 +167,14 @@ word's characters), a mnemonic (HanziHome's own, or one you write on a scaffold 
 its meanings and pronunciation, and examples, then asks you to type its pinyin (tone numbers:
 `ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
 
-**A learning path** (Settings, or the Study page when nothing is queued) keeps the lesson queue
+**A learning path** (the tutorial's last slide, Today when nothing is queued, or Settings) keeps the lesson queue
 full with the next characters of the most common or of HSK 1 to 6, or **balanced**, as many as you
 choose, each with its new components and sounds; that many become ready each day. Change the path or
 the number and what the path queued changes at once, while what you added yourself or starred stays
 (`Learn.pathSync`). **The daily lesson limit** is filled first with new characters and the new components
 they bring (sounds are free), then with words, which can be learned the day after all their characters have had
 their lessons. The lessons themselves come in this order: what you prioritised, then words, then
-characters. Settings has a side panel of its sections (a menu on a phone), built from the page's own headings. The Study page's queue shows the next ten characters and words; **Upcoming** (`#/queue`,
+characters. Settings has a side panel of its sections (a menu on a phone), built from the page's own headings. Today's queue shows the next ten characters and words; **Upcoming** (`#/queue`,
 `site/order.js`) shows the character order and the word order on two tabs (each word comes just after the
 last of its characters: `Learn.wordOrder`, from `site/data/wordorder.js`, written by
 `build/export_wordorder.js`). Tap one to prioritise it, so it is learnt before the rest of the queue, or
@@ -158,15 +184,15 @@ know (5): that finishes HSK 1 by the 388th character and HSK 2 by the 664th, sco
 from `site/data/charorder.js`, written by `build/export_charorder.js`). Settings compares the paths:
 when each finishes each HSK level, how much text each lets you read, and what each is good and bad at
 (`Learn.PATH_FACTS`, which `test/learn.js` checks against the real orders). **An HSK level nearly done**
-(75% learned and at most 50 left) gets a button, on the Study page and its own, that puts the rest at the
+(75% learned and at most 50 left) gets a button, on Today and its own page, that puts the rest at the
 front of the lessons; the path waits until they're done, and it can be taken back. **When today's lessons are done comes a quiz** over all of
 them, mixed, in the reviews' page (batch after batch first: a batch holds that many characters and
 words, with the components and sounds they need); its first answers (with each lesson's own check)
 rate the first review. "Stop here and take the quiz" ends early and leaves the rest queued. **A missed review opens the mnemonic**, unless it would give away a question still to come,
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
-lapses, or four misses in the last eight reviews) are listed on the Study page, side by side with
+lapses, or four misses in the last eight reviews) are listed on Today, side by side with
 what you mix them up with, to learn again from a lesson (which starts its count of misses afresh), give a mnemonic of your own, or rest for
-two weeks. **Look-alikes** (Study → Extra study, `#/lookalikes`, `site/lookalike.js`): rounds of
+two weeks. **Look-alikes** (Practice, `#/lookalikes`, `site/lookalike.js`): rounds of
 twelve on telling apart characters that look alike (未 末, 请 情 清 晴 睛, 己 已 巳), from the ones
 you are learning or know: pick the character for a pinyin and meaning, or the meaning for a
 character, then see the set side by side with the parts that differ marked. The ones you mix up
@@ -174,7 +200,7 @@ come up more (kept on this device); practice doesn't touch the review schedule, 
 you have learned (`Learn.knownChars`: a finished lesson, or marked Learning or Learned, or in such a word). Each character
 page lists its look-alikes ("Looks like") with a link to practise them. The look-alikes are
 precomputed by `build/export_lookalikes.js` into `site/data/lookalike.js` (21 KB), from stroke
-counts and breakdowns, with a short list of classic pairs by hand. **Items learned**, a chart on the Study page: how many sounds, components, characters
+counts and breakdowns, with a short list of classic pairs by hand. **Items learned**, a chart on Today: how many sounds, components, characters
 and words you had learned on each day since your first lesson, stacked, with the characters you
 marked known on top (click a key to hide its series; point at or tap a day for its totals). **Statistics** (`#/stats`): the last 30 days, accuracy and what you would recall now by
 type, how well FSRS predicts you (the chance of recall it gave at each review against how often you
@@ -231,7 +257,7 @@ the present tone places, with `retone-fixes.json` for what its rules couldn't wo
 **Grammar** (`#/grammar`, `site/grammarstudy.js`) — short explanations of the patterns a beginner needs, each with
 examples and the common mistake, and practice at filling gaps, ordering word tiles and spotting the correct sentence, using only characters you
 have learned (`Learn.knownChars`). It is extra study for whenever you like: nothing is scheduled, and it doesn't count towards lessons, reviews
-or limits. **Daily grammar practice** on the Study page is one button for a short mixed round: at most one new point a
+or limits. **Daily grammar practice** on Today is one button for a short mixed round: at most one new point a
 day, taught first if you haven't read it, then the points you have left longest. The points are in `build/grammar/points.json`; `build/grammar/build.js` makes `site/data/gpoints.js`.
 
 **Phrases** (`#/phrases`, `site/phrases.js`) — common phrases, questions and answers by category: greetings, small
@@ -288,16 +314,16 @@ time, what was reviewed, right and missed and how long it took, a tile per item 
 it moved to (and from), the rating the app gave it, its stability and difficulty, and what you
 answered when you missed it, which characters became
 learned, mastered or slipped back to learning, and when the next reviews come. **Practice the
-missed** runs them again without changing their schedule, as does **Recent mistakes** on the
-Study page (misses from the last three days). A character counts as learning from its first lesson and as
+missed** runs them again without changing their schedule, as does **Weak spots**
+(misses from the last three days among them). A character counts as learning from its first lesson and as
 learned from Journeyman (a month). Every character marked Learned is in the reviews too,
 from Journeyman I: ones marked before this have their first reviews spread over a month, most
 common first (20 a day at most), and one marked later comes up a month after. The
-**calibration test** (Study → Calibration test) sorts them by how well you really know them: a
+**calibration test** (Today → Sort your learned characters) sorts them by how well you really know them: a
 review session over the ones not yet checked, rated from your answers like any other and taken
 as if each came right when due, so FSRS puts each where it fits (from a stability of a month:
 wrong goes to Novice, a slip stays at Journeyman, right goes up to Journeyman II, right at once
-to Expert). The ones you didn't know can go back to the lessons. The Study page
+to Expert). The ones you didn't know can go back to the lessons. Today
 shows what you can start now (and why not, when nothing), the week ahead, the lesson queue
 (☆ to prioritize, 🔒 for what waits to unlock) and how many items are at each stage.
 
@@ -317,7 +343,7 @@ word skipping have no counterpart here: every item is one you added, and nothing
 The rules are in [`site/learn.js`](site/learn.js), checked by `node test/learn.js`; characters
 that were being learned with the old flashcards start at Novice I.
 
-**Anki** — the Study page's Anki card exports your lessons and reviews as a file Anki imports
+**Anki** — Today's Anki card exports your lessons and reviews as a file Anki imports
 as it is (hanzi, pinyin, meaning, the sentence you found it in, your mnemonic, tags for kind and
 stage), and imports an Anki deck: a `.apkg` (old or new format, read in the page with sql.js and
 fzstd from `site/vendor/`) or Anki's plain-text export. It guesses which field is the hanzi,

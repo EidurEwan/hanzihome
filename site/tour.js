@@ -3,7 +3,10 @@
  * intro: how learning Mandarin works and how HanziHome teaches it. It opens by
  * itself once, on a newcomer's first visit (nothing in their lessons, nothing
  * marked); someone who already has progress here never gets it unasked. Whether it
- * has been seen is kept on this device only (localStorage).
+ * has been seen is kept on this device only (localStorage). Its last slide asks a
+ * newcomer to choose a learning path, so the tutorial ends with lessons ready.
+ * pictures: how the picture names in the mnemonics work (a component's name; a sound's
+ * figure, place and spot). It opens by itself before the very first lesson (picturesFirst).
  * sync: setting up sync with a Google Sheet, step by step.
  * api: getting a free Google AI Studio key for the translator, and adding it.
  *
@@ -74,6 +77,41 @@ const TOUR_INTRO = [
     title: 'Ready?',
     body: `<p>Start with your first lessons: a handful of sounds, components and characters. Come back tomorrow for
       their first reviews. 加油 <i>jiāyóu</i>: you can do it!</p>`,
+    // (for someone with no learning path and nothing queued: the slide below, in its place)
+    choose: {
+      title: 'Choose your path',
+      body: `<p>HanziHome fills your lessons each day with the next characters to learn, each with its components and
+        sounds first. Which order would you like? You can change it at any time in Settings.</p>`,
+    },
+    last: true,
+  },
+];
+
+/* how the picture names work: before the first lesson, whose first page is a list of them */
+const TOUR_PICTURES = [
+  {
+    art: '<div class="tu-tiles"><b class="comp">一</b><em>=</em><b class="word">plank</b></div>',
+    title: 'Every part has a picture',
+    body: `<p>You remember a character through a little story about its parts. So each <b>component</b> gets a
+      picture name: 一 is a <i>plank</i>, 氵 is <i>water drops</i>, 女 is a <i>woman</i>.</p>
+      <p>Your first lessons teach these names, a few at a time, before the characters that use them.</p>`,
+  },
+  {
+    art: `<div class="tu-tiles tu-path"><b class="sound">b-</b><em>+</em><b class="sound">-an</b><em>+</em><b class="sound">4</b></div>`,
+    title: 'Sounds have pictures too',
+    body: `<p>A syllable has a beginning, an ending and a tone, and each is a picture:</p>
+      <ul class="tu-list"><li>the beginning is a <b>figure</b>: b- is Batman, y- is Yoshi</li>
+        <li>the ending is a <b>place</b>: -an is the Mansion, -i is the Beach</li>
+        <li>the tone is <b>where at that place</b>: 1 in Front, 2 Inside, 3 the Basement, 4 the Bathroom, and the
+          neutral tone on the Roof</li></ul>`,
+  },
+  {
+    art: '<div class="tu-tiles"><b>半</b><em>=</em><b class="sound">bàn</b></div>',
+    title: 'One scene holds it all',
+    body: `<p>半 <i>bàn</i>, half: <b>Batman</b> (b-) is in the <b>Bathroom</b> (tone 4) of the <b>Mansion</b> (-an), doing
+      something with the character's parts. Picture the scene and the meaning, the sound and the tone come back together.</p>
+      <p>There are only a few dozen sounds, and each is learned once. They are quick, and don't count towards your
+      daily lesson limit, which is why your first days have more lessons than later ones.</p>`,
     last: true,
   },
 ];
@@ -182,10 +220,11 @@ const TOUR_API = [
   },
 ];
 
-const TOURS = { intro: TOUR_INTRO, sync: TOUR_SYNC, api: TOUR_API };
-// the last slide's button: what it says, and where it goes
+const TOURS = { intro: TOUR_INTRO, sync: TOUR_SYNC, api: TOUR_API, pictures: TOUR_PICTURES };
+// the last slide's button: what it says, and where it goes (nowhere: the page under the guide)
 const TOUR_END = {
   intro: ['Start studying', '#/study', null],
+  pictures: ['Got it', null, null],
   sync: ['Open sync settings', '#/settings', 'sync-card'],
   api: ['Add my key', '#/settings', 'translate-card'],
 };
@@ -237,7 +276,10 @@ function showTour(at = 0, name = 'intro') {
     dlg.id = 'tour';
     dlg.setAttribute('aria-labelledby', 'tour-title');
     document.body.appendChild(dlg);
-    dlg.addEventListener('close', () => { if (dlg._name === 'intro') tourDone(); });
+    dlg.addEventListener('close', () => {
+      if (dlg._name === 'intro') tourDone();
+      if (dlg._name === 'pictures') picturesSeen();
+    });
     dlg.addEventListener('click', e => {
       if (e.target === dlg) dlg.close();                       // the backdrop
       const act = e.target.closest('[data-tour-act]');
@@ -251,8 +293,9 @@ function showTour(at = 0, name = 'intro') {
       else if (go === 'end') {
         const [, hash, card] = TOUR_END[dlg._name];
         dlg.close();
-        goToCard(hash, card);
+        if (hash) goToCard(hash, card);
       }
+      else if (go === 'path') choosePath(dlg, b);
       else dlg._draw(+go);
     });
     dlg.addEventListener('keydown', e => {
@@ -276,7 +319,10 @@ function showTour(at = 0, name = 'intro') {
   dlg._name = name;
   dlg._draw = draw;
   function draw(i) {
-    const s = TOUR[i], from = dlg._at;
+    const from = dlg._at;
+    // the introduction's last slide, for someone with nothing to learn yet: choose a path
+    const choosing = !!TOUR[i].choose && needsPath();
+    const s = choosing ? { ...TOUR[i], ...TOUR[i].choose } : TOUR[i];
     dlg._at = i;
     dlg.innerHTML = `<div class="tour-card">
       <button class="tour-x" data-tour="skip" aria-label="Close the guide">×</button>
@@ -285,12 +331,14 @@ function showTour(at = 0, name = 'intro') {
         <p class="tour-n">${i + 1} of ${TOUR.length}</p>
         <h2 id="tour-title">${s.title}</h2>
         ${s.body}
+        ${choosing ? pathPick().replace(/data-path=/g, 'data-tour="path" data-path=') : ''}
       </div>
       <div class="tour-dots">${TOUR.map((_, j) => `<button data-tour="${j}" class="${j === i ? 'on' : ''}"
         aria-label="Slide ${j + 1}"${j === i ? ' aria-current="step"' : ''}></button>`).join('')}</div>
       <div class="tour-nav">
         ${i ? '<button class="btn quiet" data-tour="back">Back</button>' : '<button class="btn quiet" data-tour="skip">Skip</button>'}
-        ${s.last ? `<button class="btn" data-tour="end">${TOUR_END[name][0]}</button>`
+        ${choosing ? '<button class="btn quiet" data-tour="skip">Decide later</button>'
+          : s.last ? `<button class="btn" data-tour="end">${TOUR_END[name][0]}</button>`
           : `<button class="btn" data-tour="next">${i ? 'Next' : 'Show me'}</button>`}
       </div></div>`;
     // the first slide rises in with the card; the others slide in from the side they are on
@@ -301,7 +349,7 @@ function showTour(at = 0, name = 'intro') {
     if (dlg.open) focusNext();
   }
   function focusNext() {
-    const b = dlg.querySelector('[data-tour="next"], [data-tour="end"]');
+    const b = dlg.querySelector('[data-tour="next"], [data-tour="end"], [data-tour="path"]');
     if (b) b.focus();
   }
   draw(Math.max(0, Math.min(TOUR.length - 1, at)));
@@ -309,7 +357,37 @@ function showTour(at = 0, name = 'intro') {
   focusNext();
 }
 
-/* "show me how" anywhere: a button or link with data-guide="sync" or "api" */
+/* no learning path on and nothing waiting for a lesson: nothing to study until one is chosen */
+function needsPath() {
+  const cfg = Store.cfg();
+  return (!cfg.path || cfg.path === 'off') && !Store.plan().waiting.length;
+}
+
+/* the path chosen on the introduction's last slide: turn it on, fill the lessons, and show Today */
+async function choosePath(dlg, btn) {
+  dlg.querySelectorAll('[data-path]').forEach(x => { x.disabled = true; });
+  Store.setCfg({ path: btn.dataset.path });
+  await fillPath();
+  await fillParts();
+  dlg.close();
+  if (currentPath() === '/study') render(); else location.hash = '#/study';
+}
+
+/* Before the very first lessons, when they start with picture names to learn (a component or a
+   sound in the batch, and no lesson ever finished): the pictures guide, once on this device. */
+const PICTURES_KEY = 'hanzihome.pictures';
+function picturesFirst(batch) {
+  try { if (localStorage.getItem(PICTURES_KEY)) return; } catch (e) { return; }
+  const items = Store.load().items;
+  if (Object.values(items).some(it => it.stage >= 1)) { picturesSeen(); return; }     // not a newcomer
+  if (!batch.some(k => items[k] && (items[k].kind === 'sound' || items[k].kind === 'comp'))) return;
+  showGuide('pictures');
+}
+function picturesSeen() {
+  try { localStorage.setItem(PICTURES_KEY, String(Date.now())); } catch (e) { /* this visit only */ }
+}
+
+/* "show me how" anywhere: a button or link with data-guide="sync", "api" or "pictures" */
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-guide]');
   if (!g || !TOURS[g.dataset.guide]) return;

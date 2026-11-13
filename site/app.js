@@ -964,21 +964,25 @@ window.addEventListener('hashchange', () => {
   const y = back ? scrollOf.get(back) : undefined;
   Motion.page(() => (y === undefined ? render() : Promise.resolve(render(true)).then(() => window.scrollTo(0, y))));
 });
+/* Today (#/study) is the home page: the old dashboard's addresses open it too */
 const currentPath = () => {
   const h = decodeURIComponent(location.hash.replace(/^#/, ''));
-  return h.startsWith('/') ? h : '/dashboard';
+  return !h.startsWith('/') || h === '/' || /^\/dashboard(\/|$)/.test(h) ? '/study' : h;
 };
 
 /* pages the menu keeps under one entry, with tabs along the top of each. Every page keeps
    its own address, so links to them go on working. */
 const HUBS = [
-  { nav: '/explore', label: 'Explore', tabs: [
+  { nav: '/explore', label: 'Characters and lists', tabs: [
     ['HSK', '/hsk-1', /^\/hsk-/], ['Most Common', '/frequency'], ['Radicals', '/radicals'],
-    ['Components', '/productive-components'], ['Characters', '/productive-characters'],
+    ['Top Components', '/productive-components'], ['Word Builders', '/productive-characters'],
     ['Phonetic Sets', '/phonetic-sets'], ['Sounds', '/sounds'],
   ] },
-  { nav: '/grammar', label: 'Grammar and phrases', tabs: [
+  // (a round of practice has the page to itself: the tabs are for the pages you choose from)
+  { nav: '/practice', label: 'Practice', tabs: [
+    ['All', '/practice', /^\/practice$/],
     ['Grammar', '/grammar', /^\/grammar(\/(?!daily$)[^/]+)?$/], ['Phrases', '/phrases', /^\/phrases(\/[^/]+)?$/],
+    ['Tones', '/tones', /^\/tones$/], ['Weak Spots', '/weak', /^\/weak$/],
   ] },
   { nav: '/yours', label: 'Lists and notes', tabs: [['Lists', '/lists'], ['Notes', '/notes'], ['History', '/history']] },
 ];
@@ -1002,7 +1006,9 @@ function paintHub(path) {
 function markNav(path) {
   const hub = hubOf(path);
   if (hub) path = hub.nav;
-  path = path.replace(/^\/phrases/, '/grammar').replace(/^\/(lessons|learned|reviews|calibrate|stats|lookalikes|queue|tones|weak)/, '/study');
+  path = path.replace(/^\/(grammar|phrases|tones|lookalikes|weak)(\/|$)/, '/practice/')
+    .replace(/^\/(lessons|learned|reviews|calibrate|queue)(\/|$)/, '/study/')
+    .replace(/^\/(character|search)(\/|$)/, '/explore/');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
     a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
@@ -1043,6 +1049,8 @@ function searchChars(q, limit = 30) {
 }
 
 function initSearch() {
+  // (a phone's search box is too narrow for the whole hint)
+  if (matchMedia('(max-width: 600px)').matches) document.getElementById('q').placeholder = 'Characters, pinyin, English';
   const form = document.getElementById('search-form');
   const input = document.getElementById('q');
   const box = document.getElementById('ac');
@@ -1217,7 +1225,7 @@ function pager(base, page, total, per) {
     ${page < last ? `<a href="#${base}/${page + 1}">Next →</a>` : '<span>Next →</span>'}</div>`;
 }
 
-/* ---- the right-hand rail, shown on every dashboard page ---- */
+/* ---- the progress cards: Today's (study.js drawStudy) ---- */
 
 function railHtml() {
   const d = Store.load();
@@ -1229,7 +1237,7 @@ function railHtml() {
     <div class="quad">
       <div><b>${num(d.history.length)}</b><span>Searched</span><a href="#/history">View history →</a></div>
       <div><b class="pu" id="rail-comps">${num(Store.knownComps().length)}</b><span>Components Learned</span><a href="#/productive-components">Browse →</a></div>
-      <div><b class="bl">${learning.length}</b><span>Learning</span><a href="#/study">Study these →</a></div>
+      <div><b class="bl">${learning.length}</b><span>Learning</span><a href="#/lists">View list →</a></div>
       <div><b class="g">${learned.length}</b><span>Learned</span><a href="#/lists">View list →</a></div>
     </div>
   </section>
@@ -1248,7 +1256,8 @@ function railHtml() {
         learned to watch this climb.</p>
         <a class="btn" href="#/reader">Practice your reading</a></div></div>
     <div class="bar" style="margin-top:12px"><i style="width:${Math.min(100, learned.length / d.goal * 100)}%"></i></div>
-    <p class="small muted">${num(learned.length)} / ${num(d.goal)} characters learned</p>
+    <p class="small muted">${num(learned.length)} / ${num(d.goal)} characters learned ·
+      <a href="#/frequency">Mark the ones you already know</a></p>
   </section>
   <section class="card">
     <div class="rail-head">
@@ -1262,7 +1271,7 @@ function railHtml() {
 }
 
 /* A page's column. The progress cards (the rail) used to sit beside every page; in
-   the one-column layout they are the home page's (pageDashboard), and the drawer's
+   the one-column layout they are Today's (study.js drawStudy), and the drawer's
    player card carries the main numbers everywhere. */
 function withRail(main) {
   return `<div class="dash"><div>${main}</div></div>`;
@@ -1480,24 +1489,12 @@ function wireTileBoard(id, chars, opts) {
   });
 }
 
-/* ============================ dashboard ============================ */
+/* ============================ the streak ============================ */
 
-async function pageDashboard() {
-  app.innerHTML = LOADING;
-  await optional(need.comps());
-  const d = Store.load();
-  const learned = Store.chars('learned'), learning = Store.chars('learning');
-  const st = streak();
-  const tracked = byRank().slice(0, d.goal);
-
-  // Today first, as Boxes' home is today's boxes: what there is to study now
-  const p = Store.plan();
-  const hub = (cls, name, n) => `<a class="lx-tile ${cls}${n ? '' : ' idle'}" href="#/${cls}">
-    <b>${name}</b><span>${n}</span></a>`;
-  app.innerHTML = `<h1 class="page-title">Today</h1>
-    <div class="home">
-    <div class="lx-hub">${hub('lessons', 'Lessons', p.lessons.length)}${hub('reviews', 'Reviews', p.reviewsLeft)}</div>
-    <section class="card streak">
+/* the week streak card: Today's (study.js drawStudy) */
+function streakCard() {
+  const st = streak(), learned = Store.chars('learned'), learning = Store.chars('learning');
+  return `<section class="card streak">
       <div class="big"><b>${st.weeks}</b><u>Week<br>streak
         <em>Best ${st.best}</em></u></div>
       <div class="week">${st.week.map((w, i) =>
@@ -1511,16 +1508,7 @@ async function pageDashboard() {
             || '<span class="muted small">Nothing marked yet</span>'}
           ${learned.length > 8 ? `<span class="plusn">+${learned.length - 8}</span>` : ''}</div>
       </div>
-    </section>
-    <div class="home-grid">${railHtml()}</div>
-    <section class="card">
-      <h2 class="caps">Most common characters</h2>
-      <p class="muted small">Keep track of the most popular characters by updating them
-         with what you currently know. Open a character to mark it.</p>
-      ${tileBoard('track', tracked)}
-    </section></div>`;
-  wireTileBoard('track', tracked);
-  paintRail();
+    </section>`;
 }
 
 /* ============================ character page ============================ */
@@ -1696,7 +1684,7 @@ async function pageCharacter(ch) {
          data-g="${title}" data-from="${initial}">Show ${list.length - initial} more</button></p>` : ''}</div>`;
   };
 
-  app.innerHTML = `<div class="crumb-row"><p class="crumb"><a href="#/dashboard">Home</a> / <span class="han">${esc(ch)}</span></p>
+  app.innerHTML = `<div class="crumb-row"><p class="crumb"><a href="#/frequency">Characters</a> / <span class="han">${esc(ch)}</span></p>
       ${prev || next ? `<p class="neighbours">${prev ? `<span>Previous ${charLink(prev)}</span>` : ''}${next ? `<span>Next ${charLink(next)}</span>` : ''}</p>` : ''}</div>`
   + withRail(`
     <section class="card pg-hero">
@@ -2157,7 +2145,66 @@ async function pageStory(id) {
     app.innerHTML = '<div class="card"><p class="empty">No such story.</p></div>';
     return;
   }
+  storyOpened(id);
   showStory(st, 'Back to stories');
+}
+
+/* Which stories have been opened, on this device: the next one offered is one that hasn't. */
+const OPENED_KEY = 'hanzihome.storiesOpened';
+function storiesOpened() {
+  try { const a = JSON.parse(localStorage.getItem(OPENED_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function storyOpened(id) {
+  const a = storiesOpened();
+  if (a.includes(id)) return;
+  try { localStorage.setItem(OPENED_KEY, JSON.stringify(a.concat(id))); } catch (e) { /* this visit only */ }
+}
+
+/* A story to read next, after a session or when today's study is done: the hardest one you
+   can mostly read (four of its characters in five are ones you have learned), among those not
+   opened yet; if there is none, the one you know most of (the earliest, with nothing learned).
+   -> {st, known, total, ready: whether it is one you can mostly read}, or null without the stories */
+const STORY_READY = 0.8;
+async function storyForYou() {
+  await optional(need.stories());
+  if (!HZ.stories || !HZ.stories.length) return null;
+  const known = Learn.knownChars(Store.load()), opened = new Set(storiesOpened());
+  const rated = HZ.stories.map((st, i) => {
+    const chars = st.c.map(r => r[0]), n = chars.filter(c => known.has(c)).length;
+    return { st, i, known: n, total: chars.length, share: chars.length ? n / chars.length : 0 };
+  });
+  const pick = from => {
+    const ready = from.filter(r => r.share >= STORY_READY);
+    // (the stories are in order of level: the last one ready is the hardest)
+    if (ready.length) return { ...ready[ready.length - 1], ready: true };
+    const best = from.slice().sort((a, b) => b.share - a.share || a.i - b.i)[0];
+    return best ? { ...best, ready: false } : null;
+  };
+  return pick(rated.filter(r => !opened.has(r.st.id))) || pick(rated);
+}
+
+/* The card that offers it: in the review summary, after lessons, and on Today when the day's
+   study is done. Drawn empty, then filled once the stories are here. */
+const storyNextCard = () => '<section class="card read-next" id="read-next" hidden></section>';
+async function fillStoryNext() {
+  const r = await storyForYou(), box = document.getElementById('read-next');
+  if (!r || !box) return;
+  const st = r.st;
+  box.innerHTML = `<div class="read-next-text">
+      <h2 class="caps">${r.ready ? 'Read something at your level' : 'Read something'}</h2>
+      <p class="muted small">${r.ready
+        ? `You have learned ${r.known} of the ${r.total} characters in this story, enough to read it with a little help.`
+        : r.known ? `Nothing is quite at your level yet. This is the story you know most of: ${r.known} of its ${r.total} characters. Tap any word for its meaning.`
+        : `A first story to try. You'll know none of its ${r.total} characters yet: tap any word for its meaning, and it gets easier with every lesson.`}</p>
+    </div>
+    <a class="story" href="#/reader/${st.id}">
+      <span class="story-tag">HSK ${st.l} · ${esc(st.tag)}</span>
+      <span class="story-zh han">${zhOne(st.zh)}</span>
+      <span class="story-en">${esc(st.en)}</span>
+    </a>
+    <p class="small read-next-more"><a href="#/reader">All stories, and your own text</a></p>`;
+  box.hidden = false;
+  Motion.play(box, 'm-rise');
 }
 
 /* Pasted text, glossed by textstory.js into the same shape as a story, so
@@ -2663,17 +2710,21 @@ function pageSettings() {
       <div class="st-field"><div class="st-label">Tutorials</div>
         <div class="row tour-pick">
           <button class="btn quiet" id="show-tour">How HanziHome works</button>
+          <button class="btn quiet" data-guide="pictures">How the mnemonic pictures work</button>
           <button class="btn quiet" data-guide="sync">Set up sync</button>
           <button class="btn quiet" data-guide="api">Get a translator key</button></div>
-        <p class="st-note">A few slides each: how learning Mandarin works and how HanziHome teaches it; syncing your
-          progress between devices with a Google Sheet; and getting a free Google AI Studio key for the translator.</p></div>
+        <p class="st-note">A few slides each: how learning Mandarin works and how HanziHome teaches it; the picture names
+          the mnemonics give components and sounds; syncing your progress between devices with a Google Sheet; and
+          getting a free Google AI Studio key for the translator.</p></div>
     </section>
     <section class="card" id="study-card"></section>
     <section class="card" id="translate-card"></section>
     ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
     <section class="card">
-      <h2>Learning goal</h2>
-      <p class="muted small">How many of the most frequent characters the dashboard tracks.</p>
+      <h2>Character goal</h2>
+      <p class="muted small">How many of the most common characters you are aiming to learn. Today's Reading coverage
+        card measures your learned characters against it. (What your lessons teach, and in what order, is the
+        <b>Learning path</b>, under Lessons and reviews.)</p>
       <div class="row"><input id="goal" type="number" min="100" max="9933" value="${d.goal}"
         style="width:120px;font-family:inherit;padding:8px 12px;border:1px solid var(--line);
         border-radius:8px;background:var(--bg);color:var(--ink)">
@@ -2708,7 +2759,7 @@ function pageSettings() {
     </section>`);
   document.getElementById('savegoal').addEventListener('click', () => {
     const v = parseInt(document.getElementById('goal').value, 10);
-    if (v > 0) { Store.load().goal = v; Store.save(); go('/dashboard'); }
+    if (v > 0) { Store.load().goal = v; Store.save(); go('/study'); }
   });
   const io = document.getElementById('io');
   document.getElementById('export').addEventListener('click', () => {
@@ -3253,12 +3304,12 @@ function render(keepScroll) {
   const n = i => parseInt(seg[i], 10) || 1;
   leaveStudy(seg[0]);
 
-  if (path === '/' || seg[0] === 'dashboard') return pageDashboard();
   if (seg[0] === 'character') return pageCharacter(seg.slice(1).join('/'));
   if (seg[0] === 'search') return pageSearch(seg.slice(1).join('/'));
   if (seg[0] === 'word') return pageWord(seg.slice(1).join('/'));
   if (seg[0] === 'words') return pageWords(seg[1], seg[2], n(3));
   if (seg[0] === 'study') return pageStudy();
+  if (seg[0] === 'practice') return pagePractice();
   if (seg[0] === 'queue') return pageQueue(seg[1], parseInt(seg[2], 10) || 1);
   if (seg[0] === 'translate') return pageTranslate();
   if (seg[0] === 'lessons') return pageLessons();
@@ -3289,7 +3340,7 @@ function render(keepScroll) {
 
   app.innerHTML = `<div class="card"><h1>Not found</h1>
     <p class="empty">No page at ${esc(path)}.</p>
-    <p><a href="#/dashboard">Go home</a></p></div>`;
+    <p><a href="#/study">Back to Today</a></p></div>`;
 }
 
 /* the menu: a drawer that slides in from the left over the page, at every size, as
@@ -3401,7 +3452,7 @@ window.addEventListener('hashchange', () => setTimeout(() => {
 }, 0));
 
 initSearch();
-if (!location.hash) location.hash = '#/dashboard';
+if (!location.hash) location.hash = '#/study';
 optional(needS2t()).then(() => render());
 tellDesktop();
 if (window.hanzihomeDesktop) {

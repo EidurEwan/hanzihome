@@ -3257,3 +3257,66 @@ html.kb-open .lx-tabs { margin: 0 0 8px; }
 html.kb-open .lx-body { padding-top: 12px; }
 html.kb-open .rv-top { margin-bottom: 4px; }
 html.kb-open .rv-prompt { margin: 4px 0 0; }
+
+/* ---- Today as the home page, the menu by purpose, and what leads from one to the next ---- */
+
+/* the menu's groups: Learn, Read, Look up, Yours */
+.sidebar .nav-h { margin: 6px 28px 4px; font-size: 11.5px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--ink-2); }
+.sidebar .nav-h:first-child { margin-top: 2px; }
+.sidebar nav a.main { margin-bottom: 6px; padding: 9px 12px; font-size: 16px; }
+.sidebar nav a.main .ico { width: 36px; height: 36px; border-radius: 11px; }
+.sidebar nav a span.ico { width: 36px; }
+.sidebar .nav-rows { margin-top: 0; }
+.sidebar .nav-rows:empty, .sidebar .nav-rows:not(:has(a:not([hidden]))) { display: none; }
+.player { margin-bottom: 6px; }
+.side-foot { padding-top: 10px; padding-bottom: 14px; }
+.sidebar.open .nav-h { animation: m-next .32s var(--m-ease) backwards; animation-delay: 60ms; }
+@media (prefers-reduced-motion: reduce) { .sidebar.open .nav-h { animation: none; } }
+
+/* choosing a learning path: on Today, on the Lessons page, and at the end of the tutorial */
+.path-pick { display: grid; gap: 10px; margin: 12px 0 14px; }
+.path-opt { display: grid; gap: 2px; text-align: left; padding: 12px 16px; border: 0; border-radius: 16px; cursor: pointer;
+  font: inherit; color: var(--ink); background: var(--panel-2); box-shadow: 0 4px 0 var(--line-2);
+  transition: transform .06s ease, box-shadow .06s ease; }
+.path-opt b { font-size: 16px; font-weight: 600; }
+.path-opt small { font-size: 13px; line-height: 1.4; color: var(--ink-2); }
+.path-opt.best { background: var(--yellow); color: #222; box-shadow: 0 4px 0 var(--yellow-edge); }
+.path-opt.best small { color: #222; opacity: .8; }
+.path-opt:hover { filter: brightness(1.03); }
+.path-opt:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
+.path-opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.path-opt:disabled { opacity: .6; cursor: default; }
+.lx-path { border-left: 4px solid var(--yellow-edge); }
+.lx-path h2 { margin-top: 0; }
+.lx-path > p:last-child { margin-bottom: 0; }
+#tour .path-pick { margin: 4px 0 6px; gap: 8px; }
+#tour .path-opt { padding: 10px 14px; }
+@media (min-width: 700px) {
+  .lx-path .path-pick { grid-template-columns: repeat(3, 1fr); }
+  .lx-path .path-opt { align-content: start; }
+}
+
+/* Today */
+.lx-today { line-height: 1.6; }
+.lx-pathline { margin: 10px 0 0; }
+.xs-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.xs-head a { font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+
+/* something to read next: after a session, and on Today when the day's study is done */
+.read-next { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 20px; align-items: center;
+  border-left: 4px solid var(--sky); }
+.read-next[hidden] { display: none; }
+.read-next h2 { margin-top: 0; }
+.read-next .read-next-text p { margin: 0; }
+.read-next .story { box-shadow: none; background: var(--panel-2); border: 0; border-radius: 16px; padding: 16px 18px; }
+.read-next .story-tag { background: var(--panel); }
+.read-next .story-zh { margin-top: 10px; }
+.read-next-more { grid-column: 1 / -1; margin: 6px 0 0; }
+@media (max-width: 700px) { .read-next { grid-template-columns: 1fr; gap: 12px; } }
+
+/* the picture-names guide */
+.tu-list { margin: 0 0 10px; padding-left: 20px; color: var(--ink-2); }
+.tu-list li { margin-bottom: 4px; }
+.tu-list b { color: var(--ink); }
+.tu-tiles b.word:not(:lang(zh)) { font: 700 18px var(--ui); }

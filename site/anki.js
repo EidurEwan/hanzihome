@@ -1,4 +1,4 @@
-/* anki.js — HanziHome and Anki, both ways. Loaded by the Study page's Anki card
+/* anki.js — HanziHome and Anki, both ways. Loaded by Today's Anki card
  * when it is used.
  *
  * Export: your lessons and reviews as a text file Anki imports as it is (File →
