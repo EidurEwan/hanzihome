@@ -91,7 +91,7 @@ function drawLookalike() {
   const s = laState;
   if (!s || !s.qs.length) {
     app.innerHTML = '<h1 class="page-title">Look-alikes</h1>' + withRail(`<section class="card">
-      <p class="empty">No look-alikes to practise yet: you need to have learned two characters that look alike, in lessons or marked Learning or Learned.</p><p><a class="btn quiet" href="#/study">Back to study</a></p></section>`, true);
+      <p class="empty">No look-alikes to practise yet: you need to have learned two characters that look alike, in lessons or marked Learning or Learned.</p><p><a class="btn quiet" href="#/practice">Back to practice</a></p></section>`, true);
     return;
   }
   if (s.i >= s.qs.length) return s.onDone ? s.onDone(s) : laDone();
@@ -163,7 +163,7 @@ function laDone() {
           <div class="bad"><b>${n - s.right}</b><span>mixed up</span></div>
         </div>
         <div class="rs-actions"><button class="btn" id="la-again">Another round</button>
-          <a class="btn quiet" href="#/study">Back to study</a></div>
+          <a class="btn quiet" href="#/practice">Back to practice</a></div>
       </div>
     </section>
     ${pairs.length ? `<section class="card"><h2 class="caps">Mixed up</h2>

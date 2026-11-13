@@ -905,29 +905,61 @@ function ankiPreview(box, name, deck, cols, redraw) {
 
 // ---------------------------------------------------------------------- hub
 
-/* Extra study, on the Study page: practice that doesn't change when anything comes back */
-function extraStudy(weak) {
+/* Practice: extra study that doesn't change when anything comes back. Today shows the two
+   that change from day to day (brief); the Practice page (#/practice) shows them all. */
+function extraStudy(weak, brief) {
   const icon = paths => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
   const body = (ico, colour, title, note) => `<span class="ico ${colour}">${icon(ico)}</span>
     <span class="xs-text"><b>${title}</b><small>${note}</small></span>`;
   const doneToday = (Store.load().grammar._daily || {}).day === today();
   return `<section class="xs" aria-labelledby="xs-h">
-    <h2 class="sec-h" id="xs-h">Extra study</h2>
+    ${brief ? `<h2 class="sec-h xs-head" id="xs-h">Practice <a class="small" href="#/practice">All practice →</a></h2>`
+      : '<h2 class="sr-only" id="xs-h">Practice</h2>'}
     <div class="xs-grid">
       <a class="xs-tile daily" href="#/grammar/daily">${body(doneToday ? '<path d="m5 12.5 4.5 4.5L19 7.5"/>' : '<path d="M4 7h7v4H4zM13 7h7v4h-7zM8 15h8v4H8z"/>', 'white',
         'Daily grammar practice', doneToday ? 'Done for today. Fancy another round?' : 'A short round. Anything new is taught first.')}</a>
       <a class="xs-tile wide" href="#/weak">${body('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>', 'pink',
         'Weak spots', weak ? `${weak} to work on` : 'Nothing yet. What you keep missing will show up here.')}</a>
-      <a class="xs-tile" href="#/grammar">${body('<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/>', 'mint',
+      ${brief ? '' : `<a class="xs-tile" href="#/grammar">${body('<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/>', 'mint',
         'Grammar', 'Explanations and practice')}</a>
       <a class="xs-tile" href="#/phrases">${body('<path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5"/>', 'pink',
         'Phrases', 'Common phrases, questions and answers')}</a>
       <a class="xs-tile" href="#/tones">${body('<path d="M3 12h2l2-6 3 13 3-16 3 13 2-4h3"/>', 'yellow',
         'Tones', 'Train your ear to hear the four tones')}</a>
       <a class="xs-tile" href="#/lookalikes">${body('<rect x="3.5" y="3.5" width="11" height="11" rx="2"/><path d="M9.5 18.5v.5a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 19 9.5h-.5"/>', 'sky',
-        'Look-alikes', 'Tell apart 未 and 末')}</a>
+        'Look-alikes', 'Tell apart 未 and 末')}</a>`}
     </div>
   </section>`;
+}
+
+/* Practice (#/practice): everything that is extra study, in one place */
+function pagePractice() {
+  app.innerHTML = '<h1 class="page-title">Practice</h1>' + withRail(`
+    <p class="lede">Extra study, for whenever you like. Nothing here is scheduled, and it doesn't change when your
+      reviews come back or count towards the day's lessons.</p>
+    ${extraStudy(wkCount())}`, true);
+  paintRail();
+}
+
+/* Choosing a learning path: on Today and on the Lessons page when nothing is queued and no
+   path is on, and at the end of the tutorial (tour.js). */
+const PATH_CHOICES = [
+  ['mix', 'Balanced', 'Common and simple characters first, in step with the HSK levels. The one to pick if you are not sure.'],
+  ['common', 'Most common first', 'Straight down the frequency list: the quickest way to reading real text.'],
+  ['hsk', 'HSK 1 to 6', 'The exam\'s own order, level by level.'],
+];
+function pathPick() {
+  return `<div class="path-pick">${PATH_CHOICES.map(([id, name, note], i) =>
+    `<button type="button" class="path-opt${i ? '' : ' best'}" data-path="${id}"><b>${name}</b><small>${note}</small></button>`).join('')}</div>`;
+}
+function wirePathPick(root, after) {
+  root.querySelectorAll('[data-path]').forEach(b => b.addEventListener('click', async () => {
+    root.querySelectorAll('[data-path]').forEach(x => { x.disabled = true; });
+    Store.setCfg({ path: b.dataset.path });
+    await fillPath();
+    await fillParts();
+    after();
+  }));
 }
 
 function pageStudy() {
@@ -940,6 +972,9 @@ function pageStudy() {
   if (!HZ.hskChars) optional(need.hskChars()).then(() => { if (HZ.hskChars && currentPath() === '/study') drawStudy(); });
 }
 
+/* Today, the home page: what to do now first (how to start, for a newcomer; lessons and
+   reviews; something to read once they are done), then the streak, practice, what is coming,
+   and your progress. */
 function drawStudy() {
   const d = Store.load(), cfg = Store.cfg(), items = Object.entries(d.items), now = Date.now();
   const p = Store.plan(), unsorted = calibrationSets().unsorted.length;
@@ -961,62 +996,72 @@ function drawStudy() {
     <b>${name}</b><span>${n}</span>${note ? `<em>${esc(note)}</em>` : ''}</a>`;
   const of = (n, lim) => lim ? `${n} of ${lim}` : String(n);
 
-  const nextTen = typeof nextUp === 'function' ? nextUp(10) : [];
-  const why = k => {
-    const it = d.items[k];
-    if (p.locked[k]) {
-      if (p.tomorrow.includes(k)) return `Opens tomorrow: ${p.locked[k].join(' ')} ${p.locked[k].length === 1 ? 'was' : 'were'} learned today`;
-      const need = it.kind === 'word' ? cfg.wordUnlock : cfg.charUnlock;
-      return `Waits for ${p.locked[k].join(' ')} to be ${need}`;
-    }
-    return (p.lessons.includes(k) ? 'Ready now' : 'Waiting for another day')
-      + (it.ex && it.ex.text ? ' · Found in: ' + it.ex.text : '');
-  };
+  // what the Lessons tile's number is made of: sounds are lessons too, but short ones the
+  // daily limit doesn't count, so the tile can say more than the limit
+  const ready = { char: 0, word: 0, comp: 0, sound: 0 };
+  for (const k of p.lessons) ready[d.items[k].kind || 'char']++;
+  const readyList = [['char', 'character'], ['word', 'word'], ['comp', 'component'], ['sound', 'sound']]
+    .filter(([k]) => ready[k]).map(([k, name]) => `${ready[k]} ${name}${ready[k] === 1 ? '' : 's'}`);
+  const listed = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
 
-  app.innerHTML = '<h1 class="page-title">Study</h1>' + withRail(`
+  const nextTen = typeof nextUp === 'function' ? nextUp(10) : [];
+  const started = items.some(([, it]) => it.stage >= 1);            // a lesson has been finished
+  const newcomer = !items.length && !Object.keys(d.status || {}).length;
+  const noPath = (!cfg.path || cfg.path === 'off') && !p.waiting.length;
+  // lessons and reviews both done (or none yet today): time to read
+  const dayDone = started && !p.vacation && !p.lessons.length && !p.reviewsLeft;
+
+  app.innerHTML = '<h1 class="page-title">Today</h1>' + withRail(`
     ${p.vacation ? `<section class="card lx-vac">
       <h2>On vacation</h2>
       <p class="muted">Since ${esc(new Date(cfg.vacation).toLocaleDateString())}. Lessons and reviews wait until
         you're back; then every review is moved on by the time you were away.</p>
       <p><button class="btn" id="lx-back">I'm back</button></p></section>` : ''}
+    ${noPath && !p.vacation ? `<section class="card lx-path" id="lx-path">
+      <h2 class="caps">${newcomer ? 'Choose how to start' : 'Nothing to learn next?'}</h2>
+      <p class="muted">HanziHome can fill your lessons each day: ${cfg.pathDaily} new characters, each with its
+        components and sounds before it. Pick an order; you can change it at any time in
+        <a href="#/settings">Settings</a>.</p>
+      ${pathPick()}
+      <p class="small muted">${newcomer ? `Know some characters already? <a href="#/frequency">Mark them as learned</a> and the lessons
+        skip them, or bring an <a href="#anki-card" id="to-anki">Anki deck</a>. ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
+        character's or word's page does that, with or without a path.</p></section>` : ''}
     <div class="lx-hub">
       ${tile('lessons', 'Lessons', p.lessons.length, lessonNote)}
       ${tile('reviews', 'Reviews', p.reviewsLeft, reviewNote)}
     </div>
-    <p class="small muted lx-today">Today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
+    <p class="small muted lx-today">${readyList.length ? `Ready now: ${listed(readyList)}.${ready.sound && cfg.lessonLimit
+        ? ` Sounds are short, and don't count towards the daily limit of ${cfg.lessonLimit}.` : ''}<br>` : ''}
+      Done today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
       (${p.wordsToday} words) ·
-      ${of(p.reviewsToday, cfg.reviewLimit)} reviews · ${learnedCount(learnedToday()) ? `<a href="#/learned">Learned today (${learnedCount(learnedToday())})</a> · ` : ''}<a href="#/stats">Statistics</a> · <a href="#/settings">Settings</a></p>
-    ${!p.vacation ? extraStudy(wkCount()) : ''}
+      ${of(p.reviewsToday, cfg.reviewLimit)} reviews${learnedCount(learnedToday()) ? ` · <a href="#/learned">Learned today (${learnedCount(learnedToday())})</a>` : ''}</p>
+    ${dayDone ? storyNextCard() : ''}
+    ${streakCard()}
+    ${!p.vacation ? extraStudy(wkCount(), true) : ''}
     ${unsorted ? `<section class="card cb-cta">
       <h2>Sort your learned characters</h2>
       <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
         Journeyman without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
       <p><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : ''}
     <section class="card" id="lc-card" hidden></section>
-    <section class="card">
+    ${started ? `<section class="card">
       <h2 class="caps">Upcoming reviews</h2>
       <div class="lx-fc">${fc.map((n, i) => `<div><span>${dayName(i)}</span>
         <i style="width:${Math.round(100 * n / max)}%"></i><b>${n ? '+' + n : ''}</b></div>`).join('')}</div>
-    </section>
-    ${(!cfg.path || cfg.path === 'off') && !p.waiting.length ? `<section class="card lx-path">
-      <h2 class="caps">Nothing to learn next?</h2>
-      <p class="muted">Let HanziHome fill your lessons each day, ${cfg.pathDaily} new characters at a time, with their
-        components and sounds before them.</p>
-      <p class="row"><button class="btn" data-path="mix">Balanced</button>
-        <button class="btn quiet" data-path="common">Most common first</button>
-        <button class="btn quiet" data-path="hsk">HSK 1 to 6</button>
-        <a class="small" href="#/settings">More in Settings</a></p></section>` : ''}
-    ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-today">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
-      ${cfg.pathDaily} a day · <a href="#/settings">change</a></p>` : ''}
+    </section>` : ''}
     ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
     ${leechCard(d, now)}
-    <section class="card">
+    ${nextTen.length || !noPath ? `<section class="card">
       <h2 class="caps">Lesson queue</h2>
       ${nextTen.length ? `<div class="lx-queue">${nextTen.map(k => `<a class="lx-q ${d.items[k] ? d.items[k].kind : 'char'} han" href="#/queue">${zh(k)}</a>`).join('')}</div>`
-      : '<p class="empty small">Nothing yet. Turn on a learning path, or use <b>Add to lessons</b> on a character\'s page.</p>'}
+      : '<p class="empty small">Nothing yet. Use <b>Add to lessons</b> on a character\'s page.</p>'}
+      ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
+        ${cfg.pathDaily} new characters a day · <a href="#/settings">change</a></p>` : ''}
       <p class="lx-queue-more"><a class="btn quiet" href="#/queue">See upcoming characters and words</a></p>
-    </section>
-    <section class="card">
+    </section>` : ''}
+    <h2 class="sec-h">Your progress</h2>
+    <div class="home-grid">${railHtml()}</div>
+    ${items.length ? `<section class="card">
       <h2 class="caps">Stages</h2>
       <div class="lx-stages">${groups.map(g =>
         `<div class="${g.toLowerCase()}"><b>${inGroup(g)}</b><span>${g}</span></div>`).join('')}</div>
@@ -1027,8 +1072,9 @@ function drawStudy() {
         right straight away <i>easy</i>. The stages are bands of stability: Novice under 4 days,
         Apprentice from a week, Journeyman from a month (learned, on the rest of the site), Expert from
         4 months, Master from 2 years. Characters you mark learned join at Journeyman; a
-        <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.</p>
-    </section>
+        <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.
+        <a href="#/stats">Statistics</a> has the rest.</p>
+    </section>` : ''}
     <section class="card" id="anki-card">
       <h2 class="caps">Anki</h2>
       <p class="small muted">Take your lessons and reviews to Anki, or bring an Anki deck here.</p>
@@ -1047,15 +1093,17 @@ function drawStudy() {
     fillParts().then(changed => { if (changed && currentPath() === '/study') redraw(); });
   });
   drawLearnedChart(document.getElementById('lc-card'), d.items, now);
-  app.querySelectorAll('[data-path]').forEach(b => b.addEventListener('click', async () => {
-    Store.setCfg({ path: b.dataset.path });
-    await fillPath();
-    redraw();
-  }));
+  wirePathPick(app, () => { redraw(); window.scrollTo(0, 0); announce('Your lessons are ready.'); });
+  const toAnki = document.getElementById('to-anki');
+  if (toAnki) toAnki.addEventListener('click', e => {           // (a plain #anki-card would be taken for a route)
+    e.preventDefault();
+    document.getElementById('anki-card').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
   const back = document.getElementById('lx-back');
   if (back) back.addEventListener('click', () => { Store.vacation(false); redraw(); });
   wireAnki(redraw);
   paintRail();
+  if (dayDone) fillStoryNext();
 }
 
 /* The study page's chart of items learned: a running total for each kind, stacked,
@@ -1147,25 +1195,36 @@ async function pageLessons() {
     if (!batch.length) {
       const nLocked = Object.keys(p.locked).length;
       const why = p.vacation ? '<p class="empty">Lessons are paused while you\'re on vacation.</p>'
-        : !p.waiting.length ? `<p class="empty">No lessons waiting.</p>
-          <p class="small muted">Add characters and words with <b>Add to lessons</b> on a character's page
+        : !p.waiting.length && (!cfg.path || cfg.path === 'off') ? `<p class="empty">No lessons waiting.</p>
+          <p class="muted">Choose a learning path and HanziHome fills your lessons each day, ${cfg.pathDaily} new
+            characters at a time:</p>
+          ${pathPick()}
+          <p class="small muted">Or add characters and words yourself, with <b>Add to lessons</b> on a character's page
             or in the reader's word popup.</p>`
+        : !p.waiting.length ? `<p class="empty">No lessons waiting.</p>
+          <p class="small muted">Your learning path has nothing more to add today. Add characters and words yourself with
+            <b>Add to lessons</b> on a character's page or in the reader's word popup.</p>`
         : p.tomorrow.length === p.waiting.length ? `<p class="empty">Your ${p.waiting.length} word${p.waiting.length === 1 ? ' opens' : 's open'} tomorrow.</p>
             <p class="small muted">A word's lesson comes the day after its characters', so they have time to settle.</p>`
         : nLocked === p.waiting.length ? `<p class="empty">Your ${p.waiting.length} lesson${p.waiting.length === 1 ? ' is' : 's are'}
             waiting to unlock.</p><p class="small muted">Words wait for their characters, as set in Settings;
-            the Study page shows what each one waits for.</p>`
+            <a href="#/queue">Upcoming</a> shows the order they come in.</p>`
         : `<p class="empty">That's today's lessons done.</p><p class="small muted">Your daily limit is
             ${cfg.lessonLimit}; ${p.waiting.length - nLocked}
             more are ready for tomorrow.</p>`;
       app.innerHTML = '<h1 class="page-title">Lessons</h1>' + withRail(`<div class="card">
         ${why}
         <p class="row">${learnedCount(learnedToday()) ? `<a class="btn" href="#/learned">See what you learned today</a>` : ''}
-          <a class="btn${learnedCount(learnedToday()) ? ' quiet' : ''}" href="#/study">Back to study</a></p></div>`, true);
+          <a class="btn${learnedCount(learnedToday()) ? ' quiet' : ''}" href="#/study">Back to Today</a></p></div>
+        ${learnedCount(learnedToday()) && !p.vacation ? storyNextCard() : ''}`, true);
+      wirePathPick(app, () => { markNav(currentPath()); pageLessons(); });
       paintRail();
+      if (document.getElementById('read-next')) fillStoryNext();
       return;
     }
     lessonState = { batch, i: 0, tab: 0, done: [], intro: [], grade: {} };
+    // the first lessons ever open on how the picture names work (tour.js)
+    if (typeof picturesFirst === 'function') picturesFirst(batch);
     wordSet = null;
   }
   const s = lessonState;
@@ -1517,7 +1576,9 @@ function lessonsDone() {
     <h2>${s.done.length} lesson${s.done.length === 1 ? '' : 's'} done</h2>
     <p class="muted">They come back for their first review when FSRS expects you to start forgetting them: in a few days for those you got right first time.</p>
     <p class="row">${more ? `<a class="btn" href="#/lessons" id="lx-more">More lessons (${more})</a>` : ''}
-      <a class="btn quiet" href="#/study">Back to study</a></p></div>`, true);
+      <a class="btn quiet" href="#/study">Back to Today</a></p></div>
+    ${more ? '' : storyNextCard()}`, true);
+  if (!more) fillStoryNext();
   const m = document.getElementById('lx-more');
   if (m) m.addEventListener('click', e => { e.preventDefault(); pageLessons(); });
   if (s.done.length) Motion.confetti();
@@ -1596,7 +1657,7 @@ async function pageReviews() {
       app.innerHTML = '<h1 class="page-title">Reviews</h1>' + withRail(`<div class="card">
         ${p.vacation ? '<p class="empty">Reviews are paused while you’re on vacation.</p>' : `<p class="empty">No reviews due.</p>
         ${next ? `<p class="small muted">The next one is due ${esc(new Date(next).toLocaleString())}.</p>` : ''}`}
-        <p><a class="btn" href="#/study">Back to study</a></p></div>`, true);
+        <p><a class="btn" href="#/study">Back to Today</a></p></div>`, true);
       paintRail();
       return;
     }
@@ -1648,7 +1709,7 @@ async function pageReviews() {
       : shown.ok ? '' : `<p class="lx-wrong">${q === 'pinyin'
         ? `It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}).` : `It means <b>${esc(primary(it))}</b>.`}
         ${shown.mixed ? `<br><span class="rv-mixed">“${esc(shown.answer)}” is <a href="${itemHref(shown.mixed)}" target="_blank" class="han">${itemHtml(shown.mixed)}</a>
-          ${esc((Store.item(shown.mixed) || {}).pin || '')}: compare them on the Study page.</span>` : ''}</p>`}
+          ${esc((Store.item(shown.mixed) || {}).pin || '')}: compare them on the Today page.</span>` : ''}</p>`}
       <p class="row">
         ${!shown.ok && (q === 'meaning' || q === 'listen') && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
         ${q === 'write' ? '' : '<button type="button" class="btn rv-next" id="rv-next">Next ›</button>'}
@@ -1769,7 +1830,7 @@ function deferQuestion(s) {
   return true;
 }
 
-/* Leeches on the Study page: the items that keep slipping, what you mix them up
+/* Leeches on Today: the items that keep slipping, what you mix them up
    with (side by side, with both mnemonics), and three ways out: learn it again from
    a lesson, write a mnemonic of your own, or rest it for two weeks. */
 function leechCard(d, now) {
@@ -2126,6 +2187,8 @@ function reviewsDone() {
         { weekday: 'long', hour: 'numeric', minute: '2-digit' });
   };
   const more = p.reviewsLeft, lessons = p.lessons.length;
+  // nothing left to do today: on to reading (not after practice or calibration, which are asides)
+  const readNext = !s.practice && !s.calibrating && done > 0 && !more && !lessons;
 
   app.innerHTML = `<h1 class="page-title">${title}</h1>` + withRail(`
     <section class="card rs-head">
@@ -2147,10 +2210,11 @@ function reviewsDone() {
           ${s.wrong.length && !s.calibrating ? `<button class="btn" id="rs-practice">Practice the ${s.wrong.length} missed</button>` : ''}
           ${more && !s.practice ? `<button class="btn${s.wrong.length ? ' quiet' : ''}" id="rs-more">Keep reviewing (${more})</button>` : ''}
           ${lessons ? `<a class="btn quiet" href="#/lessons">Lessons (${lessons})</a>` : ''}
-          <a class="btn quiet" href="#/study">Back to study</a>
+          <a class="btn quiet" href="#/study">Back to Today</a>
         </div>
       </div>
     </section>
+    ${readNext ? storyNextCard() : ''}
     ${learned.length || slipped.length || mastered.length ? `<section class="card rs-news">
       ${learned.length ? `<p><b class="han">${esc(learned.join(' '))}</b> reached Journeyman: ${learned.length === 1 ? 'it now counts' : 'they now count'}
         as learned all over HanziHome.</p>` : ''}
@@ -2188,6 +2252,7 @@ function reviewsDone() {
   if (done) Motion.confetti(app.querySelector('.rs-ring'));
   paintRail();
   if (sheet) fillLearned(document.getElementById('learned-sheet'));
+  if (readNext) fillStoryNext();
 }
 
 /* Learned today: every character, word, component and sound that had its lesson today, as it
@@ -2208,7 +2273,7 @@ function pageLearned() {
   const more = Store.plan().lessons.length;
   app.innerHTML = '<h1 class="page-title">Learned today</h1>' + withRail(`
     <p class="row ls-actions">${more ? `<a class="btn" href="#/lessons">More lessons (${more})</a>` : ''}
-      <a class="btn${more ? ' quiet' : ''}" href="#/study">Back to study</a></p>
+      <a class="btn${more ? ' quiet' : ''}" href="#/study">Back to Today</a></p>
     <div id="learned-sheet"></div>`, true);
   paintRail();
   fillLearned(document.getElementById('learned-sheet'));
@@ -2297,7 +2362,7 @@ function pageCalibrate() {
       <label class="cb-opt"><input type="radio" name="cb-order" value="common" checked> Most common first</label>
       <label class="cb-opt"><input type="radio" name="cb-order" value="random"> Shuffled</label></div>
     <p class="row"><button class="btn" id="cb-start"${all.length ? '' : ' disabled'}>Start</button>
-      <a class="btn quiet" href="#/study">Back to study</a></p>
+      <a class="btn quiet" href="#/study">Back to Today</a></p>
   </section>`, true);
   document.getElementById('cb-start').addEventListener('click', () => {
     const set = (app.querySelector('input[name="cb-set"]:checked') || {}).value === 'unsorted' ? unsorted : all;
@@ -2393,7 +2458,7 @@ function pathCompare(c) {
       'No lessons appear on their own, so progress depends on you adding them.',
       'No order to follow: you may miss common characters, and an HSK level finishes only if you make sure of it.',
     ])}
-    <p class="st-note">Whichever you choose, when an HSK level is nearly done (at least 75% learned and at most 50 characters left), the Study page and that
+    <p class="st-note">Whichever you choose, when an HSK level is nearly done (at least 75% learned and at most 50 characters left), Today and that
       level's page offer a button that puts the rest at the front of your lessons.</p>
   </details>`;
 }

@@ -10,7 +10,7 @@
  *   #/grammar            the points
  *   #/grammar/ID         one point, with its pattern, why, examples and the common mistake
  *   #/grammar/ID/practice   a round of exercises
- *   #/grammar/daily      the Study page's daily practice: a round from a few points, teaching
+ *   #/grammar/daily      Today's daily practice: a round from a few points, teaching
  *                        first any it brings in that you haven't read, one new point a day
  *
  * Content: data/gpoints.js, from build/grammar/points.json (build/grammar/build.js).
@@ -135,7 +135,7 @@ function grDailyRound(points) {
   return shuffle(round);
 }
 function grDailyRun(points) {
-  const round = grDailyRound(points), crumb = '<a href="#/study">Study</a> / Daily grammar practice';
+  const round = grDailyRound(points), crumb = '<a href="#/study">Today</a> / Daily grammar practice';
   grRun(round, crumb, right => {
     const d = Store.load(), now = Date.now();
     for (const p of points) d.grammar[p.id] = { ...d.grammar[p.id], runs: ((d.grammar[p.id] || {}).runs || 0) + 1, last: now };
@@ -145,7 +145,7 @@ function grDailyRun(points) {
       <section class="card gr-done"><h1>${right} of ${round.length}</h1>
         <p class="muted">${right === round.length ? 'All of them right.' : 'Look over any that tripped you up:'}</p>
         <div class="gr-actions">${points.map(p => `<a class="btn quiet han" href="#/grammar/${p.id}">${esc(p.title)}</a>`).join('')}</div>
-        <p class="gr-actions"><a class="btn" href="#/study">Back to study</a>
+        <p class="gr-actions"><a class="btn" href="#/study">Back to Today</a>
           <button type="button" class="btn quiet" id="gr-again">Another round</button></p></section>`;
     document.getElementById('gr-again').addEventListener('click', grDaily);
     window.scrollTo(0, 0);
@@ -154,16 +154,16 @@ function grDailyRun(points) {
 function grDaily() {
   const { fresh, points } = grDailyPick();
   if (!points.length) {
-    app.innerHTML = `<p class="crumb"><a href="#/study">Study</a> / Daily grammar practice</p>
+    app.innerHTML = `<p class="crumb"><a href="#/study">Today</a> / Daily grammar practice</p>
       <section class="card"><h1>Daily grammar practice</h1>
         <p class="empty">Nothing to practise yet. It opens once you have learned the characters in a grammar point's sentences, in lessons or marked Learning or Learned.</p>
-        <p class="gr-actions"><a class="btn" href="#/study">Back to study</a>
+        <p class="gr-actions"><a class="btn" href="#/study">Back to Today</a>
           <a class="btn quiet" href="#/grammar">Read the grammar</a></p></section>`;
     return;
   }
   if (!fresh) return grDailyRun(points);
   /* a point you haven't read: taught first */
-  app.innerHTML = `<p class="crumb"><a href="#/study">Study</a> / Daily grammar practice / New</p>
+  app.innerHTML = `<p class="crumb"><a href="#/study">Today</a> / Daily grammar practice / New</p>
     <p class="gr-new">New today. Read this, then you'll practise it.</p>
     ${grExplain(fresh)}
     <p class="gr-actions"><button type="button" class="btn" id="gr-start">Start practice</button></p>`;

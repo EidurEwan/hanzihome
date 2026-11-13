@@ -1,6 +1,6 @@
 /* order.js — what you will learn next (#/queue): the character order and the word order. Tap
  * one to prioritise it (it is learnt before the rest of the queue) or skip it (it is never
- * taught). The Study page's queue shows the first ten of this.
+ * taught). Today's queue shows the first ten of this.
  *
  *   #/queue/chars | #/queue/words, /N for how many hundred to show
  *
@@ -42,7 +42,7 @@ const queuedOf = kind => {
   return Store.plan().waiting.filter(k => d.items[k] && d.items[k].kind === kind);
 };
 
-/* the Study page's queue: the next ten characters and words, nothing else */
+/* Today's queue: the next ten characters and words, nothing else */
 function nextUp(n = 10) {
   const d = Store.load();
   // today's lessons in the order they come, then what is waiting behind them

@@ -33,7 +33,7 @@ const wkItems = () => {
   return Learn.weakItems(d.items, Date.now(), d.weak);
 };
 const wkTones = () => tnWeak(Store.load().tones);
-/* how much there is to work on, for the tile on the Study page */
+/* how much there is to work on, for the tile on Today */
 const wkCount = () => wkItems().length + wkLooks().length + (wkTones() ? 1 : 0);
 
 const wkTile = (k, kind) => `<a class="ls-tile ${kind} han" href="${itemHref(k)}" target="_blank" rel="noopener" aria-label="${esc(itemText(k))}, opens in a new tab">${itemHtml(k)}</a>`;
@@ -44,9 +44,9 @@ function wkOverview() {
   app.innerHTML = '<h1 class="page-title">Weak spots</h1>' + withRail(!parts ? `<section class="card">
       <p class="empty">Nothing to work on yet.</p>
       <p class="small muted">What you keep missing in reviews, look-alikes and tones will show up here.</p>
-      <p><a class="btn quiet" href="#/study">Back to study</a></p></section>` : `
+      <p><a class="btn quiet" href="#/study">Back to Today</a></p></section>` : `
     <p class="row ls-actions"><button class="btn" id="wk-start">Start</button>
-      <a class="btn quiet" href="#/study">Back to study</a></p>
+      <a class="btn quiet" href="#/study">Back to Today</a></p>
     <p class="small muted wk-note">A short round. It doesn't change when your reviews come back.</p>
     ${items.length ? `<section class="ls-group"><h2 class="sec-h">Keep missing</h2>
       <div class="ls-tiles">${items.map(k => wkTile(k, d.items[k].kind || 'char')).join('')}</div></section>` : ''}
@@ -128,7 +128,7 @@ function wkDone() {
   app.innerHTML = '<h1 class="page-title">Weak spots</h1>' + withRail(`
     <section class="card wk-done">
       <div class="rs-stats">${s.queue.map(p => `<div><b>${s.score[p] ? s.score[p][0] : 0} / ${s.score[p] ? s.score[p][1] : 0}</b><span>${WK_LABEL[p]}</span></div>`).join('')}</div>
-      <div class="rs-actions"><a class="btn" href="#/study">Back to study</a>
+      <div class="rs-actions"><a class="btn" href="#/study">Back to Today</a>
         <button class="btn quiet" id="wk-again">Another round</button></div>
     </section>`, true);
   document.getElementById('wk-again').addEventListener('click', () => { wkOverview(); window.scrollTo(0, 0); });
