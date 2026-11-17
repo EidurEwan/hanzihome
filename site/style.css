@@ -1580,6 +1580,11 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
   font-weight: 700; white-space: nowrap; line-height: 1.5; }
 .mn-chip.comp { background: color-mix(in srgb, var(--lx-comp) 14%, transparent); color: inherit; }
 .mn-chip.comp .han { background: var(--lx-comp); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; }
+.mn-chip.ch { background: color-mix(in srgb, var(--lx-char) 14%, transparent); }
+.mn-chip.ch .han { background: var(--lx-char); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; }
+.mn-chip.wd { background: color-mix(in srgb, var(--lx-word) 14%, transparent); }
+.mn-chip.wd .han { background: var(--lx-word); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; }
+.mn-chip .mn-key { color: inherit; font-weight: inherit; }
 .mn-chip.snd { background: color-mix(in srgb, var(--lx-sound) 14%, transparent); padding-left: 6px; }
 .mn-chip.snd .snd-key { background: var(--lx-sound); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; margin-left: -6px; font-size: .85em; }
 .lx-mn-builtin { line-height: 1.9; }

@@ -651,7 +651,8 @@ async function itemFacts(k, it) {
 
 /* what a mnemonic's chips stand for (words.js mnHtml) */
 const mnCtx = (k, it, f) => it.kind === 'comp' ? { comps: (f.subs || []).concat([[glyphOf(k), it.mean]]) }
-  : it.kind === 'sound' ? { sounds: [[itemText(k), it.mean]] } : { comps: f.comps || [], sounds: f.sounds || [] };
+  : it.kind === 'sound' ? { sounds: [[itemText(k), it.mean]] }
+  : { self: it.kind === 'char' || it.kind === 'word' ? glyphOf(k) : '', comps: f.comps || [], sounds: f.sounds || [] };
 
 /* the coloured band at the top: the item, and optionally its reading and meaning */
 function band(k, it, show) {
@@ -1842,7 +1843,7 @@ function leechCard(d, now) {
     const resting = it.rest > now;
     const side = x => `<div class="lc-side"><a class="han" href="${itemHref(x)}">${itemHtml(x)}</a>
       <b>${esc(d.items[x].pin)}</b> ${esc(primary(d.items[x]))}
-      ${d.items[x].mnemonic || builtinMnemonic(glyphOf(x)) ? `<p class="small mn">${d.items[x].mnemonic ? esc(d.items[x].mnemonic) : mnHtml(builtinMnemonic(glyphOf(x)))}</p>` : ''}</div>`;
+      ${d.items[x].mnemonic || builtinMnemonic(glyphOf(x)) ? `<p class="small mn">${d.items[x].mnemonic ? esc(d.items[x].mnemonic) : mnHtml(builtinMnemonic(glyphOf(x)), { self: glyphOf(x) })}</p>` : ''}</div>`;
     return `<div class="lc-row" data-k="${esc(k)}">
       <div class="lc-head"><a class="han lc-glyph" href="${itemHref(k)}">${itemHtml(k)}</a>
         <span><b>${esc(it.pin)}</b> ${esc(primary(it))}<br><span class="small muted">${it.lapses || 0} lapses
