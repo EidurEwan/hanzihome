@@ -437,6 +437,7 @@ build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the s
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
 site/textstory.js       turns any text into what the story reader draws (see "Reading any text")
+extension/              the browser extension: colours and looks up Chinese on any page (see "Browser extension")
 site/translate.js       the translator: Gemini with your Google AI Studio key, or offline (see "Translate")
 site/grammar.js         explains the grammar patterns in a Chinese sentence, offline
 site/pinyin.js          turns pinyin into characters, offline, for the translator
@@ -609,6 +610,48 @@ here; `npm run dist` builds the installer. Ready-built installers are on the rep
 app updates itself from Releases: it downloads a new version in the background and installs it
 when you quit (or at once, from the tray). How it works, what was measured and what each
 part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
+
+## Browser extension
+
+[`extension/`](extension/) is the desktop app's screen reader for Chrome, Edge and Firefox
+(140+). On any web page it:
+
+* puts a coloured underline under every Chinese word: green learned, blue learning, red new
+  (the reader's colours and rules), and keeps up as the page changes;
+* shows the reader's word popup for the word under the pointer while you hold Ctrl (on its
+  own, so Ctrl+C never opens it; Alt or Shift in the toolbar menu), glossed in the context of
+  its sentence, with the buttons to mark its characters or the word and to add it to your
+  lessons, with its sentence as the example. As on the desktop, it stays while the pointer is
+  on the word or the popup, and a safe triangle keeps it on the way from one to the other;
+* sends the page, or the text you selected, to the site's reader (toolbar menu, or right-click
+  → Read in HanziHome).
+
+A page is already text, so there is no OCR: words come straight from the page. Each block (a
+paragraph, a list item, a cell) is split into words by `site/textstory.js`, and the underlines
+are CSS Custom Highlights, so the page's own elements are never changed. The dictionary
+(~11 MB) lives once, in the extension's background script, not in every tab.
+
+**Progress** is the site's own. The extension keeps a copy of your statuses, taken from
+HanziHome whenever it is open in the same browser (`extension/bridge.js` on the site's pages
+reads the store when the site saves it). Marking something in the popup recolours every open
+page at once and is handed to the next HanziHome tab, which makes the change itself, as its
+own buttons would, and syncs it as usual. Until HanziHome has been opened once in that
+browser, every word counts as new.
+
+**Installing it** from the repo:
+
+```bash
+node extension/build.js
+```
+
+then in Chrome or Edge open `chrome://extensions`, turn on Developer mode, **Load unpacked**
+and pick the `extension/` folder; in Firefox, `about:debugging` → This Firefox → **Load
+Temporary Add-on** → `extension/manifest.json`. `node extension/build.js --zip` packs
+`extension/dist/hanzihome-extension-<version>.zip` for the Chrome Web Store or Firefox
+Add-ons; the "Browser extension" workflow builds the same zip on every push that changes
+it (under the run's Artifacts) and runs `test/extension.js`, which checks colouring, the
+popup, marking and the link to the site in Chromium (`node test/extension.js`, with
+Playwright installed).
 
 ## Known differences from the original
 

@@ -1,0 +1,47 @@
+# The browser extension (extension/): builds it, checks it in Chromium (test/extension.js),
+# and keeps the packed zip with the run under Artifacts, ready to load or to upload to the
+# Chrome Web Store or Firefox Add-ons.
+name: Browser extension
+
+on:
+  push:
+    paths:
+      - 'extension/**'
+      - 'site/app.js'
+      - 'site/study.js'
+      - 'site/learn.js'
+      - 'site/textstory.js'
+      - 'site/data/index.js'
+      - 'site/data/readings.js'
+      - 'site/data/readerwords.js'
+      - 'test/extension.js'
+      - '.github/workflows/extension.yml'
+  pull_request:
+    paths:
+      - 'extension/**'
+      - 'test/extension.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: extension-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extension:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node extension/build.js --zip
+      - run: npm install --no-save --no-package-lock playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - run: node test/extension.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hanzihome-extension
+          path: extension/dist/*.zip

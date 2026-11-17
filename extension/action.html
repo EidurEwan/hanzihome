@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>HanziHome</title>
+<link rel="stylesheet" href="action.css">
+</head>
+<body>
+<header>
+  <img src="icons/icon-32.png" alt="" width="20" height="20">
+  <h1>HanziHome</h1>
+</header>
+
+<section>
+  <label class="row"><input type="checkbox" id="on"> <span>Colour Chinese words</span></label>
+  <div class="colours" id="colours">
+    <label><input type="checkbox" data-show="learned"> <i class="dot learned"></i>Learned</label>
+    <label><input type="checkbox" data-show="learning"> <i class="dot learning"></i>Learning</label>
+    <label><input type="checkbox" data-show="new"> <i class="dot new"></i>New</label>
+  </div>
+  <label class="row" id="site-row"><input type="checkbox" id="here"> <span>Use it on <b id="host"></b></span></label>
+</section>
+
+<section>
+  <label class="row between"><span>Look up a word: hold</span>
+    <select id="key">
+      <option value="ctrl">Ctrl</option>
+      <option value="alt">Alt</option>
+      <option value="shift">Shift</option>
+      <option value="off">(off)</option>
+    </select>
+  </label>
+  <p class="muted" id="key-help">…and point at it.</p>
+</section>
+
+<section id="page" hidden>
+  <p class="counts" id="counts"></p>
+</section>
+
+<section>
+  <p class="muted" id="progress"></p>
+  <p class="wait" id="queue" hidden></p>
+  <div class="buttons">
+    <button type="button" id="read">Read this page in HanziHome</button>
+    <button type="button" id="open" class="quiet">Open HanziHome</button>
+  </div>
+</section>
+<script src="action.js"></script>
+</body>
+</html>
