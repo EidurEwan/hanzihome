@@ -44,8 +44,8 @@ function render({ entry, status, known, learn, wstate }) {
       [['', 'Not known', 'none'], ['learning', 'Learning', 'learning'], ['learned', 'Learned', 'learned']].map(([v, label, cls]) =>
         `<button type="button" data-ws="${v}"${(wstate || '') === v ? ` class="on ${cls}"` : ''}>${label}</button>`).join('')}</span></div>` : ''}
     ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
-  const r = pop.getBoundingClientRect();
-  window.popup.size(Math.ceil(r.width) + 2, Math.ceil(r.height) + 2);   // + the 1px border
+  // the layout size, which no transform changes; + the 1px border on each side
+  window.popup.size(pop.offsetWidth + 2, pop.offsetHeight + 2);
 }
 
 pop.addEventListener('click', e => {
