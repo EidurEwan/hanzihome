@@ -1,8 +1,8 @@
 /* HanziHome's look, after the Boxes app (github.com/andrewtmitchell/boxes, its
  * light-mode-and-game-ui branch): a game, on warm paper (#F6F4EF) with charcoal
- * text, or charcoal (#222) with white text in the dark; yellow pill buttons
- * that sit on a darker edge and sink when pressed, and the Poppins font. The
- * character cards keep HanziHome's own 3D: raised on an edge, pressing flat.
+ * text, or charcoal (#222) with white text in the dark; flat yellow pill
+ * buttons, and the Poppins font. Only the character cards are 3D: raised on
+ * an edge, pressing flat (see "Flat buttons" at the end).
  *
  * Poppins (SIL Open Font License) is bundled in fonts/, subset to Latin, with
  * the pinyin letters it lacks (ǎ ǐ ǒ ǔ ǖ ǘ ǚ ǜ) built from its own letters and
@@ -3320,3 +3320,40 @@ html.kb-open .rv-prompt { margin: 4px 0 0; }
 .tu-list li { margin-bottom: 4px; }
 .tu-list b { color: var(--ink); }
 .tu-tiles b.word:not(:lang(zh)) { font: 700 18px var(--ui); }
+
+
+/* =====================================================================
+   Flat buttons
+   ---------------------------------------------------------------------
+   Buttons, chips, tabs and the study tiles lie flat on the page: no edge
+   under them and no sinking when pressed, just a slight darkening. Only
+   the character cards (tiles, the big glyph, parts, words, the lesson
+   items) stay 3D, raised on their edge and pressing flat.
+   ===================================================================== */
+:root { --edge: 0px; }
+.btn, .btn.small, .next-row .btn, .selbar .btn, .cb-top .btn, .rv-synform .btn, .dk-recent .btn,
+.sync-backups .btn, .books .btn, .st-try, .lx-say { --edge: 0px; }
+.btn, .btn:hover, .btn:active, .btn.pressed, .btn:disabled:active,
+.filters button, .filters a, .tabs a, .pager a, .more, .wp-learn button, .lx-tabs button,
+.seg button.on, .seg button.on.amber,
+.sidebar nav a.on, .sidebar .nav-rows a.on,
+.week i.on,
+.lx-tile, .lx-tile.lessons, .lx-tile.reviews, .lx-stages div,
+.cb-grade, .rv-tool, .rv-tool.on,
+.la-mean, .xs-tile, .xs-tile.daily, .tn-tone, .tn-play, .path-opt, .path-opt.best, .skip-link {
+  box-shadow: none !important; }
+.btn:hover, .btn:active, .btn.pressed,
+.filters button:active, .filters a:active, .tabs a:active, .pager a:active, .more:active,
+.wp-learn button:active, .lx-tabs button:active,
+.lx-tile:hover, .lx-tile:active, .cb-grade:active, .rv-tool:active,
+.xs-tile:active, .tn-tone:active, .tn-tone:disabled, .tn-play:active, .path-opt:active {
+  transform: none !important; }
+.btn:not(:disabled):active, .btn.pressed,
+.filters button:active, .filters a:active, .tabs a:active, .pager a:active, .more:active,
+.wp-learn button:active, .lx-tabs button:active,
+.lx-tile:active, .cb-grade:not(:disabled):active, .rv-tool:not(:disabled):active,
+.xs-tile:active, .tn-tone:not(:disabled):active, .tn-play:active, .path-opt:active, .la-mean:not(:disabled):active {
+  filter: brightness(.93); }
+.la-mean { box-shadow: inset 0 0 0 2px var(--line-2) !important; }
+.la-mean:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--yellow-edge) !important; }
+.la-mean.right, .la-mean.wrong { box-shadow: none !important; }
