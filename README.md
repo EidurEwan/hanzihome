@@ -645,11 +645,12 @@ node extension/build.js
 ```
 
 then in Chrome or Edge open `chrome://extensions`, turn on Developer mode, **Load unpacked**
-and pick the `extension/` folder; in Firefox, `about:debugging` → This Firefox → **Load
-Temporary Add-on** → `extension/manifest.json`. `node extension/build.js --zip` packs
-`extension/dist/hanzihome-extension-<version>.zip` for the Chrome Web Store or Firefox
-Add-ons; the "Browser extension" workflow builds the same zip on every push that changes
-it (under the run's Artifacts) and runs `test/extension.js`, which checks colouring, the
+and pick the `extension/` folder. Firefox runs an extension's background differently, so
+it gets its own copy, which the same command makes: `about:debugging` → This Firefox →
+**Load Temporary Add-on** → `extension/dist/firefox/manifest.json`.
+`node extension/build.js --zip` packs `extension/dist/hanzihome-extension-<version>-chrome.zip`
+and `-firefox.zip` for the Chrome Web Store and Firefox Add-ons; the "Browser extension"
+workflow builds both on every push that changes the extension (under the run's Artifacts) and runs `test/extension.js`, which checks colouring, the
 popup, marking and the link to the site in Chromium (`node test/extension.js`, with
 Playwright installed).
 

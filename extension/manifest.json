@@ -15,16 +15,7 @@
     "activeTab"
   ],
   "background": {
-    "service_worker": "background.js",
-    "scripts": [
-      "hz-init.js",
-      "hz/index.js",
-      "hz/readings.js",
-      "hz/readerwords.js",
-      "hz/textstory.js",
-      "hz/learn.js",
-      "background.js"
-    ]
+    "service_worker": "background.js"
   },
   "action": {
     "default_title": "HanziHome",
@@ -62,11 +53,5 @@
       ],
       "run_at": "document_idle"
     }
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "hanzihome@eidurewan.github.io",
-      "strict_min_version": "140.0"
-    }
-  }
+  ]
 }

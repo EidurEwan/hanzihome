@@ -1,9 +1,10 @@
 /* build.js — make the browser extension ready to load, and pack it.
  *
  *   node extension/build.js          copy the reader's engine and data into extension/hz/
- *                                    (then load extension/ unpacked: see README)
- *   node extension/build.js --zip    ...and pack extension/dist/hanzihome-extension-<version>.zip,
- *                                    for the Chrome Web Store or Firefox Add-ons
+ *                                    and make a copy for Firefox in extension/dist/firefox/
+ *                                    (then load extension/ or that copy unpacked: see README)
+ *   node extension/build.js --zip    ...and pack extension/dist/hanzihome-extension-<version>-{chrome,firefox}.zip,
+ *                                    for the Chrome Web Store and Firefox Add-ons
  *
  * The extension uses the site's own files, so they aren't kept twice in the repo:
  * site/textstory.js and site/learn.js, and site/data/{index,readings,readerwords}.js
@@ -33,12 +34,29 @@ fs.mkdirSync(path.join(EXT, 'hz'), { recursive: true });
 for (const [to, from] of Object.entries(COPY)) fs.copyFileSync(path.join(SITE, from), path.join(EXT, to));
 console.log('copied the reader into extension/hz/');
 
+/* Firefox runs the background as an event page, not a service worker: the same files,
+   listed in its manifest instead of loaded by importScripts. manifest.json is Chrome's
+   (and Edge's); Firefox's is made from it into dist/firefox/, a complete copy. */
+const manifest = JSON.parse(fs.readFileSync(path.join(EXT, 'manifest.json'), 'utf8'));
+const firefox = Object.assign({}, manifest, {
+  background: { scripts: ['hz-init.js', ...Object.keys(COPY).filter(f => f !== 'hz/textstory.js' && f !== 'hz/learn.js'),
+    'hz/textstory.js', 'hz/learn.js', 'background.js'] },
+  browser_specific_settings: { gecko: { id: 'hanzihome@eidurewan.github.io', strict_min_version: '140.0' } },
+});
+const FF = path.join(EXT, 'dist', 'firefox');
+for (const f of FILES) {
+  fs.mkdirSync(path.dirname(path.join(FF, f)), { recursive: true });
+  if (f === 'manifest.json') fs.writeFileSync(path.join(FF, f), JSON.stringify(firefox, null, 2) + '\n');
+  else fs.copyFileSync(path.join(EXT, f), path.join(FF, f));
+}
+console.log('made the Firefox copy in extension/dist/firefox/');
+
 if (process.argv.includes('--zip')) {
-  const { version } = JSON.parse(fs.readFileSync(path.join(EXT, 'manifest.json'), 'utf8'));
-  const out = path.join(EXT, 'dist', `hanzihome-extension-${version}.zip`);
-  fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, zip(FILES.map(f => [f, fs.readFileSync(path.join(EXT, f))])));
-  console.log('packed', path.relative(process.cwd(), out), (fs.statSync(out).size / 1e6).toFixed(1) + ' MB');
+  for (const [name, dir] of [['chrome', EXT], ['firefox', FF]]) {
+    const out = path.join(EXT, 'dist', `hanzihome-extension-${manifest.version}-${name}.zip`);
+    fs.writeFileSync(out, zip(FILES.map(f => [f, fs.readFileSync(path.join(dir, f))])));
+    console.log('packed', path.relative(process.cwd(), out), (fs.statSync(out).size / 1e6).toFixed(1) + ' MB');
+  }
 }
 
 /* a plain zip file (deflated), [[name, Buffer]] -> Buffer */
