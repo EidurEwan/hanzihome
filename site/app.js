@@ -350,44 +350,7 @@ const Store = {
    overlay. In a browser this does nothing. */
 function tellDesktop() {
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.saved(JSON.stringify(Store.load()));
-  tellExtension('saved');
 }
-
-/* The browser extension (extension/): its script on this page (extension/bridge.js)
-   reads the store from localStorage when told it was saved, and hands over what was
-   done in its popup on other sites, which is done here as this site's own buttons do
-   it: marking a character or a word, adding a word to the lessons. It also brings text
-   for the reader. Messages are {hanzihomeExtension: what, ...}, within this window. */
-function tellExtension(what, m) {
-  window.postMessage(Object.assign({ hanzihomeExtension: what }, m || {}), location.origin);
-}
-window.addEventListener('message', async e => {
-  const d = e.data;
-  if (e.source !== window || !d || typeof d.hanzihomeExtension !== 'string') return;
-  if (d.hanzihomeExtension === 'ping') tellExtension('ready');
-  else if (d.hanzihomeExtension === 'apply' && Array.isArray(d.ops)) {
-    const done = [];
-    for (const op of d.ops) {
-      try {
-        if (op.t === 'mark' && typeof op.c === 'string') {
-          Store.setStatus(op.c, op.s === 'learning' || op.s === 'learned' ? op.s : null);
-        } else if (op.t === 'wmark' && typeof op.w === 'string') {
-          await need.words();
-          Store.setWStatus(op.w, op.s === 'learning' || op.s === 'learned' ? op.s : null, wordInfo(op.w));
-        } else if (op.t === 'learn' && typeof op.w === 'string') {
-          await need.textStory();
-          await learnFromReader(op.w, String(op.p || ''), String(op.d || ''), String(op.sentence || ''));
-        }
-      } catch (err) { console.warn('extension:', err); }
-      done.push(op.id);
-    }
-    if (done.length) { rerenderKeepingScroll(); markNav(currentPath()); }
-    tellExtension('applied', { ids: done });
-  } else if (d.hanzihomeExtension === 'read' && typeof d.text === 'string') {
-    setReaderText(d.text.slice(0, 200000), String(d.title || '').slice(0, 80));
-    go('/reader/text');
-  }
-});
 
 /* ============================ sync ============================
    Optional: keep the store in step across browsers through a Google Apps
@@ -3492,7 +3455,6 @@ initSearch();
 if (!location.hash) location.hash = '#/study';
 optional(needS2t()).then(() => render());
 tellDesktop();
-tellExtension('ready');
 if (window.hanzihomeDesktop) {
   document.getElementById('nav-screen').hidden = false;
   window.hanzihomeDesktop.onSettings(paintDesktopCard);   // the tray changed something

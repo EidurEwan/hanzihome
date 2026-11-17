@@ -6,9 +6,10 @@
  * the page makes itself (Store.setStatus, Store.setWStatus, learnFromReader), as its
  * own buttons would. It also hands over text sent to the site's reader.
  *
- * The page's side is the "browser extension" block in site/app.js; the two talk
- * with window.postMessage, {hanzihomeExtension: what, ...}. On a localhost page that
- * isn't HanziHome nothing answers, and this does nothing. */
+ * The page's side is extension/page.js, which runs in the page itself (a content
+ * script can read the page's localStorage but not call its code); the two talk with
+ * window.postMessage, {hanzihomeExtension: what, ...}. On a localhost page that isn't
+ * HanziHome there is no store and nothing answers, and this does nothing. */
 
 (() => {
   'use strict';
@@ -55,7 +56,7 @@
       if (ready) return;
       ready = true;
       sendStore().then(flush);
-    } else if (what === 'saved' && ready) {
+    } else if (what === 'saved') {
       sendStore();
     } else if (what === 'applied' && Array.isArray(e.data.ids)) {
       send({ t: 'applied', ids: e.data.ids });
@@ -64,6 +65,18 @@
 
   api.runtime.onMessage.addListener(m => { if (m && m.t === 'flush') flush(); return false; });
 
-  // the page says 'ready' once it has loaded; this asks, in case that was before now
+  // the store can be read from here without the page: send it now if this is HanziHome
+  // (it has the site's store), and again whenever it changes, in case a save was missed
+  let last = null;
+  function check() {
+    let raw = null;
+    try { raw = localStorage.getItem(STORE_KEY); } catch (e) { /* no storage here */ }
+    if (raw !== null && raw !== last) { last = raw; sendStore(); }
+  }
+  check();
+  setInterval(() => { if (document.visibilityState === 'visible') check(); }, 5000);
+  document.addEventListener('visibilitychange', check);
+
+  // page.js, in the page itself, says 'ready' once the site has loaded; ask in case it already has
   post('ping');
 })();

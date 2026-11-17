@@ -633,7 +633,8 @@ are CSS Custom Highlights, so the page's own elements are never changed. The dic
 
 **Progress** is the site's own. The extension keeps a copy of your statuses, taken from
 HanziHome whenever it is open in the same browser (`extension/bridge.js` on the site's pages
-reads the store when the site saves it). Marking something in the popup recolours every open
+reads the store when the site saves it, and `extension/page.js`, running in the page itself,
+makes the popup's changes with the site's own code, so nothing in `site/` has to change). Marking something in the popup recolours every open
 page at once and is handed to the next HanziHome tab, which makes the change itself, as its
 own buttons would, and syncs it as usual. Until HanziHome has been opened once in that
 browser, every word counts as new.

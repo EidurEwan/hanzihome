@@ -26,7 +26,7 @@ const COPY = {
   'hz/readerwords.js': 'data/readerwords.js',
 };
 // everything the extension is made of (the zip holds these and nothing else)
-const FILES = ['manifest.json', 'background.js', 'hz-init.js', 'content.js', 'content.css', 'bridge.js',
+const FILES = ['manifest.json', 'background.js', 'hz-init.js', 'content.js', 'content.css', 'bridge.js', 'page.js',
   'action.html', 'action.css', 'action.js',
   'icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-128.png', ...Object.keys(COPY)];
 
