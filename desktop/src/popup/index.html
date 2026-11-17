@@ -9,7 +9,11 @@
 <style>
   html, body { margin: 0; background: var(--panel); overflow: hidden; }
   body { border: 1px solid var(--line-2); border-radius: 0; }
-  #word-pop { position: static; box-shadow: none; border: 0; border-radius: 0; max-width: 360px; }
+  /* its own size, not the window's: the window is fitted to this, so a width taken
+     from the window could only ever stay or shrink. No pop-in animation either: it
+     scales the popup down while it is measured. */
+  #word-pop, #word-pop:not([hidden]) { position: static; box-shadow: none; border: 0; border-radius: 0;
+    width: max-content; min-width: 230px; max-width: 360px; animation: none; transform: none; }
   .wp-c { cursor: pointer; text-decoration: none; }
   .wp-learn span { font-size: 12.5px; font-weight: 700; color: var(--accent); }
 </style>
