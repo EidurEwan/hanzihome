@@ -3376,3 +3376,11 @@ html.kb-open .rv-prompt { margin: 4px 0 0; }
 .la-mean { box-shadow: inset 0 0 0 2px var(--line-2) !important; }
 .la-mean:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--yellow-edge) !important; }
 .la-mean.right, .la-mean.wrong { box-shadow: none !important; }
+
+
+/* Words are purple wherever they appear, as in the lessons (--lx-word); --word-ink is
+   that purple dark or light enough to read as text on the page */
+:root { --word-ink: #6a3fc4; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --word-ink: #b9a0ff; } }
+:root[data-theme="dark"] { --word-ink: #b9a0ff; }
+.word .w, .wordtable td.g a.han, .wordtable td.g a.han:hover, .hero-glyph.word-glyph { color: var(--word-ink); }
