@@ -1989,7 +1989,7 @@ async function pageReader() {
     </a>`;
   };
 
-  app.innerHTML = '<h1 class="page-title">Reader <em class="beta">beta</em></h1>' + withRail(`
+  app.innerHTML = '<h1 class="page-title">Reader</h1>' + withRail(`
     <p class="lede">Characters stick far better in context than in a list. These are short
        original stories graded by HSK level — every character is clickable, and the ones you
        have marked are coloured as you read. You can paste your own text at the bottom.</p>

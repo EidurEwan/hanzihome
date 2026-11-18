@@ -75,6 +75,7 @@ function hskOf(w) {
    written or with an ending (halves, Batmans). */
 function mnHtml(m, ctx) {
   ctx = ctx || {};
+  const keyChip = keyChipper(ctx.self);
   const find = (list, said) => {
     const w = said.toLowerCase();
     return (list || []).find(([, n]) => {
@@ -83,7 +84,7 @@ function mnHtml(m, ctx) {
     });
   };
   return esc(m || '')
-    .replace(/\*\*([^*]+)\*\*/g, '<b class="mn-key">$1</b>')
+    .replace(/\*\*([^*]+)\*\*/g, (all, said) => keyChip(said))
     .replace(/\*([^*]+)\*/g, (all, said) => {
       const hit = find(ctx.comps, said);
       return hit ? `<span class="mn-chip comp"><span class="han">${esc(hit[0])}</span>${said}</span>` : `<span class="mn-part">${said}</span>`;
@@ -92,6 +93,32 @@ function mnHtml(m, ctx) {
       const hit = find(ctx.sounds, said), key = hit ? hit[0] : soundKeyOf(said);
       return `<span class="mn-chip snd">${key ? `<span class="snd-key">${esc(key)}</span>` : ''}${said}</span>`;
     });
+}
+/* A **meaning** in the mnemonic of `self` (a character or a word), as a chip with
+   the glyph it is the meaning of: a character's meaning in red with the character,
+   a word's in purple with the word, or, in a word's mnemonic, the meaning of one of
+   its characters in red with that character (电脑: **electric** 电, **brain** 脑,
+   **computer** 电脑). Without a self, plain bold. */
+function keyChipper(self) {
+  const plain = said => `<b class="mn-key">${said}</b>`;
+  if (!self) return plain;
+  const chip = (kind, glyph, said) =>
+    `<span class="mn-chip ${kind}"><span class="han">${esc(glyph)}</span><b class="mn-key">${said}</b></span>`;
+  const chars = [...self];
+  if (chars.length === 1) return said => chip('ch', self, said);
+  const stem = w => w.toLowerCase().replace(/[^a-z' -]/g, '').trim().replace(/(ies|es|s|ing|ed)$/, '');
+  const terms = c => {
+    const e = HZ.index && HZ.index[c], cm = HZ.cmnem && HZ.cmnem[c];
+    return [cm ? cm[0] : '', e ? e[3] : ''].join(';').split(/[;,/()…]+/)
+      .map(t => stem(t.replace(/^(to|a|an|the) /i, ''))).filter(t => t.length > 1);
+  };
+  const lists = chars.map(c => [c, terms(c)]);
+  return said => {
+    const w = stem(said.replace(/^(to|a|an|the) /i, ''));
+    const near = (a, b) => a === b || (Math.min(a.length, b.length) >= 4 && (a.startsWith(b) || b.startsWith(a)));
+    const hit = w && lists.find(([, ts]) => ts.some(t => near(t, w) || (w.length > 2 && t.split(' ').some(x => near(x, w)))));
+    return hit ? chip('ch', hit[0], said) : chip('wd', self, said);
+  };
 }
 /* the sound a picture name stands for, wherever a mnemonic is drawn without its
    character to hand: Hangar -> -ang, Bathroom -> 4 */
@@ -111,7 +138,7 @@ function mnContext(c, cd) {
   const parts = typeof compParts === 'function' && cd ? compParts(c, cd) : [];
   const pin = (HZ.cmnem && HZ.cmnem[c] && HZ.cmnem[c][2]) || (HZ.index[c] || [])[2];
   const sounds = HZ.sounds ? soundParts(pin) : [];
-  return { comps: parts.map(p => [glyphOf(p), partName(p)]), sounds: sounds.map(p => [itemText(p), partName(p)]) };
+  return { self: c, comps: parts.map(p => [glyphOf(p), partName(p)]), sounds: sounds.map(p => [itemText(p), partName(p)]) };
 }
 /* a component's picture name (data/cnames.js), or failing that its meaning */
 const compName = c => (HZ.cnames && HZ.cnames[c] && HZ.cnames[c][0]) || glossOf(c) || String((HZ.index[c] || [])[3] || '').split(/;|…/)[0].trim();
@@ -272,7 +299,7 @@ async function pageWord(w) {
     <section class="pg-sec" id="sec-mnemonic" tabindex="-1">
       <h2 class="sec-h">Mnemonic</h2>
       <div class="decomp-box pad pg-stack">
-        <div>${mn ? `<p class="mn">${mnHtml(mn)}</p>` : '<p class="muted">No mnemonic for this word yet.</p>'}</div>
+        <div>${mn ? `<p class="mn">${mnHtml(mn, { self: simp })}</p>` : '<p class="muted">No mnemonic for this word yet.</p>'}</div>
         ${sound ? `<div><h3 class="sub-h">Sound</h3>${sound}</div>` : ''}
         <div><h3 class="sub-h"><label for="note">Your note</label></h3>
           <textarea id="note" rows="2" class="note-box"
@@ -299,7 +326,7 @@ async function pageWord(w) {
           const e = HZ.index[c] || [], cm = HZ.cmnem && HZ.cmnem[c];
           return `<div class="word-char">${tile(c)}<div><b>${esc(e[2] || '')}</b>
             <span class="muted">${esc(cm ? cm[0] : String(e[3] || '').split(';')[0])}</span>
-            ${cm ? `<p class="small mn">${mnHtml(cm[1])}</p>` : ''}</div></div>`;
+            ${cm ? `<p class="small mn">${mnHtml(cm[1], { self: c })}</p>` : ''}</div></div>`;
         }).join('')}
       </div>
     </section>

@@ -1,8 +1,8 @@
 /* HanziHome's look, after the Boxes app (github.com/andrewtmitchell/boxes, its
  * light-mode-and-game-ui branch): a game, on warm paper (#F6F4EF) with charcoal
- * text, or charcoal (#222) with white text in the dark; yellow pill buttons
- * that sit on a darker edge and sink when pressed, and the Poppins font. The
- * character cards keep HanziHome's own 3D: raised on an edge, pressing flat.
+ * text, or charcoal (#222) with white text in the dark; flat yellow pill
+ * buttons, and the Poppins font. Only the character cards are 3D: raised on
+ * an edge, pressing flat (see "Flat buttons" at the end).
  *
  * Poppins (SIL Open Font License) is bundled in fonts/, subset to Latin, with
  * the pinyin letters it lacks (ǎ ǐ ǒ ǔ ǖ ǘ ǚ ǜ) built from its own letters and
@@ -33,14 +33,14 @@
   --accent-soft: #fdf5cc;
   --yellow: #fde24d;        /* buttons' faces... */
   --yellow-edge: #d4b21f;   /* ...and the edge they sit on */
-  --pink: #f44285; --pink-edge: #a72d5b;
+  --pink: #f44285; --pink-edge: #9e2427;
   --mint: #42f4b0; --mint-edge: #2da779;
-  --sky: #4286f4; --sky-edge: #2d5ca7;
+  --sky: #4286f4; --sky-edge: #56339b;
   --bad: #d6336c;           /* wrong answers, errors */
   --radical: #e0397a;       /* a character's radical, in its stroke order: Boxes' pink */
   --blue: #3a78e6;          /* learning */
   --blue-soft: #e6effd;
-  --blue-edge: #2d5ca7;
+  --blue-edge: #56339b;
   --green: #2da779;         /* learned */
   --green-soft: #dcf8ec;
   --green-edge: #1e8c5a;
@@ -1078,7 +1078,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 /* ---------------- lessons and reviews (study.js) ----------------
    HanziHero's layout: a coloured band with the item (red for characters, purple
    for words), tabs under it, and a big answer box that turns green or red. */
-:root { --lx-char: #e0397a; --lx-word: #3a74d9; }
+:root { --lx-char: #e03a3e; --lx-word: #7d4fd6; }
 .lx-band {
   position: relative; border-radius: 14px; padding: 18px 16px 22px; text-align: center;
   color: #fff; background: var(--lx-char); margin-bottom: 14px;
@@ -1419,10 +1419,10 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
   --hl-learning: #23385c;
   --hl-hover: #5a4a14;
   --word-hover: #4a3f1a;
-  --lx-char: #d93a76;
-  --lx-word: #3a74d9;
-  --lx-comp: #1e8c5a;
-  --lx-sound: #ff9f1c; --lx-sound-text: #ffb454;
+  --lx-char: #e03a3e;
+  --lx-word: #7d4fd6;
+  --lx-comp: #2f6bd8;
+  --lx-sound: #4cc4f2; --lx-sound-text: #7fd6f7;
   --shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 10px 24px -8px rgba(0, 0, 0, .5);
   color-scheme: dark;
   }
@@ -1461,10 +1461,10 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
   --hl-learning: #23385c;
   --hl-hover: #5a4a14;
   --word-hover: #4a3f1a;
-  --lx-char: #d93a76;
-  --lx-word: #3a74d9;
-  --lx-comp: #1e8c5a;
-  --lx-sound: #ff9f1c; --lx-sound-text: #ffb454;
+  --lx-char: #e03a3e;
+  --lx-word: #7d4fd6;
+  --lx-comp: #2f6bd8;
+  --lx-sound: #4cc4f2; --lx-sound-text: #7fd6f7;
   --shadow: 0 1px 0 rgba(0, 0, 0, .35), 0 10px 24px -8px rgba(0, 0, 0, .5);
   color-scheme: dark;
 }
@@ -1548,7 +1548,7 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
 }
 
 /* ---------- components in the lessons, and what they lead up to ---------- */
-:root { --lx-comp: #1e8c5a; }
+:root { --lx-comp: #2f6bd8; }
 .lx-band.comp, .lx-batch span.comp, .lx-q.comp { background: var(--lx-comp); }
 .lx-band.lx-coming { opacity: .92; }
 .lx-batch span.goal { box-shadow: 0 0 0 2px var(--accent); opacity: .85; }
@@ -1563,7 +1563,7 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
 .intro-part.new { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .intro-part.new small { color: var(--accent); }
 .intro-part.other small { color: var(--ink-3); }
-:root { --lx-sound: #ff9f1c; --lx-sound-ink: #2b1700; --lx-sound-text: #a85400; }
+:root { --lx-sound: #4cc4f2; --lx-sound-ink: #08293a; --lx-sound-text: #0b78a8; }
 .lx-band.sound, .lx-batch span.sound, .lx-q.sound { background: var(--lx-sound); }
 .lx-band.comp { background: var(--lx-comp); }
 .lx-batch span.comp, .lx-q.comp { background: var(--lx-comp); }
@@ -1580,6 +1580,11 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
   font-weight: 700; white-space: nowrap; line-height: 1.5; }
 .mn-chip.comp { background: color-mix(in srgb, var(--lx-comp) 14%, transparent); color: inherit; }
 .mn-chip.comp .han { background: var(--lx-comp); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; }
+.mn-chip.ch { background: color-mix(in srgb, var(--lx-char) 14%, transparent); }
+.mn-chip.ch .han { background: var(--lx-char); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; }
+.mn-chip.wd { background: color-mix(in srgb, var(--lx-word) 14%, transparent); }
+.mn-chip.wd .han { background: var(--lx-word); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; }
+.mn-chip .mn-key { color: inherit; font-weight: inherit; }
 .mn-chip.snd { background: color-mix(in srgb, var(--lx-sound) 14%, transparent); padding-left: 6px; }
 .mn-chip.snd .snd-key { background: var(--lx-sound); color: #fff; border-radius: 5px 0 0 5px; padding: 0 5px; margin-left: -6px; font-size: .85em; }
 .lx-mn-builtin { line-height: 1.9; }
@@ -2256,10 +2261,10 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 /* the slides' pictures */
 .tu-tiles { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
 .tu-tiles b { display: grid; place-items: center; min-width: 64px; height: 64px; padding: 0 12px; border-radius: 14px;
-  background: var(--lx-char); color: #fff; font: 700 34px var(--han); box-shadow: 0 5px 0 var(--char-edge, #a72d5b); }
-.tu-tiles b.comp { background: var(--lx-comp); box-shadow: 0 5px 0 var(--comp-edge, #146b44); }
-.tu-tiles b.sound { background: var(--lx-sound); box-shadow: 0 5px 0 var(--sound-edge, #5e4a00); font: 700 18px var(--ui); }
-.tu-tiles b.word { background: var(--lx-word); box-shadow: 0 5px 0 var(--word-edge, #2d5ca7); }
+  background: var(--lx-char); color: #fff; font: 700 34px var(--han); box-shadow: 0 5px 0 var(--char-edge, #9e2427); }
+.tu-tiles b.comp { background: var(--lx-comp); box-shadow: 0 5px 0 var(--comp-edge, #1f4a96); }
+.tu-tiles b.sound { background: var(--lx-sound); box-shadow: 0 5px 0 var(--sound-edge, #1b7aa3); font: 700 18px var(--ui); }
+.tu-tiles b.word { background: var(--lx-word); box-shadow: 0 5px 0 var(--word-edge, #56339b); }
 .tu-tiles em { font: 800 24px var(--ui); font-style: normal; color: rgba(0, 0, 0, .5); }
 .tu-tones b { height: 76px; min-width: 60px; grid-template-rows: auto auto; align-content: center; line-height: 1.15; }
 .tu-tones b span { font: 700 26px var(--han); }
@@ -2268,7 +2273,7 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 .tu-path em { font-size: 18px; }
 .tu-bars { width: 100%; max-width: 320px; display: grid; gap: 7px; }
 .tu-bars div { display: grid; grid-template-columns: 80px 1fr; align-items: center; gap: 10px; font: 600 12.5px var(--ui); }
-.tu-bars i { display: block; height: 14px; border-radius: 7px; background: var(--lx-word); box-shadow: 0 3px 0 var(--word-edge, #2d5ca7); }
+.tu-bars i { display: block; height: 14px; border-radius: 7px; background: var(--lx-word); box-shadow: 0 3px 0 var(--word-edge, #56339b); }
 .tu-goal { display: grid; justify-items: center; line-height: 1.1; }
 .tu-goal img { width: 54px; height: 54px; margin-bottom: 6px; }
 .tu-goal b { font: 900 46px var(--ui); }
@@ -2488,7 +2493,7 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 .tu-form .tu-url { font: 11.5px ui-monospace, Menlo, Consolas, monospace; background: #f1eee7; padding: 5px 8px; border-radius: 6px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .tu-form em { justify-self: end; font-style: normal; font-weight: 600; color: #fff; background: #3a78e6; padding: 4px 14px;
-  border-radius: 999px; box-shadow: 0 3px 0 #2d5ca7; }
+  border-radius: 999px; box-shadow: 0 3px 0 #56339b; }
 .tu-devices { display: flex; align-items: center; gap: 6px; }
 .tu-dev { display: grid; place-items: center; background: #fff; color: #222; font: 700 20px var(--han); box-shadow: 0 4px 0 var(--yellow-edge); }
 .tu-dev.phone { width: 40px; height: 66px; border-radius: 10px; }
@@ -3129,7 +3134,7 @@ body.nav-open::after { opacity: 1; pointer-events: auto; transition-duration: .2
   body::after, details::details-content { transition: none; }
 }
 
-/* a sound's orange is bright, so what is on it is dark, as on the yellow buttons
+/* a sound's light blue is bright, so what is on it is dark, as on the yellow buttons
    (--lx-sound-text: the same colour dark or light enough to read as text on the page) */
 .lx-band.sound, .lx-batch span.sound, .lx-q.sound, .lx-chip:not(.intro-part) .snd-key, .intro-part .snd-key,
 .mn-chip.snd .snd-key, .snd-play, .tu-tiles b.sound, .ls-tile.sound { color: var(--lx-sound-ink); }
@@ -3320,3 +3325,40 @@ html.kb-open .rv-prompt { margin: 4px 0 0; }
 .tu-list li { margin-bottom: 4px; }
 .tu-list b { color: var(--ink); }
 .tu-tiles b.word:not(:lang(zh)) { font: 700 18px var(--ui); }
+
+
+/* =====================================================================
+   Flat buttons
+   ---------------------------------------------------------------------
+   Buttons, chips, tabs and the study tiles lie flat on the page: no edge
+   under them and no sinking when pressed, just a slight darkening. Only
+   the character cards (tiles, the big glyph, parts, words, the lesson
+   items) stay 3D, raised on their edge and pressing flat.
+   ===================================================================== */
+:root { --edge: 0px; }
+.btn, .btn.small, .next-row .btn, .selbar .btn, .cb-top .btn, .rv-synform .btn, .dk-recent .btn,
+.sync-backups .btn, .books .btn, .st-try, .lx-say { --edge: 0px; }
+.btn, .btn:hover, .btn:active, .btn.pressed, .btn:disabled:active,
+.filters button, .filters a, .tabs a, .pager a, .more, .wp-learn button, .lx-tabs button,
+.seg button.on, .seg button.on.amber,
+.sidebar nav a.on, .sidebar .nav-rows a.on,
+.week i.on,
+.lx-tile, .lx-tile.lessons, .lx-tile.reviews, .lx-stages div,
+.cb-grade, .rv-tool, .rv-tool.on,
+.la-mean, .xs-tile, .xs-tile.daily, .tn-tone, .tn-play, .path-opt, .path-opt.best, .skip-link {
+  box-shadow: none !important; }
+.btn:hover, .btn:active, .btn.pressed,
+.filters button:active, .filters a:active, .tabs a:active, .pager a:active, .more:active,
+.wp-learn button:active, .lx-tabs button:active,
+.lx-tile:hover, .lx-tile:active, .cb-grade:active, .rv-tool:active,
+.xs-tile:active, .tn-tone:active, .tn-tone:disabled, .tn-play:active, .path-opt:active {
+  transform: none !important; }
+.btn:not(:disabled):active, .btn.pressed,
+.filters button:active, .filters a:active, .tabs a:active, .pager a:active, .more:active,
+.wp-learn button:active, .lx-tabs button:active,
+.lx-tile:active, .cb-grade:not(:disabled):active, .rv-tool:not(:disabled):active,
+.xs-tile:active, .tn-tone:not(:disabled):active, .tn-play:active, .path-opt:active, .la-mean:not(:disabled):active {
+  filter: brightness(.93); }
+.la-mean { box-shadow: inset 0 0 0 2px var(--line-2) !important; }
+.la-mean:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--yellow-edge) !important; }
+.la-mean.right, .la-mean.wrong { box-shadow: none !important; }
