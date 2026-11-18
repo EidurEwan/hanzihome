@@ -16,3 +16,7 @@ desktop/test/fonts/
 desktop/node_modules/
 desktop/dist/
 build/mnemonics/in/
+
+# browser extension: the site files build.js copies in, and the packed zip
+extension/hz/
+extension/dist/
