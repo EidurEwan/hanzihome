@@ -1235,25 +1235,8 @@ function pager(base, page, total, per) {
 function railHtml() {
   const d = Store.load();
   const learned = Store.chars('learned');
-  const lessonsLeft = Object.keys(d.items).filter(k => d.items[k].kind === 'char' && !(d.items[k].stage >= 1)).length;
   const cov = coverage(learned);
   return `
-  <section class="card">
-    <h2>Character progress</h2>
-    <div class="quad">
-      <div><b>${num(d.history.length)}</b><span>Searched</span><a href="#/history">View history →</a></div>
-      <div><b id="rail-comps">${num(Store.knownComps().length)}</b><span>Components known</span><a href="#/productive-components">Browse →</a></div>
-      <div><b class="bl">${num(lessonsLeft)}</b><span>Waiting for lessons</span><a href="#/study">Lessons →</a></div>
-      <div><b class="g">${num(learned.length)}</b><span>Known</span><a href="#/lists">View list →</a></div>
-    </div>
-  </section>
-  <section class="card">
-    <h2>Word progress</h2>
-    <div class="quad two">
-      <div><b class="bl">${num(Object.keys(d.items).filter(k => d.items[k].kind === 'word' && !(d.items[k].stage >= 1)).length)}</b><span>Words waiting for lessons</span><a href="#/study">Lessons →</a></div>
-      <div><b class="g">${num(Store.words('learned').length)}</b><span>Words known</span><a href="#/words/mine/learned">View →</a></div>
-    </div>
-  </section>
   <section class="card">
     <h2>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h2>
     <div class="donut">${donut(cov.pct)}
@@ -1361,7 +1344,7 @@ function tileBoard(id, chars, opts) {
       <button data-f="all" class="on">All (${num(counts.all)})</button>
       <button data-f="unknown">Unknown (${num(counts.unknown)})</button>
       <button data-f="learned" class="learned">Known (${num(counts.learned)})</button>
-      <button data-multi="1" class="multi">Select Multiple</button>
+      <button data-multi="1" class="multi">Select several</button>
     </div>
     <div class="selbar" id="${id}-selbar" hidden>
       <b><span id="${id}-seln">0</span> selected</b>
@@ -1983,10 +1966,10 @@ async function pageReader() {
   const card = st => {
     const chars = st.c.map(r => r[0]);   // precomputed at build time; st.t is gone
     return `<a class="story" href="#/reader/${st.id}">
-      <span class="story-tag">HSK ${st.l} · ${esc(st.tag)}</span>
+      <span class="story-tag">${esc(st.tag)}</span>
       <span class="story-zh han">${zhOne(st.zh)}</span>
       <span class="story-en">${esc(st.en)}</span>
-      <span class="story-stat">${trackedIn(chars)} of ${chars.length} unique characters tracked</span>
+      <span class="story-stat">${trackedIn(chars)} of ${chars.length} characters tracked</span>
     </a>`;
   };
 
@@ -2494,6 +2477,9 @@ function pageFrequency() {
   paintRail();
 }
 
+/* the HSK page's vocabulary table: this many rows, then a button for the rest */
+const HSK_FIRST_ROWS = 30;
+
 async function pageHsk(level) {
   app.innerHTML = LOADING;
   await Promise.all([need.hskChars(), need.hsk()]);
@@ -2517,12 +2503,15 @@ async function pageHsk(level) {
       <p class="small muted">${readable.length} of ${words.length} words use only characters
          you know; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
          of the words. <a href="#/words/hsk${level}">Words page →</a></p>
-      <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead><tbody>
-        ${words.map(w => `<tr>
+      <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead>
+        ${[words.slice(0, HSK_FIRST_ROWS), words.slice(HSK_FIRST_ROWS)].map((rows, i) => rows.length ? `<tbody${i ? ' id="hsk-rest" hidden' : ''}>${rows.map(w => `<tr>
           <td class="g"><a class="han" href="#/word/${encodeURIComponent(w[0])}">${zh(w[0])}</a></td>
-          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td><td>${wordSeg(w[0])}</td></tr>`).join('')}
-      </tbody></table>
+          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td><td>${wordSeg(w[0])}</td></tr>`).join('')}</tbody>` : '').join('')}
+      </table>
+      ${words.length > HSK_FIRST_ROWS ? `<p class="hsk-more"><button type="button" class="btn quiet" id="hsk-all">Show all ${num(words.length)} words</button></p>` : ''}
     </section>`);
+  const all = document.getElementById('hsk-all');
+  if (all) all.addEventListener('click', () => { document.getElementById('hsk-rest').hidden = false; all.parentElement.remove(); });
   wireWordSegs(app);
   wireHskPush(app, () => { markNav(currentPath()); pageHsk(level); });
   if (chars.length) wireTileBoard('hsk', chars, { band: 100, label: c => (HZ.index[c] || [])[0] || '' });
@@ -2749,6 +2738,7 @@ function pageSettings() {
       <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font-family:inherit;
         padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
     </section>
+    ${ankiCard()}
     <section class="card">
       <h2>Data set</h2>
       <ul class="facts">
@@ -2816,6 +2806,7 @@ function pageSettings() {
     render(true);
   });
   wireSyncCard();
+  wireAnki(() => render(true));
   if (offlineCan()) paintOffline();
   paintStudySettings();
   paintSettingsNav();
@@ -2868,6 +2859,9 @@ function paintSettingsNav() {
       const t = targets[+b.dataset.to];
       if (!t) return;
       if (!wide.matches) nav.open = false;      // (first: the menu's height moves the page)
+      // a setting folded away under "More …" opens first, or there is nothing to scroll to
+      for (let up = t.el.parentElement; up && up !== dash; up = up.parentElement)
+        if (up.tagName === 'DETAILS' && !up.open) up.open = true;
       t.el.scrollIntoView({ block: 'start' });
       // the last sections can't reach the top of the screen: the one you chose stays marked
       // until you scroll yourself

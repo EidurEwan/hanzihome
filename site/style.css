@@ -1146,7 +1146,8 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .lx-q.word { background: var(--lx-word); }
 .lx-q a, .lx-q > .han { color: #fff; font-family: var(--han); font-size: 17px; text-decoration: none; }
 .lx-q button { border: 0; background: none; color: #fff; opacity: .7; cursor: pointer; font-size: 15px; padding: 0 5px; }
-a.lx-q { padding: 4px 9px; }
+a.lx-q { padding: 4px 9px; color: #fff; font-family: var(--han); font-size: 17px; }
+a.lx-q:hover { text-decoration: none; filter: brightness(1.08); }
 .lx-stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
 .lx-stages div { border-radius: 10px; padding: 10px 6px; text-align: center; color: #fff; }
 .lx-stages b { display: block; font-size: 22px; }
@@ -1914,7 +1915,7 @@ a.gbox:hover, button.gbox:hover, a.tbox:hover, .tree a.node:hover, a.chip:hover,
 .st-saved { color: var(--green-ink); }
 
 /* ---- statistics: the bars and tiles in the game's colours ---- */
-.st-tiles b { color: var(--accent); font-weight: 600; }
+.st-tiles b { color: var(--ink); font-weight: 600; }
 .st-days i { border-radius: 4px 4px 0 0; }
 .st-days i.r, .st-key.r { background: var(--sky); }
 .st-days i.l, .st-key.l { background: var(--pink); }
@@ -3395,3 +3396,17 @@ html.kb-open .rv-prompt { margin: 4px 0 0; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --word-ink: #b9a0ff; } }
 :root[data-theme="dark"] { --word-ink: #b9a0ff; }
 .word .w, .wordtable td.g a.han, .wordtable td.g a.han:hover { color: var(--word-ink); }
+
+/* Settings: the everyday choices in sight, the rest folded under "More …" (study.js paintStudySettings) */
+.st-more { margin: 18px 0 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.st-more > summary { cursor: pointer; font-weight: 600; padding: 6px 0; list-style: none; display: flex; align-items: center; gap: 8px; }
+.st-more > summary::-webkit-details-marker { display: none; }
+.st-more > summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg); transition: transform .15s ease; margin: 0 4px 0 2px; }
+.st-more[open] > summary::before { transform: rotate(45deg); }
+.st-more > summary:hover { color: var(--accent); }
+
+/* the HSK page: the rest of the vocabulary behind one button */
+.hsk-more { margin: 14px 0 0; text-align: center; }
+/* a note under a table sits clear of its last row */
+table + p.small { margin-top: 12px; }
