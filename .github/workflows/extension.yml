@@ -31,14 +31,15 @@ concurrency:
 
 jobs:
   extension:
-    runs-on: ubuntu-latest
+    # (Playwright installs its browser only on the Ubuntu releases it knows)
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: node extension/build.js --zip
-      - run: npm install --no-save --no-package-lock playwright@1.56.1
+      - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: node test/extension.js
       - uses: actions/upload-artifact@v4
