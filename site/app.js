@@ -979,15 +979,15 @@ const currentPath = () => {
    its own address, so links to them go on working. */
 const HUBS = [
   { nav: '/explore', label: 'Characters and lists', tabs: [
-    ['HSK', '/hsk-1', /^\/hsk-/], ['Most Common', '/frequency'], ['Radicals', '/radicals'],
-    ['Top Components', '/productive-components'], ['Word Builders', '/productive-characters'],
-    ['Phonetic Sets', '/phonetic-sets'], ['Sounds', '/sounds'],
+    ['HSK', '/hsk-1', /^\/hsk-/], ['Most common', '/frequency'], ['Radicals', '/radicals'],
+    ['Top components', '/productive-components'], ['Word builders', '/productive-characters'],
+    ['Phonetic sets', '/phonetic-sets'], ['Sounds', '/sounds'],
   ] },
   // (a round of practice has the page to itself: the tabs are for the pages you choose from)
   { nav: '/practice', label: 'Practice', tabs: [
     ['All', '/practice', /^\/practice$/],
     ['Grammar', '/grammar', /^\/grammar(\/(?!daily$)[^/]+)?$/], ['Phrases', '/phrases', /^\/phrases(\/[^/]+)?$/],
-    ['Tones', '/tones', /^\/tones$/], ['Weak Spots', '/weak', /^\/weak$/],
+    ['Tones', '/tones', /^\/tones$/], ['Look-alikes', '/lookalikes', /^\/lookalikes$/], ['Weak spots', '/weak', /^\/weak$/],
   ] },
   { nav: '/yours', label: 'Lists and notes', tabs: [['Lists', '/lists'], ['Notes', '/notes'], ['History', '/history']] },
 ];
@@ -1055,7 +1055,7 @@ function searchChars(q, limit = 30) {
 
 function initSearch() {
   // (a phone's search box is too narrow for the whole hint)
-  if (matchMedia('(max-width: 600px)').matches) document.getElementById('q').placeholder = 'Characters, pinyin, English';
+  if (matchMedia('(max-width: 600px)').matches) document.getElementById('q').placeholder = 'Search';
   const form = document.getElementById('search-form');
   const input = document.getElementById('q');
   const box = document.getElementById('ac');
@@ -1239,23 +1239,23 @@ function railHtml() {
   const cov = coverage(learned);
   return `
   <section class="card">
-    <h3>Character progress</h3>
+    <h2>Character progress</h2>
     <div class="quad">
       <div><b>${num(d.history.length)}</b><span>Searched</span><a href="#/history">View history →</a></div>
-      <div><b class="pu" id="rail-comps">${num(Store.knownComps().length)}</b><span>Components Learned</span><a href="#/productive-components">Browse →</a></div>
+      <div><b id="rail-comps">${num(Store.knownComps().length)}</b><span>Components known</span><a href="#/productive-components">Browse →</a></div>
       <div><b class="bl">${num(lessonsLeft)}</b><span>Waiting for lessons</span><a href="#/study">Lessons →</a></div>
       <div><b class="g">${num(learned.length)}</b><span>Known</span><a href="#/lists">View list →</a></div>
     </div>
   </section>
   <section class="card">
-    <h3>Word progress</h3>
+    <h2>Word progress</h2>
     <div class="quad two">
       <div><b class="bl">${num(Object.keys(d.items).filter(k => d.items[k].kind === 'word' && !(d.items[k].stage >= 1)).length)}</b><span>Words waiting for lessons</span><a href="#/study">Lessons →</a></div>
       <div><b class="g">${num(Store.words('learned').length)}</b><span>Words known</span><a href="#/words/mine/learned">View →</a></div>
     </div>
   </section>
   <section class="card">
-    <h3>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h3>
+    <h2>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h2>
     <div class="donut">${donut(cov.pct)}
       <div><p class="small muted" style="margin-bottom:8px">The top 500 characters alone
         cover about ${topCoverage(500).toFixed(0)}% of running text. Take lessons, or mark
@@ -1267,7 +1267,7 @@ function railHtml() {
   </section>
   <section class="card">
     <div class="rail-head">
-      <h3>Study next <i class="info-i" title="Characters you have not marked yet, easiest or highest-value first">i</i></h3>
+      <h2>Study next <i class="info-i" title="Characters you have not marked yet, easiest or highest-value first">i</i></h2>
       <span class="rail-pager"><b id="sn-count"></b>
         <button id="sn-prev" aria-label="Previous suggestions">&lsaquo;</button>
         <button id="sn-next" aria-label="More suggestions">&rsaquo;</button></span>
@@ -1668,7 +1668,7 @@ async function pageCharacter(ch) {
   const mainRd = d.rd.find(r => r[1] === mainPin) || first;
   const gloss = mainRd ? mainRd[2].slice(0, 3).join('; ') : '';
   const APPEARS_SHOWN = 24, WORDS_SHOWN = 12;
-  const related = lookalikeSection(ch) + (d.ai.length ? `<h3 class="sub-h">Appears In</h3>
+  const related = lookalikeSection(ch) + (d.ai.length ? `<h3 class="sub-h">Appears in</h3>
     <div class="decomp-box pad">
       <p class="muted small">${esc(ch)} is a component of these characters:</p>
       <div class="chips">${d.ai.slice(0, APPEARS_SHOWN).map(m => chip(m[0], m[2])).join('')}</div>
@@ -1707,7 +1707,7 @@ async function pageCharacter(ch) {
           </div>
         </div>
         <div class="dd">
-          <button class="btn addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
+          <button class="btn quiet addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
           <div class="dd-pop" id="listpop" hidden></div>
         </div>
         ${learnButton(ch)}
@@ -1719,7 +1719,7 @@ async function pageCharacter(ch) {
       related ? ['sec-related', 'Related'] : null])}
 
     <section class="pg-sec" id="sec-meaning" tabindex="-1">
-      <h2 class="sec-h">Pinyin &amp; Meaning</h2>
+      <h2 class="sec-h">Pinyin &amp; meaning</h2>
       <div class="decomp-box pad">
         ${d.rd.map((r, n) => `<div class="reading">
           <p class="r-head">${n + 1}. ${esc(r[1])} <span>(${esc(r[0])})</span>${Sound.canSay() ? `<button type="button" class="btn quiet lx-say" data-say="${esc(r[1])}" aria-label="Hear ${esc(r[1])}">▶</button>` : ''}</p>
@@ -1795,7 +1795,7 @@ async function pageCharacter(ch) {
         </div>
       </div>
 
-      <h3 class="sub-h">Phonetic Components</h3>
+      <h3 class="sub-h">Phonetic components</h3>
       <p class="tip"><i class="info-i">i</i> A phonetic component hints at how the
          character is pronounced.</p>
       <div class="decomp-box pad">
