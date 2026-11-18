@@ -305,8 +305,9 @@ function tnHome() {
     const r = Store.load().tones[k];
     return r && r.runs ? `Best ${r.best} of ${r.of}` : TN_KINDS[k].note;
   };
-  app.innerHTML = `<section class="card"><h1>Tones</h1>
-      <p class="muted">Train your ear to tell the tones apart. It asks about sounds, not characters, so you can start any time. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p>
+  app.innerHTML = `<h1 class="page-title">Tones</h1>
+    <p class="lede">Train your ear to tell the tones apart. It asks about sounds, not characters, so you can start any time. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p>
+    <section class="card"><h2>Hear each tone</h2>
       <div class="tn-meet">${[1, 2, 3, 4, 5].map(t => `<button type="button" class="tn-tone" data-t="${t}" aria-label="Hear ${syl[t]}, ${t === 5 ? 'the neutral tone' : `tone ${t}`}">${tnShape(t)}<b>${syl[t]}</b>
         <small>${how[t]}</small>${S[t] ? `<small class="tn-place">${esc(S[t][0])}, in your mnemonics</small>` : ''}</button>`).join('')}</div>
     </section>

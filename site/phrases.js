@@ -34,9 +34,9 @@ function phWireSay() {
 
 function phList() {
   const total = phUnits().length, have = phUnits().filter(phLearned).length;
-  app.innerHTML = `<div class="card"><h1>Phrases</h1>
-      <p class="muted">Common phrases, questions and answers to learn whole. ${have ? `You have learned ${have} of ${total}.` : 'Pick a category to start.'} Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p>
-      ${have >= 3 ? '<p class="gr-actions"><a class="btn" href="#/phrases/all/practice">Practise everything you have learned</a></p>' : ''}</div>
+  app.innerHTML = `<h1 class="page-title">Phrases</h1>
+      <p class="lede">Common phrases, questions and answers to learn whole. ${have ? `You have learned ${have} of ${total}.` : 'Pick a category to start.'} Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p>
+      ${have >= 3 ? '<p class="gr-actions"><a class="btn" href="#/phrases/all/practice">Practise everything you have learned</a></p>' : ''}
     <div class="ph-cats">${HZ.phrases.map(c => {
       const n = c.units.filter(phLearned).length;
       return `<a class="xs-tile ph-cat" href="#/phrases/${c.id}"><span class="ico ${c.colour} han" aria-hidden="true">${esc(c.glyph)}</span>

@@ -1367,6 +1367,7 @@ function wireTileBoard(id, chars, opts) {
   const band = opts.band || 250;
   const label = opts.label || (c => (HZ.index[c] || [])[0] || '');
   let filter = 'all', multi = false;
+  let shown = opts.first || Infinity;          // a long board draws this many, then a button for more
   const picked = new Set();
   const bar = document.getElementById(id + '-selbar');
   const syncBar = () => {
@@ -1382,17 +1383,22 @@ function wireTileBoard(id, chars, opts) {
     const body = document.getElementById(id + '-body');
     if (!body) return;
     // group into bands of the underlying order so filtered views stay locatable
-    let html = '', any = false;
+    let html = '', any = false, drawn = 0, more = false;
     for (let i = 0; i < chars.length; i += band) {
+      if (drawn >= shown) { more = true; break; }
       const slice = chars.slice(i, i + band).filter(keep);
       if (!slice.length) continue;
       any = true;
+      drawn += slice.length;
       html += `<p class="band">${i + 1}–${Math.min(i + band, chars.length)}</p>
         <div class="tilegrid">${slice.map(c =>
           tile(c, label(c)).replace('class="tile ', 'class="tile ' + (picked.has(c) ? 'sel ' : ''))
         ).join('')}</div>`;
     }
+    if (more) html += `<p class="hsk-more"><button type="button" class="btn quiet" data-more="1">Show ${num(opts.first)} more</button></p>`;
     body.innerHTML = any ? html : '<p class="empty">Nothing in this group yet.</p>';
+    const moreBtn = body.querySelector('[data-more]');
+    if (moreBtn) moreBtn.addEventListener('click', () => { shown += opts.first; paint(); });
     body.querySelectorAll('.tile').forEach(t => {
       const c = decodeURIComponent(t.getAttribute('href').split('/').pop());
       t.addEventListener('mouseenter', () => { if (!multi && !isTouch()) showTileMenu(t, c); });
@@ -1469,7 +1475,7 @@ function wireTileBoard(id, chars, opts) {
       return;
     }
     f.querySelectorAll('button[data-f]').forEach(x => x.classList.remove('on'));
-    b.classList.add('on'); filter = b.dataset.f; paint(); Motion.play(document.getElementById(id + '-body'), 'm-tiles', 700);
+    b.classList.add('on'); filter = b.dataset.f; shown = opts.first || Infinity; paint(); Motion.play(document.getElementById(id + '-body'), 'm-tiles', 700);
   });
 }
 
@@ -2473,7 +2479,7 @@ function pageFrequency() {
          written Chinese. The number under each is its rank.</p>
       ${tileBoard('freq', all)}
     </section>`);
-  wireTileBoard('freq', all, { band: 250 });
+  wireTileBoard('freq', all, { band: 250, first: 500 });
   paintRail();
 }
 
@@ -2524,7 +2530,7 @@ async function pageRadicals() {
   app.innerHTML = '<h1 class="page-title">The 214 Kangxi radicals</h1>' + withRail(`
     <p class="lede">Every character is filed under one of these. Tick the ones you know —
        they count towards your component knowledge.</p>
-    <section class="card"><table>
+    <section class="card"><table class="radtable">
       <thead><tr><th>#</th><th>Radical</th><th>Variants</th><th>Picture name</th><th>Meaning</th>
         <th>Pinyin</th><th>Characters</th><th>Known</th></tr></thead>
       <tbody>${HZ.radicals.map(r => `<tr>
