@@ -2,7 +2,7 @@
  *
  * Reads a test picture with the overlay controller (off screen, as in
  * test/overlay.js), "points" at a word with Hover.lookAt (no keyboard hook, no
- * real pointer), saves the popup, clicks Learned on its first character inside
+ * real pointer), saves the popup, clicks Known on its first character inside
  * the popup page, then Add to lessons, and saves it again. Marking and adding go
  * through the same channels as in the app, to a stand-in for the site's store.
  *
@@ -23,7 +23,7 @@ const { Hover } = require('../src/hover');
 const picture = path.join(__dirname, 'out', 's1-0.png');
 const want = process.argv.find(a => /[\u4e00-\u9fff]/.test(a)) || '鸡蛋';
 const OUT = n => path.join(__dirname, 'out', `hover-${n}.png`);
-const status = { '我': 'learned', '做': 'learning' };
+const status = { '我': 'learned', '做': 'learned' };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 let pointer = { x: -1, y: -1 };
 
@@ -69,14 +69,14 @@ app.whenReady().then(async () => {
   const button = await page.executeJavaScript('(document.querySelector("button[data-learn]") || {}).textContent || ""');
   await page.executeJavaScript('document.querySelector("button[data-learn]").click()');
   await wait(700);
-  const added = await page.executeJavaScript('(document.querySelector(".wp-learn") || {}).innerText || ""');
+  const added = await page.executeJavaScript('(document.querySelector(".wp-in") || {}).innerText || ""');
   await shot(2);
   const on = await page.executeJavaScript(
-    `[...document.querySelectorAll('button.on')].map(b => b.dataset.c + '=' + (b.dataset.s || 'none')).join(' ')`);
+    `[...document.querySelectorAll('button.on[data-c]')].map(b => b.dataset.c + '=' + (b.dataset.s || 'none')).join(' ')`);
 
   console.log(`pointed at ${want} (${Math.round(word.x)},${Math.round(word.y)} ${Math.round(word.w)}×${Math.round(word.h)})`);
   console.log('popup: ' + before.replace(/\s+/g, ' ').trim());
-  console.log(`clicked Learned on ${first}: store got ${marks.join(', ') || 'nothing'}; popup now shows ${on || 'no marks'}`);
+  console.log(`clicked Known on ${first}: store got ${marks.join(', ') || 'nothing'}; popup now shows ${on || 'no marks'}`);
   console.log(`clicked "${button.trim()}": the store got ${learnt.map(x => JSON.stringify(x)).join(', ') || 'nothing'}; popup now shows "${added.trim()}"`);
   console.log(`window ${JSON.stringify(hover.win.getContentBounds())}; saved ${path.relative(process.cwd(), OUT(1))}, ${path.relative(process.cwd(), OUT(2))}`);
   overlays.stop();

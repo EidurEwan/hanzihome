@@ -45,7 +45,8 @@ const TOUR_INTRO = [
     title: 'Lessons, then reviews',
     body: `<p><b>Lessons</b> teach a few new items at a time: sounds and components first, then the characters made
       of them, then words. Each lesson ends with a short quiz.</p>
-      <p>After that, everything you learned comes back in <b>reviews</b>, where you type its meaning and its pinyin.</p>`,
+      <p>Once its lesson is done, a character or word is <b>Known</b>, and it comes back in <b>reviews</b>, where you
+      type its meaning and its pinyin. Everything else is <b>Unknown</b> until you learn it.</p>`,
   },
   {
     art: `<div class="tu-bars">${[[1, 'Today'], [0.55, 'Tomorrow'], [0.3, 'In 3 days'], [0.15, 'In a week'], [0.07, 'In a month']]
@@ -64,11 +65,13 @@ const TOUR_INTRO = [
       them light. Going away? Settings has a vacation mode that pauses everything.</p>`,
   },
   {
-    art: `<div class="tu-read"><span>我</span><span>想</span><span class="on">学习</span><span>中文</span>
-      <div class="tu-pop"><b>学习</b> xuéxí<br><small>to study, to learn</small></div></div>`,
+    art: `<div class="tu-read"><div class="tu-line"><span>我</span><span>想</span><span class="on">学习</span><span>中文</span></div>
+      <div class="tu-pop"><b>学习</b> xuéxí<br><small>to study, to learn</small>
+        <span class="tu-acts"><i>＋ Add to lessons</i><i class="on">Unknown</i><i>Known</i></span></div></div>`,
     title: 'Read, look up, translate',
-    body: `<p>Paste any Chinese into the <b>Reader</b> and point at (or tap) a word for its meaning; add it to your
-      lessons from there. The <b>Translator</b> turns English, pinyin or characters into word cards and explains the
+    body: `<p>Paste any Chinese into the <b>Reader</b> and point at (or tap) a word for its meaning. Then <b>add it to
+      your lessons</b>, or mark it <b>Known</b> if you already know it (it goes straight to reviews) or <b>Unknown</b>.
+      The <b>Translator</b> turns English, pinyin or characters into word cards and explains the
       grammar. The <b>Words</b> and character pages are a dictionary with stroke order.</p>
       <p>Settings has short guides for syncing your progress between devices and for adding a free translator key.</p>`,
   },

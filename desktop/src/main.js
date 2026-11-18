@@ -291,9 +291,10 @@ async function checkStore() {
   const before = await page('localStorage.getItem(Store.key)');
   const status = () => store && store.status ? store.status['我'] || null : null;
   const seenAtStart = store !== null;
-  await page(`Store.setStatus('我', '${status() === 'learned' ? 'learning' : 'learned'}')`);
+  const want = status() === 'learned' ? null : 'learned';         // Known, or back to Unknown
+  await page(`Store.setStatus('我', ${JSON.stringify(want)})`);
   await new Promise(r => setTimeout(r, 300));
-  const followed = status();
+  const followed = status() === want ? want || 'unknown' : null;
   await page(`(() => {
     const before = ${JSON.stringify(before)};
     before === null ? localStorage.removeItem(Store.key) : localStorage.setItem(Store.key, before);
@@ -342,8 +343,8 @@ function learnWord(w, pin, gloss, sentence) {
   return win.webContents.executeJavaScript(`learnFromReader(${a})`, true);
 }
 
-/* mark a word Learning or Learned (or neither) in the site's store, as its Words page
-   does: Learned puts it in the reviews at Journeyman. Hands back every status. */
+/* mark a word Known or Unknown in the site's store, as its Words page does: Known
+   puts it in the reviews at Journeyman. Hands back every status. */
 function markWord(w, s) {
   return win.webContents.executeJavaScript(`(async () => {
     const w = ${JSON.stringify(w)};
@@ -461,9 +462,9 @@ function buildTrayMenu() {
     { type: 'separator' },
     { label: 'Colour words on screen', type: 'checkbox', checked: settings.overlay,
       click: () => setSetting(s => { s.overlay = !s.overlay; }) },
-    colour('learned', '    Learned (green)'),
-    colour('learning', '    Learning (blue)'),
-    colour('new', '    New (red)'),
+    colour('learned', '    Known (green)'),
+    colour('learning', '    Partly known (blue)'),
+    colour('new', '    Unknown (red)'),
     { label: 'Look-up key (hold and point at a word)', submenu: [
       ['ctrl', 'Ctrl'], ['alt', 'Alt (opens some programs’ menus)'], ['shift', 'Shift'], ['off', 'Off'],
     ].map(([key, label]) => ({

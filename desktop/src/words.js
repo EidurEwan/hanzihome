@@ -2,8 +2,8 @@
  *
  * Each line is split into words by the reader's engine (TextStory.segment), and a
  * word's box is the union of its characters' boxes. The colour follows the
- * reader's wordState() in site/app.js: learned when every character is learned,
- * learning when any character is marked at all, new otherwise. A traditional
+ * reader's wordState() in site/app.js: 'learned' (Known) when every character is
+ * known, 'learning' (partly known) when some are, 'new' (Unknown) otherwise. A traditional
  * character counts with its simplified form's status, since that is what gets
  * marked.
  */
@@ -41,7 +41,7 @@ function wordsOf(line, HZ) {
   return out;
 }
 
-/* a word's colour: 'learned', 'learning' or 'new' (null: nothing to colour) */
+/* a word's colour: 'learned' (known), 'learning' (partly known) or 'new' (null: nothing to colour) */
 function stateOf(word, status, HZ, wstatus) {
   const t2s = HZ.t2s || {};
   const known = c => HZ.index[c] || HZ.index[t2s[c]];

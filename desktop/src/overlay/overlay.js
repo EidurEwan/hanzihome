@@ -1,7 +1,8 @@
 /* The overlay page: one transparent canvas over a whole display. The main
  * process (desktop/src/overlays.js) sends the words to mark, in this window's
  * coordinates, and this draws a thin bar under each: the site's green for
- * learned, blue for learning, and its red accent for new. Bars rather than
+ * known, blue for partly known (some of a word's characters), and its red accent
+ * for unknown. Bars rather than
  * tints, so the text itself stays as it was. */
 
 'use strict';

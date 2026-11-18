@@ -63,7 +63,8 @@ check('good reviews carry an item up the stages; a lapse brings it down', () => 
   assert.ok(it.S < before / 10, 'a lapse cuts stability');
   assert.strictEqual(it.lapses, 1);
   assert.deepStrictEqual(it.hist.slice(-2), [true, false]);
-  assert.strictEqual(L.statusFor(it), 'learning');
+  assert.strictEqual(L.statusFor(it), 'learned', 'still Known: its lesson is done');
+  assert.strictEqual(L.statusFor(L.newItem('char', {}, t0)), null, 'Unknown until its lesson');
 });
 
 check('the retention wanted sets the interval', () => {
@@ -163,7 +164,7 @@ function world(items, status = {}, comps = {}) {
   const level = c => {
     if (!/[一-鿿]/.test(c)) return null;
     const it = items[c], st = status[c];
-    return Math.max(it ? it.stage : 0, st === 'learned' ? L.LEARNED_FROM : st === 'learning' ? 1 : 0);
+    return it ? it.stage || 0 : st === 'learned' ? L.LEARNED_FROM : 0;
   };
   return { level, comps: k => (items[k] && items[k].cm) || null, compOk: (c, need) => !!comps[c] || level(c) >= need };
 }
@@ -388,7 +389,7 @@ check('calibration: rated from the answers, as if reviewed when due', () => {
     return [L.stageName(it.stage), Math.round((it.due - t0) / DAY), L.statusFor(it), L.uncalibrated(it)];
   });
   assert.deepStrictEqual(got, [
-    ['Novice II', 5, 'learning', false],
+    ['Novice II', 5, 'learned', false],
     ['Journeyman I', 43, 'learned', false],
     ['Journeyman II', 88, 'learned', false],
     ['Expert I', 202, 'learned', false],

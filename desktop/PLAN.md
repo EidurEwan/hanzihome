@@ -50,15 +50,17 @@ text at a higher enlargement.
 ## What it does
 
 **Colour overlay.** A see-through, click-through window covers the screen. Each recognised
-word gets a thin colour bar under it: green = every character learned, blue = some marked
-(the site's colour for learning), red = new. These are the reader's `wordState()` rules. Bars, not tints, so the text stays
+word gets a thin colour bar under it: green = known (every character, or the word itself),
+blue = partly known (some of its characters), red = unknown. These are the reader's `wordState()` rules. Bars, not tints, so the text stays
 readable. Tray toggles turn each colour on or off, as the reader's filter checkboxes do.
 Marking a character recolours every place it appears straight away.
 
 **Hover lookup.** Hold a key (default: Ctrl, configurable; not Alt, which many programs
 turn into opening their menu bar when it is let go) and point at a word. The
-reader's word popup appears: word, pinyin, meaning, then one row per character with what
-it contributes and Not known / Learning / Learned buttons. Clicking a character opens its
+reader's word popup appears: word, pinyin, meaning, then the three choices for the word
+(Add to lessons / Unknown / Known), then one row per character with what it contributes
+and its own Unknown / Known buttons. A character or word is Known once its lesson is done,
+or when marked Known. Clicking a character opens its
 full page in the main window. **Add to lessons** puts the word in the site's lesson queue
 (`learnFromReader()` in `site/study.js`, run in the main window's page), with the
 sentence of the line it was read from as its example; after that the popup shows its stage.
@@ -193,7 +195,7 @@ a picture, a game) is read as before. The tray also has "Read copied text".
    captures (`npm run test:protect`: magenta captured unprotected, not protected); bars land
    under the words (`npm run test:overlay` draws them over a test picture); live on a
    text-heavy 1080p screen, ~100 lines: 2.1 s for the first read, 0.2–0.75 s per changed
-   re-read after that. Colours follow the site: green learned, blue learning, red new.
+   re-read after that. Colours follow the site: green known, blue partly known, red unknown.
 6. **Hover lookup.** Hold key, word popup, mark buttons, open character page. The popup is
    the site's own word popup (it loads site/style.css), in a window that takes clicks but
    never focus; `npm run test:hover` checks pointing, glossing, marking and adding to the
