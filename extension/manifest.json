@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "HanziHome",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Colours the Chinese on every page by what you know, and shows HanziHome's word popup while you hold Ctrl.",
   "icons": {
     "16": "icons/icon-16.png",

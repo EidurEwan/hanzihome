@@ -49,7 +49,8 @@
     if (d.hanzihomeExtension === 'ping') tell('ready');
     else if (d.hanzihomeExtension === 'apply' && Array.isArray(d.ops)) {
       const done = [];
-      const state = s => s === 'learning' || s === 'learned' ? s : null;
+      // Known ('learned') or Unknown (null); a Learning mark queued by an older version is Known now
+      const state = s => s === 'learning' || s === 'learned' ? 'learned' : null;
       for (const op of d.ops) {
         try {
           if (op.t === 'mark' && typeof op.c === 'string') {
