@@ -48,14 +48,15 @@ function isWord(a) {
 const kindName = it => ({ word: 'Word', comp: 'Component', sound: 'Sound' })[it.kind] || 'Character';
 
 /* what Store.plan() needs to know about characters, for unlocking: how far along each
-   is (its item's stage, or 5 when marked learned, 1 when marked learning), and a
+   is (its item's stage, or 5 when marked Known without one), and a
    character's components (kept on its item once looked up) */
 function learnEnv() {
   const d = Store.load();
   const level = c => {
     if (!HZ.index[c]) return null;                    // not a character to wait for
     const it = d.items[c], st = d.status[c];
-    return Math.max(it ? it.stage : 0, st === 'learned' ? Learn.LEARNED_FROM : st === 'learning' ? 1 : 0);
+    // (a lesson makes a character Known as well: its stage says how far along it really is)
+    return it ? it.stage || 0 : st === 'learned' ? Learn.LEARNED_FROM : 0;
   };
   return {
     level,
@@ -297,7 +298,7 @@ function syncParts(cfg) {
    and the push itself, which puts what is left at the front of the lessons. */
 function hskStanding() {
   const d = Store.load();
-  const isDone = c => d.status[c] === 'learned' || d.status[c] === 'learning' || (d.items[c] && d.items[c].stage >= 1);
+  const isDone = c => d.status[c] === 'learned' || (d.items[c] && d.items[c].stage >= 1);
   return Learn.hskProgress(HZ.hskChars, isDone);
 }
 const hskPushed = p => p.left.every(c => { const it = Store.load().items[c]; return it && it.prio; });
@@ -2675,7 +2676,7 @@ function pageStats() {
       <p class="row"><button class="btn quiet" id="st-revlog">Download the review log</button></p>
       <p class="small muted">A CSV for the <a href="https://github.com/open-spaced-repetition/fsrs-optimizer" target="_blank" rel="noopener">FSRS
         optimizer</a>, which fits FSRS's weights to your own reviews (worth it after a thousand or so). Each item is in it from its
-        lesson on; characters marked learned without a lesson are not.</p>
+        lesson on; characters marked Known without a lesson are not.</p>
     </section>
     <section class="card">
       <h2 class="caps">The next two weeks</h2>

@@ -152,7 +152,7 @@ const Store = {
     d.status = d.status || {}; d.comps = d.comps || {}; d.lists = d.lists || [];
     d.notes = d.notes || {}; d.history = d.history || []; d.items = d.items || {};
     d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT; d.study = d.study || {};
-    d.wstatus = d.wstatus || {};      // words: 'learning' | 'learned', as status is for characters
+    d.wstatus = d.wstatus || {};      // words: 'learned' (Known), as status is for characters
     d.log = d.log || {};              // study by day: {date: {r: reviews, ok: right first time, l: lessons, s: seconds}}
     d.grammar = d.grammar || {};      // grammar practice, noted and never scheduled: {point: {runs, best, last}}
     d.phrases = d.phrases || {};      // phrases learned, and their practice (phrases.js)
@@ -170,6 +170,9 @@ const Store = {
       }
     }
     d.srs = {};
+    // Learning and Learned became one status, Known (kept as 'learned'): you know a character
+    // or word once you have had its lesson or said you know it. Learning marks become Known.
+    for (const m of [d.status, d.wstatus]) for (const k of Object.keys(m)) if (m[k] !== 'learned') m[k] = 'learned';
     // items reviewed before FSRS: a stability from the stage they had reached
     for (const it of Object.values(d.items)) Learn.adopt(it);
     // (the day's lessons are now characters first, words with what is left, and a word waits
@@ -181,7 +184,7 @@ const Store = {
     for (const [k, was, now] of [['t:1', 'Rooftop', 'Front'], ['t:2', 'Staircase', 'Inside'], ['t:4', 'Trapdoor', 'Bathroom'], ['t:5', 'Front Step', 'Roof']]) {
       if (d.items[k] && d.items[k].mean === was) d.items[k].mean = now;
     }
-    // Characters marked Learned are in the reviews too, from Journeyman I. The ones
+    // Characters marked Known are in the reviews too, from Journeyman I. The ones
     // that aren't yet (from before, or from a device that didn't do this) get their
     // first reviews spread over the next month, most common first, 20 a day at most.
     const known = Object.keys(d.status).filter(c => d.status[c] === 'learned' && !d.items[c] && HZ.index[c]);
@@ -208,6 +211,8 @@ const Store = {
     for (const [k, v] of Object.entries(add)) day[k] = (day[k] || 0) + v;
   },
 
+  /* a character's status: 'learned' (shown as Known: its lesson is done, or you said you
+     know it) or null (Unknown) */
   status(ch) { return this.load().status[ch] || null; },
   setStatus(ch, s) {
     const d = this.load();
@@ -1170,9 +1175,9 @@ function showTileMenu(anchor, c) {
   const st = Store.status(c);
   // the button matching the card's state becomes the way to clear it
   const btn = (state, text) => st === state
-    ? `<button type="button" class="clear" data-c="${esc(c)}" data-s="">Mark as Not Known</button>`
+    ? `<button type="button" class="clear" data-c="${esc(c)}" data-s="">Mark as Unknown</button>`
     : `<button type="button" data-c="${esc(c)}" data-s="${state}">${text}</button>`;
-  el.innerHTML = btn('learning', 'Mark as Learning') + btn('learned', 'Mark as Learned');
+  el.innerHTML = btn('learned', 'Mark as Known');
   el.hidden = false;
 
   const r = anchor.getBoundingClientRect();
@@ -1229,7 +1234,8 @@ function pager(base, page, total, per) {
 
 function railHtml() {
   const d = Store.load();
-  const learned = Store.chars('learned'), learning = Store.chars('learning');
+  const learned = Store.chars('learned');
+  const lessonsLeft = Object.keys(d.items).filter(k => d.items[k].kind === 'char' && !(d.items[k].stage >= 1)).length;
   const cov = coverage(learned);
   return `
   <section class="card">
@@ -1237,26 +1243,26 @@ function railHtml() {
     <div class="quad">
       <div><b>${num(d.history.length)}</b><span>Searched</span><a href="#/history">View history →</a></div>
       <div><b class="pu" id="rail-comps">${num(Store.knownComps().length)}</b><span>Components Learned</span><a href="#/productive-components">Browse →</a></div>
-      <div><b class="bl">${learning.length}</b><span>Learning</span><a href="#/lists">View list →</a></div>
-      <div><b class="g">${learned.length}</b><span>Learned</span><a href="#/lists">View list →</a></div>
+      <div><b class="bl">${num(lessonsLeft)}</b><span>Waiting for lessons</span><a href="#/study">Lessons →</a></div>
+      <div><b class="g">${num(learned.length)}</b><span>Known</span><a href="#/lists">View list →</a></div>
     </div>
   </section>
   <section class="card">
     <h3>Word progress</h3>
     <div class="quad two">
-      <div><b class="bl">${num(Store.words('learning').length)}</b><span>Words learning</span><a href="#/words/mine/learning">View →</a></div>
-      <div><b class="g">${num(Store.words('learned').length)}</b><span>Words learned</span><a href="#/words">Browse words →</a></div>
+      <div><b class="bl">${num(Object.keys(d.items).filter(k => d.items[k].kind === 'word' && !(d.items[k].stage >= 1)).length)}</b><span>Words waiting for lessons</span><a href="#/study">Lessons →</a></div>
+      <div><b class="g">${num(Store.words('learned').length)}</b><span>Words known</span><a href="#/words/mine/learned">View →</a></div>
     </div>
   </section>
   <section class="card">
-    <h3>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you have marked as learned">i</i></h3>
+    <h3>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h3>
     <div class="donut">${donut(cov.pct)}
       <div><p class="small muted" style="margin-bottom:8px">The top 500 characters alone
-        cover about ${topCoverage(500).toFixed(0)}% of running text. Mark characters as
-        learned to watch this climb.</p>
+        cover about ${topCoverage(500).toFixed(0)}% of running text. Take lessons, or mark
+        characters you know as Known, to watch this climb.</p>
         <a class="btn" href="#/reader">Practice your reading</a></div></div>
     <div class="bar" style="margin-top:12px"><i style="width:${Math.min(100, learned.length / d.goal * 100)}%"></i></div>
-    <p class="small muted">${num(learned.length)} / ${num(d.goal)} characters learned ·
+    <p class="small muted">${num(learned.length)} / ${num(d.goal)} characters known ·
       <a href="#/frequency">Mark the ones you already know</a></p>
   </section>
   <section class="card">
@@ -1281,7 +1287,7 @@ async function paintRail() {
   const box = document.getElementById('study-next');
   if (!box) return;
   await optional(need.comps());
-  // the components counter counts learned characters that are components: those are
+  // the components counter counts known characters that are components: those are
   // known once the decompositions are here
   HZ.compSet = null;
   const rc = document.getElementById('rail-comps');
@@ -1306,7 +1312,7 @@ async function paintRail() {
         <div class="why">${esc(p.why)}</div></div>
       <button class="btn add-next" data-c="${esc(p.c)}">Add</button></div>`).join('')
     : '<p class="empty small">Nothing to suggest right now.</p>';
-  // Add puts the character in the lesson queue; it becomes Learning once its lesson is done
+  // Add puts the character in the lesson queue; it becomes Known once its lesson is done
   box.querySelectorAll('.add-next').forEach(b => b.addEventListener('click', () => {
     Store.learnAdd(b.dataset.c, 'char', charInfo(b.dataset.c));
     Store.save();
@@ -1341,7 +1347,7 @@ function suggestPool() {
   return [...decodable, ...plain];
 }
 
-/* ---- reusable tile grid with All / Not known / Learning / Learned ---- */
+/* ---- reusable tile grid with All / Unknown / Known ---- */
 
 function tileBoard(id, chars, opts) {
   opts = opts || {};
@@ -1349,21 +1355,18 @@ function tileBoard(id, chars, opts) {
   const counts = {
     all: chars.length,
     unknown: chars.filter(c => !d.status[c]).length,
-    learning: chars.filter(c => d.status[c] === 'learning').length,
     learned: chars.filter(c => d.status[c] === 'learned').length,
   };
   return `<div class="filters" id="${id}-filters">
       <button data-f="all" class="on">All (${num(counts.all)})</button>
-      <button data-f="unknown">Not Known (${num(counts.unknown)})</button>
-      <button data-f="learning" class="learning">Learning (${counts.learning})</button>
-      <button data-f="learned" class="learned">Learned (${counts.learned})</button>
+      <button data-f="unknown">Unknown (${num(counts.unknown)})</button>
+      <button data-f="learned" class="learned">Known (${num(counts.learned)})</button>
       <button data-multi="1" class="multi">Select Multiple</button>
     </div>
     <div class="selbar" id="${id}-selbar" hidden>
       <b><span id="${id}-seln">0</span> selected</b>
-      <button class="btn" data-set="learned">Mark learned</button>
-      <button class="btn quiet" data-set="learning">Mark learning</button>
-      <button class="btn quiet" data-set="">Clear status</button>
+      <button class="btn" data-set="learned">Mark known</button>
+      <button class="btn quiet" data-set="">Mark unknown</button>
       <button class="btn quiet" data-cancel="1">Cancel</button>
     </div>
     <div id="${id}-body"></div>`;
@@ -1437,7 +1440,6 @@ function wireTileBoard(id, chars, opts) {
     const n = {
       all: chars.length,
       unknown: chars.filter(c => !d.status[c]).length,
-      learning: chars.filter(c => d.status[c] === 'learning').length,
       learned: chars.filter(c => d.status[c] === 'learned').length,
     };
     const put = (k, text) => {
@@ -1445,9 +1447,8 @@ function wireTileBoard(id, chars, opts) {
       if (b) b.textContent = text;
     };
     put('all', 'All (' + num(n.all) + ')');
-    put('unknown', 'Not Known (' + num(n.unknown) + ')');
-    put('learning', 'Learning (' + n.learning + ')');
-    put('learned', 'Learned (' + n.learned + ')');
+    put('unknown', 'Unknown (' + num(n.unknown) + ')');
+    put('learned', 'Known (' + num(n.learned) + ')');
   };
 
   _boardUpdate = ch => {
@@ -1493,15 +1494,16 @@ function wireTileBoard(id, chars, opts) {
 
 /* the week streak card: Today's (study.js drawStudy) */
 function streakCard() {
-  const st = streak(), learned = Store.chars('learned'), learning = Store.chars('learning');
+  const st = streak(), learned = Store.chars('learned'), d = Store.load();
+  const waiting = Object.keys(d.items).filter(k => d.items[k].kind === 'char' && !(d.items[k].stage >= 1));
   return `<section class="card streak">
       <div class="big"><b>${st.weeks}</b><u>Week<br>streak
         <em>Best ${st.best}</em></u></div>
       <div class="week">${st.week.map((w, i) =>
         `<div><i class="${w.on ? 'on' : ''} ${w.today ? 'today' : ''}"></i>${'MTWTFSS'[i]}</div>`).join('')}</div>
       <div class="small">
-        <div><span class="dot b"></span><b>${learning.length}</b> started learning</div>
-        <div><span class="dot g"></span><b>${learned.length}</b> marked as learned</div>
+        <div><span class="dot b"></span><b>${waiting.length}</b> waiting for lessons</div>
+        <div><span class="dot g"></span><b>${learned.length}</b> known</div>
         <div class="minitiles">
           ${learned.slice(0, 8).map(c => `<a class="tile learned" title="${esc(c)}"
               href="#/character/${encodeURIComponent(c)}"><span class="g">${esc(c)}</span></a>`).join('')
@@ -1698,11 +1700,10 @@ async function pageCharacter(ch) {
       <div class="hero-actions pg-actions">
         <div class="dd">
           <button class="btn status-btn ${status || 'none'}" id="statusbtn">
-            Status: ${status ? status[0].toUpperCase() + status.slice(1) : 'Not started'} ▾</button>
+            Status: ${status ? 'Known' : 'Unknown'} ▾</button>
           <div class="dd-pop" id="statuspop" hidden>
-            <button data-s="">Not started</button>
-            <button data-s="learning">Learning</button>
-            <button data-s="learned">Learned</button>
+            <button data-s="">Unknown</button>
+            <button data-s="learned">Known</button>
           </div>
         </div>
         <div class="dd">
@@ -2119,8 +2120,8 @@ function pageIncoming() {
   }, 8000);
 }
 
-/* A word is learned only when every character in it is; if any character is
-   marked at all it counts as learning; otherwise it is new. */
+/* A word is known ('learned') when marked or learnt as a word, or when every character in
+   it is known; partly known ('learning') when some of its characters are; otherwise new. */
 function wordState(w) {
   const cs = [...w].filter(c => isHan(c) && HZ.index[c]);
   if (!cs.length) return '';
@@ -2279,6 +2280,8 @@ function showStory(st, back, nav) {
 function paintStory() {
   const st = _story, pane = document.getElementById('pane');
   if (!st || !pane) return;
+  // the word the popup is on is drawn afresh too: keep the popup on its new copy
+  const at = _wpAnchor && pane.contains(_wpAnchor) ? [...pane.querySelectorAll('.w')].indexOf(_wpAnchor) : -1;
   pane.innerHTML = st.seg.map(par => '<p>' + par.map(tk => {
     if (tk.br) return '<br>';               // a new speaker starts a new line
     if (typeof tk !== 'string') return esc(tk.s);
@@ -2290,6 +2293,7 @@ function paintStory() {
     el.addEventListener('mouseleave', () => { if (!isTouch()) hideWordPop(); });
     el.addEventListener('click', () => { if (isTouch()) showWordPop(el); });   // a tap, on a phone or iPad
   });
+  if (at >= 0) _wpAnchor = pane.querySelectorAll('.w')[at] || null;
   paintStatsCard();
   paintReadList();
 }
@@ -2299,21 +2303,20 @@ function paintStatsCard() {
   if (!st || !box) return;
   const chars = st.c.map(r => r[0]);
   const learned = chars.filter(c => Store.status(c) === 'learned').length;
-  const learning = chars.filter(c => Store.status(c) === 'learning').length;
-  const fresh = chars.length - learned - learning;
+  const fresh = chars.length - learned;
   const pane = document.getElementById('pane');
   const on = k => !pane || !pane.classList.contains('hide-' + k);
   box.innerHTML = `
-    <h3>Characters learned</h3>
+    <h3>Characters known</h3>
     <p class="bigcount"><b>${learned}</b> / ${chars.length}</p>
     <div class="bar"><i style="width:${chars.length ? learned / chars.length * 100 : 0}%"></i></div>
     <div class="readfilters">
       <label><input type="checkbox" data-f="learned" ${on('learned') ? 'checked' : ''}>
-        <i class="sw learned"></i> ${learned} learned</label>
+        <i class="sw learned"></i> ${learned} known</label>
       <label><input type="checkbox" data-f="learning" ${on('learning') ? 'checked' : ''}>
-        <i class="sw learning"></i> ${learning} learning</label>
+        <i class="sw learning"></i> partly known words</label>
       <label><input type="checkbox" data-f="new" ${on('new') ? 'checked' : ''}>
-        <i class="sw new"></i> ${fresh} new</label>
+        <i class="sw new"></i> ${fresh} unknown</label>
     </div>`;
   box.querySelectorAll('input[data-f]').forEach(cb => cb.addEventListener('change', () => {
     document.getElementById('pane').classList.toggle('hide-' + cb.dataset.f, !cb.checked);
@@ -2357,7 +2360,6 @@ function charList(st) {
   const counts = {
     all: all.length,
     unknown: all.filter(c => !stat(c)).length,
-    learning: all.filter(c => stat(c) === 'learning').length,
     learned: all.filter(c => stat(c) === 'learned').length,
   };
   const rows = all.filter(c => _cfilter === 'all' ? true
@@ -2368,8 +2370,7 @@ function charList(st) {
 
   return '<h4 class="paneltitle">Characters</h4>'
     + `<div class="filters tight" id="cfilters">
-        ${btn('all', 'All')}${btn('unknown', 'Not known')}
-        ${btn('learning', 'Learning', 'learning')}${btn('learned', 'Learned', 'learned')}
+        ${btn('all', 'All')}${btn('unknown', 'Unknown')}${btn('learned', 'Known', 'learned')}
       </div>`
     + `<p class="band">${rows.length ? '1–' + rows.length : '—'}</p>`
     + (rows.length ? `<div class="crows">${rows.map(c => {
@@ -2432,32 +2433,32 @@ function showWordPop(el) {
   const alt = (extra && extra.alt) || [];
   const han = [...w].filter(isHan);
   const multi = han.length > 1;
+  const key = learnKey(w), it = Store.item(key);
+  // Unknown / Known for one character (data-c) or for the word as a word (data-ws)
+  const known = (attr, st) => [['', 'Unknown', 'none'], ['learned', 'Known', 'learned']].map(([v, label, cls]) =>
+    `<button type="button" ${attr} data-${attr.startsWith('data-w') ? 'ws' : 's'}="${v}"${(st || '') === v ? ` class="on ${cls}"` : ''}>${label}</button>`).join('');
+  // the three choices for what was pointed at: put it in the lessons, or say whether you know it
+  const lessons = it
+    ? `<a class="wp-in" href="#/study">✓ ${esc(it.stage ? Learn.stageName(it.stage) : 'In lessons')}</a>`
+    : `<button type="button" class="wp-add" data-learn="${esc(w)}">＋ Add to lessons</button>`;
+  const choice = multi ? known(`data-w="${esc(key)}"`, Store.wstatus(key))
+    : han.length && HZ.index[han[0]] ? known(`data-c="${esc(han[0])}"`, Store.status(han[0])) : '';
   const row = (c, i) => {
-    const st = Store.status(c) || '';
     const [cp, cg] = parts[i] || ['', ''];
-    const btn = (v, label, cls) =>
-      `<button type="button" data-c="${esc(c)}" data-s="${v}"` +
-      `${st === v ? ' class="on ' + cls + '"' : ''}>${label}</button>`;
-    // a one-character word already shows its meaning in the heading
-    const meaning = multi
-      ? `<span class="wp-cm"><b>${esc(cp)}</b> ${esc(cg)}</span>` : '';
-    return `<div class="wp-char${multi ? ' multi' : ''}">
+    return `<div class="wp-char multi">
       <a class="wp-c han" href="#/character/${encodeURIComponent(c)}">${zhOne(c)}</a>
-      <span class="wp-cbody">${meaning}${HZ.index[c]
-        ? `<span class="seg3">${btn('', 'Not known', 'none')}${btn('learning', 'Learning', 'learning')}${btn('learned', 'Learned', 'learned')}</span>`
-        : ''}</span>
+      <span class="wp-cbody"><span class="wp-cm"><b>${esc(cp)}</b> ${esc(cg)}</span>${HZ.index[c]
+        ? `<span class="seg3">${known(`data-c="${esc(c)}"`, Store.status(c))}</span>` : ''}</span>
     </div>`;
   };
   pop.innerHTML = `
     <div class="wp-head"><span class="han">${zh(w)}</span>
       <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
-    <p class="wp-learn">${Store.item(learnKey(w))
-      ? `<a href="#/study">✓ ${esc(Store.item(learnKey(w)).stage ? Learn.stageName(Store.item(learnKey(w)).stage) : 'In lessons')}</a>`
-      : `<button type="button" data-learn="${esc(w)}">＋ Add to lessons</button>`}
-      ${multi ? `<a class="wp-card" href="#/word/${encodeURIComponent(learnKey(w))}">Word card →</a>` : ''}</p>
-    ${multi ? `<div class="wp-word"><span class="small muted">The word</span>${wordSeg(learnKey(w))}</div>` : ''}
-    ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
+    <div class="wp-acts seg3">${lessons}${choice}</div>
+    <p class="wp-learn">${multi ? `<a class="wp-card" href="#/word/${encodeURIComponent(key)}">Word card →</a>`
+      : han.length === 1 ? `<a class="wp-card" href="#/character/${encodeURIComponent(han[0])}">Character page →</a>` : ''}</p>
+    ${multi ? han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('') : ''}`;
   pop.hidden = false;
 
   const r = el.getBoundingClientRect();
@@ -2514,7 +2515,7 @@ async function pageHsk(level) {
       <h2>HSK ${level} vocabulary <span class="muted">(${num(words.length)})</span></h2>
       <div class="bar accent"><i style="width:${words.length ? readable.length / words.length * 100 : 0}%"></i></div>
       <p class="small muted">${readable.length} of ${words.length} words use only characters
-         you have marked as learned; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
+         you know; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
          of the words. <a href="#/words/hsk${level}">Words page →</a></p>
       <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead><tbody>
         ${words.map(w => `<tr>
@@ -2632,15 +2633,16 @@ async function pageProdCharacters(page) {
 
 function pageLists() {
   const d = Store.load();
-  const learned = Store.chars('learned'), learning = Store.chars('learning');
+  const learned = Store.chars('learned');
+  const waiting = Object.keys(d.items).filter(k => d.items[k].kind === 'char' && !(d.items[k].stage >= 1));
   app.innerHTML = `<h1 class="page-title">Your lists</h1>` + withRail(`
     <section class="card">
-      <div class="spread"><h2>Learned</h2><span class="muted small">${learned.length}</span></div>
+      <div class="spread"><h2>Known</h2><span class="muted small">${learned.length}</span></div>
       <div class="chips">${learned.map(c => chip(c)).join('') || '<span class="empty">Nothing yet.</span>'}</div>
     </section>
     <section class="card">
-      <div class="spread"><h2>Learning</h2><span class="muted small">${learning.length}</span></div>
-      <div class="chips">${learning.map(c => chip(c)).join('') || '<span class="empty">Nothing yet.</span>'}</div>
+      <div class="spread"><h2>Waiting for lessons</h2><span class="muted small">${waiting.length}</span></div>
+      <div class="chips">${waiting.map(c => chip(c)).join('') || '<span class="empty">Nothing yet.</span>'}</div>
     </section>
     ${d.lists.map(l => `<section class="card">
       <div class="spread"><h2>${esc(l.name)}</h2>
@@ -2946,9 +2948,9 @@ function paintDesktopCard(state) {
     <p class="muted small">How HanziHome works on the rest of your screen. The tray icon has the same switches.</p>
     ${check('dk-overlay', s.overlay, 'Colour words on screen')}
     <div class="dk-indent">
-      ${check('dk-learned', s.show.learned, '<i class="sw learned"></i> Learned', !s.overlay)}
-      ${check('dk-learning', s.show.learning, '<i class="sw learning"></i> Learning', !s.overlay)}
-      ${check('dk-new', s.show.new, '<i class="sw new"></i> New', !s.overlay)}
+      ${check('dk-learned', s.show.learned, '<i class="sw learned"></i> Known', !s.overlay)}
+      ${check('dk-learning', s.show.learning, '<i class="sw learning"></i> Partly known', !s.overlay)}
+      ${check('dk-new', s.show.new, '<i class="sw new"></i> Unknown', !s.overlay)}
     </div>
     <label class="dk-row">Look-up key
       <select id="dk-key">${[['ctrl', 'Ctrl'], ['alt', 'Alt'], ['shift', 'Shift'], ['off', 'Off']]

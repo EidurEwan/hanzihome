@@ -278,10 +278,11 @@
     return out;
   }
 
-  /* what a character's stage means for the rest of the site */
-  const statusFor = item => item.stage >= LEARNED_FROM ? 'learned' : item.stage >= 1 ? 'learning' : null;
+  /* what a character's stage means for the rest of the site: Known ('learned') once its
+     lesson is done */
+  const statusFor = item => item.stage >= 1 ? 'learned' : null;
 
-  /* A character you already know (marked Learned on the rest of the site) joins the
+  /* A character you already know (marked Known on the rest of the site) joins the
      reviews at Journeyman I without a lesson: stability a month, difficulty average;
      its first review comes `wait` ms from now. It has no `learnt` time, so it doesn't
      count against the day's lessons. */
@@ -296,7 +297,7 @@
     return item;
   }
 
-  /* An item already under way that you say you know (marked Learned): a month's
+  /* An item already under way that you say you know (marked Known): a month's
      stability at least, first checked `wait` ms from now */
   function sayKnown(item, now, wait) {
     adopt(item);
@@ -468,7 +469,7 @@
   }
 
   /* the characters extra practice may use (d is the store): those whose lesson is done or
-     marked Learning or Learned, and those of a word that is. Not one still waiting for its lesson. */
+     marked Known, and those of a word that is. Not one still waiting for its lesson. */
   function knownChars(d) {
     const known = new Set();
     const addWord = w => { for (const c of w) if (isHan(c)) known.add(c); };

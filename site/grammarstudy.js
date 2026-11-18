@@ -53,7 +53,7 @@ function grPointCard(p) {
 
 function grList() {
   app.innerHTML = `<div class="card"><h1>Grammar</h1>
-      <p class="muted">Short explanations and sentence-building practice, whenever you feel like it. Practice only uses characters you have learned in lessons or marked Learning or Learned. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p></div>
+      <p class="muted">Short explanations and sentence-building practice, whenever you feel like it. Practice only uses characters you have learned in lessons or marked Known. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p></div>
     ${[...new Set(HZ.gpoints.map(p => p.level))].map(l => `<h2 class="sec-h">Around HSK ${l}</h2>
       <div class="gr-list">${HZ.gpoints.filter(p => p.level === l).map(grPointCard).join('')}</div>`).join('')}`;
 }
@@ -156,7 +156,7 @@ function grDaily() {
   if (!points.length) {
     app.innerHTML = `<p class="crumb"><a href="#/study">Today</a> / Daily grammar practice</p>
       <section class="card"><h1>Daily grammar practice</h1>
-        <p class="empty">Nothing to practise yet. It opens once you have learned the characters in a grammar point's sentences, in lessons or marked Learning or Learned.</p>
+        <p class="empty">Nothing to practise yet. It opens once you have learned the characters in a grammar point's sentences, in lessons or marked Known.</p>
         <p class="gr-actions"><a class="btn" href="#/study">Back to Today</a>
           <a class="btn quiet" href="#/grammar">Read the grammar</a></p></section>`;
     return;

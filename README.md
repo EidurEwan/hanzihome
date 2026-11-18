@@ -135,14 +135,14 @@ offer the same. Then the week streak, Practice (the daily grammar round and Weak
 on the Practice page), the chart of items learned, upcoming reviews, the lesson queue, the progress
 cards two by two, the stages, and Anki. The progress cards:
 
-* **Character progress** — searched, components known, learning, learned.
-* **Reading coverage** — a donut showing what share of ordinary running text your learned
+* **Character progress** — searched, components known, waiting for lessons, known.
+* **Reading coverage** — a donut showing what share of ordinary running text your known
   characters account for, using real corpus frequencies, and how far you are towards your
   character goal (Settings), with a link to Most Common to mark the ones you already know.
 * **Study next** — suggestions picked because *you already know both parts* of a character,
   or because it buys the most reading coverage.
 
-The most common characters as a tile grid, filtered by All / Not known / Learning / Learned, are
+The most common characters as a tile grid, filtered by All / Unknown / Known, are
 Characters & lists → Most Common.
 
 **Feel** (`site/motion.js`, the end of `site/style.css`) — one page dissolves into the next (View Transitions): the old page stays until the new one is drawn, for 180 ms at most, under a top bar that doesn't move. What you press goes down at once and comes back softly. Back returns you to where you were on the page. Everything stands still with the system's reduce-motion setting.
@@ -197,7 +197,7 @@ twelve on telling apart characters that look alike (未 末, 请 情 清 晴 睛
 you are learning or know: pick the character for a pinyin and meaning, or the meaning for a
 character, then see the set side by side with the parts that differ marked. The ones you mix up
 come up more (kept on this device); practice doesn't touch the review schedule, and uses only characters
-you have learned (`Learn.knownChars`: a finished lesson, or marked Learning or Learned, or in such a word). Each character
+you have learned (`Learn.knownChars`: a finished lesson, or marked Known, or in such a word). Each character
 page lists its look-alikes ("Looks like") with a link to practise them. The look-alikes are
 precomputed by `build/export_lookalikes.js` into `site/data/lookalike.js` (21 KB), from stroke
 counts and breakdowns, with a short list of classic pairs by hand. **Items learned**, a chart on Today: how many sounds, components, characters
@@ -221,8 +221,8 @@ all of them. `ju4` and `yo1` aren't in the collection: the browser's voice says 
 Run from your computer, `start-hanzihome.bat` serves the site at `http://127.0.0.1:8765`. Leave its
 window open: the recordings are fetched as they're first played, so they stop when it closes.
 
-**Words** — a word has a status of its own (Not known, Learning, Learned), which its lessons and
-reviews set as they do a character's, and a card (`#/word/电脑`): its readings and meanings, part
+**Words** — a word has a status of its own (Unknown or Known), which its lesson sets as it does a
+character's, and a card (`#/word/电脑`): its readings and meanings, part
 of speech, measure word, HSK level and frequency, a mnemonic, example sentences with pinyin and
 English, the sentences of the stories it is in, its characters with their mnemonics, and related
 words. The Words page lists the commonest 10,000, each HSK level, or yours, to mark them or add
@@ -315,8 +315,8 @@ it moved to (and from), the rating the app gave it, its stability and difficulty
 answered when you missed it, which characters became
 learned, mastered or slipped back to learning, and when the next reviews come. **Practice the
 missed** runs them again without changing their schedule, as does **Weak spots**
-(misses from the last three days among them). A character counts as learning from its first lesson and as
-learned from Journeyman (a month). Every character marked Learned is in the reviews too,
+(misses from the last three days among them). A character or word is **Known** once its lesson is done, or
+when you mark it Known (Unknown otherwise). Every character marked Known is in the reviews too,
 from Journeyman I: ones marked before this have their first reviews spread over a month, most
 common first (20 a day at most), and one marked later comes up a month after. The
 **calibration test** (Today → Sort your learned characters) sorts them by how well you really know them: a
@@ -575,8 +575,8 @@ they form — which is why the two lists rank very differently.
 OCR built into Windows. It runs the whole site in a window, with the same progress and sync,
 and from the tray it:
 
-* puts a coloured bar under every Chinese word on screen: green learned, blue learning,
-  red new;
+* puts a coloured bar under every Chinese word on screen: green known, blue partly known
+  (some of its characters), red unknown;
 * shows the reader's word popup for the word under the pointer while you hold Ctrl, with
   the buttons to mark its characters and to add the word to your lessons (with the line
   it was on as the example); on the way from the word to the popup, a safe triangle (from

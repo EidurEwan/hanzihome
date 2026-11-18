@@ -1,7 +1,7 @@
 /* words.js — words as things to learn, as characters are.
  *
- * Every word has a status of its own (Not known, Learning, Learned: Store.wstatus,
- * synced like the characters'), set by hand or by its lessons and reviews, and a
+ * Every word has a status of its own (Unknown or Known: Store.wstatus, synced like
+ * the characters'), Known once its lesson is done or when you say so, and a
  * card (#/word/电脑): its readings and meanings, part of speech, measure word, HSK
  * level and frequency, a mnemonic, example sentences with pinyin and English, where
  * it comes in the stories, the characters it is made of and the words related to it.
@@ -123,11 +123,11 @@ function builtinMnemonic(k) {
 
 // ---------------------------------------------------------------- status
 
-/* the three-way status switch for a word */
+/* the Unknown / Known switch for a word */
 function wordSeg(w) {
   const st = Store.wstatus(w) || '';
   const b = (v, label, cls) => `<button type="button" data-ws="${v}" data-w="${esc(w)}"${st === v ? ` class="on ${cls}"` : ''}>${label}</button>`;
-  return `<span class="seg3">${b('', 'Not known', 'none')}${b('learning', 'Learning', 'learning')}${b('learned', 'Learned', 'learned')}</span>`;
+  return `<span class="seg3">${b('', 'Unknown', 'none')}${b('learned', 'Known', 'learned')}</span>`;
 }
 /* clicks on any word switch inside root; then() redraws what needs it */
 function wireWordSegs(root, then) {
@@ -244,11 +244,10 @@ async function pageWord(w) {
       <div class="hero-actions pg-actions">
         <div class="dd">
           <button class="btn status-btn ${status || 'none'}" id="wstatusbtn">
-            Status: ${status ? status[0].toUpperCase() + status.slice(1) : 'Not known'} ▾</button>
+            Status: ${status ? 'Known' : 'Unknown'} ▾</button>
           <div class="dd-pop" id="wstatuspop" hidden>
-            <button data-s="">Not known</button>
-            <button data-s="learning">Learning</button>
-            <button data-s="learned">Learned</button>
+            <button data-s="">Unknown</button>
+            <button data-s="learned">Known</button>
           </div>
         </div>
         ${learnButton(simp)}
@@ -344,7 +343,8 @@ const COMMON_WORDS = 10000, WORDS_PER_PAGE = 100;
 /* #/words/<source>/<filter>/<page> */
 async function pageWords(src, filter, page) {
   src = WORD_SOURCES.some(x => x[0] === src) ? src : 'common';
-  filter = ['all', 'unknown', 'learning', 'learned'].includes(filter) ? filter : 'all';
+  if (filter === 'learning') filter = 'learned';       // (Learning and Learned are one now: Known)
+  filter = ['all', 'unknown', 'learned'].includes(filter) ? filter : 'all';
   page = page || 1;
   app.innerHTML = LOADING;
   await Promise.all([need.words(), optional(need.hsk())]);
@@ -357,22 +357,22 @@ async function pageWords(src, filter, page) {
   } else list = ((HZ.hsk || {})[src.slice(3)] || []).map(x => x[0]);
   list = list.filter((w, i) => list.indexOf(w) === i);
   const st = w => Store.wstatus(w) || 'unknown';
-  const counts = { all: list.length, unknown: 0, learning: 0, learned: 0 };
+  const counts = { all: list.length, unknown: 0, learned: 0 };
   list.forEach(w => { counts[st(w)]++; });
   const shown = filter === 'all' ? list : list.filter(w => st(w) === filter);
   const pages = Math.max(1, Math.ceil(shown.length / WORDS_PER_PAGE));
   page = Math.min(page, pages);
   const rows = shown.slice((page - 1) * WORDS_PER_PAGE, page * WORDS_PER_PAGE);
   const base = `/words/${src}/${filter}`;
-  const learned = Store.words('learned').length, learning = Store.words('learning').length;
+  const learned = Store.words('learned').length;
 
   app.innerHTML = '<h1 class="page-title">Words</h1>' + withRail(`
     <p class="lede">Words have a status of their own: mark the ones you know, or add them to your
-       lessons. A word you study in the lessons becomes Learning, and Learned at Journeyman.
-       You know <b>${num(learned)}</b> words and are learning <b>${num(learning)}</b>.</p>
+       lessons. A word becomes Known once you have had its lesson.
+       You know <b>${num(learned)}</b> words.</p>
     <div class="tabs">${WORD_SOURCES.map(([k, n]) => `<a class="${k === src ? 'on' : ''}" href="#/words/${k}/${filter}">${n}</a>`).join('')}</div>
     <section class="card">
-      <div class="filters">${[['all', 'All'], ['unknown', 'Not Known'], ['learning', 'Learning'], ['learned', 'Learned']].map(([k, n]) =>
+      <div class="filters">${[['all', 'All'], ['unknown', 'Unknown'], ['learned', 'Known']].map(([k, n]) =>
         `<a href="#/words/${src}/${k}" class="${k === filter ? 'on' : ''} ${k}">${n} (${num(counts[k])})</a>`).join('')}</div>
       ${rows.length ? `<table class="wordtable"><thead><tr><th>#</th><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th><th></th></tr></thead><tbody>
         ${rows.map(w => {
