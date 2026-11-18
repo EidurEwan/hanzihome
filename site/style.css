@@ -3383,4 +3383,4 @@ html.kb-open .rv-prompt { margin: 4px 0 0; }
 :root { --word-ink: #6a3fc4; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --word-ink: #b9a0ff; } }
 :root[data-theme="dark"] { --word-ink: #b9a0ff; }
-.word .w, .wordtable td.g a.han, .wordtable td.g a.han:hover, .hero-glyph.word-glyph { color: var(--word-ink); }
+.word .w, .wordtable td.g a.han, .wordtable td.g a.han:hover { color: var(--word-ink); }
