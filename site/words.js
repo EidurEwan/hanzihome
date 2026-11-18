@@ -75,7 +75,7 @@ function hskOf(w) {
    written or with an ending (halves, Batmans). */
 function mnHtml(m, ctx) {
   ctx = ctx || {};
-  const keyChip = keyChipper(ctx.self);
+  const keyChip = keyChipper(ctx.self, m || '');
   const find = (list, said) => {
     const w = said.toLowerCase();
     return (list || []).find(([, n]) => {
@@ -84,7 +84,7 @@ function mnHtml(m, ctx) {
     });
   };
   return esc(m || '')
-    .replace(/\*\*([^*]+)\*\*/g, (all, said) => keyChip(said))
+    .replace(/\*\*([^*]+)\*\*/g, (all, said, at) => keyChip(said, at))
     .replace(/\*([^*]+)\*/g, (all, said) => {
       const hit = find(ctx.comps, said);
       return hit ? `<span class="mn-chip comp"><span class="han">${esc(hit[0])}</span>${said}</span>` : `<span class="mn-part">${said}</span>`;
@@ -96,10 +96,14 @@ function mnHtml(m, ctx) {
 }
 /* A **meaning** in the mnemonic of `self` (a character or a word), as a chip with
    the glyph it is the meaning of: a character's meaning in red with the character,
-   a word's in purple with the word, or, in a word's mnemonic, the meaning of one of
-   its characters in red with that character (电脑: **electric** 电, **brain** 脑,
-   **computer** 电脑). Without a self, plain bold. */
-function keyChipper(self) {
+   a word's in purple with the whole word. A word's mnemonic joins its characters'
+   meanings into its own, after a colon (电脑: "**electric** **brain**: a
+   **computer**"), so what follows the last colon is the word's (purple, 电脑) and
+   what comes before it its characters' (red: 电 electric, 脑 brain): each matched to
+   the character with that meaning, or else to the next character not yet named.
+   Without a colon, the last meaning is the word's. Without a self, plain bold.
+   `m` is the mnemonic as written, `at` where in it (escaped) the meaning stands. */
+function keyChipper(self, m) {
   const plain = said => `<b class="mn-key">${said}</b>`;
   if (!self) return plain;
   const chip = (kind, glyph, said) =>
@@ -113,11 +117,19 @@ function keyChipper(self) {
       .map(t => stem(t.replace(/^(to|a|an|the) /i, ''))).filter(t => t.length > 1);
   };
   const lists = chars.map(c => [c, terms(c)]);
-  return said => {
+  const near = (a, b) => a === b || (Math.min(a.length, b.length) >= 4 && (a.startsWith(b) || b.startsWith(a)));
+  const text = esc(m), colon = text.lastIndexOf(':');
+  const keys = [...text.matchAll(/\*\*([^*]+)\*\*/g)];
+  const lastAt = keys.length ? keys[keys.length - 1].index : -1;
+  const used = new Set();
+  return (said, at) => {
+    if (colon >= 0 ? at > colon : at === lastAt && keys.length > 1) return chip('wd', self, said);
     const w = stem(said.replace(/^(to|a|an|the) /i, ''));
-    const near = (a, b) => a === b || (Math.min(a.length, b.length) >= 4 && (a.startsWith(b) || b.startsWith(a)));
-    const hit = w && lists.find(([, ts]) => ts.some(t => near(t, w) || (w.length > 2 && t.split(' ').some(x => near(x, w)))));
-    return hit ? chip('ch', hit[0], said) : chip('wd', self, said);
+    let hit = w && lists.find(([, ts]) => ts.some(t => near(t, w) || (w.length > 2 && t.split(' ').some(x => near(x, w)))));
+    if (!hit) hit = lists.find(([c]) => !used.has(c));
+    if (!hit) return chip('wd', self, said);
+    used.add(hit[0]);
+    return chip('ch', hit[0], said);
   };
 }
 /* the sound a picture name stands for, wherever a mnemonic is drawn without its
