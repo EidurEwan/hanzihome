@@ -6,7 +6,7 @@
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 const $ = id => document.getElementById(id);
-const DEFAULTS = { on: true, show: { learned: true, learning: true, new: true }, key: 'ctrl', paused: [] };
+const DEFAULTS = { on: true, show: { learned: true, new: true }, key: 'ctrl', paused: [] };
 let settings, tab = null, host = '';
 
 const save = () => api.storage.local.set({ settings });
@@ -83,10 +83,10 @@ async function init() {
   if (tab) {
     try {
       const c = await api.tabs.sendMessage(tab.id, { t: 'stats' }, { frameId: 0 });
-      if (c && c.learned + c.learning + c.new) {
+      if (c && c.learned + c.new) {
         $('page').hidden = false;
         $('counts').innerHTML = `<span>Words here:</span> <span><b style="color:var(--learned)">${c.learned}</b> known</span>`
-          + `<span><b style="color:var(--learning)">${c.learning}</b> partly known</span><span><b style="color:var(--new)">${c.new}</b> unknown</span>`;
+          + `<span><b style="color:var(--new)">${c.new}</b> unknown</span>`;
       }
     } catch (e) { /* no content script here */ }
   }

@@ -26,7 +26,7 @@ if (typeof importScripts === 'function' && typeof TextStory === 'undefined') {
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 const SITE = 'https://eidurewan.github.io/hanzihome/';
-const DEFAULTS = { on: true, show: { learned: true, learning: true, new: true }, key: 'ctrl', paused: [] };
+const DEFAULTS = { on: true, show: { learned: true, new: true }, key: 'ctrl', paused: [] };
 
 const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 const simp = c => (HZ.t2s || {})[c] || c;

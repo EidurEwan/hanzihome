@@ -6,8 +6,8 @@
  *  - Colour. The page's text is taken a block at a time (a paragraph, a list item, a
  *    cell: an element and the inline elements inside it), split into words by the
  *    reader's engine in background.js, and each word gets a coloured underline: green
- *    known, blue partly known (some of its characters), red unknown (the reader's
- *    wordState() rules). The underlines
+ *    known (a word you marked Known, or one with any character you know), red unknown.
+ *    The underlines
  *    are CSS Custom Highlights, so the page's own elements are never touched. New and
  *    changed text is read again as it appears (a MutationObserver).
  *
@@ -45,7 +45,7 @@
   const AIM = 600;           // ms the safe triangle lasts after the pointer leaves the word
   const SLACK = 6;           // px the triangle's base reaches past the popup's sides
 
-  let settings = { on: true, show: { learned: true, learning: true, new: true }, key: 'ctrl', paused: [] };
+  let settings = { on: true, show: { learned: true, new: true }, key: 'ctrl', paused: [] };
   let store = { status: {}, wstatus: {}, items: {} };
   // turned off for this site: neither colours nor look-ups; colours off: look-ups still work
   const here = () => !(settings.paused || []).includes(location.hostname);
@@ -152,14 +152,14 @@
 
   /* ------------------------------------------------------------ colour */
 
-  /* a word's colour, as the reader's wordState(): 'learned' (known), 'learning' (partly
-     known), 'new' (unknown), or null */
+  /* a word's colour: 'learned' (known) or 'new' (unknown), or null. Only two states:
+     a word marked Known, or with any character you know (what used to be "partly
+     known"), counts as known */
   function stateOf(w) {
     const cs = [...w[3]];
     if (!cs.length) return null;
-    if (cs.length > 1) { const own = store.wstatus[w[2]]; if (own) return own; }
-    if (cs.every(c => store.status[c] === 'learned')) return 'learned';
-    if (cs.some(c => store.status[c])) return 'learning';
+    if (cs.length > 1 && store.wstatus[w[2]]) return 'learned';
+    if (cs.some(c => store.status[c])) return 'learned';
     return 'new';
   }
 
@@ -170,17 +170,17 @@
 
   function paint() {
     if (!active()) {
-      for (const k of ['learned', 'learning', 'new']) CSS.highlights.delete('hz-' + k);
+      for (const k of ['learned', 'learning', 'new']) CSS.highlights.delete('hz-' + k);   // 'learning': left by an older version
       return;
     }
-    const sets = { learned: [], learning: [], new: [] };
+    const sets = { learned: [], new: [] };
     for (const b of blocks.values()) {
       if (!b.words) b.words = cache.get(b.text) || null;
       if (!b.words) continue;
       if (!b.ranges) b.ranges = b.words.map(w => rangeOf(b, w));
       b.words.forEach((w, i) => {
         const s = stateOf(w);
-        if (s && settings.show[s] && b.ranges[i]) sets[s].push(b.ranges[i]);
+        if (s && settings.show[s] !== false && b.ranges[i]) sets[s].push(b.ranges[i]);
       });
     }
     for (const [k, ranges] of Object.entries(sets)) {
@@ -448,7 +448,7 @@
   api.runtime.onMessage.addListener((m, sender, reply) => {
     if (m && m.t === 'pageText' && window === window.top) { reply(pageText()); return false; }
     if (m && m.t === 'stats' && window === window.top) {
-      const c = { learned: 0, learning: 0, new: 0 };   // known, partly known, unknown
+      const c = { learned: 0, new: 0 };   // known, unknown
       const seen = new Set();
       for (const b of blocks.values()) for (const w of b.words || []) {
         if (seen.has(w[2])) continue;
@@ -549,7 +549,6 @@
       font: 600 11.5px/1.4 inherit; font-family: inherit; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
     .seg3 button:hover { background: var(--panel-2); }
     .seg3 button.on.none { background: var(--panel-2); color: var(--ink); }
-    .seg3 button.on.learning { background: var(--blue); border-color: var(--blue); color: #fff; }
     .seg3 button.on.learned { background: var(--green); border-color: var(--green); color: #fff; }
   `;
 })();
