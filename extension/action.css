@@ -1,7 +1,7 @@
 :root {
   --bg: #f6f4ef; --panel: #ffffff; --panel-2: #ebe8e1; --ink: #222222; --ink-2: #6b6b6b;
   --line: #e6e2d9; --accent: #8a6c00; --yellow: #fde24d; --yellow-edge: #d4b21f;
-  --learned: rgb(34, 197, 94); --learning: rgb(37, 99, 235); --new: rgb(183, 55, 70);
+  --learned: rgb(34, 197, 94); --new: rgb(183, 55, 70);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -9,28 +9,30 @@
     --line: #3a3a3a; --accent: #fde24d; color-scheme: dark; }
 }
 * { box-sizing: border-box; }
-body { margin: 0; width: 300px; background: var(--bg); color: var(--ink);
+html { overflow-x: hidden; }
+body { margin: 0; width: 300px; min-width: 300px; max-width: 300px; padding-bottom: 1px; overflow-x: hidden; background: var(--bg); color: var(--ink);
   font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 header { display: flex; align-items: center; gap: 8px; padding: 12px 14px 4px; }
 h1 { margin: 0; font-size: 15px; font-weight: 700; }
 section { margin: 8px 10px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 p { margin: 0; }
-.row { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; }
+.row { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer; min-width: 0; }
+.row > span { min-width: 0; overflow-wrap: anywhere; }
+#host { word-break: break-all; }
 .row.between { justify-content: space-between; cursor: default; }
 .colours { display: flex; gap: 12px; padding: 4px 0 6px 24px; flex-wrap: wrap; }
 .colours label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
 .colours.off { opacity: .45; }
 .dot { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
 .dot.learned { background: var(--learned); }
-.dot.learning { background: var(--learning); }
 .dot.new { background: var(--new); }
 .muted { color: var(--ink-2); font-size: 12px; }
-.counts { display: flex; gap: 12px; font-size: 12.5px; }
+.counts { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12.5px; }
 .counts b { font-weight: 700; }
 .wait { margin-top: 6px; font-size: 12px; color: var(--accent); font-weight: 600; }
 select { font: inherit; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
 .buttons { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-button { font: 600 13px/1.3 inherit; font-family: inherit; padding: 8px 12px; border-radius: 999px; cursor: pointer;
+button { font: 600 13px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; width: 100%; padding: 8px 12px; border-radius: 999px; cursor: pointer;
   border: 0; background: var(--yellow); color: #222; box-shadow: 0 3px 0 var(--yellow-edge); }
 button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--yellow-edge); }
 button.quiet { background: var(--panel-2); color: var(--ink); box-shadow: 0 3px 0 var(--line); }
