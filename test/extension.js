@@ -78,11 +78,12 @@ const until = async (fn, what, ms = 15000) => {
     // ---- colour
     const page = await ctx.newPage();
     await page.goto(page0);
-    const counts = () => page.evaluate(() => Object.fromEntries(['learned', 'learning', 'new']
+    // two colours only: known ('learned') and unknown ('new')
+    const counts = () => page.evaluate(() => Object.fromEntries(['learned', 'new']
       .map(k => [k, CSS.highlights.has('hz-' + k) ? CSS.highlights.get('hz-' + k).size : 0])));
     await until(async () => (await counts()).new >= 10, 'words underlined');
     const c0 = await counts();
-    assert.strictEqual(c0.learned + c0.learning, 0);
+    assert.strictEqual(c0.learned, 0);
     ok(`the page's words are underlined as new (${c0.new})`);
 
     // text added later is read too
@@ -99,8 +100,10 @@ const until = async (fn, what, ms = 15000) => {
     await until(async () => { const s = (await storage('store')).store; return s && s.status['我'] === 'learned'; },
       'store copied from the site');
     ok('progress comes over from the site');
-    await until(async () => (await counts()).learned >= 1 && (await counts()).learning >= 1, 'page recoloured');
-    ok('the page recolours: 我们 learned, 今天 learning');
+    // 今 only partly known from an older version, and 天 not at all: 今天 is known all the same
+    await until(async () => (await counts()).learned >= 2, 'page recoloured');
+    assert(!(await page.evaluate(() => CSS.highlights.has('hz-learning'))), 'no partly known colour');
+    ok('the page recolours: 我们 and 今天 known (a word with any known character is known)');
 
     // ---- the look-up popup
     await page.bringToFront();
@@ -139,7 +142,7 @@ const until = async (fn, what, ms = 15000) => {
     await until(() => page.evaluate(() => document.querySelector('hanzihome-popup').style.display === 'block'), 'popup again');
     await page.keyboard.up('Control');
     await page.locator('hanzihome-popup .wp-char button[data-s="learned"]').first().click();
-    await until(async () => (await counts()).learning > before.learning, '银行 recoloured as learning');
+    await until(async () => (await counts()).learned > before.learned, '银行 recoloured as known');
     await until(() => page.evaluate(() => !!document.querySelector('hanzihome-popup')
       .shadowRoot.querySelector('.wp-char button.on.learned')), 'popup shows the mark');
     if (shots) await page.screenshot({ path: path.join(shots, 'marked.png') });
@@ -157,7 +160,7 @@ const until = async (fn, what, ms = 15000) => {
     await hz2.goto(site + '#/study');
     await until(() => hz2.evaluate(() => Store.load().status['行'] === 'learned'), 'applied on the next visit');
     await until(async () => ((await storage('queue')).queue || []).length === 0, 'queue emptied again');
-    await until(async () => (await counts()).learned > before.learned, '银行 now learned');
+    await until(async () => (await counts()).learned > before.learned, '银行 still known');
     ok('a change made with HanziHome closed is made the next time it opens');
 
     // add the word to the lessons
