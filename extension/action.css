@@ -9,8 +9,7 @@
     --line: #3a3a3a; --accent: #fde24d; color-scheme: dark; }
 }
 * { box-sizing: border-box; }
-html { overflow-x: hidden; }
-body { margin: 0; width: 300px; min-width: 300px; max-width: 300px; padding-bottom: 1px; overflow-x: hidden; background: var(--bg); color: var(--ink);
+body { margin: 0; width: 300px; min-width: 300px; max-width: 300px; padding-bottom: 1px; background: var(--bg); color: var(--ink);
   font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 header { display: flex; align-items: center; gap: 8px; padding: 12px 14px 4px; }
 h1 { margin: 0; font-size: 15px; font-weight: 700; }
