@@ -806,6 +806,21 @@ const needAnki = () => Promise.all([
   need.textStory(),                                // learnKey's traditional → simplified, the words' readings
 ]);
 
+/* Anki: export your lessons and reviews, or bring a deck in (Settings → Your data) */
+function ankiCard() {
+  const items = Object.keys(Store.load().items);
+  return `    <section class="card" id="anki-card">
+      <h2>Anki</h2>
+      <p class="small muted">Take your lessons and reviews to Anki, or bring an Anki deck here.</p>
+      <div class="row">
+        <button class="btn quiet" id="anki-export"${items.length ? '' : ' disabled'}>Export for Anki</button>
+        <label class="btn quiet anki-pick">Import a deck…<input type="file" id="anki-file"
+          accept=".apkg,.colpkg,.txt,.tsv,.csv" hidden></label>
+      </div>
+      <div id="anki-import"></div>
+    </section>`;
+}
+
 function wireAnki(redraw) {
   const exp = document.getElementById('anki-export'), file = document.getElementById('anki-file');
   if (!exp || !file) return;
@@ -920,8 +935,8 @@ function extraStudy(weak, brief) {
     <div class="xs-grid">
       <a class="xs-tile daily" href="#/grammar/daily">${body(doneToday ? '<path d="m5 12.5 4.5 4.5L19 7.5"/>' : '<path d="M4 7h7v4H4zM13 7h7v4h-7zM8 15h8v4H8z"/>', 'white',
         'Daily grammar practice', doneToday ? 'Done for today. Fancy another round?' : 'A short round. Anything new is taught first.')}</a>
-      <a class="xs-tile wide" href="#/weak">${body('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>', 'pink',
-        'Weak spots', weak ? `${weak} to work on` : 'Nothing yet. What you keep missing will show up here.')}</a>
+      ${brief && !weak ? '' : `<a class="xs-tile wide" href="#/weak">${body('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>', 'pink',
+        'Weak spots', weak ? `${weak} to work on` : 'Nothing yet. What you keep missing will show up here.')}</a>`}
       ${brief ? '' : `<a class="xs-tile" href="#/grammar">${body('<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/>', 'mint',
         'Grammar', 'Explanations and practice')}</a>
       <a class="xs-tile" href="#/phrases">${body('<path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5"/>', 'pink',
@@ -1026,7 +1041,7 @@ function drawStudy() {
         <a href="#/settings">Settings</a>.</p>
       ${pathPick()}
       <p class="small muted">${newcomer ? `Know some characters already? <a href="#/frequency">Mark them as learned</a> and the lessons
-        skip them, or bring an <a href="#anki-card" id="to-anki">Anki deck</a>. ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
+        skip them, or bring an Anki deck (<a href="#/settings">Settings</a>). ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
         character's or word's page does that, with or without a path.</p></section>` : ''}
     <div class="lx-hub">
       ${tile('lessons', 'Lessons', p.lessons.length, lessonNote)}
@@ -1046,14 +1061,9 @@ function drawStudy() {
         Journeyman without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
       <p><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : ''}
     <section class="card" id="lc-card" hidden></section>
-    ${started ? `<section class="card">
-      <h2 class="caps">Upcoming reviews</h2>
-      <div class="lx-fc">${fc.map((n, i) => `<div><span>${dayName(i)}</span>
-        <i style="width:${Math.round(100 * n / max)}%"></i><b>${n ? '+' + n : ''}</b></div>`).join('')}</div>
-    </section>` : ''}
     ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
     ${leechCard(d, now)}
-    ${nextTen.length || !noPath ? `<section class="card">
+    ${nextTen.length ? `<section class="card">
       <h2 class="caps">Lesson queue</h2>
       ${nextTen.length ? `<div class="lx-queue">${nextTen.map(k => `<a class="lx-q ${d.items[k] ? d.items[k].kind : 'char'} han" href="#/queue">${zh(k)}</a>`).join('')}</div>`
       : '<p class="empty small">Nothing yet. Use <b>Add to lessons</b> on a character\'s page.</p>'}
@@ -1063,30 +1073,7 @@ function drawStudy() {
     </section>` : ''}
     <h2 class="sec-h">Your progress</h2>
     <div class="home-grid">${railHtml()}</div>
-    ${items.length ? `<section class="card">
-      <h2 class="caps">Stages</h2>
-      <div class="lx-stages">${groups.map(g =>
-        `<div class="${g.toLowerCase()}"><b>${inGroup(g)}</b><span>${g}</span></div>`).join('')}</div>
-      <p class="small muted">Reviews are scheduled by FSRS, which keeps each item's difficulty and
-        stability (how many days until your chance of recalling it falls to 90%) and brings it back
-        when that chance falls to ${Math.round(cfg.retention * 100)}%. Each review is rated from your
-        answers: wrong is <i>again</i>, a slip of tone or a long think <i>hard</i>, right <i>good</i>,
-        right straight away <i>easy</i>. The stages are bands of stability: Novice under 4 days,
-        Apprentice from a week, Journeyman from a month (learned, on the rest of the site), Expert from
-        4 months, Master from 2 years. Characters you mark learned join at Journeyman; a
-        <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.
-        <a href="#/stats">Statistics</a> has the rest.</p>
-    </section>` : ''}
-    <section class="card" id="anki-card">
-      <h2 class="caps">Anki</h2>
-      <p class="small muted">Take your lessons and reviews to Anki, or bring an Anki deck here.</p>
-      <div class="row">
-        <button class="btn quiet" id="anki-export"${items.length ? '' : ' disabled'}>Export for Anki</button>
-        <label class="btn quiet anki-pick">Import a deck…<input type="file" id="anki-file"
-          accept=".apkg,.colpkg,.txt,.tsv,.csv" hidden></label>
-      </div>
-      <div id="anki-import"></div>
-    </section>`, true);
+`, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   wireLeeches(redraw);
   // (at once, then again when the parts of what was added have been looked up)
@@ -1096,14 +1083,8 @@ function drawStudy() {
   });
   drawLearnedChart(document.getElementById('lc-card'), d.items, now);
   wirePathPick(app, () => { redraw(); window.scrollTo(0, 0); announce('Your lessons are ready.'); });
-  const toAnki = document.getElementById('to-anki');
-  if (toAnki) toAnki.addEventListener('click', e => {           // (a plain #anki-card would be taken for a route)
-    e.preventDefault();
-    document.getElementById('anki-card').scrollIntoView({ block: 'start', behavior: 'smooth' });
-  });
   const back = document.getElementById('lx-back');
   if (back) back.addEventListener('click', () => { Store.vacation(false); redraw(); });
-  wireAnki(redraw);
   paintRail();
   if (dayDone) fillStoryNext();
 }
@@ -2417,7 +2398,7 @@ function pathCompare(c) {
   const mode = (id, name, good, bad) => `<div class="pc-mode ${c.path === id ? 'on' : ''}">
     <h4>${name}${c.path === id ? ' <small>your path</small>' : ''}</h4>
     <ul>${good.map(x => `<li class="good">${x}</li>`).join('')}${bad.map(x => `<li class="bad">${x}</li>`).join('')}</ul></div>`;
-  return `<details class="path-compare" open>
+  return `<details class="path-compare">
     <summary>Compare the learning paths</summary>
     <div class="pc-scroll"><table>
       <thead><tr><th>HSK level complete at</th>${cols.map(([id, l]) => `<th class="${c.path === id ? 'on' : ''}">${l}</th>`).join('')}</tr></thead>
@@ -2487,28 +2468,30 @@ function paintStudySettings() {
 
   box.innerHTML = `
     <h2>Lessons and reviews <span class="st-saved" id="st-saved" hidden>Saved</span></h2>
-    <p class="muted small">HanziHero's settings for lessons and reviews. Changes are saved as you make them,
-      and sync with the rest of your progress.</p>
-    ${field('Lesson batch size', range('batch', 1, 20), 'How many characters and words a batch holds; the components and sounds they need come with them. Batches follow one another until today\'s lessons are done, then all of them are quizzed together.')}
+    <p class="muted small">Changes are saved as you make them, and sync with the rest of your progress.</p>
+    ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['mix', 'Balanced: simple, common, early HSK, parts you know'], ['common', 'The most common characters first'],
+      ['hsk', 'HSK 1 to 6, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
+      'Keeps the next characters of the path in your lesson queue, skipping the ones you know, with their new components and sounds before them. The daily number is how many it keeps there, and how many become ready each day. Change either setting and the queue changes straight away; what you added yourself or prioritised stays. See and change the order on the <a href="#/queue">Upcoming page</a>.')}
+    ${field('Words in the path', tog('pathWords', 'Also learn words with what is left of the daily limit'), 'A word can be learned once all its characters have had their lessons. Off: the path teaches characters only, and you add words yourself.')}
+    ${pathCompare(c)}
     ${field('Daily lesson limit', sel('lessonLimit', limits, 'int'), c.lessonLimit
       ? `How many things you learn a day: first your new characters and the new components they bring, then words with whatever is left. You'll have about <b>${c.lessonLimit * 10} reviews</b> a day once they settle in.`
       : 'Every lesson in your queue is ready as soon as it unlocks.')}
+    ${field('Daily review limit', sel('reviewLimit', reviewLimits, 'int'),
+      'A soft limit: a session stops there, and once today\'s are done the Reviews tile greys out. You can still start another session.')}
+
+    <details class="st-more">
+      <summary>More lesson and review settings</summary>
+    ${field('Lesson batch size', range('batch', 1, 20), 'How many characters and words a batch holds; the components and sounds they need come with them. Batches follow one another until today\'s lessons are done, then all of them are quizzed together.')}
     ${field('Desired retention', `<div class="st-range"><input type="range" data-k="retention" data-t="pct" min="80" max="97"
       value="${Math.round(c.retention * 100)}"><output>${Math.round(c.retention * 100)}%</output></div>`,
       'Reviews are scheduled by FSRS: an item comes back when your chance of recalling it has fallen to this. Higher means '
       + 'more reviews, each easier; 90% is FSRS’s own choice. The rating of each review (again, hard, good, easy) isn’t asked: '
       + 'it comes from your answers. Wrong is again; a slip of tone or a long think (over ' + Learn.SLOW / 1000 + ' seconds '
       + 'before you start typing) is hard; right is good; right and started within ' + Learn.QUICK / 1000 + ' seconds is easy.')}
-    ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['mix', 'Balanced: simple, common, early HSK, parts you know'], ['common', 'The most common characters first'],
-      ['hsk', 'HSK 1 to 6, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
-      'Keeps the next characters of the path in your lesson queue, skipping the ones you know, with their new components and sounds before them. The daily number is how many it keeps there, and how many become ready each day. Change either setting and the queue changes straight away; what you added yourself or prioritised stays. See and change the order on the <a href="#/queue">Upcoming page</a>.')}
-    ${field('Words in the path', tog('pathWords', 'Also learn words with what is left of the daily limit'), 'A word can be learned once all its characters have had their lessons. Off: the path teaches characters only, and you add words yourself.')}
-    ${pathCompare(c)}
-    ${field('Daily review limit', sel('reviewLimit', reviewLimits, 'int'),
-      'A soft limit: a session stops there, and once today\'s are done the Reviews tile greys out. You can still start another session.')}
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
       ['learned', 'Unlock when its components are learned'], ['familiar', 'Unlock when its components are familiar']]),
-      'A component counts once you mark it known on the Productive Components page or mark it learned, or once it has had its own lesson (learned) or reached Apprentice I (familiar).')}
+      'A component counts once you mark it known on the Top components page or mark it learned, or once it has had its own lesson (learned) or reached Apprentice I (familiar).')}
     ${field('Components and sounds first', tog('autoComps', 'Teach a character\'s new components and sounds first'),
       'A character you add brings the parts of it you don\'t know yet: its components (by their picture names) and its sounds (the beginning as a person, the ending as a building, the tone as where at that building: in front, inside, basement, bathroom or roof). Each gets a short lesson just before the character, which opens on a Prerequisites page showing them, known and new. Parts don\'t count against the daily lesson limit.')}
     ${field('Word unlocking', tog('autoChars', 'Automatically prioritize characters'),
@@ -2533,6 +2516,7 @@ function paintStudySettings() {
       <p class="st-note">Asked last, from its pinyin and meaning: draw the strokes in order. After three misses on a stroke its
         outline shows; needing it makes the review count as hard, never as forgotten.</p>
     </div>
+    </details>
 
     <h3 class="st-h">Sounds</h3>
     ${field('Pronunciation', sel('audio', [['recorded', 'Recordings by Chinese speakers'], ['browser', 'The browser\'s voice']]),
@@ -2636,6 +2620,16 @@ function pageStats() {
   const pred = Learn.predictionCheck(d.items), PRED_MIN = 30;
   const pp = x => Math.round(100 * x) + '%';
 
+  if (!items.length) {
+    app.innerHTML = '<h1 class="page-title">Statistics</h1>' + withRail(`
+    <section class="card st-empty">
+      <h2>No statistics yet</h2>
+      <p class="muted">Your streak, review accuracy, upcoming reviews and stages show up here after your first lessons.</p>
+      <p><a class="btn" href="#/lessons">Start your lessons</a></p>
+    </section>`, true);
+    paintRail();
+    return;
+  }
   app.innerHTML = '<h1 class="page-title">Statistics</h1>' + withRail(`
     <section class="card">
       <div class="st-tiles">
@@ -2691,6 +2685,14 @@ function pageStats() {
         ${KINDS.filter(([kind]) => items.some(([, it]) => (it.kind || 'char') === kind)).map(([kind, name]) => `<tr><td><b>${name}</b></td>
           ${groups.map(g => `<td class="num">${items.filter(([, it]) => (it.kind || 'char') === kind && Learn.group(it.stage) === g).length}</td>`).join('')}</tr>`).join('')}
       </tbody></table>
+      <p class="small muted">Reviews are scheduled by FSRS, which keeps each item's difficulty and
+        stability (how many days until your chance of recalling it falls to 90%) and brings it back
+        when that chance falls to ${Math.round(cfg.retention * 100)}%. Each review is rated from your
+        answers: wrong is <i>again</i>, a slip of tone or a long think <i>hard</i>, right <i>good</i>,
+        right straight away <i>easy</i>. The stages are bands of stability: Novice under 4 days,
+        Apprentice from a week, Journeyman from a month (learned, on the rest of the site), Expert from
+        4 months, Master from 2 years. Characters you mark learned join at Journeyman; a
+        <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.</p>
     </section>
     ${hardest.length ? `<section class="card">
       <h2 class="caps">Hardest for you</h2>

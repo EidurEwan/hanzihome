@@ -979,15 +979,15 @@ const currentPath = () => {
    its own address, so links to them go on working. */
 const HUBS = [
   { nav: '/explore', label: 'Characters and lists', tabs: [
-    ['HSK', '/hsk-1', /^\/hsk-/], ['Most Common', '/frequency'], ['Radicals', '/radicals'],
-    ['Top Components', '/productive-components'], ['Word Builders', '/productive-characters'],
-    ['Phonetic Sets', '/phonetic-sets'], ['Sounds', '/sounds'],
+    ['HSK', '/hsk-1', /^\/hsk-/], ['Most common', '/frequency'], ['Radicals', '/radicals'],
+    ['Top components', '/productive-components'], ['Word builders', '/productive-characters'],
+    ['Phonetic sets', '/phonetic-sets'], ['Sounds', '/sounds'],
   ] },
   // (a round of practice has the page to itself: the tabs are for the pages you choose from)
   { nav: '/practice', label: 'Practice', tabs: [
     ['All', '/practice', /^\/practice$/],
     ['Grammar', '/grammar', /^\/grammar(\/(?!daily$)[^/]+)?$/], ['Phrases', '/phrases', /^\/phrases(\/[^/]+)?$/],
-    ['Tones', '/tones', /^\/tones$/], ['Weak Spots', '/weak', /^\/weak$/],
+    ['Tones', '/tones', /^\/tones$/], ['Look-alikes', '/lookalikes', /^\/lookalikes$/], ['Weak spots', '/weak', /^\/weak$/],
   ] },
   { nav: '/yours', label: 'Lists and notes', tabs: [['Lists', '/lists'], ['Notes', '/notes'], ['History', '/history']] },
 ];
@@ -1055,7 +1055,7 @@ function searchChars(q, limit = 30) {
 
 function initSearch() {
   // (a phone's search box is too narrow for the whole hint)
-  if (matchMedia('(max-width: 600px)').matches) document.getElementById('q').placeholder = 'Characters, pinyin, English';
+  if (matchMedia('(max-width: 600px)').matches) document.getElementById('q').placeholder = 'Search';
   const form = document.getElementById('search-form');
   const input = document.getElementById('q');
   const box = document.getElementById('ac');
@@ -1235,27 +1235,10 @@ function pager(base, page, total, per) {
 function railHtml() {
   const d = Store.load();
   const learned = Store.chars('learned');
-  const lessonsLeft = Object.keys(d.items).filter(k => d.items[k].kind === 'char' && !(d.items[k].stage >= 1)).length;
   const cov = coverage(learned);
   return `
   <section class="card">
-    <h3>Character progress</h3>
-    <div class="quad">
-      <div><b>${num(d.history.length)}</b><span>Searched</span><a href="#/history">View history →</a></div>
-      <div><b class="pu" id="rail-comps">${num(Store.knownComps().length)}</b><span>Components Learned</span><a href="#/productive-components">Browse →</a></div>
-      <div><b class="bl">${num(lessonsLeft)}</b><span>Waiting for lessons</span><a href="#/study">Lessons →</a></div>
-      <div><b class="g">${num(learned.length)}</b><span>Known</span><a href="#/lists">View list →</a></div>
-    </div>
-  </section>
-  <section class="card">
-    <h3>Word progress</h3>
-    <div class="quad two">
-      <div><b class="bl">${num(Object.keys(d.items).filter(k => d.items[k].kind === 'word' && !(d.items[k].stage >= 1)).length)}</b><span>Words waiting for lessons</span><a href="#/study">Lessons →</a></div>
-      <div><b class="g">${num(Store.words('learned').length)}</b><span>Words known</span><a href="#/words/mine/learned">View →</a></div>
-    </div>
-  </section>
-  <section class="card">
-    <h3>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h3>
+    <h2>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h2>
     <div class="donut">${donut(cov.pct)}
       <div><p class="small muted" style="margin-bottom:8px">The top 500 characters alone
         cover about ${topCoverage(500).toFixed(0)}% of running text. Take lessons, or mark
@@ -1267,7 +1250,7 @@ function railHtml() {
   </section>
   <section class="card">
     <div class="rail-head">
-      <h3>Study next <i class="info-i" title="Characters you have not marked yet, easiest or highest-value first">i</i></h3>
+      <h2>Study next <i class="info-i" title="Characters you have not marked yet, easiest or highest-value first">i</i></h2>
       <span class="rail-pager"><b id="sn-count"></b>
         <button id="sn-prev" aria-label="Previous suggestions">&lsaquo;</button>
         <button id="sn-next" aria-label="More suggestions">&rsaquo;</button></span>
@@ -1361,7 +1344,7 @@ function tileBoard(id, chars, opts) {
       <button data-f="all" class="on">All (${num(counts.all)})</button>
       <button data-f="unknown">Unknown (${num(counts.unknown)})</button>
       <button data-f="learned" class="learned">Known (${num(counts.learned)})</button>
-      <button data-multi="1" class="multi">Select Multiple</button>
+      <button data-multi="1" class="multi">Select several</button>
     </div>
     <div class="selbar" id="${id}-selbar" hidden>
       <b><span id="${id}-seln">0</span> selected</b>
@@ -1384,6 +1367,7 @@ function wireTileBoard(id, chars, opts) {
   const band = opts.band || 250;
   const label = opts.label || (c => (HZ.index[c] || [])[0] || '');
   let filter = 'all', multi = false;
+  let shown = opts.first || Infinity;          // a long board draws this many, then a button for more
   const picked = new Set();
   const bar = document.getElementById(id + '-selbar');
   const syncBar = () => {
@@ -1399,17 +1383,22 @@ function wireTileBoard(id, chars, opts) {
     const body = document.getElementById(id + '-body');
     if (!body) return;
     // group into bands of the underlying order so filtered views stay locatable
-    let html = '', any = false;
+    let html = '', any = false, drawn = 0, more = false;
     for (let i = 0; i < chars.length; i += band) {
+      if (drawn >= shown) { more = true; break; }
       const slice = chars.slice(i, i + band).filter(keep);
       if (!slice.length) continue;
       any = true;
+      drawn += slice.length;
       html += `<p class="band">${i + 1}–${Math.min(i + band, chars.length)}</p>
         <div class="tilegrid">${slice.map(c =>
           tile(c, label(c)).replace('class="tile ', 'class="tile ' + (picked.has(c) ? 'sel ' : ''))
         ).join('')}</div>`;
     }
+    if (more) html += `<p class="hsk-more"><button type="button" class="btn quiet" data-more="1">Show ${num(opts.first)} more</button></p>`;
     body.innerHTML = any ? html : '<p class="empty">Nothing in this group yet.</p>';
+    const moreBtn = body.querySelector('[data-more]');
+    if (moreBtn) moreBtn.addEventListener('click', () => { shown += opts.first; paint(); });
     body.querySelectorAll('.tile').forEach(t => {
       const c = decodeURIComponent(t.getAttribute('href').split('/').pop());
       t.addEventListener('mouseenter', () => { if (!multi && !isTouch()) showTileMenu(t, c); });
@@ -1486,7 +1475,7 @@ function wireTileBoard(id, chars, opts) {
       return;
     }
     f.querySelectorAll('button[data-f]').forEach(x => x.classList.remove('on'));
-    b.classList.add('on'); filter = b.dataset.f; paint(); Motion.play(document.getElementById(id + '-body'), 'm-tiles', 700);
+    b.classList.add('on'); filter = b.dataset.f; shown = opts.first || Infinity; paint(); Motion.play(document.getElementById(id + '-body'), 'm-tiles', 700);
   });
 }
 
@@ -1668,7 +1657,7 @@ async function pageCharacter(ch) {
   const mainRd = d.rd.find(r => r[1] === mainPin) || first;
   const gloss = mainRd ? mainRd[2].slice(0, 3).join('; ') : '';
   const APPEARS_SHOWN = 24, WORDS_SHOWN = 12;
-  const related = lookalikeSection(ch) + (d.ai.length ? `<h3 class="sub-h">Appears In</h3>
+  const related = lookalikeSection(ch) + (d.ai.length ? `<h3 class="sub-h">Appears in</h3>
     <div class="decomp-box pad">
       <p class="muted small">${esc(ch)} is a component of these characters:</p>
       <div class="chips">${d.ai.slice(0, APPEARS_SHOWN).map(m => chip(m[0], m[2])).join('')}</div>
@@ -1707,7 +1696,7 @@ async function pageCharacter(ch) {
           </div>
         </div>
         <div class="dd">
-          <button class="btn addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
+          <button class="btn quiet addlist-btn" id="addlistbtn">＋ Add to list ▾</button>
           <div class="dd-pop" id="listpop" hidden></div>
         </div>
         ${learnButton(ch)}
@@ -1719,7 +1708,7 @@ async function pageCharacter(ch) {
       related ? ['sec-related', 'Related'] : null])}
 
     <section class="pg-sec" id="sec-meaning" tabindex="-1">
-      <h2 class="sec-h">Pinyin &amp; Meaning</h2>
+      <h2 class="sec-h">Pinyin &amp; meaning</h2>
       <div class="decomp-box pad">
         ${d.rd.map((r, n) => `<div class="reading">
           <p class="r-head">${n + 1}. ${esc(r[1])} <span>(${esc(r[0])})</span>${Sound.canSay() ? `<button type="button" class="btn quiet lx-say" data-say="${esc(r[1])}" aria-label="Hear ${esc(r[1])}">▶</button>` : ''}</p>
@@ -1795,7 +1784,7 @@ async function pageCharacter(ch) {
         </div>
       </div>
 
-      <h3 class="sub-h">Phonetic Components</h3>
+      <h3 class="sub-h">Phonetic components</h3>
       <p class="tip"><i class="info-i">i</i> A phonetic component hints at how the
          character is pronounced.</p>
       <div class="decomp-box pad">
@@ -1983,10 +1972,10 @@ async function pageReader() {
   const card = st => {
     const chars = st.c.map(r => r[0]);   // precomputed at build time; st.t is gone
     return `<a class="story" href="#/reader/${st.id}">
-      <span class="story-tag">HSK ${st.l} · ${esc(st.tag)}</span>
+      <span class="story-tag">${esc(st.tag)}</span>
       <span class="story-zh han">${zhOne(st.zh)}</span>
       <span class="story-en">${esc(st.en)}</span>
-      <span class="story-stat">${trackedIn(chars)} of ${chars.length} unique characters tracked</span>
+      <span class="story-stat">${trackedIn(chars)} of ${chars.length} characters tracked</span>
     </a>`;
   };
 
@@ -2490,9 +2479,12 @@ function pageFrequency() {
          written Chinese. The number under each is its rank.</p>
       ${tileBoard('freq', all)}
     </section>`);
-  wireTileBoard('freq', all, { band: 250 });
+  wireTileBoard('freq', all, { band: 250, first: 500 });
   paintRail();
 }
+
+/* the HSK page's vocabulary table: this many rows, then a button for the rest */
+const HSK_FIRST_ROWS = 30;
 
 async function pageHsk(level) {
   app.innerHTML = LOADING;
@@ -2517,12 +2509,15 @@ async function pageHsk(level) {
       <p class="small muted">${readable.length} of ${words.length} words use only characters
          you know; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
          of the words. <a href="#/words/hsk${level}">Words page →</a></p>
-      <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead><tbody>
-        ${words.map(w => `<tr>
+      <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead>
+        ${[words.slice(0, HSK_FIRST_ROWS), words.slice(HSK_FIRST_ROWS)].map((rows, i) => rows.length ? `<tbody${i ? ' id="hsk-rest" hidden' : ''}>${rows.map(w => `<tr>
           <td class="g"><a class="han" href="#/word/${encodeURIComponent(w[0])}">${zh(w[0])}</a></td>
-          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td><td>${wordSeg(w[0])}</td></tr>`).join('')}
-      </tbody></table>
+          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td><td>${wordSeg(w[0])}</td></tr>`).join('')}</tbody>` : '').join('')}
+      </table>
+      ${words.length > HSK_FIRST_ROWS ? `<p class="hsk-more"><button type="button" class="btn quiet" id="hsk-all">Show all ${num(words.length)} words</button></p>` : ''}
     </section>`);
+  const all = document.getElementById('hsk-all');
+  if (all) all.addEventListener('click', () => { document.getElementById('hsk-rest').hidden = false; all.parentElement.remove(); });
   wireWordSegs(app);
   wireHskPush(app, () => { markNav(currentPath()); pageHsk(level); });
   if (chars.length) wireTileBoard('hsk', chars, { band: 100, label: c => (HZ.index[c] || [])[0] || '' });
@@ -2535,7 +2530,7 @@ async function pageRadicals() {
   app.innerHTML = '<h1 class="page-title">The 214 Kangxi radicals</h1>' + withRail(`
     <p class="lede">Every character is filed under one of these. Tick the ones you know —
        they count towards your component knowledge.</p>
-    <section class="card"><table>
+    <section class="card"><table class="radtable">
       <thead><tr><th>#</th><th>Radical</th><th>Variants</th><th>Picture name</th><th>Meaning</th>
         <th>Pinyin</th><th>Characters</th><th>Known</th></tr></thead>
       <tbody>${HZ.radicals.map(r => `<tr>
@@ -2749,6 +2744,7 @@ function pageSettings() {
       <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font-family:inherit;
         padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
     </section>
+    ${ankiCard()}
     <section class="card">
       <h2>Data set</h2>
       <ul class="facts">
@@ -2816,6 +2812,7 @@ function pageSettings() {
     render(true);
   });
   wireSyncCard();
+  wireAnki(() => render(true));
   if (offlineCan()) paintOffline();
   paintStudySettings();
   paintSettingsNav();
@@ -2868,6 +2865,9 @@ function paintSettingsNav() {
       const t = targets[+b.dataset.to];
       if (!t) return;
       if (!wide.matches) nav.open = false;      // (first: the menu's height moves the page)
+      // a setting folded away under "More …" opens first, or there is nothing to scroll to
+      for (let up = t.el.parentElement; up && up !== dash; up = up.parentElement)
+        if (up.tagName === 'DETAILS' && !up.open) up.open = true;
       t.el.scrollIntoView({ block: 'start' });
       // the last sections can't reach the top of the screen: the one you chose stays marked
       // until you scroll yourself

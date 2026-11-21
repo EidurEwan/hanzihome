@@ -52,8 +52,8 @@ function grPointCard(p) {
 }
 
 function grList() {
-  app.innerHTML = `<div class="card"><h1>Grammar</h1>
-      <p class="muted">Short explanations and sentence-building practice, whenever you feel like it. Practice only uses characters you have learned in lessons or marked Known. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p></div>
+  app.innerHTML = `<h1 class="page-title">Grammar</h1>
+      <p class="lede">Short explanations and sentence-building practice, whenever you feel like it. Practice only uses characters you have learned in lessons or marked Known. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p>
     ${[...new Set(HZ.gpoints.map(p => p.level))].map(l => `<h2 class="sec-h">Around HSK ${l}</h2>
       <div class="gr-list">${HZ.gpoints.filter(p => p.level === l).map(grPointCard).join('')}</div>`).join('')}`;
 }

@@ -104,7 +104,10 @@ button, input, textarea { font: inherit; }
   background: none; border: 0; color: var(--ink-3); padding: 0 12px;
   cursor: pointer; font-size: 0;
 }
-.topbar .search .btn::before { content: "🔍"; font-size: 14px; }
+/* a line magnifier, drawn like the menu's icons, in the text colour (a mask, so it follows the theme) */
+.topbar .search .btn::before { content: ""; width: 18px; height: 18px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") center / contain no-repeat; }
 .hamburger { display: none; background: none; border: 0; font-size: 20px; color: var(--ink-2); cursor: pointer; }
 
 /* ---------------- shell ---------------- */
@@ -174,10 +177,6 @@ p { margin: 0 0 12px; }
   background: var(--accent); color: #fff;
 }
 .btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); text-decoration: none; }
-.btn.ghost { background: transparent; color: var(--accent); }
-.btn.ghost:hover { background: var(--accent-soft); color: var(--accent-dark); }
-.btn.quiet { background: var(--panel); color: var(--ink-2); border-color: var(--line-2); }
-.btn.quiet:hover { border-color: var(--accent); color: var(--accent); background: var(--panel); }
 
 .pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 9px;
         border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
@@ -427,7 +426,6 @@ tbody tr:hover { background: var(--accent-soft); }
 .status-btn.none { background: var(--panel); border-color: var(--line-2); color: var(--ink-2); }
 .status-btn.none:hover { background: var(--panel); border-color: var(--accent); color: var(--accent); }
 .status-btn.learning { background: var(--blue); border-color: var(--blue); }
-.addlist-btn { background: var(--blue); border-color: var(--blue); }
 
 .dd { position: relative; }
 .dd-pop {
@@ -500,7 +498,6 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .minitiles .tile .g { font-size: 16px; }
 .plusn { font-size: 12px; color: var(--ink-3); font-weight: 700; }
 
-.quad b.pu { color: var(--purple); }
 
 .band { font-size: 12.5px; font-weight: 700; color: var(--ink-2); margin: 16px 0 8px; }
 .filters button.multi.on { background: var(--ink); border-color: var(--ink); color: #fff; }
@@ -663,7 +660,7 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 
 /* rail card header with its 1/N pager */
 .rail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-.rail-head h3 { margin: 0; }
+.rail-head h2, .rail-head h3 { margin: 0; }
 .rail-pager { display: flex; align-items: center; gap: 3px; font-size: 12px; color: var(--ink-3); font-weight: 700; }
 .rail-pager button { background: none; border: 0; cursor: pointer; color: var(--ink-2);
                      font-size: 17px; line-height: 1; padding: 1px 5px; border-radius: 4px; }
@@ -1149,7 +1146,8 @@ a.tbox:hover { border-color: var(--accent); text-decoration: none; }
 .lx-q.word { background: var(--lx-word); }
 .lx-q a, .lx-q > .han { color: #fff; font-family: var(--han); font-size: 17px; text-decoration: none; }
 .lx-q button { border: 0; background: none; color: #fff; opacity: .7; cursor: pointer; font-size: 15px; padding: 0 5px; }
-a.lx-q { padding: 4px 9px; }
+a.lx-q { padding: 4px 9px; color: #fff; font-family: var(--han); font-size: 17px; }
+a.lx-q:hover { text-decoration: none; filter: brightness(1.08); }
 .lx-stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px; }
 .lx-stages div { border-radius: 10px; padding: 10px 6px; text-align: center; color: #fff; }
 .lx-stages b { display: block; font-size: 22px; }
@@ -1666,8 +1664,12 @@ b, strong { font-weight: 600; }
 .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .btn:disabled, .btn[aria-disabled="true"] { --face: var(--panel-2); --rim: var(--line-2); --btn-ink: var(--ink-3); cursor: default; filter: none; }
 .btn:disabled:active { transform: none; box-shadow: 0 var(--edge) 0 var(--rim); }
-.btn.quiet { --face: var(--quiet-face); --rim: var(--quiet-edge); --btn-ink: var(--quiet-ink); }
-.btn.quiet:hover { background: var(--face); color: var(--btn-ink); border-color: transparent; }
+/* the secondary button: an outline, so it reads as a button on a card as well as on the page
+   (a filled grey face would look like the disabled one) */
+.btn.quiet { --face: transparent; --rim: transparent; --btn-ink: var(--ink);
+  border: 1.5px solid var(--line-2); padding: 8.5px 18.5px; }
+.btn.quiet:hover { background: var(--hover); color: var(--btn-ink); border-color: var(--ink-3); filter: none; }
+.btn.quiet:disabled, .btn.quiet[aria-disabled="true"] { --btn-ink: var(--ink-3); background: transparent; border-color: var(--line); }
 .btn.ghost { --face: transparent; --rim: transparent; --btn-ink: var(--accent); box-shadow: none; }
 .btn.ghost:hover { background: var(--accent-soft); color: var(--accent); }
 .btn.ghost:active { transform: none; }
@@ -1676,7 +1678,6 @@ b, strong { font-weight: 600; }
 .status-btn.none { --face: var(--quiet-face); --rim: var(--quiet-edge); --btn-ink: var(--quiet-ink); }
 .status-btn, .status-btn:hover, .status-btn.learning, .status-btn.none, .status-btn.none:hover {
   background: var(--face); border-color: transparent; color: var(--btn-ink); }
-.addlist-btn, .addlist-btn:hover { --face: var(--sky); --rim: var(--sky-edge); --btn-ink: #fff; background: var(--face); border-color: transparent; }
 .next-row .btn, .selbar .btn, .cb-top .btn, .rv-synform .btn, .dk-recent .btn,
 .sync-backups .btn, .books .btn, .st-try, .lx-say { --edge: 3px; padding: 6px 14px; font-size: 13px; }
 
@@ -1801,7 +1802,8 @@ a.gbox:hover, button.gbox:hover, a.tbox:hover, .tree a.node:hover, a.chip:hover,
 .week i { border-radius: 8px; background: var(--panel-2); }
 .week i.on { background: var(--yellow); box-shadow: 0 3px 0 var(--yellow-edge); }
 .week i.today { outline-color: var(--ink); }
-.quad b { color: var(--accent); font-weight: 600; }
+/* numbers are ink; colour only where it means a state (blue waiting/learning, green known) */
+.quad b { color: var(--ink); font-weight: 600; }
 .streak .big b { font-weight: 600; }
 /* Boxes' flame by the streak */
 .streak .big::before { content: ""; width: 42px; height: 48px; flex: none;
@@ -1913,7 +1915,7 @@ a.gbox:hover, button.gbox:hover, a.tbox:hover, .tree a.node:hover, a.chip:hover,
 .st-saved { color: var(--green-ink); }
 
 /* ---- statistics: the bars and tiles in the game's colours ---- */
-.st-tiles b { color: var(--accent); font-weight: 600; }
+.st-tiles b { color: var(--ink); font-weight: 600; }
 .st-days i { border-radius: 4px 4px 0 0; }
 .st-days i.r, .st-key.r { background: var(--sky); }
 .st-days i.l, .st-key.l { background: var(--pink); }
@@ -2904,9 +2906,19 @@ a.mn-chip:hover { text-decoration: none; outline: 1px solid var(--lx-sound); }
 .hub-tabs { max-width: var(--list-card-w, var(--page-w)); margin: 0 auto; padding: 20px 24px 0; box-sizing: content-box; gap: 6px; }
 .hub-tabs[hidden] { display: none; }
 .hub-tabs a { white-space: nowrap; }
-body.in-hub #app { padding-top: 6px; }
+/* page tabs are an underlined bar, so they never look like the filter pills on the page under them */
+.hub-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 4px; padding-bottom: 0; margin-bottom: 0;
+  background: linear-gradient(var(--line-2), var(--line-2)) 0 100% / 100% 1px no-repeat;
+  background-origin: content-box; background-clip: content-box; }   /* the rule spans the column, not its gutters */
+.hub-tabs a, .hub-tabs a:hover, .hub-tabs a:active, .hub-tabs a.on {
+  --face: transparent; background: transparent; color: var(--ink-2); border-radius: 0;
+  padding: 10px 12px 9px; margin-bottom: -1px; border-bottom: 3px solid transparent;
+  font-weight: 600; transform: none; filter: none; }
+.hub-tabs a:hover { color: var(--ink); }
+.hub-tabs a.on { color: var(--ink); border-bottom-color: var(--yellow-edge); }
+body.in-hub #app { padding-top: 22px; }
 @media (max-width: 720px) {
-  .hub-tabs { flex-wrap: nowrap; overflow-x: auto; padding: 12px 12px 4px; max-width: none; box-sizing: border-box; scrollbar-width: none; }
+  .hub-tabs { flex-wrap: nowrap; overflow-x: auto; padding: 12px 12px 0; max-width: none; box-sizing: border-box; scrollbar-width: none; }
   .hub-tabs::-webkit-scrollbar { display: none; }
 }
 .gr-new { font-weight: 600; margin: 0 0 12px; }
@@ -3384,3 +3396,42 @@ html.kb-open .rv-prompt { margin: 4px 0 0; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --word-ink: #b9a0ff; } }
 :root[data-theme="dark"] { --word-ink: #b9a0ff; }
 .word .w, .wordtable td.g a.han, .wordtable td.g a.han:hover { color: var(--word-ink); }
+
+/* Settings: the everyday choices in sight, the rest folded under "More …" (study.js paintStudySettings) */
+.st-more { margin: 18px 0 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.st-more > summary { cursor: pointer; font-weight: 600; padding: 6px 0; list-style: none; display: flex; align-items: center; gap: 8px; }
+.st-more > summary::-webkit-details-marker { display: none; }
+.st-more > summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg); transition: transform .15s ease; margin: 0 4px 0 2px; }
+.st-more[open] > summary::before { transform: rotate(45deg); }
+.st-more > summary:hover { color: var(--accent); }
+
+/* the HSK page: the rest of the vocabulary behind one button */
+.hsk-more { margin: 14px 0 0; text-align: center; }
+/* a note under a table sits clear of its last row */
+table + p.small { margin-top: 12px; }
+
+/* phones: a story's text comes first, its word lists after it (the side panel is beside it on wide screens) */
+@media (max-width: 1100px) { .readlayout > .readside { order: 2; } }
+
+/* phones: the radicals table keeps the columns you read it for */
+@media (max-width: 600px) {
+  .radtable th:nth-child(3), .radtable td:nth-child(3),
+  .radtable th:nth-child(6), .radtable td:nth-child(6),
+  .radtable th:nth-child(7), .radtable td:nth-child(7) { display: none; }
+}
+
+/* phones: Settings keeps the same column as every other page (its side menu becomes a menu at the top) */
+@media (max-width: 899px) {
+  #app > .st-layout { max-width: var(--list-card-w); margin-left: auto; margin-right: auto; }
+  @supports (width: round(down, 101px, 10px)) { #app > .st-layout { max-width: var(--list-fit); } }
+}
+
+/* phones: Statistics' five tiles without one left alone on its row, and its tables in the width */
+@media (max-width: 600px) {
+  .st-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .st-tiles div:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .card table th, .card table td { padding-left: 5px; padding-right: 5px; }
+  .card table th { letter-spacing: .02em; font-size: 10.5px; }
+  .card table td { font-size: 13px; }
+}
