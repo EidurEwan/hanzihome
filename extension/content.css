@@ -1,5 +1,5 @@
 /* The colour under each Chinese word (content.js): the site's colours, as the desktop
-   app's overlay bars: green learned, blue learning, red new. Underlines, not tints, so
+   app's overlay bars: green known, blue partly known, red unknown. Underlines, not tints, so
    the text stays as the page drew it. */
 ::highlight(hz-learned) { text-decoration: underline 2px rgba(34, 197, 94, .92); text-underline-offset: 3px; }
 ::highlight(hz-learning) { text-decoration: underline 2px rgba(37, 99, 235, .92); text-underline-offset: 3px; }

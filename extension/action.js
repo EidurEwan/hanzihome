@@ -32,13 +32,13 @@ function paint(st) {
 
   const store = st.store;
   if (store && st.storeAt) {
-    const n = s => Object.values(store.status).filter(x => x === s).length;
-    const L = n('learned');
-    $('progress').textContent = `Your progress: ${L} character${L === 1 ? '' : 's'} learned, ${n('learning')} learning `
+    const L = Object.values(store.status).filter(x => x).length;
+    const W = Object.values(store.wstatus || {}).filter(x => x).length;
+    $('progress').textContent = `Your progress: ${L} character${L === 1 ? '' : 's'} and ${W} word${W === 1 ? '' : 's'} known `
       + `(from HanziHome, ${ago(st.storeAt)}).`;
   } else {
     $('progress').textContent = 'No progress yet: open HanziHome in this browser once and it comes over by itself. '
-      + 'Until then every word counts as new.';
+      + 'Until then every word counts as unknown.';
   }
   const q = (st.queue || []).length;
   $('queue').hidden = !q;
@@ -85,8 +85,8 @@ async function init() {
       const c = await api.tabs.sendMessage(tab.id, { t: 'stats' }, { frameId: 0 });
       if (c && c.learned + c.learning + c.new) {
         $('page').hidden = false;
-        $('counts').innerHTML = `<span>Words here:</span> <span><b style="color:var(--learned)">${c.learned}</b> learned</span>`
-          + `<span><b style="color:var(--learning)">${c.learning}</b> learning</span><span><b style="color:var(--new)">${c.new}</b> new</span>`;
+        $('counts').innerHTML = `<span>Words here:</span> <span><b style="color:var(--learned)">${c.learned}</b> known</span>`
+          + `<span><b style="color:var(--learning)">${c.learning}</b> partly known</span><span><b style="color:var(--new)">${c.new}</b> unknown</span>`;
       }
     } catch (e) { /* no content script here */ }
   }

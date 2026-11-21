@@ -6,15 +6,16 @@
  *  - Colour. The page's text is taken a block at a time (a paragraph, a list item, a
  *    cell: an element and the inline elements inside it), split into words by the
  *    reader's engine in background.js, and each word gets a coloured underline: green
- *    learned, blue learning, red new (the reader's wordState() rules). The underlines
+ *    known, blue partly known (some of its characters), red unknown (the reader's
+ *    wordState() rules). The underlines
  *    are CSS Custom Highlights, so the page's own elements are never touched. New and
  *    changed text is read again as it appears (a MutationObserver).
  *
  *  - Look-up. Hold the look-up key (Ctrl unless changed; on its own, so Ctrl+C never
  *    opens anything) and point at a word: the reader's word popup appears under it,
- *    glossed in the context of its sentence, with the buttons to mark its characters,
- *    mark the word, add it to your lessons (with its sentence as the example) and open
- *    a character's page. Let go and it stays while the pointer is on the word or the
+ *    glossed in the context of its sentence, with its three choices (add it to your
+ *    lessons, with its sentence as the example; mark it Unknown; mark it Known), then
+ *    Unknown / Known for each character of a longer word, and a link to its page. Let go and it stays while the pointer is on the word or the
  *    popup; a safe triangle from the word to the popup keeps it while the pointer
  *    crosses the words between them, as in the desktop app (desktop/src/hover.js).
  *
@@ -151,7 +152,8 @@
 
   /* ------------------------------------------------------------ colour */
 
-  /* a word's colour, as the reader's wordState(): learned, learning, new (or null) */
+  /* a word's colour, as the reader's wordState(): 'learned' (known), 'learning' (partly
+     known), 'new' (unknown), or null */
   function stateOf(w) {
     const cs = [...w[3]];
     if (!cs.length) return null;
@@ -374,28 +376,29 @@
     const han = [...w].filter(isHan);
     const multi = han.length > 1;
     const status = c => store.status[chars[c].s] || store.status[c] || '';
-    const row = (c, i) => {
-      const st = status(c);
-      const [cp, cg] = parts[i] || ['', ''];
-      const btn = (v, label, cls) =>
-        `<button type="button" data-c="${esc(c)}" data-s="${v}"${st === v ? ' class="on ' + cls + '"' : ''}>${label}</button>`;
-      const meaning = multi ? `<span class="wp-cm"><b>${esc(cp)}</b> ${esc(cg)}</span>` : '';
-      return `<div class="wp-char${multi ? ' multi' : ''}">
-        <a class="wp-c han" data-open="${esc(c)}" title="Open in HanziHome">${esc(c)}</a>
-        <span class="wp-cbody">${meaning}${chars[c].known
-          ? `<span class="seg3">${btn('', 'Not known', 'none')}${btn('learning', 'Learning', 'learning')}${btn('learned', 'Learned', 'learned')}</span>`
-          : ''}</span></div>`;
-    };
+    // Unknown / Known: for one character (data-c, data-s) or for the word itself (data-ws)
+    const choose = (attr, st) => [['', 'Unknown', 'none'], ['learned', 'Known', 'learned']].map(([v, label, cls]) =>
+      `<button type="button" ${attr}="${v}"${(st ? 'learned' : '') === v ? ` class="on ${cls}"` : ''}>${label}</button>`).join('');
+    const forChar = c => choose(`data-c="${esc(chars[c].s)}" data-s`, status(c));
     const stage = store.items[key];
-    const wstate = store.wstatus[key] || '';
+    // the three choices for what was pointed at: into the lessons, or whether you know it
+    const lessons = stage ? `<span class="wp-in">✓ ${esc(stage)}</span>`
+      : '<button type="button" class="wp-add" data-learn>＋ Add to lessons</button>';
+    const choice = multi ? choose('data-ws', store.wstatus[key])
+      : han.length && chars[han[0]].known ? forChar(han[0]) : '';
+    const row = (c, i) => {
+      const [cp, cg] = parts[i] || ['', ''];
+      return `<div class="wp-char multi">
+        <a class="wp-c han" data-open="${esc(c)}" title="Open in HanziHome">${esc(c)}</a>
+        <span class="wp-cbody"><span class="wp-cm"><b>${esc(cp)}</b> ${esc(cg)}</span>${chars[c].known
+          ? `<span class="seg3">${forChar(c)}</span>` : ''}</span></div>`;
+    };
     pop.innerHTML = `
       <div class="wp-head"><span class="han">${esc(w)}</span><b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
       ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
-      <p class="wp-learn">${stage ? `<span>✓ ${esc(stage)}</span>` : '<button type="button" data-learn>＋ Add to lessons</button>'}</p>
-      ${multi ? `<div class="wp-word"><span class="wp-wl">The word</span><span class="seg3">${
-        [['', 'Not known', 'none'], ['learning', 'Learning', 'learning'], ['learned', 'Learned', 'learned']].map(([v, label, cls]) =>
-          `<button type="button" data-ws="${v}"${wstate === v ? ` class="on ${cls}"` : ''}>${label}</button>`).join('')}</span></div>` : ''}
-      ${han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')}`;
+      <div class="wp-acts seg3">${lessons}${choice}</div>
+      ${multi ? han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('')
+        : han.length === 1 ? `<p class="wp-learn"><a class="wp-card" data-open="${esc(han[0])}">Character page →</a></p>` : ''}`;
     place();
   }
 
@@ -445,7 +448,7 @@
   api.runtime.onMessage.addListener((m, sender, reply) => {
     if (m && m.t === 'pageText' && window === window.top) { reply(pageText()); return false; }
     if (m && m.t === 'stats' && window === window.top) {
-      const c = { learned: 0, learning: 0, new: 0 };
+      const c = { learned: 0, learning: 0, new: 0 };   // known, partly known, unknown
       const seen = new Set();
       for (const b of blocks.values()) for (const w of b.words || []) {
         if (seen.has(w[2])) continue;
@@ -522,7 +525,13 @@
     .wp-learn button { border: 1px solid var(--line-2); background: var(--panel); color: var(--ink); border-radius: 999px;
       padding: 3px 10px; font: 600 12.5px/1.4 inherit; font-family: inherit; cursor: pointer; }
     .wp-learn button:hover { background: var(--panel-2); }
-    .wp-learn span { font-size: 12.5px; font-weight: 700; color: var(--accent); }
+    .wp-learn a { font-size: 12.5px; font-weight: 700; color: var(--accent); cursor: pointer; }
+    .wp-learn a:hover { text-decoration: underline; }
+    .wp-acts { margin: 0 0 8px; align-items: center; flex-wrap: wrap; }
+    .wp-acts .wp-add { border-color: var(--line-2); color: var(--ink); }
+    .wp-acts .wp-add:hover { border-color: var(--blue); color: var(--blue); background: none; }
+    .wp-acts .wp-in { font-size: 11.5px; font-weight: 700; color: var(--blue); padding: 3px 9px;
+      border: 1px solid var(--blue); border-radius: 999px; white-space: nowrap; }
     .wp-word { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0;
       border-bottom: 1px solid var(--line); margin-bottom: 4px; }
     .wp-wl { font-size: 11.5px; font-weight: 700; color: var(--ink-2); }

@@ -616,12 +616,12 @@ part is for: [`desktop/PLAN.md`](desktop/PLAN.md).
 [`extension/`](extension/) is the desktop app's screen reader for Chrome, Edge and Firefox
 (140+). On any web page it:
 
-* puts a coloured underline under every Chinese word: green learned, blue learning, red new
-  (the reader's colours and rules), and keeps up as the page changes;
+* puts a coloured underline under every Chinese word: green known, blue partly known (some of
+  its characters), red unknown (the reader's colours and rules), and keeps up as the page changes;
 * shows the reader's word popup for the word under the pointer while you hold Ctrl (on its
   own, so Ctrl+C never opens it; Alt or Shift in the toolbar menu), glossed in the context of
-  its sentence, with the buttons to mark its characters or the word and to add it to your
-  lessons, with its sentence as the example. As on the desktop, it stays while the pointer is
+  its sentence, with its three choices (Add to lessons, with its sentence as the example;
+  Unknown; Known), then Unknown / Known for each character of a longer word. As on the desktop, it stays while the pointer is
   on the word or the popup, and a safe triangle keeps it on the way from one to the other;
 * sends the page, or the text you selected, to the site's reader (toolbar menu, or right-click
   → Read in HanziHome).

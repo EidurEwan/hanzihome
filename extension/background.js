@@ -100,13 +100,21 @@ const set = o => api.storage.local.set(o);
 function compact(d) {
   const items = {};
   for (const [k, stage] of Object.entries(d.items || {})) items[k] = stage ? Learn.stageName(stage) : 'In lessons';
-  return { status: d.status || {}, wstatus: d.wstatus || {}, items };
+  // Known ('learned') or not: an older copy of the site may still say 'learning', which is Known now
+  const known = m => Object.fromEntries(Object.entries(m || {}).filter(([, s]) => s).map(([k]) => [k, 'learned']));
+  return { status: known(d.status), wstatus: known(d.wstatus), items };
 }
 
 /* make a queued change in the copy, as the site will make it */
 function applyTo(store, op) {
-  if (op.t === 'mark') { if (op.s) store.status[op.c] = op.s; else delete store.status[op.c]; }
-  else if (op.t === 'wmark') { if (op.s) store.wstatus[op.w] = op.s; else delete store.wstatus[op.w]; }
+  // marked Known, the site puts it in the reviews at Journeyman I (if it isn't in them already)
+  if (op.t === 'mark') {
+    if (op.s) { store.status[op.c] = 'learned'; if (HZ.index[op.c] && !store.items[op.c]) store.items[op.c] = Learn.stageName(Learn.LEARNED_FROM); }
+    else delete store.status[op.c];
+  } else if (op.t === 'wmark') {
+    if (op.s) { store.wstatus[op.w] = 'learned'; if (!store.items[op.w]) store.items[op.w] = Learn.stageName(Learn.LEARNED_FROM); }
+    else delete store.wstatus[op.w];
+  }
   else if (op.t === 'learn') { const k = learnKey(op.w); if (!store.items[k]) store.items[k] = 'In lessons'; }
 }
 

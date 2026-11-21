@@ -50,7 +50,7 @@
     ['Master', 730],
   ];
   const MASTER = STAGES.length - 1;
-  const LEARNED_FROM = 5;      // Journeyman and up count as learned on the rest of the site
+  const LEARNED_FROM = 5;      // Journeyman and up (a Known item, marked without a lesson, joins at Journeyman I)
   const GROUPS = ['Lesson', 'Novice', 'Novice', 'Apprentice', 'Apprentice', 'Journeyman', 'Journeyman',
     'Expert', 'Expert', 'Expert', 'Master'];
 
