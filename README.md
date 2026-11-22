@@ -356,7 +356,12 @@ long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 
 simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
 a word shows the reading and meaning it has *in that sentence* — 还 is "to give back" in one
 line and "also" in the next — plus what each of its characters contributes, with buttons to
-mark them and to add the word to your lessons. Text you paste in opens in the same reader, glossed automatically (see "Reading
+mark them and to add the word to your lessons. The popup also says the word, and reads its
+sentence aloud or translates it under the paragraph (with Gemini when there is a key, else word
+by word with the grammar patterns). Above the text, A−/A+ set its size and **Focus** hides the
+side panel; below it, **I've finished reading** offers the words you looked up for your lessons
+and the ones you didn't for marking known, then the next story. Each story card says how much
+of it you can read: the share of its running words you know (Easy, Comfortable, A stretch, Hard). Text you paste in opens in the same reader, glossed automatically (see "Reading
 any text" below), and so do books: open an EPUB or a text file (UTF-8 or GB18030) and it is read a
 page at a time, remembering your place (`site/books.js`, kept in the browser's IndexedDB). On the
 live site, the **Read in HanziHome** button (drag it to the bookmarks bar from the Reader page)

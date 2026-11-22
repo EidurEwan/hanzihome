@@ -984,7 +984,8 @@ const HUBS = [
     ['Phonetic sets', '/phonetic-sets'], ['Sounds', '/sounds'],
   ] },
   // (a round of practice has the page to itself: the tabs are for the pages you choose from)
-  { nav: '/practice', label: 'Practice', tabs: [
+  // (its own page already has a tile for each, so the tabs are only for moving between them)
+  { nav: '/practice', label: 'Practice', bare: /^\/practice$/, tabs: [
     ['All', '/practice', /^\/practice$/],
     ['Grammar', '/grammar', /^\/grammar(\/(?!daily$)[^/]+)?$/], ['Phrases', '/phrases', /^\/phrases(\/[^/]+)?$/],
     ['Tones', '/tones', /^\/tones$/], ['Look-alikes', '/lookalikes', /^\/lookalikes$/], ['Weak spots', '/weak', /^\/weak$/],
@@ -995,7 +996,8 @@ const hubTabHit = ([, to, re], path) => (re ? re.test(path) : path === to || pat
 const hubOf = path => HUBS.find(h => h.tabs.some(t => hubTabHit(t, path)));
 /* the tabs for this page: drawn outside #app, so a page redrawing itself keeps them */
 function paintHub(path) {
-  const box = document.getElementById('hub-tabs'), hub = hubOf(path);
+  const box = document.getElementById('hub-tabs'), found = hubOf(path);
+  const hub = found && !(found.bare && found.bare.test(path)) ? found : null;
   box.hidden = !hub;
   document.body.classList.toggle('in-hub', !!hub);
   if (!hub) { box.innerHTML = ''; return; }
@@ -1013,16 +1015,29 @@ function markNav(path) {
   if (hub) path = hub.nav;
   path = path.replace(/^\/(grammar|phrases|tones|lookalikes|weak)(\/|$)/, '/practice/')
     .replace(/^\/(lessons|learned|reviews|calibrate|queue)(\/|$)/, '/study/')
-    .replace(/^\/(character|search)(\/|$)/, '/explore/');
+    .replace(/^\/(character|search)(\/|$)/, '/explore/')
+    .replace(/^\/word(\/|$)/, '/words/');
   document.querySelectorAll('.sidebar nav a').forEach(a => {
     const t = a.dataset.nav;
-    a.classList.toggle('on', path === t || (t !== '/' && path.startsWith(t)));
+    const on = path === t || (t !== '/' && path.startsWith(t + '/'));
+    a.classList.toggle('on', on);
+    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   const due = Store.due().length;
   const b = document.getElementById('due-badge');
   if (String(due) !== b.textContent && !b.hidden && due) Motion.play(b, 'm-bump');
   b.hidden = !due; b.textContent = due;
-  // the player card at the top of the drawer, as Boxes has it (a number that changes bumps)
+  b.setAttribute('aria-hidden', 'true');
+  document.getElementById('due-sr').textContent = due ? `, ${due} review${due === 1 ? '' : 's'} due` : '';
+  paintProfile();
+}
+
+/* The profile header at the top of the drawer: the HSK level you are working through (the
+   first one not yet complete), how many of its characters you know, and a bar for it; then
+   the streak and how many characters and words you know. A number that changes bumps. The HSK lists load on
+   first use, and the card fills in when they arrive. */
+let _pfLoading = false;
+function paintProfile() {
   const set = (id, v) => {
     const el = document.getElementById(id);
     if (!el || el.textContent === String(v)) return;
@@ -1033,7 +1048,22 @@ function markNav(path) {
   set('pc-streak', num(streak().weeks));
   set('pc-learned', num(Store.chars('learned').length));
   set('pc-words', num(Store.words('learned').length));
-  set('pc-title', due ? `${due} review${due === 1 ? '' : 's'} waiting` : 'Your progress');
+
+  if (!HZ.hskChars) {
+    if (!_pfLoading) { _pfLoading = true; optional(need.hskChars()).then(() => { if (HZ.hskChars) paintProfile(); }); }
+    return;
+  }
+  const levels = hskStanding();
+  if (!levels.length) return;
+  const cur = levels.find(l => l.done < l.total), lv = cur || levels[levels.length - 1];
+  const pct = lv.total ? Math.floor(lv.done / lv.total * 100) : 0;
+  set('pf-title', cur ? `HSK ${lv.level} learner` : `HSK ${lv.level} complete`);
+  set('pf-sub', `${num(lv.done)} / ${num(lv.total)}`);
+  document.getElementById('pf-fill').style.transform = `translateX(${pct - 100}%)`;
+  const bar = document.getElementById('pf-bar');
+  bar.setAttribute('aria-valuenow', pct);
+  bar.setAttribute('aria-valuetext', `${lv.done} of ${lv.total} HSK ${lv.level} characters`);
+  document.getElementById('pf-level').setAttribute('href', '#/hsk-' + lv.level);
 }
 
 /* ============================ search ============================ */
@@ -1210,14 +1240,16 @@ function chip(c, rank) {
     ${rank ? `<span class="r">#${rank}</span>` : ''}</a>`;
 }
 
+/* a share of text, as few digits as say it: 0%, <0.1%, 0.4%, 12% */
+const pctText = pct => pct <= 0 ? '0' : pct < 0.05 ? '<0.1' : pct < 10 ? (Math.round(pct * 10) / 10).toString() : Math.round(pct).toString();
 function donut(pct) {
   const r = 34, C = 2 * Math.PI * r, on = Math.min(100, pct) / 100 * C;
   return `<svg width="88" height="88" viewBox="0 0 88 88" role="img"
-    aria-label="${pct.toFixed(2)} percent of running text">
+    aria-label="${esc(pctText(pct))} percent of running text">
     <circle cx="44" cy="44" r="${r}" fill="none" stroke="var(--line)" stroke-width="9"/>
     <circle cx="44" cy="44" r="${r}" fill="none" stroke="var(--green)" stroke-width="9"
       stroke-linecap="round" stroke-dasharray="${on} ${C}" transform="rotate(-90 44 44)"/>
-    <text class="pctlab" x="44" y="43" text-anchor="middle">${pct.toFixed(2)}%</text>
+    <text class="pctlab" x="44" y="43" text-anchor="middle">${esc(pctText(pct))}%</text>
     <text class="sub" x="44" y="55" text-anchor="middle">OF TEXT</text></svg>`;
 }
 
@@ -1232,10 +1264,14 @@ function pager(base, page, total, per) {
 
 /* ---- the progress cards: Today's (study.js drawStudy) ---- */
 
+/* below this many known characters the coverage card asks what you know already; from
+   it on, it sends you to read (the graded stories start making sense around here) */
+const READ_FROM = 300;
 function railHtml() {
-  const d = Store.load();
   const learned = Store.chars('learned');
   const cov = coverage(learned);
+  // with a learning path on, the path already chooses what comes next: these are extras
+  const cfg = Store.cfg(), extras = !!(cfg.path && cfg.path !== 'off');
   return `
   <section class="card">
     <h2>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h2>
@@ -1243,14 +1279,15 @@ function railHtml() {
       <div><p class="small muted" style="margin-bottom:8px">The top 500 characters alone
         cover about ${topCoverage(500).toFixed(0)}% of running text. Take lessons, or mark
         characters you know as Known, to watch this climb.</p>
-        <a class="btn" href="#/reader">Practice your reading</a></div></div>
-    <div class="bar" style="margin-top:12px"><i style="width:${Math.min(100, learned.length / d.goal * 100)}%"></i></div>
-    <p class="small muted">${num(learned.length)} / ${num(d.goal)} characters known ·
-      <a href="#/frequency">Mark the ones you already know</a></p>
+        ${learned.length < READ_FROM
+          ? '<a class="btn" href="#/frequency">Mark the ones you already know</a>'
+          : '<a class="btn" href="#/reader">Practice your reading</a>'}</div></div>
   </section>
   <section class="card">
     <div class="rail-head">
-      <h2>Study next <i class="info-i" title="Characters you have not marked yet, easiest or highest-value first">i</i></h2>
+      <h2>${extras ? 'Add extras' : 'Study next'} <i class="info-i" tabindex="0" title="${extras
+        ? 'Not in your learning path, but worth learning soon, highest-value first. Add puts one in your lesson queue.'
+        : 'Characters you have not marked yet, easiest or highest-value first'}">i</i></h2>
       <span class="rail-pager"><b id="sn-count"></b>
         <button id="sn-prev" aria-label="Previous suggestions">&lsaquo;</button>
         <button id="sn-next" aria-label="More suggestions">&rsaquo;</button></span>
@@ -1481,24 +1518,71 @@ function wireTileBoard(id, chars, opts) {
 
 /* ============================ the streak ============================ */
 
-/* the week streak card: Today's (study.js drawStudy) */
+/* Today's streak: a year of study as a heatmap, a square a day, Monday at the top of each
+   week's column, the colour as deep as how much you studied (against your own best day).
+   The days of the streak you're on glow, today waits, ringed, until you study; a square
+   pointed at says its day. Over it, the streak in days, the longest, and the year's totals.
+   On a phone it shows the last twenty weeks. The menu's progress card has the week streak. */
+const HM_WEEKS = 53, HM_PHONE = 20;
+const hmKey = x => x.toISOString().slice(0, 10);
+
+/* the streak in days: back from today (or from yesterday, while today can still keep it) */
+function dayStreak(days) {
+  const x = new Date();
+  if (!days[hmKey(x)]) x.setDate(x.getDate() - 1);
+  let n = 0;
+  while (days[hmKey(x)] && n < 3660) { n++; x.setDate(x.getDate() - 1); }
+  return n;
+}
+
 function streakCard() {
-  const st = streak(), learned = Store.chars('learned'), d = Store.load();
-  const waiting = Object.keys(d.items).filter(k => d.items[k].kind === 'char' && !(d.items[k].stage >= 1));
-  return `<section class="card streak">
-      <div class="big"><b>${st.weeks}</b><u>Week<br>streak
-        <em>Best ${st.best}</em></u></div>
-      <div class="week">${st.week.map((w, i) =>
-        `<div><i class="${w.on ? 'on' : ''} ${w.today ? 'today' : ''}"></i>${'MTWTFSS'[i]}</div>`).join('')}</div>
-      <div class="small">
-        <div><span class="dot b"></span><b>${waiting.length}</b> waiting for lessons</div>
-        <div><span class="dot g"></span><b>${learned.length}</b> known</div>
-        <div class="minitiles">
-          ${learned.slice(0, 8).map(c => `<a class="tile learned" title="${esc(c)}"
-              href="#/character/${encodeURIComponent(c)}"><span class="g">${esc(c)}</span></a>`).join('')
-            || '<span class="muted small">Nothing marked yet</span>'}
-          ${learned.length > 8 ? `<span class="plusn">+${learned.length - 8}</span>` : ''}</div>
+  const days = Store.load().days, now = new Date(), dow = (now.getDay() + 6) % 7;
+  const todayKey = hmKey(now), studiedToday = !!days[todayKey];
+  // the first Monday shown
+  const start = new Date(now); start.setDate(now.getDate() - dow - 7 * (HM_WEEKS - 1));
+  const cells = [];
+  for (let i = 0; i < HM_WEEKS * 7; i++) {
+    const x = new Date(start); x.setDate(start.getDate() + i);
+    cells.push({ x, key: hmKey(x), c: +days[hmKey(x)] || 0, future: x > now && hmKey(x) !== todayKey });
+  }
+  const shown = cells.filter(d => !d.future), top = Math.max(1, ...shown.map(d => d.c));
+  const level = c => !c ? 0 : Math.min(4, Math.ceil(4 * c / top));
+  // the streak: the days in it, to glow
+  const run = dayStreak(days), runFrom = new Date(now);
+  runFrom.setDate(now.getDate() - (studiedToday ? run - 1 : run));
+  const inRun = d => run && d.c && d.x >= new Date(runFrom.toDateString()) && !d.future;
+  // the longest streak and the year's totals, from what is shown
+  let best = 0, cur = 0;
+  for (const d of shown) { cur = d.c ? cur + 1 : 0; best = Math.max(best, cur); }
+  const active = shown.filter(d => d.c).length, total = shown.reduce((a, d) => a + d.c, 0);
+  const fmt = x => x.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  const weeks = Array.from({ length: HM_WEEKS }, (_, w) => cells.slice(7 * w, 7 * w + 7));
+  const month = w => {
+    const first = weeks[w][0].x, prev = w ? weeks[w - 1][0].x : null;
+    const next = weeks[w + 2] && weeks[w + 2][0].x;
+    // (the first column only when its month runs on, so two labels don't collide)
+    if (!prev) return next && next.getMonth() === first.getMonth() ? first.toLocaleDateString('en-GB', { month: 'short' }) : '';
+    return first.getMonth() !== prev.getMonth() ? first.toLocaleDateString('en-GB', { month: 'short' }) : '';
+  };
+  const say = run ? (studiedToday ? 'Kept today. See you tomorrow.' : 'Study today to keep it going.') : studiedToday ? 'A new streak starts today.' : 'Study today to start one.';
+  return `<section class="card hm-card${run ? ' live' : ''}" aria-labelledby="hm-h">
+      <div class="hm-top">
+        <div class="hm-streak"><span class="hm-flame${run ? '' : ' out'}" aria-hidden="true"></span>
+          <div><h2 class="hm-h" id="hm-h"><b>${num(run)}</b> day streak</h2><p class="hm-say">${say}</p></div></div>
+        <dl class="hm-stats">
+          <div><dt>Longest</dt><dd>${num(Math.max(best, run))} <small>day${Math.max(best, run) === 1 ? '' : 's'}</small></dd></div>
+          <div><dt>Days studied</dt><dd>${num(active)}</dd></div>
+          <div><dt>Studied</dt><dd>${num(total)}</dd></div>
+        </dl>
       </div>
+      <div class="hm-map" role="img" aria-label="${active} days studied in the last ${HM_WEEKS} weeks; a ${run}-day streak">
+        <div class="hm-dows" aria-hidden="true"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
+        <div class="hm-weeks" style="--weeks:${HM_WEEKS}" aria-hidden="true">${weeks.map((wk, w) => `<div class="hm-wk${w < HM_WEEKS - HM_PHONE ? ' old' : ''}" style="--w:${w}">
+          <span class="hm-mon">${month(w)}</span>${wk.map((d, r) => `<i class="l${level(d.c)}${d.future ? ' fut' : ''}${inRun(d) ? ' run' : ''}${d.key === todayKey ? ' today' : ''}"
+            style="--r:${r}" data-tip="${d.future ? '' : `${fmt(d.x)} · ${d.c ? `${num(d.c)} studied` : 'nothing'}`}"></i>`).join('')}</div>`).join('')}</div>
+      </div>
+      <div class="hm-foot" aria-hidden="true"><span>Less</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>More</span>
+        <span class="hm-key-run"><i class="l3 run"></i> your streak</span></div>
     </section>`;
 }
 
@@ -1969,13 +2053,15 @@ async function pageReader() {
   const byLevel = {};
   HZ.stories.forEach(st => (byLevel[st.l] = byLevel[st.l] || []).push(st));
 
+  const done = new Set(storiesDone());
   const card = st => {
-    const chars = st.c.map(r => r[0]);   // precomputed at build time; st.t is gone
+    const r = readability(st);
     return `<a class="story" href="#/reader/${st.id}">
-      <span class="story-tag">${esc(st.tag)}</span>
+      <span class="story-tag">${esc(st.tag)}${done.has(st.id) ? ' <b class="story-done">✓ Read</b>' : ''}</span>
       <span class="story-zh han">${zhOne(st.zh)}</span>
       <span class="story-en">${esc(st.en)}</span>
-      <span class="story-stat">${trackedIn(chars)} of ${chars.length} characters tracked</span>
+      <span class="story-stat"><i class="rd-bar rd-${r.band}"><i style="width:${Math.round(r.share * 100)}%"></i></i>
+        ${Math.round(r.share * 100)}% of words known · <b class="rd-${r.band}">${r.label}</b></span>
     </a>`;
   };
 
@@ -2070,7 +2156,8 @@ async function pageBook(id, n) {
   const link = (k, label) => k >= 0 && k < book.pages.length
     ? `<a class="btn quiet" href="#/reader/book/${esc(id)}/${k}">${label}</a>` : `<span class="btn quiet" aria-disabled="true">${label}</span>`;
   showStory(st, 'Back to the reader', `<p class="book-nav">${link(at - 1, '← Previous page')}
-    <span class="small muted">${at + 1} / ${book.pages.length}</span>${link(at + 1, 'Next page →')}</p>`);
+    <span class="small muted">${at + 1} / ${book.pages.length}</span>${link(at + 1, 'Next page →')}</p>`,
+    { kind: 'book', next: at + 1 < book.pages.length ? `#/reader/book/${encodeURIComponent(id)}/${at + 1}` : '' });
   Books.seen(id, at).catch(() => {});
 }
 
@@ -2136,7 +2223,7 @@ async function pageStory(id) {
     return;
   }
   storyOpened(id);
-  showStory(st, 'Back to stories');
+  showStory(st, 'Back to stories', '', { kind: 'story', id });
 }
 
 /* Which stories have been opened, on this device: the next one offered is one that hasn't. */
@@ -2148,6 +2235,37 @@ function storyOpened(id) {
   const a = storiesOpened();
   if (a.includes(id)) return;
   try { localStorage.setItem(OPENED_KEY, JSON.stringify(a.concat(id))); } catch (e) { /* this visit only */ }
+}
+/* ...and which were read to the end (the Done button under the text) */
+const DONE_KEY = 'hanzihome.storiesDone';
+function storiesDone() {
+  try { const a = JSON.parse(localStorage.getItem(DONE_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function storyDone(id) {
+  const a = storiesDone();
+  if (a.includes(id)) return;
+  try { localStorage.setItem(DONE_KEY, JSON.stringify(a.concat(id))); } catch (e) { /* this visit only */ }
+}
+
+/* How readable a text is for you: the share of its running words you know (a word known
+   as a word, or every character of it known), counting each occurrence, since a word met ten
+   times matters ten times. Also the distinct words in each state, for the filters.
+   -> {share, label, band, known, learning, fresh} */
+function readability(st) {
+  let total = 0, good = 0;
+  const seen = { learned: new Set(), learning: new Set(), new: new Set() };
+  for (const par of st.seg) for (const tk of par) {
+    if (typeof tk !== 'string') continue;
+    const w = st.g[tk][0], s = wordState(w);
+    if (!s) continue;
+    total++;
+    if (s === 'learned') good++;
+    seen[s].add(w);
+  }
+  const share = total ? good / total : 0;
+  const [label, band] = share >= 0.95 ? ['Easy', 'easy'] : share >= 0.85 ? ['Comfortable', 'ok']
+    : share >= 0.7 ? ['A stretch', 'stretch'] : share > 0 ? ['Hard', 'hard'] : ['All new', 'hard'];
+  return { share, label, band, known: seen.learned.size, learning: seen.learning.size, fresh: seen.new.size };
 }
 
 /* A story to read next, after a session or when today's study is done: the hardest one you
@@ -2215,7 +2333,7 @@ async function pageText() {
     st.zh = [...first].length > 18 ? [...first].slice(0, 18).join('') + '…' : first;
     st.en = `Your text · ${num(st.n)} characters`;
   }
-  showStory(st, 'Back to the reader to edit or paste new text');
+  showStory(st, 'Back to the reader to edit or paste new text', '', { kind: 'text' });
 }
 
 /* Desktop app only: read the screen, which opens the result at #/reader/text.
@@ -2230,11 +2348,25 @@ function pageScreen() {
   window.hanzihomeDesktop.readScreen();
 }
 
-function showStory(st, back, nav) {
+/* What is being read (opts.kind: 'story' with its id, 'book' with the next page's href, or
+   'text'), the words looked up in it, and the sentences translated so far. */
+let _readCtx = {}, _looked = new Map(), _sentTr = {};
+
+/* the reading view's own settings, kept in this browser: text size and focus mode */
+const READ_SIZE_KEY = 'hanzihome.readSize', READ_FOCUS_KEY = 'hanzihome.readFocus';
+const READ_SIZES = [16, 18, 20, 22, 25, 28, 32, 36];
+const readPref = (k, dflt) => { try { const v = localStorage.getItem(k); return v === null ? dflt : JSON.parse(v); } catch (e) { return dflt; } };
+const setReadPref = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* this visit only */ } };
+
+function showStory(st, back, nav, opts) {
   _story = st;
+  _readCtx = opts || {};
+  _looked = new Map();
+  _sentTr = {};
+  const focus = !!readPref(READ_FOCUS_KEY, false);
   app.innerHTML = `
     <p class="crumb"><a href="#/reader">← ${esc(back)}</a></p>
-    <div class="readlayout">
+    <div class="readlayout${focus ? ' focus' : ''}" id="readlayout">
       <aside class="readside">
         <section class="card" id="read-stats-card"></section>
         <section class="card readlist">
@@ -2246,10 +2378,21 @@ function showStory(st, back, nav) {
         </section>
       </aside>
       <div class="readmain">
+        <div class="read-tools" role="toolbar" aria-label="Reading options">
+          <span class="seg read-size">
+            <button type="button" data-size="-1" aria-label="Smaller text" title="Smaller text">A−</button>
+            <button type="button" data-size="1" aria-label="Larger text" title="Larger text">A+</button>
+          </span>
+          <button type="button" class="btn quiet read-focus-btn" id="read-focus" aria-pressed="${focus}"
+            title="Hide the side panel and keep the text to a comfortable width">${focus ? 'Exit focus' : 'Focus'}</button>
+        </div>
         <h1 class="storytitle han">${zhOne(st.zh)}</h1>
         <p class="storysub">${esc(st.en)}</p>
         ${nav || ''}
         <div class="reading-pane" id="pane"></div>
+        <section class="card read-done" id="read-done">
+          <button type="button" class="btn" id="read-finish">${_readCtx.kind === 'book' ? 'Done with this page' : 'I’ve finished reading'}</button>
+        </section>
         ${nav || ''}
       </div>
     </div>`;
@@ -2261,22 +2404,68 @@ function showStory(st, back, nav) {
     document.querySelectorAll('#read-tabs button').forEach(x => x.classList.toggle('on', x === b));
     paintReadList();
   });
+  applyReadSize();
+  document.querySelector('.read-size').addEventListener('click', e => {
+    const b = e.target.closest('button[data-size]');
+    if (!b) return;
+    const now = readPref(READ_SIZE_KEY, 20), i = READ_SIZES.indexOf(now);
+    const at = Math.max(0, Math.min(READ_SIZES.length - 1, (i < 0 ? 2 : i) + Number(b.dataset.size)));
+    setReadPref(READ_SIZE_KEY, READ_SIZES[at]);
+    applyReadSize();
+  });
+  document.getElementById('read-focus').addEventListener('click', e => {
+    const lay = document.getElementById('readlayout'), on = !lay.classList.contains('focus');
+    lay.classList.toggle('focus', on);
+    e.currentTarget.textContent = on ? 'Exit focus' : 'Focus';
+    e.currentTarget.setAttribute('aria-pressed', on);
+    setReadPref(READ_FOCUS_KEY, on);
+  });
+  document.getElementById('read-finish').addEventListener('click', paintReadDone);
+  document.getElementById('pane').addEventListener('click', e => {
+    const x = e.target.closest('[data-trclose]');
+    if (x) { delete _sentTr[x.dataset.trclose]; paintStory(); }
+  });
   paintStory();
 }
 
-/* the text itself, one span per word. Each token is a key into the story's
-   glossary (st.g), which holds the meaning that word has in this story. */
+function applyReadSize() {
+  const lay = document.getElementById('readlayout'), px = readPref(READ_SIZE_KEY, 20);
+  if (lay) lay.style.setProperty('--read-size', (READ_SIZES.includes(px) ? px : 20) + 'px');
+  document.querySelectorAll('.read-size button').forEach(b => {
+    b.disabled = b.dataset.size === '-1' ? px <= READ_SIZES[0] : px >= READ_SIZES[READ_SIZES.length - 1];
+  });
+}
+
+/* the text itself, one span per word, each sentence in a .sent (so a word's sentence is the
+   one it is really in, and a sentence can be read aloud or translated). Each token is a key
+   into the story's glossary (st.g), which holds the meaning that word has in this story. */
+const SENT_END = /[。！？!?；;…][”’」』）)》"'\s]*$/, SENT_CLOSE = /^[”’」』）)》"'\s]+$/;
 function paintStory() {
   const st = _story, pane = document.getElementById('pane');
   if (!st || !pane) return;
   // the word the popup is on is drawn afresh too: keep the popup on its new copy
   const at = _wpAnchor && pane.contains(_wpAnchor) ? [...pane.querySelectorAll('.w')].indexOf(_wpAnchor) : -1;
-  pane.innerHTML = st.seg.map(par => '<p>' + par.map(tk => {
-    if (tk.br) return '<br>';               // a new speaker starts a new line
-    if (typeof tk !== 'string') return esc(tk.s);
-    const w = st.g[tk][0];
-    return `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${zhOne(w)}</span>`;
-  }).join('') + '</p>').join('');
+  let si = 0;
+  pane.innerHTML = st.seg.map(par => {
+    const first = si;
+    let html = '', open = false, ended = false;
+    const start = () => { html += `<span class="sent${_sentTr[si] ? ' on' : ''}" data-si="${si}">`; open = true; };
+    const close = () => { if (open) { html += '</span>'; open = false; si++; } };
+    for (const tk of par) {
+      if (tk.br) { html += '<br>'; continue; }            // a new speaker starts a new line
+      const s = typeof tk === 'string' ? null : tk.s;
+      // a closing quote after 。 still belongs to that sentence
+      if (ended && !(s !== null && SENT_CLOSE.test(s))) { close(); ended = false; }
+      if (!open) start();
+      if (s !== null) { html += esc(s); if (SENT_END.test(s.trim())) ended = true; continue; }
+      const w = st.g[tk][0];
+      html += `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${zhOne(w)}</span>`;
+    }
+    close();
+    const cards = [];
+    for (let k = first; k < si; k++) if (_sentTr[k]) cards.push(sentTrCard(k));
+    return '<p>' + html + '</p>' + cards.join('');
+  }).join('');
   pane.querySelectorAll('.w').forEach(el => {
     el.addEventListener('mouseenter', () => showWordPop(el));
     el.addEventListener('mouseleave', () => { if (!isTouch()) hideWordPop(); });
@@ -2292,24 +2481,141 @@ function paintStatsCard() {
   if (!st || !box) return;
   const chars = st.c.map(r => r[0]);
   const learned = chars.filter(c => Store.status(c) === 'learned').length;
-  const fresh = chars.length - learned;
+  const r = readability(st);
   const pane = document.getElementById('pane');
   const on = k => !pane || !pane.classList.contains('hide-' + k);
+  const pl = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   box.innerHTML = `
     <h3>Characters known</h3>
     <p class="bigcount"><b>${learned}</b> / ${chars.length}</p>
     <div class="bar"><i style="width:${chars.length ? learned / chars.length * 100 : 0}%"></i></div>
+    <p class="small read-level">${Math.round(r.share * 100)}% of the words in the text are ones you know:
+      <b class="rd-${r.band}">${r.label}</b></p>
     <div class="readfilters">
       <label><input type="checkbox" data-f="learned" ${on('learned') ? 'checked' : ''}>
-        <i class="sw learned"></i> ${learned} known</label>
+        <i class="sw learned"></i> ${pl(r.known, 'known word', 'known words')}</label>
       <label><input type="checkbox" data-f="learning" ${on('learning') ? 'checked' : ''}>
-        <i class="sw learning"></i> partly known words</label>
+        <i class="sw learning"></i> ${pl(r.learning, 'partly known word', 'partly known words')}</label>
       <label><input type="checkbox" data-f="new" ${on('new') ? 'checked' : ''}>
-        <i class="sw new"></i> ${fresh} unknown</label>
+        <i class="sw new"></i> ${pl(r.fresh, 'new word', 'new words')}</label>
     </div>`;
   box.querySelectorAll('input[data-f]').forEach(cb => cb.addEventListener('change', () => {
     document.getElementById('pane').classList.toggle('hide-' + cb.dataset.f, !cb.checked);
   }));
+}
+
+/* ---- a sentence: read aloud, or translated under its paragraph ---- */
+const sentText = si => { const el = document.querySelector(`#pane .sent[data-si="${si}"]`); return el ? el.textContent.trim() : ''; };
+const canSpeak = () => !!window.speechSynthesis;
+
+function saySentence(si) {
+  const t = sentText(si);
+  if (t && canSpeak()) Sound.speak(t, Store.cfg());
+}
+
+const _trCache = new Map();    // sentence -> its result, for this visit
+async function translateSentence(si) {
+  const text = sentText(si);
+  if (!text) return;
+  hideWordPopNow();
+  if (_trCache.has(text)) { _sentTr[si] = _trCache.get(text); paintStory(); return; }
+  _sentTr[si] = { busy: true };
+  paintStory();
+  const story = _story;
+  let r;
+  if (trKey()) {
+    try { r = await translateWithGemini(text, 'zh-en'); }
+    catch (e) {
+      const why = trError(e);
+      r = await translateOffline(text, 'zh-en').catch(() => ({ source: 'offline', grammar: [] }));
+      r.msg = why.msg.replace(/ Here is the offline reading\.$/, '') + ' This is the offline reading.';
+    }
+  } else {
+    r = await translateOffline(text, 'zh-en').catch(() => ({ source: 'offline', grammar: [] }));
+  }
+  if (r.source === 'api' || !r.msg) _trCache.set(text, r);
+  if (_story !== story || !_sentTr[si]) return;      // moved on, or closed meanwhile
+  _sentTr[si] = r;
+  paintStory();
+}
+
+function sentTrCard(si) {
+  const r = _sentTr[si];
+  const close = `<button type="button" class="sent-tr-x" data-trclose="${si}" aria-label="Close the translation">×</button>`;
+  if (r.busy) return `<div class="sent-tr" aria-live="polite">${close}<p class="muted small">Translating…</p></div>`;
+  const grammar = (r.grammar || []).slice(0, 4).map(g => `<li><b>${esc(g.title)}</b>${g.explanation ? ` — ${esc(g.explanation)}` : ''}</li>`).join('');
+  const body = r.source === 'api'
+    ? `<p class="sent-tr-en">${esc(r.translation)}</p>${r.structure ? `<p class="small muted han">${esc(r.structure)}</p>` : ''}`
+    : `<p class="sent-tr-en offline">${esc(r.gloss || '')}</p>`;
+  const foot = r.source === 'api'
+    ? 'Translated by Google’s Gemini with your key.'
+    : r.msg ? esc(r.msg)
+    : 'Word by word, worked out offline. <a href="#/settings">Add a Google AI Studio key</a> (Settings → Translator) for a full translation.';
+  return `<div class="sent-tr" aria-live="polite">${close}${body}
+    ${grammar ? `<ul class="sent-tr-g small">${grammar}</ul>` : ''}
+    ${r.notes ? `<p class="small muted">${esc(r.notes)}</p>` : ''}
+    <p class="small muted sent-tr-foot">${foot}</p></div>`;
+}
+
+/* ---- finished: add what you looked up, mark the rest known, read the next one ---- */
+function paintReadDone() {
+  const st = _story, box = document.getElementById('read-done');
+  if (!st || !box) return;
+  if (_readCtx.kind === 'story') storyDone(_readCtx.id);
+  const looked = [..._looked.values()].filter(x => !Store.item(learnKey(x.w)));
+  const lookedKeys = new Set([..._looked.keys()]);
+  // the words you met without looking up, not known yet and not already in your lessons
+  const rest = new Map();
+  for (const par of st.seg) for (const tk of par) {
+    if (typeof tk !== 'string') continue;
+    const [w] = st.g[tk], key = learnKey(w), s = wordState(w);
+    if (!s || s === 'learned' || lookedKeys.has(key) || rest.has(key) || Store.item(key)) continue;
+    rest.set(key, w);
+  }
+  const chip = w => `<span class="chip"><span class="g han">${zhOne(w)}</span></span>`;
+  const next = _readCtx.kind === 'story' ? storyNextCard()
+    : _readCtx.kind === 'book' ? (_readCtx.next ? `<p><a class="btn" href="${esc(_readCtx.next)}">Next page →</a></p>` : '<p class="muted small">That was the last page.</p>')
+    : '<p><a class="btn quiet" href="#/reader">Read something else</a></p>';
+  box.innerHTML = `
+    <h2 class="caps">${_readCtx.kind === 'book' ? 'Page done' : 'Well read'}</h2>
+    ${looked.length ? `<div class="rd-step">
+        <p class="small">You looked up ${looked.length === 1 ? 'one word' : looked.length + ' words'} you aren’t learning yet. Add them to your lessons, with the sentence you met them in:</p>
+        <div class="rd-chips">${looked.map((x, i) => `<label class="chip"><input type="checkbox" data-lk="${i}" checked>
+          <span class="g han">${zhOne(x.w)}</span> <span class="r">${esc(x.d)}</span></label>`).join('')}</div>
+        <p><button type="button" class="btn" id="rd-add">Add to lessons</button> <span class="small" id="rd-add-msg"></span></p>
+      </div>` : ''}
+    ${rest.size ? `<div class="rd-step">
+        <p class="small">${rest.size === 1 ? 'One word' : rest.size + ' words'} you didn’t look up ${rest.size === 1 ? 'is' : 'are'} not marked known yet. If you understood ${rest.size === 1 ? 'it' : 'them'}, mark ${rest.size === 1 ? 'it' : 'them'} known (${rest.size === 1 ? 'it goes' : 'they go'} into your reviews, a month out):</p>
+        <div class="rd-chips">${[...rest.values()].slice(0, 40).map(chip).join('')}${rest.size > 40 ? ` <span class="small muted">and ${rest.size - 40} more</span>` : ''}</div>
+        <p><button type="button" class="btn quiet" id="rd-known">Mark ${rest.size === 1 ? 'it' : 'all ' + rest.size} known</button></p>
+      </div>` : ''}
+    ${!looked.length && !rest.size ? '<p class="small muted">Every word here is one you know or are learning.</p>' : ''}
+    ${next}`;
+  if (_readCtx.kind === 'story') fillStoryNext();
+  Motion.play(box, 'm-rise');
+
+  const add = document.getElementById('rd-add');
+  if (add) add.addEventListener('click', async () => {
+    const picked = [...box.querySelectorAll('input[data-lk]:checked')].map(cb => looked[Number(cb.dataset.lk)]);
+    if (!picked.length) return;
+    add.disabled = true;
+    for (const x of picked) await learnFromReader(x.w, x.p, x.d, x.sentence);
+    document.getElementById('rd-add-msg').textContent = `✓ ${picked.length === 1 ? 'Added' : picked.length + ' added'} to your lessons`;
+    paintStory();
+    markNav(currentPath());
+  });
+  const known = document.getElementById('rd-known');
+  if (known) known.addEventListener('click', () => {
+    for (const [key, w] of rest) {
+      const han = [...key].filter(c => isHan(c) && HZ.index[c]);
+      if ([...w].filter(isHan).length > 1) Store.setWStatus(key, 'learned');
+      else if (han.length) Store.setStatus(han[0], 'learned');
+    }
+    known.disabled = true;
+    known.textContent = '✓ Marked known';
+    paintStory();
+    markNav(currentPath());
+  });
 }
 
 let _cfilter = 'all';
@@ -2332,7 +2638,7 @@ function vocabList(st) {
   if (!st.v.length) return '<p class="empty small">No multi-character words here.</p>';
   return '<h4 class="paneltitle">Vocabulary</h4>' + st.v.map(r => {
     const state = wordState(r[0]);
-    return `<a class="vrow ${state}" href="#/character/${encodeURIComponent(r[0][0])}">
+    return `<a class="vrow ${state}" href="${[...r[0]].filter(isHan).length > 1 ? '#/word/' + encodeURIComponent(learnKey(r[0])) : '#/character/' + encodeURIComponent(r[0][0])}">
       <span class="vw han">${zhOne(r[0])}</span>
       <span class="vp">${esc(r[1] || '')}</span>
       <span class="vd">${esc(r[2] || '')}</span></a>`;
@@ -2383,6 +2689,17 @@ function wordPop() {
   _wpEl.addEventListener('mouseenter', () => clearTimeout(_wpHide));
   _wpEl.addEventListener('mouseleave', hideWordPop);
   _wpEl.addEventListener('click', e => {
+    if (e.target.closest('button[data-say]') && _wpAnchor) {
+      const [w, p] = _story.g[_wpAnchor.dataset.k];
+      Sound.say(w, true, p);
+      return;
+    }
+    const sb = e.target.closest('button[data-sent]');
+    if (sb && _wpAnchor) {
+      const s = _wpAnchor.closest('.sent');
+      if (s) (sb.dataset.sent === 'say' ? saySentence : translateSentence)(s.dataset.si);
+      return;
+    }
     const l = e.target.closest('button[data-learn]');
     if (l && _wpAnchor && !Store.item(learnKey(l.dataset.learn))) {
       const a = _wpAnchor, [w, p, d] = _story.g[a.dataset.k];
@@ -2413,12 +2730,18 @@ function wordPop() {
 
 let _wpAnchor = null;
 
+let _lookTimer = 0;
 function showWordPop(el) {
   clearTimeout(_wpHide);
   const pop = wordPop();
   _wpAnchor = el;
   // pasted text may also name other likely senses (extra.alt) when context can't decide
   const [w, p, d, parts, extra] = _story.g[el.dataset.k];
+  // a word counts as looked up once its popup has stayed open a moment (a pointer passing
+  // over it doesn't), or at once when tapped: the Done panel offers those for lessons
+  clearTimeout(_lookTimer);
+  const look = () => { const k = learnKey(w); if (!_looked.has(k)) _looked.set(k, { w, p, d, sentence: sentenceAround(el, w) }); };
+  if (isTouch()) look(); else _lookTimer = setTimeout(look, 700);
   const alt = (extra && extra.alt) || [];
   const han = [...w].filter(isHan);
   const multi = han.length > 1;
@@ -2442,12 +2765,16 @@ function showWordPop(el) {
   };
   pop.innerHTML = `
     <div class="wp-head"><span class="han">${zh(w)}</span>
-      <b>${esc(p)}</b><span class="wp-d">${esc(d)}</span></div>
+      <b>${esc(p)}</b><button type="button" class="wp-say" data-say aria-label="Say ${esc(w)}" title="Say it">🔊</button>
+      <span class="wp-d">${esc(d)}</span></div>
     ${alt.map(([ap, ad]) => `<p class="wp-alt">or: <b>${esc(ap)}</b> ${esc(ad)}</p>`).join('')}
     <div class="wp-acts seg3">${lessons}${choice}</div>
     <p class="wp-learn">${multi ? `<a class="wp-card" href="#/word/${encodeURIComponent(key)}">Word card →</a>`
       : han.length === 1 ? `<a class="wp-card" href="#/character/${encodeURIComponent(han[0])}">Character page →</a>` : ''}</p>
-    ${multi ? han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('') : ''}`;
+    ${multi ? han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('') : ''}
+    ${el.closest('.sent') ? `<div class="wp-sent"><span class="small muted">Sentence:</span>
+      ${canSpeak() ? '<button type="button" data-sent="say">🔊 Read aloud</button>' : ''}
+      <button type="button" data-sent="tr">Translate</button></div>` : ''}`;
   pop.hidden = false;
 
   const r = el.getBoundingClientRect();
@@ -2459,9 +2786,14 @@ function showWordPop(el) {
   pop.style.top = Math.round(top) + 'px';
 }
 
+function hideWordPopNow() {
+  clearTimeout(_wpHide); clearTimeout(_lookTimer);
+  if (_wpEl) _wpEl.hidden = true;
+}
 function hideWordPop() {
   clearTimeout(_wpHide);
-  _wpHide = setTimeout(() => { if (_wpEl) _wpEl.hidden = true; }, 140);
+  // (moving onto the popup itself cancels this, so the look-up still counts)
+  _wpHide = setTimeout(() => { if (_wpEl) _wpEl.hidden = true; if (!isTouch()) clearTimeout(_lookTimer); }, 140);
 }
 window.addEventListener('scroll', () => { if (_wpEl) _wpEl.hidden = true; }, true);
 
@@ -3227,19 +3559,22 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if
    this device's own; index.html applies it before the page draws.
    [id, name, face, edge, light page, dark page] */
 const PALETTE_KEY = 'hanzihome.palette';
+/* Ocean, the blue, is the default: what you have until you choose another (kept in this
+   browser, Sunshine included). Sunshine is the stylesheet's own colours, no data-palette. */
+const DEFAULT_PALETTE = 'ocean';
 const PALETTES = [
+  ['ocean', 'Ocean', '#6db8ff', '#3a86d4', '#f2f5f9', '#1c2128'],
   ['sunshine', 'Sunshine', '#fde24d', '#d4b21f', '#f6f4ef', '#222222'],
   ['mint', 'Mint', '#4be3a8', '#24a874', '#f2f7f4', '#1d2421'],
-  ['ocean', 'Ocean', '#6db8ff', '#3a86d4', '#f2f5f9', '#1c2128'],
   ['blossom', 'Blossom', '#ff9cc2', '#d9609a', '#faf3f5', '#261e22'],
   ['lavender', 'Lavender', '#b9a6ff', '#8268e0', '#f5f4fa', '#201f28'],
   ['tangerine', 'Tangerine', '#ffae5c', '#d97b22', '#fbf5ef', '#26211c'],
 ];
 function palette() {
-  try { const p = localStorage.getItem(PALETTE_KEY); return PALETTES.some(x => x[0] === p) ? p : 'sunshine'; } catch (e) { return 'sunshine'; }
+  try { const p = localStorage.getItem(PALETTE_KEY); return PALETTES.some(x => x[0] === p) ? p : DEFAULT_PALETTE; } catch (e) { return DEFAULT_PALETTE; }
 }
 function setPalette(p) {
-  try { p === 'sunshine' ? localStorage.removeItem(PALETTE_KEY) : localStorage.setItem(PALETTE_KEY, p); } catch (e) { /* this visit only */ }
+  try { p === DEFAULT_PALETTE ? localStorage.removeItem(PALETTE_KEY) : localStorage.setItem(PALETTE_KEY, p); } catch (e) { /* this visit only */ }
   if (p === 'sunshine') delete document.documentElement.dataset.palette;
   else document.documentElement.dataset.palette = p;
   paintBarColour();
@@ -3345,19 +3680,125 @@ function render(keepScroll) {
     <p><a href="#/study">Back to Today</a></p></div>`;
 }
 
-/* the menu: a drawer that slides in from the left over the page, at every size, as
-   in Boxes; body.nav-open drives the scrim. A link closes it, even to this page. */
+/* the menu: a drawer that slides in from the left over the page, as in Boxes;
+   body.nav-open drives the scrim. A link closes it, even to this page. While it is
+   open the page behind is inert, so the keyboard stays in the menu.
+   On a wide screen it can instead be pinned open beside the page (body.nav-pinned,
+   kept in this browser); the menu button then folds it away again. */
+const NAV_PIN_KEY = 'hanzihome.navpin';
+const navWide = matchMedia('(min-width: 1200px)');
+const navEls = () => ({
+  side: document.getElementById('sidebar'), btn: document.getElementById('sidebar-toggle'),
+  behind: ['app', 'hub-tabs', 'search-form'].map(id => document.getElementById(id))
+    .concat(document.querySelector('.topbar .brand')).filter(Boolean),
+});
+let navPinPref = false;
+try { navPinPref = localStorage.getItem(NAV_PIN_KEY) === '1'; } catch (e) {}
+const navPinned = () => navPinPref && navWide.matches;
 function setNav(open) {
-  document.getElementById('sidebar').classList.toggle('open', open);
+  const { side, btn, behind } = navEls();
+  if (navPinned()) open = false;              // (pinned, it is neither a drawer nor in the way)
+  side.classList.toggle('open', open);
   document.body.classList.toggle('nav-open', open);
-  document.getElementById('sidebar-toggle').setAttribute('aria-expanded', open);
-  if (open) document.querySelector('#sidebar nav a').focus({ preventScroll: true });
+  behind.forEach(el => { el.inert = open; });
+  btn.setAttribute('aria-expanded', open || navPinned());
+  if (open) side.querySelector('nav a').focus({ preventScroll: true });
+}
+function paintPin() {
+  const pinned = navPinned();
+  document.body.classList.toggle('nav-pinned', pinned);
+  const pin = document.getElementById('nav-pin');
+  pin.setAttribute('aria-pressed', pinned);
+  pin.querySelector('span').textContent = pinned ? 'Fold the menu away' : 'Keep the menu open';
+  document.getElementById('sidebar-toggle').setAttribute('aria-expanded', pinned || document.body.classList.contains('nav-open'));
+}
+function setPin(on) {
+  navPinPref = on;
+  try { localStorage.setItem(NAV_PIN_KEY, on ? '1' : '0'); } catch (e) {}
+  setNav(false);
+  paintPin();
+}
+paintPin();
+navWide.addEventListener('change', () => { setNav(false); paintPin(); });
+function toggleNav() {
+  if (navPinned()) { setPin(false); return; }
+  setNav(!document.getElementById('sidebar').classList.contains('open'));
 }
 document.getElementById('sidebar-toggle').addEventListener('click', e => {
   e.stopPropagation();
-  setNav(!document.getElementById('sidebar').classList.contains('open'));
+  toggleNav();
 });
-document.getElementById('sidebar').addEventListener('click', e => { if (e.target.closest('a')) setNav(false); });
+document.getElementById('nav-pin').addEventListener('click', () => {
+  setPin(!navPinned());
+  if (!navPinned()) document.getElementById('sidebar-toggle').focus();
+});
+document.getElementById('sidebar').addEventListener('click', e => {
+  const a = e.target.closest('a');
+  if (!a) return;
+  setNav(false);
+  // the sync line leads to its own card on Settings: wait for the page, then go to it
+  const to = a.dataset.scroll;
+  if (to) {
+    let tries = 20;
+    const find = () => {
+      const el = document.getElementById(to);
+      // (to its heading, which Settings keeps clear of the top bar; once the page has
+      // stopped moving as it rises in and fills, or it would land part way up)
+      if (el && currentPath() === a.getAttribute('href').slice(1)) {
+        const h = el.querySelector('h2') || el;
+        let last = NaN, still = 0, left = 30;
+        const settle = () => {
+          const y = h.getBoundingClientRect().top + scrollY;
+          still = Math.abs(y - last) < 1 ? still + 1 : 0;
+          last = y;
+          if (still >= 2 || !--left) h.scrollIntoView({ block: 'start' });
+          else setTimeout(settle, 60);
+        };
+        settle();
+      }
+      else if (--tries) setTimeout(find, 50);
+    };
+    setTimeout(find, 0);
+  }
+});
+
+/* swiping the drawer towards the edge closes it, as on a phone's own menus */
+(() => {
+  let x0 = null, y0 = 0;
+  const side = document.getElementById('sidebar');
+  side.addEventListener('touchstart', e => {
+    if (!side.classList.contains('open') || e.touches.length !== 1) { x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, { passive: true });
+  side.addEventListener('touchmove', e => {
+    if (x0 == null) return;
+    const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
+    if (dx < -50 && Math.abs(dx) > Math.abs(dy) * 1.5) { x0 = null; setNav(false); }
+  }, { passive: true });
+  side.addEventListener('touchend', () => { x0 = null; }, { passive: true });
+})();
+
+/* the keyboard: M opens and closes the menu (not while typing, nor with a dialog up);
+   Tab goes round the open drawer and its button rather than out to the page */
+document.addEventListener('keydown', e => {
+  const side = document.getElementById('sidebar');
+  if (e.key === 'Tab' && side.classList.contains('open')) {
+    const btn = document.getElementById('sidebar-toggle');
+    const all = [...side.querySelectorAll('a[href], button')].filter(el => !el.hidden && el.offsetParent !== null);
+    const first = all[0], last = all[all.length - 1], at = document.activeElement;
+    if (!e.shiftKey && (at === last || !side.contains(at) && at !== btn)) { e.preventDefault(); btn.focus(); }
+    else if (!e.shiftKey && at === btn) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && at === btn) { e.preventDefault(); last.focus(); }
+    else if (e.shiftKey && at === first) { e.preventDefault(); btn.focus(); }
+    return;
+  }
+  if ((e.key !== 'm' && e.key !== 'M') || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  const t = e.target;
+  if (t.closest && t.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], dialog[open]')) return;
+  if (document.querySelector('dialog[open]')) return;
+  e.preventDefault();
+  toggleNav();
+});
 
 /* Safari on iPhone and iPad only shows :active (a button sinking as it is pressed)
    when the page listens for touches */

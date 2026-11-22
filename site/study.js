@@ -790,6 +790,9 @@ async function learnFromReader(w, pin, gloss, sentence) {
 
 /* the sentence around a word in the reading pane */
 function sentenceAround(el, w) {
+  // the reader wraps each sentence in .sent: the one this word is actually in
+  const s = el.closest('.sent');
+  if (s) return s.textContent.trim().slice(0, 160);
   const p = el.closest('p');
   if (!p) return '';
   const parts = p.textContent.split(/(?<=[。！？!?；…])/);
@@ -924,16 +927,17 @@ function ankiPreview(box, name, deck, cols, redraw) {
 
 /* Practice: extra study that doesn't change when anything comes back. Today shows the two
    that change from day to day (brief); the Practice page (#/practice) shows them all. */
-function extraStudy(weak, brief) {
+function extraStudy(weak, brief, quiet) {
   const icon = paths => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
   const body = (ico, colour, title, note) => `<span class="ico ${colour}">${icon(ico)}</span>
     <span class="xs-text"><b>${title}</b><small>${note}</small></span>`;
   const doneToday = (Store.load().grammar._daily || {}).day === today();
-  return `<section class="xs" aria-labelledby="xs-h">
+  // (on Today, quiet while lessons or reviews wait: those come first)
+  return `<section class="xs${quiet ? ' quiet' : ''}" aria-labelledby="xs-h">
     ${brief ? `<h2 class="sec-h xs-head" id="xs-h">Practice <a class="small" href="#/practice">All practice →</a></h2>`
       : '<h2 class="sr-only" id="xs-h">Practice</h2>'}
     <div class="xs-grid">
-      <a class="xs-tile daily" href="#/grammar/daily">${body(doneToday ? '<path d="m5 12.5 4.5 4.5L19 7.5"/>' : '<path d="M4 7h7v4H4zM13 7h7v4h-7zM8 15h8v4H8z"/>', 'white',
+      <a class="xs-tile daily${doneToday ? ' done' : ''}" href="#/grammar/daily">${body(doneToday ? '<path d="m5 12.5 4.5 4.5L19 7.5"/>' : '<path d="M4 7h7v4H4zM13 7h7v4h-7zM8 15h8v4H8z"/>', 'white',
         'Daily grammar practice', doneToday ? 'Done for today. Fancy another round?' : 'A short round. Anything new is taught first.')}</a>
       ${brief && !weak ? '' : `<a class="xs-tile wide" href="#/weak">${body('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>', 'pink',
         'Weak spots', weak ? `${weak} to work on` : 'Nothing yet. What you keep missing will show up here.')}</a>`}
@@ -949,13 +953,223 @@ function extraStudy(weak, brief) {
   </section>`;
 }
 
-/* Practice (#/practice): everything that is extra study, in one place */
+/* Today on a first visit, under the first lesson: how the days go (learn, review, read),
+   and the other ways in: mark what you know, the tones, a story */
+function firstSteps() {
+  const icon = paths => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  const step = (n, colour, title, text) => `<li class="fs-step"><span class="fs-n ${colour}" aria-hidden="true">${n}</span>
+      <span><b>${title}</b><small>${text}</small></span></li>`;
+  const way = (href, ico, colour, title, note) => `<a class="xs-tile" href="${href}"><span class="ico ${colour}">${icon(ico)}</span>
+      <span class="xs-text"><b>${title}</b><small>${note}</small></span></a>`;
+  return `<section class="card fs-how" aria-labelledby="fs-how-h">
+      <h2 id="fs-how-h">How it works</h2>
+      <ol class="fs-steps">
+        ${step(1, 'pink', 'Learn', 'Each lesson shows a character’s parts, sound and meaning, then a short quiz.')}
+        ${step(2, 'sky', 'Review', 'It comes back just before you would forget it, a little later each time.')}
+        ${step(3, 'mint', 'Read', 'Stories open up as you learn. Tap any word in one for its meaning.')}
+      </ol>
+    </section>
+    <section class="xs fs-ways" aria-labelledby="fs-ways-h">
+      <h2 class="sec-h" id="fs-ways-h">Other ways to start</h2>
+      <div class="xs-grid">
+        ${way('#/frequency', '<path d="m5 12.5 4.5 4.5L19 7.5"/>', 'mint', 'Know some already?', 'Mark them, and your lessons skip them')}
+        ${way('#/tones', '<path d="M3 12h2l2-6 3 13 3-16 3 13 2-4h3"/>', 'yellow', 'Hear the tones', 'Train your ear for the four tones')}
+        ${way('#/reader', '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/>', 'sky', 'Try a story', 'Read with help on every word')}
+      </div>
+    </section>`;
+}
+
+/* Practice (#/practice): everything that is extra study, in one place. On top, the one thing
+   worth doing now; under it every kind of practice, each with where you are in it. It is drawn
+   at once from what is on this device, and again once the lists (grammar points, phrases,
+   look-alikes) have loaded, for the numbers that need them. */
 function pagePractice() {
+  drawPractice();
+  Promise.all([optional(need.gpoints()), optional(need.phrases()), optional(need.comps()),
+    HZ.lookalike ? null : optional(loadScript('data/lookalike.js'))])
+    .then(() => { if (currentPath() === '/practice') drawPractice(true); });
+}
+
+/* what each tile said last time Practice was open (this device only), so a tile whose
+   numbers moved since (a round just done) can light up once */
+const PR_SEEN = 'hanzihome.practiceSeen';
+function practiceChanged(lines) {
+  let was = null;
+  try { was = JSON.parse(sessionStorage.getItem(PR_SEEN) || 'null'); } catch (e) { /* no storage */ }
+  try { sessionStorage.setItem(PR_SEEN, JSON.stringify(lines)); } catch (e) { /* private mode */ }
+  if (!was) return new Set();
+  return new Set(Object.keys(lines).filter(k => was[k] !== undefined && was[k] !== lines[k]));
+}
+
+/* where you are in each kind of practice: a line to say so, and how far along (0 to 1, or
+   null where there is nothing to measure yet) */
+function practiceState() {
+  const d = Store.load(), now = Date.now(), day = 864e5;
+  const ago = t => !t ? null : now - t < day ? 'today' : now - t < 2 * day ? 'yesterday' : `${Math.floor((now - t) / day)} days ago`;
+  const out = {};
+  // grammar: the points read or practised, of all of them
+  const g = d.grammar || {};
+  const daily = (g._daily || {}).day === today();
+  if (HZ.gpoints) {
+    const seen = HZ.gpoints.filter(p => g[p.id] && (g[p.id].read || g[p.id].runs)).length, all = HZ.gpoints.length;
+    out.grammar = { line: seen ? `${seen} of ${all} points seen` : `${all} points, from the basics up`, p: seen / all };
+  } else out.grammar = { line: 'Explanations and practice', p: null };
+  out.grammar.last = Math.max(0, ...Object.entries(g).filter(([k]) => k[0] !== '_').map(([, v]) => v.last || v.read || 0));
+  out.daily = { done: daily };
+  // phrases: learned, of all of them, and when you last practised
+  const ph = d.phrases || {};
+  const phLast = Math.max(0, ...Object.entries(ph).map(([, v]) => v.last || v.learned || 0));
+  if (HZ.phrases) {
+    const all = HZ.phrases.reduce((n, c) => n + c.units.length, 0);
+    const have = Object.values(ph).filter(v => v.learned).length;
+    out.phrases = { line: have ? `${have} of ${all} learned${phLast ? ` · practised ${ago(phLast)}` : ''}` : `${all} to learn, in ${HZ.phrases.length} topics`, p: have / all };
+  } else out.phrases = { line: 'Common phrases, questions and answers', p: null };
+  out.phrases.last = phLast;
+  // tones: how often your ear is right, or your best round
+  const tn = d.tones || {};
+  let right = 0, heard = 0;
+  for (const t of [1, 2, 3, 4]) { const e = tn['ear:' + t]; if (e) { right += e[0]; heard += e[1]; } }
+  const rounds = Object.keys(TN_KINDS).map(k => tn[k]).filter(r => r && r.runs && r.of);
+  const tnLast = Math.max(0, ...rounds.map(r => r.last || 0));
+  out.tones = heard >= 6 ? { line: `Your ear: ${Math.round(100 * right / heard)}% right${tnLast ? ` · ${ago(tnLast)}` : ''}`, p: right / heard }
+    : rounds.length ? { line: `Best round: ${Math.max(...rounds.map(r => r.best))} of ${rounds[0].of}`, p: Math.max(...rounds.map(r => r.best / r.of)) }
+    : { line: 'Train your ear to hear the four tones', p: null };
+  out.tones.last = tnLast;
+  // look-alikes: the sets among what you've learned, how many you've practised, and the one you mix up most
+  const la = laStats(), known = laKnown();
+  out.looks = { line: 'Opens once you know two that look alike', p: null, open: false, last: Math.max(0, ...Object.values(la).map(x => x[2] || 0)) };
+  if (HZ.lookalike) {
+    const pool = [...known].filter(c => laKnownLike(c, known).length);
+    if (pool.length) {
+      const missed = c => (la[c] || [0, 0])[1];
+      const c = pool.slice().sort((a, b) => missed(b) - missed(a))[0], other = laKnownLike(c, known)[0];
+      const done = pool.filter(x => la[x]).length;
+      out.looks = { ...out.looks, open: true, pair: [c, other], p: done / pool.length,
+        line: `${missed(c) ? 'You mix up' : 'Tell apart'} <span class="han">${zhOne(c)}</span> and <span class="han">${zhOne(other)}</span> · ${pool.length} to practise` };
+    }
+  }
+  // weak spots: what you keep missing, across all of it
+  const items = wkItems().length, looks = wkLooks().length, tone = wkTones() ? 1 : 0;
+  out.weak = { n: items + looks + tone, items, looks, tone };
+  return out;
+}
+
+/* the one thing worth doing now: weak spots piling up, then the daily grammar, then a few weak
+   spots, then whatever you've left longest */
+function practiceNext(st) {
+  const mins = n => `about ${Math.max(1, Math.round(n))} minute${Math.round(n) > 1 ? 's' : ''}`;
+  const w = st.weak;
+  const what = [w.items && `${w.items} character${w.items > 1 ? 's' : ''}`, w.looks && `${w.looks} look-alike${w.looks > 1 ? 's' : ''}`, w.tone && 'a tone'].filter(Boolean).join(', ');
+  const weak = { href: '#/weak', colour: 'pink', title: `Clear ${w.n} weak spot${w.n > 1 ? 's' : ''}`,
+    why: `What you keep missing: ${what}. A round takes ${mins(w.n * 0.4)}.` };
+  if (w.n >= 3) return weak;
+  if (!st.daily.done) return { href: '#/grammar/daily', colour: 'mint', title: 'Daily grammar practice',
+    why: `Today's round isn't done yet: six sentences, ${mins(2)}. Anything new is taught first.` };
+  if (w.n) return weak;
+  const DAY = 864e5, now = Date.now();
+  const left = [
+    st.looks.open && { href: '#/lookalikes', colour: 'sky', title: 'Look-alikes', last: st.looks.last,
+      why: `Twelve quick questions, ${mins(2)}, on characters you've learned that look alike.` },
+    { href: '#/tones', colour: 'yellow', title: 'Tones', last: st.tones.last, why: `Ten sounds to tell apart, ${mins(2)}.` },
+    { href: '#/phrases', colour: 'pink', title: 'Phrases', last: st.phrases.last, why: `A few phrases to learn whole, or a round on the ones you know, ${mins(3)}.` },
+  ].filter(Boolean).sort((a, b) => a.last - b.last);
+  const pick = left[0], days = Math.floor((now - pick.last) / DAY);
+  const when = !pick.last ? 'You haven\'t tried it yet.' : days < 1 ? 'Last practised earlier today.'
+    : days === 1 ? 'Last practised yesterday.' : `Last practised ${days} days ago.`;
+  return { ...pick, why: `${when} ${pick.why}` };
+}
+
+/* Practice this week: the days you practised anything (from the times each kind keeps: a
+   round's last, a point read, a phrase learned, a look-alike or weak spot asked), the rounds
+   done in all, and how often you're right where that is counted. */
+function practiceWeek() {
+  const d = Store.load(), times = [];
+  for (const [k, v] of Object.entries(d.grammar || {})) if (k[0] !== '_' && v) times.push(v.last, v.read);
+  for (const v of Object.values(d.phrases || {})) if (v) times.push(v.last, v.learned);
+  for (const v of Object.values(d.tones || {})) if (v && v.last) times.push(v.last);
+  for (const v of Object.values(d.weak || {})) times.push(v);
+  const la = laStats();
+  for (const x of Object.values(la)) times.push(x[2]);
+  const now = new Date(), dow = (now.getDay() + 6) % 7, monday = new Date(now.toDateString());
+  monday.setDate(monday.getDate() - dow);
+  const week = Array(7).fill(false);
+  for (const t of times) {
+    if (!t) continue;
+    const i = Math.floor((new Date(new Date(t).toDateString()) - monday) / 864e5);
+    if (i >= 0 && i < 7) week[i] = true;
+  }
+  const dailyDay = ((d.grammar || {})._daily || {}).day;
+  if (dailyDay === today()) week[dow] = true;
+  const runs = [...Object.entries(d.grammar || {}).filter(([k]) => k[0] !== '_').map(([, v]) => v),
+    ...Object.entries(d.phrases || {}).filter(([k]) => k[0] === '#').map(([, v]) => v),
+    ...Object.values(d.tones || {})].reduce((n, v) => n + ((v && v.runs) || 0), 0);
+  let r = 0, w = 0;
+  for (const x of Object.values(la)) { r += x[0]; w += x[1]; }
+  const tn = d.tones || {};
+  let er = 0, eh = 0;
+  for (const t of [1, 2, 3, 4]) { const e = tn['ear:' + t]; if (e) { er += e[0]; eh += e[1]; } }
+  return { week, dow, days: week.filter(Boolean).length, runs, looks: r + w >= 5 ? Math.round(100 * r / (r + w)) : null,
+    ear: eh >= 6 ? Math.round(100 * er / eh) : null, any: times.some(Boolean) || runs > 0 };
+}
+
+function practiceWeekHtml() {
+  const p = practiceWeek(), names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const stat = (label, value, note) => `<div><dt>${label}</dt><dd>${value}${note ? ` <small>${note}</small>` : ''}</dd></div>`;
+  return `<section class="card pr-week" aria-labelledby="pr-week-h">
+    <div class="pr-week-top"><h2 id="pr-week-h">This week</h2>
+      <span class="small muted">${p.days ? `Practised on ${p.days} day${p.days > 1 ? 's' : ''}` : p.any ? 'Nothing yet this week' : 'Your practice will show up here'}</span></div>
+    <ol class="pr-days">${p.week.map((on, i) => `<li class="${on ? 'on' : ''}${i === p.dow ? ' today' : ''}${i > p.dow ? ' future' : ''}"
+      aria-label="${names[i]}${i === p.dow ? ', today' : ''}: ${i > p.dow ? 'to come' : on ? 'practised' : 'no practice'}">
+      <span aria-hidden="true">${on ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>' : ''}</span>
+      <b aria-hidden="true">${i === p.dow ? 'Today' : 'MTWTFSS'[i]}</b></li>`).join('')}</ol>
+    <dl class="pr-stats">
+      ${stat('Rounds done', num(p.runs), 'in all')}
+      ${stat('Tones', p.ear === null ? '–' : `${p.ear}%`, p.ear === null ? 'not enough yet' : 'heard right')}
+      ${stat('Look-alikes', p.looks === null ? '–' : `${p.looks}%`, p.looks === null ? 'not enough yet' : 'told apart')}
+    </dl>
+  </section>`;
+}
+
+function drawPractice(final) {
+  const st = practiceState(), next = practiceNext(st);
+  // (compared once the lists are in, so the first, quicker drawing doesn't count as a change)
+  const lines = { daily: String(st.daily.done), weak: String(st.weak.n), grammar: st.grammar.line, phrases: st.phrases.line,
+    tones: st.tones.line, looks: st.looks.line };
+  const moved = final ? practiceChanged(lines) : new Set();
+  const icon = paths => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+  const ICO = {
+    daily: '<path d="M4 7h7v4H4zM13 7h7v4h-7zM8 15h8v4H8z"/>', check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    weak: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor"/>',
+    grammar: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11M9 8h6"/>',
+    phrases: '<path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5"/>', tones: '<path d="M3 12h2l2-6 3 13 3-16 3 13 2-4h3"/>',
+    looks: '<rect x="3.5" y="3.5" width="11" height="11" rx="2"/><path d="M9.5 18.5v.5a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 19 9.5h-.5"/>',
+  };
+  const bar = p => p === null || p === undefined ? '' : `<span class="xs-bar" aria-hidden="true"><i style="--w:${Math.round(100 * Math.min(1, p))}%"></i></span>`;
+  const tile = (href, ico, colour, title, line, p, cls = '', key = '') => `<a class="xs-tile${cls}${moved.has(key) ? ' pr-moved' : ''}" href="${href}"><span class="ico ${colour}">${icon(ico)}</span>
+    <span class="xs-text"><b>${title}</b><small>${line}</small>${bar(p)}</span></a>`;
+  const nextIco = { '#/weak': ICO.weak, '#/grammar/daily': ICO.daily, '#/lookalikes': ICO.looks, '#/tones': ICO.tones, '#/phrases': ICO.phrases }[next.href];
   app.innerHTML = '<h1 class="page-title">Practice</h1>' + withRail(`
-    <p class="lede">Extra study, for whenever you like. Nothing here is scheduled, and it doesn't change when your
-      reviews come back or count towards the day's lessons.</p>
-    ${extraStudy(wkCount())}`, true);
-  paintRail();
+    <p class="lede">Extra practice, whenever you like. It never adds to your reviews.</p>
+    <a class="pr-next" href="${next.href}">
+      <span class="ico ${next.colour}">${icon(nextIco)}</span>
+      <span class="pr-next-text"><small class="pr-eyebrow">Suggested now</small><b>${esc(next.title)}</b><span>${esc(next.why)}</span></span>
+      <span class="pr-go" aria-hidden="true">Start <span>→</span></span>
+    </a>
+    <a class="pr-mix" href="#/weak/mix"><span class="pr-mix-ico" aria-hidden="true">${icon('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>')}</span>
+      <span class="pr-mix-text"><b>Can't choose? Quick mix</b><small>A few tones${st.looks.open ? ', look-alikes' : ''}${st.weak.n ? ' and weak spots' : ''} in one round · about 2 minutes</small></span>
+      <span class="pr-mix-go" aria-hidden="true">→</span></a>
+    <section class="xs" aria-labelledby="pr-all-h"><h2 class="sec-h" id="pr-all-h">All practice</h2>
+      <div class="xs-grid pr-grid">
+        ${tile('#/grammar/daily', st.daily.done ? ICO.check : ICO.daily, st.daily.done ? 'mint' : 'yellow', 'Daily grammar',
+          st.daily.done ? 'Done for today. Another round?' : 'Today\'s round: six sentences', null, st.daily.done ? ' pr-done' : '', 'daily')}
+        ${tile('#/weak', ICO.weak, 'pink', 'Weak spots', st.weak.n ? `${st.weak.n} to work on` : 'Nothing to work on. Nice.', null, st.weak.n ? ' pr-alert' : ' pr-calm', 'weak')}
+        ${tile('#/grammar', ICO.grammar, 'mint', 'Grammar', st.grammar.line, st.grammar.p, '', 'grammar')}
+        ${tile('#/phrases', ICO.phrases, 'pink', 'Phrases', st.phrases.line, st.phrases.p, '', 'phrases')}
+        ${tile('#/tones', ICO.tones, 'yellow', 'Tones', st.tones.line, st.tones.p, '', 'tones')}
+        ${tile('#/lookalikes', ICO.looks, 'sky', 'Look-alikes', st.looks.line, st.looks.p, st.looks.open ? '' : ' pr-calm', 'looks')}
+      </div>
+    </section>
+    ${practiceWeekHtml()}`, true);
 }
 
 /* Choosing a learning path: on Today and on the Lessons page when nothing is queued and no
@@ -1009,9 +1223,13 @@ function drawStudy() {
     : nLocked === p.waiting.length ? 'Waiting to unlock' : 'Today\'s limit reached';
   const overLimit = !p.vacation && p.due.length && !p.reviewsLeft;
   const reviewNote = p.vacation ? 'On vacation' : overLimit ? `Today's limit reached · ${p.due.length} due` : '';
-  const tile = (cls, name, n, note) => `<a class="lx-tile ${cls}${n ? '' : ' idle'}" href="#/${cls}">
-    <b>${name}</b><span>${n}</span>${note ? `<em>${esc(note)}</em>` : ''}</a>`;
-  const of = (n, lim) => lim ? `${n} of ${lim}` : String(n);
+  // a tile: its name, how many, a note, and (when there is something to start) what
+  // pressing it does and about how long it takes
+  const tile = (cls, name, n, note, active = n, go = '') => `<a class="lx-tile ${cls}${active ? '' : ' idle'}" href="#/${cls}"${active ? ` aria-keyshortcuts="${cls[0].toUpperCase()}"` : ''}>
+    <b>${name}</b><span>${n}</span>${note ? `<em>${esc(note)}</em>` : ''}${active && go ? `<small class="lx-go"><span class="lx-go-t">${go}</span><kbd class="lx-kbd" title="Shortcut: ${cls[0].toUpperCase()}">${cls[0].toUpperCase()}</kbd></small>` : ''}</a>`;
+  // about how long: a lesson (meet it, then its quiz) ~40 s, a sound ~15 s, a review ~10 s
+  // ("about" goes on a phone, where the tile is narrow)
+  const aboutMin = sec => `<span class="lx-about">about </span>${Math.max(1, Math.round(sec / 60))}&nbsp;min`;
 
   // what the Lessons tile's number is made of: sounds are lessons too, but short ones the
   // daily limit doesn't count, so the tile can say more than the limit
@@ -1020,6 +1238,19 @@ function drawStudy() {
   const readyList = [['char', 'character'], ['word', 'word'], ['comp', 'component'], ['sound', 'sound']]
     .filter(([k]) => ready[k]).map(([k, name]) => `${ready[k]} ${name}${ready[k] === 1 ? '' : 's'}`);
   const listed = a => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  // the Lessons tile's number: what counts towards the daily limit (sounds don't), the same
+  // thing the meter under it counts; the sounds are said beside it
+  const counted = p.lessons.length - ready.sound;
+  // the day so far: done of the limit, with a bar when there is one
+  // (ahead: what is ready now, as a lighter stretch after what's done, and said under it,
+  // so "0 / 15" with 11 ready doesn't look like 4 have gone missing)
+  const fill = (v, lim) => `transform: translateX(${Math.min(100, v / lim * 100) - 100}%)`;
+  const meter = (name, done, lim, info, ahead = 0) => `<div class="lx-m">
+      <span class="lx-m-h">${name} today${info ? ` <i class="info-i" tabindex="0" title="${esc(info)}" aria-label="${esc(info)}">i</i>` : ''}</span>
+      <b>${num(done)}${lim ? `<small> / ${num(lim)}</small>` : ''}</b>
+      ${lim ? `<span class="lx-m-bar" aria-hidden="true">${ahead ? `<i class="lx-m-ahead" style="${fill(done + ahead, lim)}"></i>` : ''}<i style="${fill(done, lim)}"></i></span>` : ''}
+      ${ahead ? `<span class="lx-m-note">${num(ahead)} ready now</span>` : ''}
+    </div>`;
 
   const nextTen = typeof nextUp === 'function' ? nextUp(10) : [];
   const started = items.some(([, it]) => it.stage >= 1);            // a lesson has been finished
@@ -1027,6 +1258,32 @@ function drawStudy() {
   const noPath = (!cfg.path || cfg.path === 'off') && !p.waiting.length;
   // lessons and reviews both done (or none yet today): time to read
   const dayDone = started && !p.vacation && !p.lessons.length && !p.reviewsLeft;
+  // nothing learned or marked yet: the first lesson is the one thing to do, so the parts
+  // that would only show zeros (reviews, the week, your progress) wait until there is one
+  const fresh = !started && !p.due.length && !p.vacation;
+  // when the next review falls due, for the Reviews tile when there is none now
+  let nextDue = Infinity;
+  for (const [, it] of items) if (it.stage >= 1) nextDue = Math.min(nextDue, Math.max(it.due, it.rest || 0));
+  const whenNext = t => {
+    if (!isFinite(t)) return '';
+    const mins = Math.max(1, Math.round((t - now) / 60000)), days = Math.round((Learn.dayStart(t) - Learn.dayStart(now)) / Learn.DAY);
+    return days <= 0 ? (mins < 60 ? `Next in ${mins} min` : `Next in ${Math.round(mins / 60)} h`)
+      : days === 1 ? 'Next tomorrow' : `Next in ${days} days`;
+  };
+  const reviewsTile = tile('reviews', 'Reviews', p.reviewsLeft, reviewNote || (p.reviewsLeft ? '' : whenNext(nextDue)),
+    p.reviewsLeft, `Start · ${aboutMin(p.reviewsLeft * 10)}`);
+  const lessonsTile = tile('lessons', 'Lessons', counted || ready.sound, counted && ready.sound
+    ? `+ ${ready.sound} short sound${ready.sound === 1 ? '' : 's'}` : !counted && ready.sound ? 'Short sounds' : lessonNote,
+    p.lessons.length, `${fresh ? 'Start your first lesson' : 'Start'} · ${aboutMin(counted * 40 + ready.sound * 15)}`);
+  // the reviews to come, so a big day isn't a surprise: tomorrow, and the week after today
+  const fc8 = Learn.forecast(items.map(e => e[1]), now, 8);
+  const week = fc8.slice(1).reduce((a, b) => a + b, 0);
+  const aheadLine = fresh || !week ? '' : `<p class="lx-ahead small">Coming up: ${fc8[1]
+    ? `<b>${num(fc8[1])}</b> review${fc8[1] === 1 ? '' : 's'} tomorrow` : 'no reviews tomorrow'} · <b>${num(week)}</b> in the next 7 days</p>`;
+  // the day done: the tiles shrink to one line, since there is nothing to start
+  const doneRow = `<p class="lx-mini">
+      <a href="#/lessons">Lessons <b>${p.lessons.length}</b>${lessonNote ? ` <span>· ${esc(lessonNote)}</span>` : ''}</a>
+      <a href="#/reviews">Reviews <b>${p.reviewsLeft}</b>${reviewNote ? ` <span>· ${esc(reviewNote)}</span>` : ''}</a></p>`;
 
   app.innerHTML = '<h1 class="page-title">Today</h1>' + withRail(`
     ${p.vacation ? `<section class="card lx-vac">
@@ -1043,18 +1300,39 @@ function drawStudy() {
       <p class="small muted">${newcomer ? `Know some characters already? <a href="#/frequency">Mark them as learned</a> and the lessons
         skip them, or bring an Anki deck (<a href="#/settings">Settings</a>). ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
         character's or word's page does that, with or without a path.</p></section>` : ''}
-    <div class="lx-hub">
-      ${tile('lessons', 'Lessons', p.lessons.length, lessonNote)}
-      ${tile('reviews', 'Reviews', p.reviewsLeft, reviewNote)}
+    <div class="lx-top${fresh ? ' first' : ''}">
+    ${dayDone ? '' : `<div class="lx-hub${fresh ? ' solo' : ''}">
+      ${p.reviewsLeft ? reviewsTile : ''}
+      ${lessonsTile}
+      ${!p.reviewsLeft && !fresh ? reviewsTile : ''}
+    </div>`}
+    ${dayDone ? `<section class="lx-done" aria-labelledby="lx-done-h">
+      <h2 id="lx-done-h"><span class="lx-done-tick" aria-hidden="true">✓</span>Done for today</h2>
+      <p class="muted small">Your lessons and reviews are finished.${whenNext(nextDue) ? ` ${whenNext(nextDue).replace('Next', 'The next review is due')}.` : ''}</p>
+      ${doneRow}
+    </section>
+    ${storyNextCard()}` : ''}
+    <div class="lx-today${fresh ? ' solo' : ''}" aria-label="Done today">
+      ${meter('Lessons', p.lessonsToday, cfg.lessonLimit, readyList.length ? `Ready now: ${listed(readyList)}.${ready.sound
+        ? ' Sounds are short: they do not count towards the daily limit, or this number.' : ''}` : '', counted)}
+      ${fresh ? '' : meter('Reviews', p.reviewsToday, cfg.reviewLimit, '', p.reviewsLeft)}
+      ${aheadLine}
+      ${learnedCount(learnedToday()) ? `<a class="lx-learned small" href="#/learned">Learned today (${learnedCount(learnedToday())}) →</a>` : ''}
     </div>
-    <p class="small muted lx-today">${readyList.length ? `Ready now: ${listed(readyList)}.${ready.sound && cfg.lessonLimit
-        ? ` Sounds are short, and don't count towards the daily limit of ${cfg.lessonLimit}.` : ''}<br>` : ''}
-      Done today: ${of(p.lessonsToday, cfg.lessonLimit)} lessons
-      (${p.wordsToday} words) ·
-      ${of(p.reviewsToday, cfg.reviewLimit)} reviews${learnedCount(learnedToday()) ? ` · <a href="#/learned">Learned today (${learnedCount(learnedToday())})</a>` : ''}</p>
-    ${dayDone ? storyNextCard() : ''}
-    ${streakCard()}
-    ${!p.vacation ? extraStudy(wkCount(), true) : ''}
+    ${nextTen.length ? `<section class="lx-next" aria-labelledby="lx-next-h">
+      <div class="lx-next-head"><h2 id="lx-next-h">Next up</h2><a class="small" href="#/queue">See all →</a></div>
+      <div class="lx-queue">${nextTen.map(k => { const kind = d.items[k] ? d.items[k].kind : 'char';
+        return `<a class="lx-q ${kind} han" href="${itemHref(k)}" title="${kind === 'word' ? 'Word' : 'Character'}: open its page">${zh(k)}</a>`; }).join('')}</div>
+      <p class="lx-key small" aria-hidden="true">${[['char', 'Characters'], ['word', 'Words']]
+        .filter(([k]) => nextTen.some(x => (d.items[x] ? d.items[x].kind : 'char') === k))
+        .map(([k, name]) => `<span><i class="${k}"></i>${name}</span>`).join('')}</p>
+      ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
+        ${cfg.pathDaily} new characters a day · <a href="#/settings">change</a></p>` : ''}
+    </section>` : ''}
+    </div>
+    ${fresh && !p.vacation ? firstSteps() : ''}
+    ${fresh ? '' : streakCard()}
+    ${!p.vacation && !fresh ? extraStudy(wkCount(), true, !!(p.lessons.length || p.reviewsLeft)) : ''}
     ${unsorted ? `<section class="card cb-cta">
       <h2>Sort your learned characters</h2>
       <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
@@ -1063,16 +1341,8 @@ function drawStudy() {
     <section class="card" id="lc-card" hidden></section>
     ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
     ${leechCard(d, now)}
-    ${nextTen.length ? `<section class="card">
-      <h2 class="caps">Lesson queue</h2>
-      ${nextTen.length ? `<div class="lx-queue">${nextTen.map(k => `<a class="lx-q ${d.items[k] ? d.items[k].kind : 'char'} han" href="#/queue">${zh(k)}</a>`).join('')}</div>`
-      : '<p class="empty small">Nothing yet. Use <b>Add to lessons</b> on a character\'s page.</p>'}
-      ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
-        ${cfg.pathDaily} new characters a day · <a href="#/settings">change</a></p>` : ''}
-      <p class="lx-queue-more"><a class="btn quiet" href="#/queue">See upcoming characters and words</a></p>
-    </section>` : ''}
-    <h2 class="sec-h">Your progress</h2>
-    <div class="home-grid">${railHtml()}</div>
+    ${fresh ? '' : `<h2 class="sec-h">Your progress</h2>
+    <div class="home-grid">${railHtml()}</div>`}
 `, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   wireLeeches(redraw);
@@ -1230,6 +1500,7 @@ async function pageLessons() {
   const f = await itemFacts(k, it);
   const tabs = [it.kind === 'word' ? 'Characters' : 'Composition', 'Mnemonic', 'Examples', 'Confirmation'];
   const quiz = s.tab === 3;
+  const rightHtml = `<p class="lx-right">Right: <b>${esc(primary(it))}</b>${others(it).length ? `<span class="muted"> · also ${esc(others(it).slice(0, 4).join(', '))}</span>` : ''}</p>`;
   const ctx = mnCtx(k, it, f);
   const chips = (xs, cls) => `<div class="lx-chips ${cls || ''}">${xs.map(([c, g, key]) => cls === 'snd'
     ? `<span class="lx-chip snd-chip"><span class="snd-key">${esc(c)}</span><span>${esc(g)}</span></span>` : lxChip(c, g)).join('')}</div>`;
@@ -1248,14 +1519,21 @@ async function pageLessons() {
     const scaffold = it.kind === 'word' ? f.parts.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ')
       : it.kind === 'char' ? f.comps.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g || '?')}`).join(' + ')
       : it.kind === 'comp' ? f.subs.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ') : '';
+    // (your own story is optional when there is one already: it waits behind a link until
+    // you write one)
+    const ownShut = !!f.mn && !it.mnemonic;
     body = `<h3>Mnemonic</h3>
       ${scaffold || it.kind === 'char' ? `<p class="muted">${scaffold ? scaffold + ' → ' : ''}<b class="han">${esc(itemText(k))}</b> ${esc(primary(it))}
         ${it.pin ? `· sounds <b>${esc(it.pin)}</b>` : ''}</p>` : ''}
       ${f.mn ? `<div class="mn lx-mn-builtin">${mnHtml(f.mn, ctx)}</div>` : ''}
       ${(it.kind === 'char' || it.kind === 'word') && !/\{[^}]+\}/.test(f.mn || '') ? soundStrip(it.pin) : ''}
-      ${f.mn ? `<p class="small muted">Picture it for a moment. Or write a story of your own, which is shown instead:</p>` : ''}
-      <textarea id="lx-mn" rows="${f.mn ? 2 : 4}" placeholder="${f.mn ? 'Your own mnemonic (optional)…' : 'Make up a little story that joins the parts, the meaning and the sound…'}">${esc(it.mnemonic || '')}</textarea>
-      <p class="small muted" id="lx-mn-state">Saved as you type.</p>
+      ${f.mn ? `<p class="small muted lx-mn-note">Picture it for a moment.${ownShut
+        ? ' <button type="button" class="lx-mn-open" id="lx-mn-open" aria-expanded="false" aria-controls="lx-own">✎ Write your own</button>'
+        : ' Or write a story of your own, which is shown instead:'}</p>` : ''}
+      <div class="lx-own" id="lx-own"${ownShut ? ' hidden' : ''}>
+        <textarea id="lx-mn" rows="${f.mn ? 2 : 4}" placeholder="${f.mn ? 'Your own story, shown instead of the one above…' : 'Make up a little story that joins the parts, the meaning and the sound…'}">${esc(it.mnemonic || '')}</textarea>
+        <p class="small muted" id="lx-mn-state">Saved as you type.</p>
+      </div>
       <h3>${part ? 'Name' : 'Meaning'}</h3>
       <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
         <dt>Alternatives</dt><dd>${others(it).length ? esc(others(it).join(', ')) : '<span class="muted">none</span>'}</dd></dl>
@@ -1278,15 +1556,16 @@ async function pageLessons() {
     // the pronunciation first; the meaning only once that is right (a part: its name only)
     if (part && s.pinOk !== k) { s.pinOk = k; s.pinAnswer = ''; }
     const pinDone = s.pinOk === k;
+    // answered right: it stays, with the answer, until you go on (Next, or Enter)
+    var passed = s.passed === k;
     body = `<h3>Confirmation</h3>
-      <p class="muted">${part ? `Its <b>name</b>?` : pinDone ? 'Right. Now its <b>meaning</b>.'
-        : 'First its <b>pronunciation</b>, with tone numbers (like pin1yin1). Its meaning comes after.'}</p>
+      <p class="muted">${part ? `Its <b>name</b>?` : 'Its <b>pronunciation</b>, with tone numbers (like pin1yin1), and its <b>meaning</b>.'}</p>
       <form id="lx-quiz" autocomplete="off">
         ${part ? '' : `<input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
           autocapitalize="off" autocorrect="off" autocomplete="off" lang="en" enterkeyhint="go" aria-label="Pronunciation, with tone numbers"${pinDone ? ` value="${esc(s.pinAnswer)}" readonly` : ''}>`}
-        ${pinDone ? `<input id="lx-mean" class="lx-input" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en" enterkeyhint="go" aria-label="${part ? 'Name' : 'Meaning'}">` : ''}
-        <div id="lx-verdict" aria-live="assertive"></div>
-        <button class="btn" type="submit">Check</button>
+        ${pinDone || !part ? `<input id="lx-mean" class="lx-input${passed ? ' ok' : ''}" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en" enterkeyhint="go" aria-label="${part ? 'Name' : 'Meaning'}"${passed ? ` value="${esc(s.meanAnswer || '')}" readonly` : ''}>` : ''}
+        <div id="lx-verdict" aria-live="assertive">${passed ? rightHtml : ''}</div>
+        <button class="btn" type="submit">${passed ? 'Next ›' : 'Check'}</button>
       </form>`;
   }
 
@@ -1303,7 +1582,7 @@ async function pageLessons() {
       <button type="button" class="btn quiet lx-back" ${s.tab === first ? 'disabled' : ''}>‹ Back</button>
       ${quiz ? '' : `<button type="button" class="btn lx-fwd">${s.tab === 2 ? 'Quiz me' : 'Next'} ›</button>`}
     </div>
-    <p class="lx-keys small muted"><span class="kb">${quiz ? 'Enter checks your answer' : 'Enter or → for the next step · ← back'}</span>
+    <p class="lx-keys small muted"><span class="kb">${quiz ? (s.passed === k ? 'Enter for the next one' : 'Enter checks your answer') : 'Enter or → for the next step · ← back'}</span>
       <span class="touch">${quiz ? '' : 'Swipe sideways to move between steps'}</span></p>
     ${batchStrip(s)}
     ${quizNow(s)}`;
@@ -1352,7 +1631,13 @@ async function pageLessons() {
   const say = document.getElementById('lx-say');
   if (say) say.addEventListener('click', () => Sound.say(k, true));
 
-  const mn = document.getElementById('lx-mn');
+  const mn = document.getElementById('lx-mn'), mnOpen = document.getElementById('lx-mn-open');
+  if (mnOpen) mnOpen.addEventListener('click', () => {
+    document.getElementById('lx-own').hidden = false;
+    mnOpen.setAttribute('aria-expanded', 'true');
+    mnOpen.hidden = true;
+    mn.focus();
+  });
   if (mn) {
     let timer;
     mn.addEventListener('input', () => {
@@ -1368,28 +1653,40 @@ async function pageLessons() {
 
   const form = document.getElementById('lx-quiz');
   if (form) {
-    (document.getElementById('lx-mean') || document.getElementById('lx-pin')).focus();
+    // both boxes are there from the start: the pronunciation is checked first (Enter in it
+    // checks it and goes on to the meaning; with both filled in, one Check does both)
+    const pinBox = document.getElementById('lx-pin'), meanBox = document.getElementById('lx-mean');
+    (s.pinOk === k || !pinBox ? meanBox : pinBox).focus();
+    if (s.passed === k) form.querySelector('button[type=submit]').focus();
     form.addEventListener('submit', e => {
       e.preventDefault();
       const verdict = document.getElementById('lx-verdict');
-      if (s.pinOk !== k) {
-        const pa = document.getElementById('lx-pin').value;
-        if (!pa.trim()) return;
-        if (Learn.checkPinyin(pa, it.pin)) {
-          Sound.ding();
-          Sound.say(k);
-          announce('Right. Now its meaning.');
-          s.pinOk = k;
-          s.pinAnswer = pa;
-          return pageLessons();
-        }
-        s.missed = (s.missed || 0) + 1;
-        verdict.innerHTML = `<p class="lx-wrong">It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}). Try again.</p>`;
-        Motion.play(document.getElementById('lx-pin'), 'm-shake');
-        return;
+      // answered already: on to the next one
+      if (s.passed === k) {
+        s.i++; s.tab = 0; s.pinOk = null; s.passed = null;   // (a part's lesson moves on to its first tab)
+        return pageLessons();
       }
-      const ma = document.getElementById('lx-mean').value;
-      if (!ma.trim()) return;
+      if (s.pinOk !== k) {
+        const pa = pinBox.value;
+        if (!pa.trim()) { pinBox.focus(); return; }
+        if (!Learn.checkPinyin(pa, it.pin)) {
+          s.missed = (s.missed || 0) + 1;
+          verdict.innerHTML = `<p class="lx-wrong">It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}). Try again.</p>`;
+          Motion.play(pinBox, 'm-shake');
+          pinBox.focus();
+          return;
+        }
+        Sound.ding();
+        Sound.say(k);
+        s.pinOk = k;
+        s.pinAnswer = pa;
+        pinBox.readOnly = true;
+        pinBox.classList.add('ok');
+        verdict.innerHTML = '';
+        if (!meanBox.value.trim()) { announce('Right. Now its meaning.'); meanBox.focus(); return; }
+      }
+      const ma = meanBox.value;
+      if (!ma.trim()) { meanBox.focus(); return; }
       if (Learn.checkMeaning(ma, it, isWord)) {
         Sound.ding();
         // the quiz is the item's first rating for FSRS: right first time is good, one
@@ -1398,9 +1695,19 @@ async function pageLessons() {
         s.grade[k] = !s.missed ? 3 : s.missed === 1 ? 2 : 1;
         s.missed = 0;
         s.done.push(k);
-        s.i++; s.tab = 0; s.pinOk = null;           // (a part's lesson moves on to its first tab)
+        s.passed = k;
+        s.meanAnswer = ma;
+        // (it stays: the answer, right, and Next to go on)
+        meanBox.readOnly = true;
+        meanBox.classList.add('ok');
+        verdict.innerHTML = rightHtml;
+        const go = form.querySelector('button[type=submit]');
+        go.textContent = 'Next ›';
+        go.focus();
+        const kb = app.querySelector('.lx-keys .kb');
+        if (kb) kb.textContent = 'Enter for the next one';
         markNav(currentPath());
-        return pageLessons();
+        return;
       }
       s.missed = (s.missed || 0) + 1;
       verdict.innerHTML = `<p class="lx-wrong">It means <b>${esc(primary(it))}</b>. Try again.</p>`;
@@ -1433,11 +1740,49 @@ function wireQuizNow(s) {
   if (b) b.addEventListener('click', () => lessonQuiz(s));
 }
 
-/* the batch, under the lesson: each item, the one open, the ones done */
+/* the batch, under the lesson: its characters and words, the one open, the ones done. The
+   components and sounds that come before each are shown only for the one being learned
+   now: they are its prerequisites, there while you work through them and it. */
 function batchStrip(s, goal) {
-  return `<div class="lx-batch" role="list" aria-label="This batch: ${s.done.length} of ${s.batch.length} done">${s.batch.map((b, i) =>
-    `<span role="listitem" class="${Store.item(b) ? Store.item(b).kind : ''}
-    ${i === s.i ? 'on' : ''} ${b === goal ? 'goal' : ''} ${s.done.includes(b) ? 'done' : ''}"${i === s.i ? ' aria-current="step"' : ''}>${esc(itemText(b))}</span>`).join('')}</div>`;
+  const whole = b => { const it = Store.item(b); return !!it && (it.kind === 'char' || it.kind === 'word'); };
+  // the group the open item is in: from after the character before it, to its character
+  let from = s.i, to = s.i;
+  while (from > 0 && !whole(s.batch[from - 1])) from--;
+  while (to < s.batch.length - 1 && !whole(s.batch[to])) to++;
+  // its parts open out to the right of its character, once you've chosen to learn it
+  const owner = whole(s.batch[to]) ? to : -1;
+  const open = owner >= 0 && s.intro.includes(s.batch[owner]) && !s.done.includes(s.batch[owner]);
+  const opening = open && s.justOpened === s.batch[owner];
+  if (opening) s.justOpened = null;
+  // what changed since the strip was last drawn, to animate: the item you've moved on to,
+  // what you've just finished, and the parts of a character just finished, folding away
+  const last = s.strip && s.strip.batch === s.batch ? s.strip : null;
+  const moved = last && last.i !== s.i;
+  const justDone = new Set(last ? s.done.filter(b => !last.done.includes(b)) : []);
+  const folding = last && last.open && last.open.owner !== (open ? owner : -1) && s.done.includes(s.batch[last.open.owner])
+    ? last.open : null;
+  s.strip = { batch: s.batch, i: s.i, done: [...s.done], open: open && from < owner ? { owner, from } : null };
+  const tile = i => {
+    const b = s.batch[i];
+    return `<span role="listitem" class="${Store.item(b) ? Store.item(b).kind : ''}
+    ${i === s.i ? 'on' : ''} ${b === goal ? 'goal' : ''} ${s.done.includes(b) ? 'done' : ''} ${whole(b) ? '' : 'pre'}${
+      moved && (i === s.i || b === goal) ? ' arrive' : ''}${justDone.has(b) ? ' just-done' : ''}"${i === s.i ? ' aria-current="step"' : ''}>${esc(itemText(b))}</span>`;
+  };
+  const range = (a, z) => Array.from({ length: z - a }, (_, n) => a + n);
+  let html = '';
+  s.batch.forEach((b, i) => {
+    if (whole(b)) {
+      if (i === owner && open && from < owner) {
+        html += `<div class="lx-grp${opening ? ' opening' : ''}">${tile(i)}<div class="lx-subs" role="list" aria-label="Its parts">${
+          range(from, owner).map(tile).join('')}</div></div>`;
+      } else if (folding && i === folding.owner) {
+        html += `<div class="lx-grp folding">${tile(i)}<div class="lx-subs" aria-hidden="true">${
+          range(folding.from, folding.owner).map(tile).join('')}</div></div>`;
+      } else html += tile(i);
+    } else if (!s.batch.slice(i + 1).some(whole)) html += tile(i);   // (parts with no character after them: always)
+  });
+  const chars = s.batch.filter(whole);
+  return `<div class="lx-batch" role="list" aria-label="This batch: ${chars.filter(b => s.done.includes(b)).length} of ${chars.length} done">${html}</div>`;
 }
 
 /* the lesson tabs' names on the narrowest phones, where four long ones don't fit */
@@ -1512,18 +1857,20 @@ async function lessonIntro(goal, k, s) {
         : 'These are the components and sounds this character is made of.'}
         ${fresh.length ? `The ones you haven't learned yet come first, each with a short lesson, then ${zh(goal)} itself.`
           : `You know them all: straight on to ${zh(goal)}.`}</p>
-      ${comps.length ? `<div class="lx-chips intro-parts">${comps.map(chip).join('')}</div>` : ''}
-      ${sounds.length ? `<div class="lx-chips intro-parts">${sounds.map(chip).join('')}</div>` : ''}
+      ${parts.length ? `<div class="lx-chips intro-parts">${comps.concat(sounds).map(chip).join('')}</div>` : ''}
       <p class="row intro-go"><button class="btn quiet" id="lx-intro-skip">⏭ Skip</button>
         <button class="btn" id="lx-intro-go">Learn</button></p>
     </div></div>
     ${batchStrip(s, goal)}
     ${quizNow(s)}`;
   wireQuizNow(s);
+  // the character comes in, once: Learn going straight on to its own lesson doesn't bring it in again
+  if (!s.drawn || s.drawn.k !== goal) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  s.drawn = { k: goal, tab: s.tab };
   toLessonTop();
   const go = document.getElementById('lx-intro-go');
   go.focus({ preventScroll: true });
-  go.addEventListener('click', () => { s.intro.push(goal); pageLessons(); });
+  go.addEventListener('click', () => { s.intro.push(goal); s.justOpened = goal; pageLessons(); });
   document.getElementById('lx-intro-skip').addEventListener('click', () => {
     // to the back of the queue, with the parts nothing else waiting needs
     const now = Date.now(), others = Object.keys(d.items).filter(x => x !== goal && d.items[x].stage === 0);
@@ -2040,7 +2387,8 @@ function wireReviewPanel(k) {
 }
 
 /* Lessons by keyboard: Enter (or →) goes to the next step, Prerequisites → Composition
-   → Mnemonic → Examples → Confirmation, where Enter checks the answer; ← goes back.
+   → Mnemonic → Examples → Confirmation, where Enter checks the answer and, once it's
+   right, goes on to the next one; ← goes back.
    Typing in a box (your mnemonic, the answers) keeps Enter for the box. */
 document.addEventListener('keydown', e => {
   const s = lessonState;
@@ -2054,7 +2402,10 @@ document.addEventListener('keydown', e => {
   }
   const next = app.querySelector('.lx-arrow.next'), prev = app.querySelector('.lx-arrow.prev');
   if ((e.key === 'Enter' || e.key === 'ArrowRight') && next && !next.disabled) { e.preventDefault(); next.click(); }
-  else if (e.key === 'Enter' && document.getElementById('lx-quiz')) {
+  else if ((e.key === 'Enter' || e.key === 'ArrowRight') && document.getElementById('lx-quiz') && s.passed === s.batch[s.i]) {
+    e.preventDefault();                            // (answered right: on to the next one)
+    document.getElementById('lx-quiz').requestSubmit();
+  } else if (e.key === 'Enter' && document.getElementById('lx-quiz')) {
     e.preventDefault();
     (document.getElementById('lx-mean') || document.getElementById('lx-pin')).focus();
   } else if (e.key === 'ArrowLeft' && prev && !prev.disabled) { e.preventDefault(); prev.click(); }
@@ -2709,3 +3060,18 @@ function pageStats() {
   });
   paintRail();
 }
+
+/* L starts the lessons and R the reviews, from Today, when the tile has something to
+   start (not while typing, with a dialog up, or with the menu open) */
+document.addEventListener('keydown', e => {
+  const k = e.key && e.key.toLowerCase();
+  if ((k !== 'l' && k !== 'r') || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  if (typeof currentPath !== 'function' || currentPath() !== '/study') return;
+  const t = e.target;
+  if (t.closest && t.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], dialog[open]')) return;
+  if (document.querySelector('dialog[open]') || document.body.classList.contains('nav-open')) return;
+  const tile = document.querySelector(`.lx-tile.${k === 'l' ? 'lessons' : 'reviews'}:not(.idle)`);
+  if (!tile) return;
+  e.preventDefault();
+  location.hash = tile.getAttribute('href');
+});

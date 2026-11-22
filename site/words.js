@@ -187,7 +187,8 @@ function exampleHtml(ex, w) {
   const zs = ex[0].split('|'), ps = ex[1].split('|');
   return `<div class="ex-zh">${zs.map((z, i) => {
     const han = [...z].some(isHan);
-    if (!han) return `<span class="ex-p">${zh(z)}</span>`;
+    // (punctuation as a ruby too, with an empty reading, so it sits on the characters' line)
+    if (!han) return `<span class="ex-p"><ruby>${zh(z)}<rt aria-hidden="true">&nbsp;</rt></ruby></span>`;
     const tag = z === w ? 'mark' : 'a';
     let shown = zh(z);
     if (z !== w && [...w].length === 1 && z.includes(w)) {
