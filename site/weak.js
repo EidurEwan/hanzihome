@@ -66,6 +66,20 @@ function wkStart() {
   wkNext();
 }
 
+/* The quick mix (#/weak/mix, from Practice): a little of everything in one short round, for
+   when you don't want to choose. A few of what you keep missing, if anything; a few
+   look-alikes among what you've learned, if there are any; and always a few tones, any of
+   the four. About two minutes. */
+const MIX_ITEMS = 3, MIX_LOOKS = 4, MIX_TONES = 5;
+function wkMix() {
+  const items = wkItems().slice(0, MIX_ITEMS);
+  const known = laKnown();
+  const looks = HZ.lookalike && [...known].some(c => laKnownLike(c, known).length);
+  const queue = [items.length ? 'items' : null, looks ? 'looks' : null, 'tones'];
+  wkState = { mix: true, queue: queue.filter(Boolean), at: 0, items, looks: [], tones: { tones: [1, 2, 3, 4] }, score: {} };
+  wkNext();
+}
+
 /* one part done: on to the next */
 function wkScored(part, right, of) {
   wkState.score[part] = [right, of];
@@ -99,9 +113,9 @@ async function wkLookPart() {
   const s = wkState;
   app.innerHTML = LOADING;
   await laNeed();
-  const round = HZ.lookalike ? laRound(s.looks.join('')) : null;
+  const round = HZ.lookalike ? laRound(s.looks.length ? s.looks.join('') : null) : null;
   if (!round || !round.qs.length) { s.at++; return wkNext(); }
-  round.qs = round.qs.slice(0, WK_LOOKS);
+  round.qs = round.qs.slice(0, s.mix ? MIX_LOOKS : WK_LOOKS);
   round.onDone = r => {
     laState = null;
     wkScored('looks', r.right, r.qs.length);
@@ -115,8 +129,8 @@ async function wkTonePart() {
   const s = wkState;
   app.innerHTML = LOADING;
   await need.tones();
-  const round = tnRoundFocus(WK_TONES, s.tones.tones, HZ.tones.syl);
-  tnRun('single', round, '<a href="#/weak">Weak spots</a> / Tones', right => {
+  const round = tnRoundFocus(s.mix ? MIX_TONES : WK_TONES, s.tones.tones, HZ.tones.syl);
+  tnRun('single', round, s.mix ? '<a href="#/practice">Practice</a> / Quick mix: tones' : '<a href="#/weak">Weak spots</a> / Tones', right => {
     wkScored('tones', right, round.length);
     wkNext();
   });
@@ -125,13 +139,13 @@ async function wkTonePart() {
 function wkDone() {
   const s = wkState;
   wkState = null;
-  app.innerHTML = '<h1 class="page-title">Weak spots</h1>' + withRail(`
+  app.innerHTML = `<h1 class="page-title">${s.mix ? 'Quick mix' : 'Weak spots'}</h1>` + withRail(`
     <section class="card wk-done">
       <div class="rs-stats">${s.queue.map(p => `<div><b>${s.score[p] ? s.score[p][0] : 0} / ${s.score[p] ? s.score[p][1] : 0}</b><span>${WK_LABEL[p]}</span></div>`).join('')}</div>
-      <div class="rs-actions"><a class="btn" href="#/study">Back to Today</a>
+      <div class="rs-actions"><a class="btn" href="${s.mix ? '#/practice' : '#/study'}">${s.mix ? 'Back to Practice' : 'Back to Today'}</a>
         <button class="btn quiet" id="wk-again">Another round</button></div>
     </section>`, true);
-  document.getElementById('wk-again').addEventListener('click', () => { wkOverview(); window.scrollTo(0, 0); });
+  document.getElementById('wk-again').addEventListener('click', () => { if (s.mix) wkMix(); else wkOverview(); window.scrollTo(0, 0); });
   window.scrollTo(0, 0);
   paintRail();
 }
@@ -140,6 +154,7 @@ async function pageWeak(sub) {
   app.innerHTML = LOADING;
   await Promise.all([optional(laNeed()), optional(need.tones())]);
   if (sub === 'next' && wkState) return wkNext();
+  if (sub === 'mix') return wkMix();
   wkState = null;
   wkOverview();
 }

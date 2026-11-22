@@ -64,20 +64,24 @@ const Motion = (() => {
   let io = null;
   function later(app) {
     if (!window.IntersectionObserver) return;
+    // (a quarter of the card in view, or most of the screen for a tall one: it comes in
+    // as a whole, not as an edge peeking above the fold)
     io = io || new IntersectionObserver(entries => {
       for (const e of entries) {
-        if (!e.isIntersecting) continue;
+        if (!e.isIntersecting || (e.intersectionRatio < .25 && e.intersectionRect.height < innerHeight * .4)) continue;
         io.unobserve(e.target);
         e.target.classList.remove('m-later');
         e.target.classList.add('m-in');
         countUp(e.target);
         setTimeout(() => e.target.classList.remove('m-in'), 1200);
       }
-    }, { rootMargin: '0px 0px -30px 0px' });
+    }, { threshold: [0, .1, .25, .5], rootMargin: '0px 0px -30px 0px' });
     const fold = innerHeight - 20;
     for (const el of app.querySelectorAll(CARDS)) {
       if (el.dataset.seen) continue;
       el.dataset.seen = '1';
+      // (a box of cards waits by its cards, not as a whole: one at a time, each one whole)
+      if (el.querySelector(CARDS)) continue;
       if (el.getBoundingClientRect().top > fold) { el.classList.add('m-later'); io.observe(el); }
     }
   }

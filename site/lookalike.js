@@ -97,7 +97,7 @@ function drawLookalike() {
   if (s.i >= s.qs.length) return s.onDone ? s.onDone(s) : laDone();
   const q = s.qs[s.i], a = s.answered;
   const head = `<div class="la-top"><span>Look-alikes${s.only ? `: ${zhOne(s.only)}` : ''}</span>
-    <span class="la-prog" style="--p:${(100 * s.i) / s.qs.length}%"><i></i></span>
+    <span class="la-prog" style="--w:${(100 * s.i) / s.qs.length}%"><i></i></span>
     <span>${s.i + 1} / ${s.qs.length}</span></div>`;
   const state = c => !a ? '' : c === q.t ? ' right' : c === a.choice ? ' wrong' : ' dim';
   let ask;
