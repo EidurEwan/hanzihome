@@ -2206,9 +2206,8 @@ a, button, summary, label, input, select, .tile, .reading-pane .w { -webkit-tap-
 @media (max-width: 600px) { .tr-py-line, .tr-pick { font-size: 24px; } }
 
 /* ---- the study page's chart of items learned (drawLearnedChart in study.js) ---- */
-:root { --lc-known: #9a9894; }
 .lc-sound { --c: var(--lx-sound); } .lc-comp { --c: var(--lx-comp); } .lc-char { --c: var(--lx-char); }
-.lc-word { --c: var(--lx-word); } .lc-known { --c: var(--lc-known); }
+.lc-word { --c: var(--lx-word); }
 .lc-keys { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 12px; }
 .lc-key { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 2px 0;
   font: 600 13px var(--ui); color: var(--ink); cursor: pointer; }

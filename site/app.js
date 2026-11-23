@@ -197,7 +197,23 @@ const Store = {
       });
     }
     this.data = d;
+    // so are words marked Known, counted as learned like the characters: the ones that aren't
+    // yet join once the dictionary is in, for their reading and meaning
+    if (Object.keys(d.wstatus).some(w => d.wstatus[w] === 'learned' && !d.items[w])) {
+      need.words().then(() => this.adoptKnownWords()).catch(() => {});
+    }
     return d;
+  },
+  /* words marked Known with no item yet: in the reviews from Journeyman I, their first
+     reviews spread over the next month as the characters' are */
+  adoptKnownWords() {
+    const d = this.load(), now = Date.now();
+    const known = Object.keys(d.wstatus).filter(w => d.wstatus[w] === 'learned' && !d.items[w] && wordEntries(w).length);
+    if (!known.length) return 0;
+    const span = Math.max(30, Math.ceil(known.length / 20)) * Learn.DAY;
+    known.forEach((w, i) => { d.items[w] = Learn.known('word', wordInfo(w), now, Math.round(span * i / known.length)); });
+    this.save();
+    return known.length;
   },
   save() {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); }

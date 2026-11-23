@@ -918,6 +918,7 @@ function ankiPreview(box, name, deck, cols, redraw) {
     fresh.forEach((x, i) => {
       d.items[x.k] = Learn.known(x.kind, ankiInfo(x), now, Math.round(span * i / fresh.length));
       if (x.kind === 'char') d.status[x.k] = 'learned';
+      else if (x.kind === 'word') d.wstatus[x.k] = 'learned';
     });
     done(fresh.length);
   });
@@ -1362,8 +1363,7 @@ function drawStudy() {
    day by day since the first lesson (Learn.learnedByDay). The areas are an SVG
    stretched to the box; the labels are HTML over it, so they keep their size on a
    phone. A series' key hides or shows it; pointing (or a tap) shows a day's totals. */
-const LC_SERIES = [['sound', 'Sounds'], ['comp', 'Components'], ['char', 'Characters'], ['word', 'Words'],
-  ['known', 'Marked known']];
+const LC_SERIES = [['sound', 'Sounds'], ['comp', 'Components'], ['char', 'Characters'], ['word', 'Words']];
 const _lcHidden = new Set();
 
 function niceStep(max, lines = 4) {
