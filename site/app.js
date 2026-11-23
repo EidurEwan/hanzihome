@@ -197,12 +197,30 @@ const Store = {
       });
     }
     this.data = d;
+    this.settleKnown();
     // so are words marked Known, counted as learned like the characters: the ones that aren't
     // yet join once the dictionary is in, for their reading and meaning
     if (Object.keys(d.wstatus).some(w => d.wstatus[w] === 'learned' && !d.items[w])) {
       need.words().then(() => this.adoptKnownWords()).catch(() => {});
     }
     return d;
+  },
+  /* Known things have no lesson: a character or word waiting for its first lesson that is
+     marked Known (here, or on another device and synced) joins the reviews at Journeyman I
+     instead, as marking it would have done, and a component you know leaves the queue.
+     (One sent back with Learn again has had a lesson before: that was asked for, so it stays.)
+     Returns how many changed. */
+  settleKnown() {
+    const d = this.data, now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
+    let n = 0;
+    for (const [k, it] of Object.entries(d.items)) {
+      if (it.stage !== 0 || it.learnt) continue;
+      const kind = it.kind || 'char';
+      if ((kind === 'char' && d.status[k] === 'learned') || (kind === 'word' && d.wstatus[k] === 'learned')) {
+        Learn.sayKnown(it, now, wait); delete it.prio; n++;
+      } else if (kind === 'comp' && this.compKnown(k.replace(/^c:/, ''))) { delete d.items[k]; n++; }
+    }
+    return n;
   },
   /* words marked Known with no item yet: in the reviews from Journeyman I, their first
      reviews spread over the next month as the characters' are */
@@ -305,7 +323,10 @@ const Store = {
   item(k) { return this.load().items[k] || null; },
   learnAdd(k, kind, info) {
     const d = this.load(), now = Date.now();
-    if (!d.items[k]) {
+    const knownAlready = (kind === 'char' ? d.status : kind === 'word' ? d.wstatus : {})[k] === 'learned';
+    if (!d.items[k] && knownAlready) {            // known already: no lesson, into the reviews (as marking it does)
+      d.items[k] = Learn.known(kind, info, now, Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY);
+    } else if (!d.items[k]) {
       if (d.study.skip && d.study.skip.includes(k)) d.study.skip = d.study.skip.filter(x => x !== k);   // asked for after all
       d.items[k] = Learn.newItem(kind, info, now);
       if (kind === 'char') rememberParts(k);
@@ -355,7 +376,7 @@ const Store = {
   /* the settings (HanziHero's), and what there is to study now under them */
   cfg() { return Learn.settings(this.load().study); },
   setCfg(patch) { Object.assign(this.load().study, patch); this.save(); },
-  plan() { const d = this.load(); return Learn.plan(d.items, d.study, Date.now(), learnEnv()); },
+  plan() { const d = this.load(); if (this.settleKnown()) this.save(); return Learn.plan(d.items, d.study, Date.now(), learnEnv()); },
   lessons() { return this.plan().lessons; },
   due() { const p = this.plan(); return p.reviews.slice(0, p.reviewsLeft); },
   /* vacation mode: nothing to study; coming back moves every review on by the time away */
