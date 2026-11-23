@@ -196,13 +196,13 @@ const Store = {
       delete d.wstatus[w];
     }
     for (const [k, it] of Object.entries(d.items)) if (it.kind === 'word' && oneChar(k)) it.kind = 'char';
-    // Characters marked Known are in the reviews too, from Journeyman I. The ones
+    // Characters marked Known are in the reviews too, from Novice I. The ones
     // that aren't yet (from before, or from a device that didn't do this) get their
-    // first reviews spread over the next month, most common first, 20 a day at most.
+    // first reviews spread over the next few days, most common first, 20 a day at most.
     const known = Object.keys(d.status).filter(c => d.status[c] === 'learned' && !d.items[c] && HZ.index[c]);
     if (known.length) {
       const now = Date.now(), rank = c => HZ.index[c][0] || 1e9;
-      const span = Math.max(30, Math.ceil(known.length / 20)) * Learn.DAY;
+      const span = Math.max(3, Math.ceil(known.length / 20)) * Learn.DAY;
       known.sort((a, b) => rank(a) - rank(b)).forEach((c, i) => {
         d.items[c] = Learn.known('char', charInfo(c), now, Math.round(span * i / known.length));
       });
@@ -217,12 +217,12 @@ const Store = {
     return d;
   },
   /* Known things have no lesson: a character or word waiting for its first lesson that is
-     marked Known (here, or on another device and synced) joins the reviews at Journeyman I
+     marked Known (here, or on another device and synced) joins the reviews at Novice I
      instead, as marking it would have done, and a component you know leaves the queue.
      (One sent back with Learn again has had a lesson before: that was asked for, so it stays.)
      Returns how many changed. */
   settleKnown() {
-    const d = this.data, now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
+    const d = this.data, now = Date.now(), wait = Learn.KNOWN_WAIT;
     let n = 0;
     for (const [k, it] of Object.entries(d.items)) {
       if (it.stage !== 0 || it.learnt) continue;
@@ -233,13 +233,13 @@ const Store = {
     }
     return n;
   },
-  /* words marked Known with no item yet: in the reviews from Journeyman I, their first
-     reviews spread over the next month as the characters' are */
+  /* words marked Known with no item yet: in the reviews from Novice I, their first
+     reviews spread over the next few days as the characters' are */
   adoptKnownWords() {
     const d = this.load(), now = Date.now();
     const known = Object.keys(d.wstatus).filter(w => d.wstatus[w] === 'learned' && !oneChar(w) && !d.items[w] && wordEntries(w).length);
     if (!known.length) return 0;
-    const span = Math.max(30, Math.ceil(known.length / 20)) * Learn.DAY;
+    const span = Math.max(3, Math.ceil(known.length / 20)) * Learn.DAY;
     known.forEach((w, i) => { d.items[w] = Learn.known('word', wordInfo(w), now, Math.round(span * i / known.length)); });
     this.save();
     return known.length;
@@ -263,11 +263,11 @@ const Store = {
   setStatus(ch, s) {
     const d = this.load();
     if (s) d.status[ch] = s; else delete d.status[ch];
-    // marked learned: in the reviews at Journeyman I, first review a month on
+    // marked learned: in the reviews at Novice I, first review in a few days
     if (s === 'learned' && HZ.index[ch]) {
-      const it = d.items[ch], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
+      const it = d.items[ch], now = Date.now(), wait = Learn.KNOWN_WAIT;
       if (!it) d.items[ch] = Learn.known('char', charInfo(ch), now, wait);
-      else if (it.stage < Learn.LEARNED_FROM) Learn.sayKnown(it, now, wait);   // a month's stability at least
+      else if (!(it.stage >= 1)) Learn.sayKnown(it, now, wait);   // waiting for its lesson: no lesson now
     }
     this.touch();
   },
@@ -279,11 +279,11 @@ const Store = {
     if (oneChar(w)) return this.setStatus(w, s);      // a one-character word is the character
     const d = this.load();
     if (s) d.wstatus[w] = s; else delete d.wstatus[w];
-    // marked learned: in the reviews at Journeyman I, first review a month on (as characters)
+    // marked learned: in the reviews at Novice I, first review in a few days (as characters)
     if (s === 'learned') {
-      const it = d.items[w], now = Date.now(), wait = Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY;
+      const it = d.items[w], now = Date.now(), wait = Learn.KNOWN_WAIT;
       if (!it) d.items[w] = Learn.known('word', info || wordInfo(w), now, wait);
-      else if (it.stage < Learn.LEARNED_FROM) Learn.sayKnown(it, now, wait);
+      else if (!(it.stage >= 1)) Learn.sayKnown(it, now, wait);
     }
     this.touch();
   },
@@ -338,7 +338,7 @@ const Store = {
     const d = this.load(), now = Date.now();
     const knownAlready = (kind === 'char' ? d.status : kind === 'word' ? d.wstatus : {})[k] === 'learned';
     if (!d.items[k] && knownAlready) {            // known already: no lesson, into the reviews (as marking it does)
-      d.items[k] = Learn.known(kind, info, now, Learn.STAGES[Learn.LEARNED_FROM][1] * Learn.DAY);
+      d.items[k] = Learn.known(kind, info, now, Learn.KNOWN_WAIT);
     } else if (!d.items[k]) {
       if (d.study.skip && d.study.skip.includes(k)) d.study.skip = d.study.skip.filter(x => x !== k);   // asked for after all
       d.items[k] = Learn.newItem(kind, info, now);
@@ -2636,7 +2636,7 @@ function paintReadDone() {
         <p><button type="button" class="btn" id="rd-add">Add to lessons</button> <span class="small" id="rd-add-msg"></span></p>
       </div>` : ''}
     ${rest.size ? `<div class="rd-step">
-        <p class="small">${rest.size === 1 ? 'One word' : rest.size + ' words'} you didn’t look up ${rest.size === 1 ? 'is' : 'are'} not marked known yet. If you understood ${rest.size === 1 ? 'it' : 'them'}, mark ${rest.size === 1 ? 'it' : 'them'} known (${rest.size === 1 ? 'it goes' : 'they go'} into your reviews, a month out):</p>
+        <p class="small">${rest.size === 1 ? 'One word' : rest.size + ' words'} you didn’t look up ${rest.size === 1 ? 'is' : 'are'} not marked known yet. If you understood ${rest.size === 1 ? 'it' : 'them'}, mark ${rest.size === 1 ? 'it' : 'them'} known (${rest.size === 1 ? 'it goes' : 'they go'} into your reviews, a few days out):</p>
         <div class="rd-chips">${[...rest.values()].slice(0, 40).map(chip).join('')}${rest.size > 40 ? ` <span class="small muted">and ${rest.size - 40} more</span>` : ''}</div>
         <p><button type="button" class="btn quiet" id="rd-known">Mark ${rest.size === 1 ? 'it' : 'all ' + rest.size} known</button></p>
       </div>` : ''}

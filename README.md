@@ -286,11 +286,11 @@ isn't asked for: it comes from the answers, not from how fast you give them. A w
 the answer shown) is *again*, a slip of tone *hard*, right *good*. Only a calibration test times
 you: there a long think (over 15 seconds before typing starts) is *hard* too, and right and typing
 within 3 seconds on both questions *easy* — but only on an item remembered a month or more
-(Journeyman) that wasn't missed or hard last time, since a quick answer on a young item says more
+(Adept), or one marked Known and not yet checked, that wasn't missed or hard last time, since a quick answer on a young item says more
 about having just seen it; the lesson's quiz gives the first rating, *good* at best.
-A lapse is relearned in the session, which FSRS counts as a same-day review. The stages keep
-HanziHero's names as bands of stability (Novice under 4 days, Apprentice from a week,
-Journeyman from a month, Expert from 4 months, Master from 2 years), and the item info panel
+A lapse is relearned in the session, which FSRS counts as a same-day review. The stages are
+bands of stability (Novice under 4 days, Apprentice from a week,
+Adept from a month, Expert from 4 months, Master from 2 years), and the item info panel
 shows each item's numbers. **Every rating is logged** on its item (the time, the rating and
 the chance of recall FSRS gave it; about 400 KB a year at 100 reviews a day, synced with the
 rest), and Statistics → Download the review log gives it as the `revlog.csv` the
@@ -318,13 +318,13 @@ learned, mastered or slipped back to learning, and when the next reviews come. *
 missed** runs them again without changing their schedule, as does **Weak spots**
 (misses from the last three days among them). A character or word is **Known** once its lesson is done, or
 when you mark it Known (Unknown otherwise). Every character marked Known is in the reviews too,
-from Journeyman I: ones marked before this have their first reviews spread over a month, most
-common first (20 a day at most), and one marked later comes up a month after. The
+from Novice I: ones marked before this have their first reviews spread over a few days, most
+common first (20 a day at most), and one marked later comes up 3 days after. The
 **calibration test** (Today → Sort your learned characters) sorts them by how well you really know them: a
 review session over the ones not yet checked, rated from your answers like any other and taken
-as if each came right when due, so FSRS puts each where it fits (from a stability of a month:
-wrong goes to Novice, a slip stays at Journeyman, right goes up to Journeyman II, right at once
-to Expert). The ones you didn't know can go back to the lessons. Today
+as if each came right when due, so FSRS puts each where it fits (from Novice I, a stability of 3 days:
+wrong stays at Novice I, a slip goes to Novice II, right up to Apprentice I, right at once
+to Apprentice II). The ones you didn't know can go back to the lessons. Today
 shows what you can start now (and why not, when nothing), the week ahead, the lesson queue
 (☆ to prioritize, 🔒 for what waits to unlock) and how many items are at each stage.
 
@@ -349,7 +349,7 @@ as it is (hanzi, pinyin, meaning, the sentence you found it in, your mnemonic, t
 stage), and imports an Anki deck: a `.apkg` (old or new format, read in the page with sql.js and
 fzstd from `site/vendor/`) or Anki's plain-text export. It guesses which field is the hanzi,
 the pinyin and the meaning (you can change them), shows what it found, and adds the new ones to
-your lessons, or to your reviews at Journeyman if you already know them. Traditional decks are
+your lessons, or to your reviews at Novice if you already know them. Traditional decks are
 kept under their simplified form, and the dictionary's readings are used where it has the word.
 
 **Reader** — 30 original graded stories, five per HSK level, each at least 250 characters

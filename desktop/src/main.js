@@ -344,7 +344,7 @@ function learnWord(w, pin, gloss, sentence) {
 }
 
 /* mark a word Known or Unknown in the site's store, as its Words page does: Known
-   puts it in the reviews at Journeyman. Hands back every status. */
+   puts it in the reviews at Novice. Hands back every status. */
 function markWord(w, s) {
   return win.webContents.executeJavaScript(`(async () => {
     const w = ${JSON.stringify(w)};

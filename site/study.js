@@ -1029,7 +1029,7 @@ function ankiPreview(box, name, deck, cols, redraw) {
       <button class="btn" id="anki-lessons">Add ${fresh.length} to lessons</button>
       <button class="btn quiet" id="anki-known">I know these: add ${fresh.length} to reviews</button></div>
       <p class="small muted">To lessons: each is taught before it's reviewed, within your daily limits. Known: they join the
-        reviews at Journeyman, the first ones spread over the next month (20 a day at most), and a calibration test can
+        reviews at Novice, the first ones a few days out (20 a day at most), and a calibration test can
         sort them.</p>` : ''}
   </div>`;
   box.querySelectorAll('[data-col]').forEach(sel => sel.addEventListener('change', () => {
@@ -1049,7 +1049,7 @@ function ankiPreview(box, name, deck, cols, redraw) {
   });
   const known = document.getElementById('anki-known');
   if (known) known.addEventListener('click', () => {
-    const now = Date.now(), span = Math.max(30, Math.ceil(fresh.length / 20)) * Learn.DAY;
+    const now = Date.now(), span = Math.max(3, Math.ceil(fresh.length / 20)) * Learn.DAY;
     fresh.forEach((x, i) => {
       d.items[x.k] = Learn.known(x.kind, ankiInfo(x), now, Math.round(span * i / fresh.length));
       if (x.kind === 'char') d.status[x.k] = 'learned';
@@ -1349,7 +1349,7 @@ function drawStudy() {
   const max = Math.max(1, ...fc);
   const dayName = i => i === 0 ? 'Today' : i === 1 ? 'Tomorrow'
     : new Date(now + i * Learn.DAY).toLocaleDateString(undefined, { weekday: 'long' });
-  const groups = ['Novice', 'Apprentice', 'Journeyman', 'Expert', 'Master'];
+  const groups = ['Novice', 'Apprentice', 'Adept', 'Expert', 'Master'];
   const inGroup = g => items.filter(([, it]) => Learn.group(it.stage) === g).length;
 
   // the tiles: what you can start now, and why not when it's nothing
@@ -1471,7 +1471,7 @@ function drawStudy() {
     ${unsorted ? `<section class="card cb-cta">
       <h2>Sort your learned characters</h2>
       <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
-        Journeyman without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
+        Novice without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
       <p><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : ''}
     <section class="card" id="lc-card" hidden></section>
     ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
@@ -3038,7 +3038,7 @@ const GRADE_WHY = [null,
   'Right, but with a slip of tone (or, in a calibration test, after a long think)',
   'Right first time',
   'In a calibration test: right first time, and you started typing within ' + Learn.QUICK / 1000 + ' seconds on every question'
-    + ' (on an item remembered a month or more, not missed or hard last time)'];
+    + ' (on an item remembered a month or more, or marked Known and not yet checked, and not missed or hard last time)'];
 
 /* Practice: a session over the given items that leaves their schedule alone */
 function startPractice(keys) {
@@ -3049,7 +3049,7 @@ function startPractice(keys) {
 // -------------------------------------------------------------- calibration
 
 /* The calibration test: characters you marked as learned all joined the reviews at
-   Journeyman I, unchecked. The test is a review session over them (typed answers,
+   Novice I, unchecked. The test is a review session over them (typed answers,
    pronunciation first), rated by the app from the answers like any review, and
    taken as if each came right when due (Learn.calibrate): FSRS moves each to the
    stability that fits, and reviews carry on from there. No asking how well you
@@ -3071,19 +3071,19 @@ function byCommon(keys) {
 function pageCalibrate() {
   const { all, unsorted } = calibrationSets();
   app.innerHTML = '<h1 class="page-title">Calibration test</h1>' + withRail(`<section class="card">
-    <p>Characters you marked as learned all joined your reviews at Journeyman, whether you know them well
+    <p>Characters you marked as learned all joined your reviews at Novice, whether you know them well
       or hardly at all. This sorts them by how well you really know them: type each one's pronunciation and
       meaning, as in a review, and HanziHome judges from your answers.</p>
     <div class="cb-map">
-      <div class="g1"><b>Wrong</b><span>back to Novice: again in days</span></div>
-      <div class="g2"><b>A slip, or a long think</b><span>stays at Journeyman</span></div>
-      <div class="g3"><b>Right</b><span>up to Journeyman II: in about 3 months</span></div>
-      <div class="g4"><b>Right at once</b><span>up to Expert: in about 7 months</span></div>
+      <div class="g1"><b>Wrong</b><span>stays at Novice I: again tomorrow</span></div>
+      <div class="g2"><b>A slip, or a long think</b><span>up to Novice II: in about 5 days</span></div>
+      <div class="g3"><b>Right</b><span>up to Apprentice I: in about 11 days</span></div>
+      <div class="g4"><b>Right at once</b><span>up to Apprentice II: in about 4 weeks</span></div>
     </div>
     <p class="small muted">“At once” is starting to type within ${Learn.QUICK / 1000} seconds; a long think is over
       ${Learn.SLOW / 1000}. From there FSRS takes over: every review moves each one's stability up or down.
       Each answer counts at once, so you can stop whenever you like (wrap up, or leave the page) and carry on later.
-      Characters that fall below Journeyman count as learning again across HanziHome.</p>
+      Characters count as learned across HanziHome once they reach Adept.</p>
     <div class="st-field"><div class="st-label">Which</div>
       <label class="cb-opt"><input type="radio" name="cb-set" value="unsorted"${unsorted.length ? ' checked' : ' disabled'}>
         Not sorted yet (${unsorted.length})</label>
