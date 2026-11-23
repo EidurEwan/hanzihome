@@ -1476,7 +1476,6 @@ kbd { font: 700 11px/1 ui-monospace, Consolas, monospace; padding: 2px 5px; bord
 .ex-zh ruby { ruby-position: under; }
 .ex-zh rt { font-family: var(--sans, inherit); font-size: 11.5px; color: var(--ink-2); padding-top: 2px; }
 .ex-w { color: inherit; text-decoration: none; padding: 0 2px; border-radius: 4px; }
-a.ex-w:hover { background: var(--panel-2); }
 mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
 .ex-c { background: var(--accent-soft, #fde68a); font-weight: inherit; border-radius: 2px; }
 .ex-p { padding: 0; }
@@ -3259,13 +3258,13 @@ a:focus-visible, button:focus-visible, summary:focus-visible, [tabindex]:not(#ap
      scrolls down to the mnemonic, and the answer box, read-only now, brings no keyboard up
      to press Enter on: without this, going on would mean scrolling back up for the button. */
   .rv-after .row { flex-direction: column; align-items: stretch; }
-  .rv-after .rv-next {
+  .rv-next {
     position: fixed; z-index: 30; top: auto; left: max(var(--gutter, 12px), env(safe-area-inset-left));
     right: max(var(--gutter, 12px), env(safe-area-inset-right)); bottom: calc(12px + env(safe-area-inset-bottom));
     min-height: 52px; justify-content: center; font-size: 17px;
   }
   #app:has(.rv-next) { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
-  html.kb-open .rv-after .rv-next { display: none; }      /* typing a synonym: Enter goes on */
+  html.kb-open .rv-next { display: none; }      /* typing a synonym: Enter goes on */
 }
 .lx-tab-short { display: none; }
 @media (max-width: 420px) {
@@ -4821,3 +4820,194 @@ a.lx-q.prio:hover { box-shadow: 0 0 0 3px var(--yellow); }
 .lx-batch span.word.on { box-shadow: 0 3px 0 var(--word-edge), 0 0 0 3px var(--yellow); }
 .lx-batch span.comp.on { box-shadow: 0 3px 0 var(--comp-edge), 0 0 0 3px var(--yellow); }
 .lx-batch span.sound.on { box-shadow: 0 3px 0 var(--sound-edge), 0 0 0 3px var(--yellow); }
+
+/* ======================================================================
+   Lessons and reviews, redrawn (2026-11): the card as a deck, narrower, with a light rim
+   in its own colour and a dark foot joined under it (the question, or the lesson's steps);
+   behind it, what it stands among (the next items, or its prerequisites). The session as
+   a row of segments; the tools with names; the info panel and lessons as tiles.
+   ====================================================================== */
+.dk, #app > .dk { position: relative; width: 100%; max-width: 420px; margin: 4px auto 22px; }
+.dk.dk-has-behind { padding-top: 24px; }
+.dk-front, .dk-card { position: relative; z-index: 1; }
+#app .dk .dk-card .lx-band { --k: var(--lx-char); margin: 0; border: 10px solid color-mix(in srgb, var(--k) 52%, #fff);
+  border-bottom: 0; border-radius: 24px 24px 0 0; box-shadow: none; }
+#app .dk .dk-card .lx-band.word { --k: var(--lx-word); }
+#app .dk .dk-card .lx-band.comp { --k: var(--lx-comp); }
+#app .dk .dk-card .lx-band.sound { --k: var(--lx-sound); }
+.dk-stage { position: absolute; z-index: 2; left: 18px; top: 16px; font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: #fff; background: rgb(0 0 0 / .2); border-radius: 99px; padding: 4px 10px; pointer-events: none; }
+.dk-foot { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap;
+  min-height: 52px; box-sizing: border-box; padding: 8px 12px; background: #2b2f36; color: #fff; font-size: 18px; text-align: center;
+  border-radius: 0 0 24px 24px; box-shadow: 0 6px 0 #14171b; }
+.dk-foot b { font-weight: 700; }
+.dk-sub { font-size: 13px; opacity: .7; margin-left: 4px; }
+/* the lesson's steps, in the foot */
+.dk-foot .lx-tabs { margin: 0; gap: 2px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+#app .dk-foot .lx-tabs button { color: #c9d1dc; background: none; box-shadow: none; padding: 6px 12px; border-radius: 99px; font-size: 14px; white-space: nowrap; }
+#app .dk-foot .lx-tabs button:hover { color: #fff; }
+#app .dk-foot .lx-tabs button.on { background: #fff; color: #222; }
+/* behind a review's card: the next items' colours */
+.dk-b { position: absolute; top: 0; bottom: 30px; border-radius: 24px; background: var(--lx-char); }
+.dk-b.word { background: var(--lx-word); } .dk-b.comp { background: var(--lx-comp); } .dk-b.sound { background: var(--lx-sound); }
+.dk-b.b2 { left: 32px; right: 32px; opacity: .55; }
+.dk-b.b1 { left: 16px; right: 16px; top: 24px; opacity: .8; }
+.dk.dk-has-behind:has(> .dk-next) { padding-top: 50px; }
+/* the card just answered, leaving */
+.dk-front.dk-gone { position: absolute; z-index: 3; margin: 0; pointer-events: none; }
+/* behind a lesson's card: its parts, as small cards; for a part, the character it is for */
+.dk-parts { position: absolute; top: 0; left: 26px; right: 26px; display: flex; justify-content: space-evenly; gap: 6px; }
+.dk-p { --k: var(--lx-comp); width: 58px; height: 64px; box-sizing: border-box; border-radius: 13px; padding-top: 4px;
+  display: flex; justify-content: center; background: var(--k); border: 4px solid color-mix(in srgb, var(--k) 52%, #fff);
+  color: #fff; font-size: 17px; font-weight: 700; }
+.dk-p.char { --k: var(--lx-char); } .dk-p.sound { --k: var(--lx-sound); }
+/* the parts peek out far enough to read, and lift when pointed at */
+.dk.dk-has-behind:has(> .dk-parts) { padding-top: 42px; }
+.dk-p { transition: transform .18s var(--m-ease); }
+.dk-p:hover { transform: translateY(-8px); }
+.dk-parts.m-parts-in .dk-p { animation: dk-p-in .46s var(--m-spring) backwards; animation-delay: calc(.18s + var(--i, 0) * .07s); }
+.dk-p.dk-ghost { position: absolute; z-index: 0; margin: 0; pointer-events: none; }
+@keyframes dk-p-in { from { opacity: 0; transform: translateY(44px) scale(.7); } }
+@media (prefers-reduced-motion: reduce) { .dk-p { transition: none; } .dk-parts.m-parts-in .dk-p { animation: none; } }
+.dk-p .han { font-size: 18px; line-height: 1.2; }
+.dk-owner { position: absolute; top: 0; left: 36px; right: 36px; }
+.dk-o { --k: var(--lx-char); display: flex; align-items: flex-start; justify-content: center; gap: 8px; height: 80px; box-sizing: border-box;
+  padding-top: 3px; border-radius: 20px; background: var(--k); border: 6px solid color-mix(in srgb, var(--k) 52%, #fff); color: #fff;
+  font-size: 13px; font-weight: 700; }
+.dk-o.word { --k: var(--lx-word); }
+.dk-o small { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .85; margin-top: 2px; }
+.dk-o .han { font-size: 16px; }
+
+/* ---- reviews ---- */
+.rv-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 4px 0 10px; font-size: 14px; color: var(--ink-2); }
+.rv-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.rv-of b { color: var(--ink); }
+.rv-flex { flex: 1; }
+/* Wrap up and the settings stay side by side, whatever wraps */
+.rv-end { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.rv-dot { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.rv-dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.rv-dot.bad::before { background: var(--bad); }
+.rv-head .rv-live { display: inline-flex; gap: 14px; }
+.rv-link { border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-2); padding: 10px 8px; cursor: pointer; }
+.rv-link:hover, .rv-link.on { color: var(--ink); }
+.rv-link.on { color: var(--blue); }
+.rv-icon { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 12px; background: var(--panel);
+  color: var(--ink-2); cursor: pointer; }
+.rv-icon svg { width: 18px; height: 18px; }
+.rv-icon:hover, .rv-icon.on { color: var(--ink); }
+.rv-icon.on { box-shadow: 0 0 0 2px var(--ink); }
+.rv-segs { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 4px; margin-bottom: 18px; }
+.rv-segs i { height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--ink-3) 30%, transparent); transition: background .3s; }
+.rv-segs i.ok { background: var(--green); } .rv-segs i.bad { background: var(--bad); }
+.rv-segs i.miss { background: color-mix(in srgb, var(--bad) 45%, transparent); }
+.rv-segs i.now { background: var(--blue); }
+.rv-note { margin: -8px 0 12px; font-size: 13px; font-weight: 600; color: var(--purple); text-align: center; }
+#app .rv-input { border-radius: 16px; font-size: 22px; min-height: 60px; }
+#app .rv-input:not(.ok):not(.bad) { border: 2px solid var(--blue); box-shadow: 0 0 0 4px color-mix(in srgb, var(--blue) 18%, transparent); }
+#app .rv-input.ok { background: #42f4b0; border-color: #42f4b0; color: #0e3b2a; box-shadow: 0 4px 0 #2da779; }
+#app .rv-input.bad { box-shadow: 0 4px 0 var(--pink-edge); }
+.rv-after { margin-top: 14px; padding: 12px 16px; background: var(--panel); border-radius: 16px; }
+.rv-after p { margin: 4px 0; }
+.rv-tools { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+/* Next, once answered, at the end of the tools, as tall as they are */
+.rv-tools .rv-next { align-self: stretch; padding-block: 0; }
+#app .rv-tool { display: inline-flex; align-items: center; gap: 8px; width: auto; height: 44px; padding: 0 14px; font: inherit; font-size: 13px;
+  font-weight: 600; color: var(--ink); }
+#app .rv-tool svg { width: 18px; height: 18px; }
+#app .rv-tool:disabled { opacity: .4; background: transparent; box-shadow: 0 0 0 1px var(--line-2) inset; }
+#app .rv-tool.on { background: #2b2f36; color: #fff; box-shadow: none; }
+.rv-panel.rv-panel2::before { display: none; }
+.rv-panel.rv-panel2 { margin: 0 0 16px; }
+/* the info panel: each section its own tile; the mnemonic and the usage across the width */
+#app .rv-panel.rv-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px;
+  padding: 0; background: none; border: 0; box-shadow: none; align-items: start; }
+.rv-tiles .rv-stage { grid-column: 1 / -1; margin: 0; }
+.rv-tiles .rv-sec { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 2px 16px;
+  box-shadow: 0 2px 4px rgb(60 50 30 / .04); min-width: 0; }
+.rv-tiles .rv-sec summary { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); padding: 12px 0; }
+.rv-tiles .rv-sec[data-sec="Mnemonic"], .rv-tiles .rv-sec[data-sec="Usage"] { grid-column: 1 / -1; }
+/* the info panel laid out to fit, every row's tiles as tall as each other (open or shut):
+   the meaning open, it takes two columns (and both rows, with the parts and pronunciation
+   stacked beside it); shut, the three share a row. Notes beside a wider memory. */
+#app .rv-panel.rv-tiles { align-items: stretch; grid-auto-flow: row dense; }
+.rv-tiles .rv-sec[data-sec="Memory"] { grid-column: span 2; }
+.rv-tiles .rv-sec[data-sec="Meaning"][open] { grid-column: span 2; }
+.rv-tiles:has(> [data-sec="Meaning"][open]):has(> [data-sec="Composition"], > [data-sec="Characters"]) > :is([data-sec="Composition"], [data-sec="Characters"], [data-sec="Pronunciation"]) { grid-column: 1; }
+.rv-tiles:has(> [data-sec="Composition"], > [data-sec="Characters"]) > [data-sec="Meaning"][open] { grid-column: 2 / -1; grid-row: span 2; }
+@media (max-width: 640px) { .rv-tiles .rv-sec[data-sec] { grid-column: auto !important; grid-row: auto !important; } }
+.rv-tiles .rv-sec .lx-dl { grid-template-columns: 1fr; gap: 2px; }
+.rv-tiles .rv-sec .lx-dl dt { font-size: 12px; margin-top: 4px; }
+@media (max-width: 640px) { #app .rv-panel.rv-tiles { grid-template-columns: 1fr; } }
+
+/* ---- the session summary ---- */
+.ss-top { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.ss-meta { margin: 0; color: var(--ink-2); font-size: 14px; }
+#app .ss-ret { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 18px 24px; padding: 20px 22px; }
+.ss-ring { --p: 0; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(var(--green) calc(var(--p) * 1%), var(--bad) 0); }
+.ss-ring span { display: grid; place-items: center; width: 86px; height: 86px; border-radius: 50%; background: var(--panel);
+  font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.ss-ring b { display: inline; font-size: 32px; font-weight: 800; line-height: 1; color: var(--ink); }
+/* the number and its % on one baseline, that line in the middle of the ring */
+.ss-ring span { display: flex; flex-wrap: wrap; align-content: center; align-items: baseline; justify-content: center; padding: 0; line-height: 1; box-sizing: border-box; }
+.ss-ring-lab { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--ink-2); }
+.ss-ring-lab b { font-size: 16px; color: var(--ink); }
+.ss-bars2 { display: grid; gap: 12px; min-width: 200px; }
+.ss-bar2 p { display: flex; justify-content: space-between; margin: 0 0 6px; font-size: 14px; }
+.ss-bar2 p span:last-child { color: var(--ink-2); } .ss-bar2 p b { color: var(--ink); }
+.ss-bar2 .ss-bar { height: 10px; }
+.ss-ret .ss-note { grid-column: 1 / -1; }
+@media (max-width: 640px) { #app .ss-ret { grid-template-columns: auto 1fr; } .ss-bars2 { grid-column: 1 / -1; } }
+.ss-items-head .ss-h { display: flex; align-items: baseline; gap: 10px; }
+.ss-items-head .ss-count { font-size: 14px; font-weight: 500; }
+.ss-sub-end { justify-content: flex-end; }
+.ss-grp + .ss-grp { border-top: 1px solid var(--line); padding-top: 10px; }
+.ss-stage-lab { grid-row: 3; justify-self: start; text-align: left; white-space: nowrap; color: var(--ink-2); font-weight: 600; margin-top: 2px; }
+
+/* ---- lessons: the steps as tiles under the deck ---- */
+#app .lx-body { display: block; background: none; border: 0; box-shadow: none; padding: 0; }
+.lx-body .lx-arrow { display: none; }
+#app .lx-main.lt-tiles { max-width: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+.lt-tile { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+  box-shadow: 0 2px 4px rgb(60 50 30 / .04); min-width: 0; }
+.lt-tile.wide { grid-column: 1 / -1; } .lt-tile.span2 { grid-column: span 2; }
+#app .lt-tile h3 { margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.lt-tile h3 .lt-hint { letter-spacing: 0; text-transform: none; font-weight: 500; }
+.lt-tile .lx-dl { grid-template-columns: 1fr; gap: 2px; }
+.lt-tile .lx-dl dt { font-size: 12px; margin-top: 4px; }
+.lt-tile > p:last-child { margin-bottom: 0; }
+.lt-tiles .intro-go, .lt-after { grid-column: 1 / -1; justify-content: center; margin: 4px 0 0; }
+@media (max-width: 640px) { #app .lx-main.lt-tiles { grid-template-columns: 1fr; } .lt-tile.span2 { grid-column: auto; } }
+/* a sentence's pinyin: only once asked for */
+.lx-pinless { cursor: pointer; border-radius: 8px; }
+.lx-pinless:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.lx-pinless:not(.pin-on) rt { display: none; }
+.lx-pinless:not(.pin-on) .ex-w { cursor: pointer; }
+.lx-step { justify-content: center; }
+.rv-tiles .rv-sec dd { overflow-wrap: anywhere; }
+.rv-tiles .rv-synform { display: flex; flex-wrap: wrap; max-width: 100%; }
+.rv-tiles .rv-synform input { min-width: 0; flex: 1 1 120px; }
+@media (max-width: 640px) {
+  .rv-head { gap: 8px 10px; }
+  .rv-head .rv-live { order: 10; flex-basis: 100%; gap: 12px; font-size: 12px; }
+  .rv-head .rv-flex { display: none; }
+  .rv-head .rv-end { margin-left: auto; }
+}
+/* the steps in the deck's foot: their short names (Parts, Check), so all four fit */
+#app .dk-foot .lx-tab-long { display: none; }
+#app .dk-foot .lx-tab-short { display: inline; }
+@media (max-width: 380px) { #app .dk-foot .lx-tabs button { padding: 6px 9px; font-size: 13px; } }
+
+/* a miss, in the answer box itself: what you typed struck through, then the answer */
+#rv-form:has(.rv-fix) { position: relative; }
+.rv-input[data-fix] { color: transparent; caret-color: transparent; }
+.rv-fix { position: absolute; inset: 0; margin: 0; display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 0 16px; pointer-events: none; color: #fff; font-size: 20px; overflow: hidden; white-space: nowrap; }
+.rv-fix s { opacity: .6; font-weight: 600; text-decoration-thickness: 2px; overflow: hidden; text-overflow: ellipsis; }
+.rv-fix-to { opacity: .75; font-size: 16px; }
+.rv-fix b { font-weight: 800; font-size: 22px; overflow: hidden; text-overflow: ellipsis; }
+.rv-tool.rv-typo { color: var(--ink); }
+/* a long word in the band: one line, shrunk to fit (study.js glyphFit) */
+.lx-glyph .lx-fit { white-space: nowrap; }
+.lx-band.word .lx-glyph { white-space: nowrap; }
