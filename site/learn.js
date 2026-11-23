@@ -352,9 +352,9 @@
 
   /* How many items you had learned on each day, for the chart on the study page: an
      item counts from its first lesson (its log's first 'l'), or from when you said you
-     knew it without one, in its own series ('known': characters marked learned on the
-     rest of the site). From the first day anything was learned to today, `most` days at
-     most. -> {days: [day starts], series: {sound, comp, char, word, known: [running totals]}} */
+     knew it without one: a character or word marked Known counts as learned, with its own
+     kind. From the first day anything was learned to today, `most` days at most.
+     -> {days: [day starts], series: {sound, comp, char, word: [running totals]}} */
   /* What had its lesson today, by kind, in the order learned. An item sent back to lessons since
      (stage 0) doesn't count until it is learned again. */
   function learnedOn(items, now) {
@@ -367,7 +367,7 @@
     return out;
   }
 
-  const LEARNED_KINDS = ['sound', 'comp', 'char', 'word', 'known'];
+  const LEARNED_KINDS = ['sound', 'comp', 'char', 'word'];
   function learnedByDay(items, now, most = 365) {
     const when = [];
     for (const it of Object.values(items)) {
@@ -375,7 +375,7 @@
       const first = (it.log || []).find(r => r[2] === 'l' || r[2] === 'k');
       const t = first ? first[0] * 6e4 : it.learnt || it.joined;
       if (!t) continue;
-      when.push([t, first ? (first[2] === 'k' ? 'known' : it.kind || 'char') : it.learnt ? it.kind || 'char' : 'known']);
+      if (LEARNED_KINDS.includes(it.kind || 'char')) when.push([t, it.kind || 'char']);
     }
     const today = dayStart(now), from = when.length ? Math.max(dayStart(Math.min(...when.map(x => x[0]))), today - (most - 1) * DAY) : today;
     const days = [];
