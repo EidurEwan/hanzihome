@@ -218,19 +218,20 @@
 
   /* The rating a review earned, worked out from the answers: one per question, each
      {ok, near (a slip: the right syllables with a wrong tone), ms (from the question
-     showing to the first key typed)}. Wrong: again. A slip, or a long think: hard.
-     Right at once on every question: easy. Otherwise good.
-     Given the item (as it was before this review), easy also needs it to have been
-     remembered a month (Journeyman) and its last rating not to have been again or
-     hard: a quick answer on a young item says more about having seen it lately than
-     about knowing it, and FSRS's easy multiplies the next wait by three. (A lesson's
-     quiz, before any memory, is good at best.) */
+     showing to the first key typed)}. Wrong: again. A slip: hard. Otherwise good.
+     How fast you answered counts only when `timed` (a calibration test, sorting what you
+     marked as known by how well you know it): there a long think is hard too, and right
+     at once on every question easy. Given the item (as it was before this review), easy
+     also needs it to have been remembered a month (Journeyman) and its last rating not
+     to have been again or hard: a quick answer on a young item says more about having
+     seen it lately than about knowing it, and FSRS's easy multiplies the next wait by
+     three. (A lesson's quiz, before any memory, is good at best.) */
   const QUICK = 3000, SLOW = 15000, EASY_FROM = STAGES[LEARNED_FROM][1];
-  function gradeFrom(answers, item) {
+  function gradeFrom(answers, item, timed) {
     if (!answers.length) return GOOD;
     if (answers.some(a => !a.ok && !a.near)) return AGAIN;
-    if (answers.some(a => a.near || a.ms > SLOW)) return HARD;
-    if (!answers.every(a => a.ms <= QUICK)) return GOOD;
+    if (answers.some(a => a.near || (timed && a.ms > SLOW))) return HARD;
+    if (!timed || !answers.every(a => a.ms <= QUICK)) return GOOD;
     if (item) {
       adopt(item);
       const last = (item.grades || []).slice(-1)[0];
