@@ -2621,7 +2621,7 @@ function nextQuestion() {
     a[q] = true;
     if ((s.need[k] || ['pinyin', 'meaning']).every(x => a[x])) {
       const it = Store.item(k), right = !s.misses[k];
-      let g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}), it);
+      let g = s.grades[k] = Learn.gradeFrom(Object.values(s.first[k] || {}), it, s.calibrating);
       const opts = { retention: Store.cfg().retention };
       if (s.mode === 'lessonquiz') {
         // the first review: the quiz, and the lesson's check before it, the worse of the two
@@ -3035,9 +3035,9 @@ function memoryPanel(it) {
 /* why the app gives a rating (Learn.gradeFrom) */
 const GRADE_WHY = [null,
   'A wrong answer (or the answer shown)',
-  'Right, but with a slip of tone or after a long think',
+  'Right, but with a slip of tone (or, in a calibration test, after a long think)',
   'Right first time',
-  'Right first time, and you started typing within ' + Learn.QUICK / 1000 + ' seconds on every question'
+  'In a calibration test: right first time, and you started typing within ' + Learn.QUICK / 1000 + ' seconds on every question'
     + ' (on an item remembered a month or more, not missed or hard last time)'];
 
 /* Practice: a session over the given items that leaves their schedule alone */
@@ -3238,8 +3238,9 @@ function paintStudySettings() {
       value="${Math.round(c.retention * 100)}"><output>${Math.round(c.retention * 100)}%</output></div>`,
       'Reviews are scheduled by FSRS: an item comes back when your chance of recalling it has fallen to this. Higher means '
       + 'more reviews, each easier; 90% is FSRS’s own choice. The rating of each review (again, hard, good, easy) isn’t asked: '
-      + 'it comes from your answers. Wrong is again; a slip of tone or a long think (over ' + Learn.SLOW / 1000 + ' seconds '
-      + 'before you start typing) is hard; right is good; right and started within ' + Learn.QUICK / 1000 + ' seconds is easy.')}
+      + 'it comes from your answers, not from how fast you give them. Wrong is again; a slip of tone is hard; right is good. '
+      + 'Only a calibration test times you: there a long think (over ' + Learn.SLOW / 1000 + ' seconds before you start typing) '
+      + 'is hard too, and right and started within ' + Learn.QUICK / 1000 + ' seconds is easy.')}
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
       ['learned', 'Unlock when its components are learned'], ['familiar', 'Unlock when its components are familiar']]),
       'A component counts once you mark it known on the Top components page or mark it learned, or once it has had its own lesson (learned) or reached Apprentice I (familiar).')}

@@ -282,11 +282,12 @@ default weights), checked against the reference implementation in `test/learn.js
 has a difficulty (1–10) and a stability (days until the chance of recalling it falls to 90%),
 and so a retrievability, the chance of recalling it now; it comes back when that falls to the
 retention you want (90% unless set otherwise in Settings). The rating each review gives FSRS
-isn't asked for: it comes from the answers. A wrong answer (or the answer shown) is *again*, a
-slip of tone or a long think (over 15 seconds before typing starts) *hard*, right *good*, right
-and typing within 3 seconds on both questions *easy* — but only on an item remembered a month or
-more (Journeyman) that wasn't missed or hard last time, since a quick answer on a young item says
-more about having just seen it; the lesson's quiz gives the first rating, *good* at best.
+isn't asked for: it comes from the answers, not from how fast you give them. A wrong answer (or
+the answer shown) is *again*, a slip of tone *hard*, right *good*. Only a calibration test times
+you: there a long think (over 15 seconds before typing starts) is *hard* too, and right and typing
+within 3 seconds on both questions *easy* — but only on an item remembered a month or more
+(Journeyman) that wasn't missed or hard last time, since a quick answer on a young item says more
+about having just seen it; the lesson's quiz gives the first rating, *good* at best.
 A lapse is relearned in the session, which FSRS counts as a same-day review. The stages keep
 HanziHero's names as bands of stability (Novice under 4 days, Apprentice from a week,
 Journeyman from a month, Expert from 4 months, Master from 2 years), and the item info panel

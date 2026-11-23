@@ -75,29 +75,34 @@ check('the retention wanted sets the interval', () => {
 
 check('the rating comes from the answers, not from asking', () => {
   const a = (ok, ms, nearly) => ({ ok, ms, near: !!nearly });
-  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 2500)]), 4);        // right, at once
-  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 6000)]), 3);        // right
-  assert.strictEqual(L.gradeFrom([a(true, 20000), a(true, 1000)]), 2);       // right after a long think
+  // speed doesn't count in reviews: right is good, however quick or slow
+  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 2500)]), 3);
+  assert.strictEqual(L.gradeFrom([a(true, 20000), a(true, 1000)]), 3);
+  // a calibration test (timed) does count it
+  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 2500)], null, true), 4);   // right, at once
+  assert.strictEqual(L.gradeFrom([a(true, 1200), a(true, 6000)], null, true), 3);   // right
+  assert.strictEqual(L.gradeFrom([a(true, 20000), a(true, 1000)], null, true), 2);  // right after a long think
   assert.strictEqual(L.gradeFrom([a(false, 1000, true), a(true, 1000)]), 2); // a slip of tone
   assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)]), 1);       // wrong
 });
 
-check('easy needs a month of memory and no trouble last time', () => {
+check('easy (in a calibration test) needs a month of memory and no trouble last time', () => {
   const a = (ok, ms) => ({ ok, ms, near: false }), quick = [a(true, 1200), a(true, 2500)];
   const lesson = L.newItem('char', {}, t0);
-  assert.strictEqual(L.gradeFrom(quick, lesson), 3);                          // a lesson's quiz: good at best
+  assert.strictEqual(L.gradeFrom(quick, lesson, true), 3);                          // a lesson's quiz: good at best
   const young = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
-  assert.strictEqual(L.gradeFrom(quick, young), 3);                           // S 3 days: quick is just recent
+  assert.strictEqual(L.gradeFrom(quick, young, true), 3);                           // S 3 days: quick is just recent
   const month = { stage: 5, S: 30, D: 5, grades: [3, 3, 3] };
-  assert.strictEqual(L.gradeFrom(quick, month), 4);
-  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 2] }), 3);   // hard last time
-  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 1] }), 3);   // forgotten last time
-  assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)], month), 1);
+  assert.strictEqual(L.gradeFrom(quick, month, true), 4);
+  assert.strictEqual(L.gradeFrom(quick, month), 3);                            // a review: good, however quick
+  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 2] }, true), 3);   // hard last time
+  assert.strictEqual(L.gradeFrom(quick, { ...month, grades: [3, 1] }, true), 3);   // forgotten last time
+  assert.strictEqual(L.gradeFrom([a(false, 1000), a(true, 1000)], month, true), 1);
   // a joined (calibration) item starts at a month: quick there still says easy
-  assert.strictEqual(L.gradeFrom(quick, L.known('char', {}, t0, 0)), 4);
+  assert.strictEqual(L.gradeFrom(quick, L.known('char', {}, t0, 0), true), 4);
   // quick answers every time no longer reach years after three reviews
   const it = L.finishLesson(L.newItem('char', {}, t0), t0, 3), waits = [];
-  for (let i = 0; i < 4; i++) { const now = it.due; L.review(it, L.gradeFrom(quick, it), now, null); waits.push(Math.round((it.due - now) / DAY)); }
+  for (let i = 0; i < 4; i++) { const now = it.due; L.review(it, L.gradeFrom(quick, it, true), now, null); waits.push(Math.round((it.due - now) / DAY)); }
   assert.deepStrictEqual(waits, [11, 35, 232, 1420]);
 });
 
