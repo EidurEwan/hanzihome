@@ -17,8 +17,8 @@
  * The next review is due when R will have fallen to the retention you want (90%
  * unless set otherwise).
  *
- * The stages (Novice I … Master, HanziHero's names) are bands of stability, so they
- * say how long you would remember an item; Journeyman, a month and more, counts as
+ * The stages (Novice I … Master) are bands of stability, so they
+ * say how long you would remember an item; Adept, a month and more, counts as
  * learned on the rest of the site.
  *
  * An item, kept in the store under its characters (Store.data.items):
@@ -45,13 +45,13 @@
     ['Lesson', 0],
     ['Novice I', 0], ['Novice II', 4],
     ['Apprentice I', 7], ['Apprentice II', 14],
-    ['Journeyman I', 30], ['Journeyman II', 60],
+    ['Adept I', 30], ['Adept II', 60],
     ['Expert I', 120], ['Expert II', 240], ['Expert III', 365],
     ['Master', 730],
   ];
   const MASTER = STAGES.length - 1;
-  const LEARNED_FROM = 5;      // Journeyman and up (a Known item, marked without a lesson, joins at Journeyman I)
-  const GROUPS = ['Lesson', 'Novice', 'Novice', 'Apprentice', 'Apprentice', 'Journeyman', 'Journeyman',
+  const LEARNED_FROM = 5;      // Adept and up (a Known item, marked without a lesson, joins at Novice and climbs)
+  const GROUPS = ['Lesson', 'Novice', 'Novice', 'Apprentice', 'Apprentice', 'Adept', 'Adept',
     'Expert', 'Expert', 'Expert', 'Master'];
 
   const stageName = s => (STAGES[s] || STAGES[0])[0];
@@ -222,7 +222,8 @@
      How fast you answered counts only when `timed` (a calibration test, sorting what you
      marked as known by how well you know it): there a long think is hard too, and right
      at once on every question easy. Given the item (as it was before this review), easy
-     also needs it to have been remembered a month (Journeyman) and its last rating not
+     also needs it to have been remembered a month (Adept), or to be marked Known and not
+     yet checked (it was known before HanziHome saw it), and its last rating not
      to have been again or hard: a quick answer on a young item says more about having
      seen it lately than about knowing it, and FSRS's easy multiplies the next wait by
      three. (A lesson's quiz, before any memory, is good at best.) */
@@ -235,7 +236,7 @@
     if (item) {
       adopt(item);
       const last = (item.grades || []).slice(-1)[0];
-      if (!(item.S >= EASY_FROM) || last < GOOD) return GOOD;
+      if (!(item.S >= EASY_FROM || uncalibrated(item)) || last < GOOD) return GOOD;
     }
     return EASY;
   }
@@ -284,12 +285,15 @@
   const statusFor = item => item.stage >= 1 ? 'learned' : null;
 
   /* A character you already know (marked Known on the rest of the site) joins the
-     reviews at Journeyman I without a lesson: stability a month, difficulty average;
-     its first review comes `wait` ms from now. It has no `learnt` time, so it doesn't
-     count against the day's lessons. */
-  function known(kind, info, now, wait) {
+     reviews at Novice without a lesson, as if its lesson had gone well (FSRS's first
+     stability and difficulty for good), and climbs from there as its reviews go; its
+     first review comes `wait` ms from now (KNOWN_WAIT: when that first stability says).
+     It has no `learnt` time, so it doesn't count against the day's lessons. */
+  const KNOWN_S = initS(GOOD);
+  const KNOWN_WAIT = Math.round(KNOWN_S) * DAY;
+  function known(kind, info, now, wait = KNOWN_WAIT) {
     const item = newItem(kind, info, now);
-    item.S = STAGES[LEARNED_FROM][1];
+    item.S = KNOWN_S;
     item.D = initD(GOOD);
     item.stage = stageFor(item.S);
     item.joined = now;
@@ -298,11 +302,11 @@
     return item;
   }
 
-  /* An item already under way that you say you know (marked Known): a month's
-     stability at least, first checked `wait` ms from now */
-  function sayKnown(item, now, wait) {
+  /* An item waiting for its lesson that you say you know (marked Known): in the reviews
+     at Novice as known() puts it, first checked `wait` ms from now */
+  function sayKnown(item, now, wait = KNOWN_WAIT) {
     adopt(item);
-    item.S = Math.max(item.S || 0, STAGES[LEARNED_FROM][1]);
+    item.S = Math.max(item.S || 0, KNOWN_S);
     item.D = item.D || initD(GOOD);
     item.stage = stageFor(item.S);
     item.due = now + wait;
@@ -312,7 +316,7 @@
   }
 
   /* A calibration test sorts items (above all the characters marked learned, which
-     joined at Journeyman I unchecked) by how well you really know them: a review,
+     joined at Novice I unchecked) by how well you really know them: a review,
      rated from the answers like any other, taken as if it came right when due. */
   function calibrate(item, grade, now, rnd, opts = {}) {
     review(item, grade, now, rnd, Object.assign({}, opts, { assumeDue: true }));
@@ -938,7 +942,7 @@
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
     pickChars, pickScores, pathSync, wordOrder, PATH_FACTS, hskProgress, hskIsNear, hskNearlyDone,
-    review, known, knownChars, recastSounds, OLD_CAST, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,

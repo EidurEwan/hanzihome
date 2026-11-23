@@ -1107,7 +1107,7 @@ a.lx-q:hover { text-decoration: none; filter: brightness(1.08); }
 .lx-stages span { font-size: 12px; font-weight: 700; }
 .lx-stages .novice { background: var(--amber); }
 .lx-stages .apprentice { background: var(--green-ink); }
-.lx-stages .journeyman { background: var(--blue); }
+.lx-stages .adept { background: var(--blue); }
 .lx-stages .expert { background: var(--purple); }
 .lx-stages .master { background: var(--lx-char); }
 .wp-learn { margin: 0 0 6px; }
@@ -1204,7 +1204,7 @@ a.lx-q:hover { text-decoration: none; filter: brightness(1.08); }
 .rs-stage { font-size: 11px; font-weight: 800; color: #fff; border-radius: 5px; padding: 1px 7px; background: var(--ink-3); }
 .rs-stage.novice { background: var(--amber); }
 .rs-stage.apprentice { background: var(--green-ink); }
-.rs-stage.journeyman { background: var(--blue); }
+.rs-stage.adept { background: var(--blue); }
 .rs-stage.expert { background: var(--purple); }
 .rs-stage.master { background: var(--lx-char); }
 .rs-typed { font-size: 12.5px; color: var(--lx-char); }
@@ -1587,7 +1587,7 @@ mark.ex-w { background: var(--accent-soft, #fde68a); color: inherit; }
   /* the stages, Boxes' colours from fragile to mastered */
   --st-novice: var(--pink);       --st-novice-ink: #fff;
   --st-apprentice: var(--yellow); --st-apprentice-ink: #222;
-  --st-journeyman: var(--mint);   --st-journeyman-ink: #222;
+  --st-adept: var(--mint);   --st-adept-ink: #222;
   --st-expert: var(--sky);        --st-expert-ink: #fff;
   --st-master: #222;              --st-master-ink: var(--yellow);
 }
@@ -1802,7 +1802,7 @@ a.gbox:hover, button.gbox:hover, a.tbox:hover, .tree a.node:hover, a.chip:hover,
 .lx-stages div { border-radius: 14px; box-shadow: 0 4px 0 var(--tone-edge); }
 .lx-stages .novice, .rs-stage.novice { --tone: var(--st-novice); background: var(--st-novice); color: var(--st-novice-ink); }
 .lx-stages .apprentice, .rs-stage.apprentice { --tone: var(--st-apprentice); background: var(--st-apprentice); color: var(--st-apprentice-ink); }
-.lx-stages .journeyman, .rs-stage.journeyman { --tone: var(--st-journeyman); background: var(--st-journeyman); color: var(--st-journeyman-ink); }
+.lx-stages .adept, .rs-stage.adept { --tone: var(--st-adept); background: var(--st-adept); color: var(--st-adept-ink); }
 .lx-stages .expert, .rs-stage.expert { --tone: var(--st-expert); background: var(--st-expert); color: var(--st-expert-ink); }
 .lx-stages .master, .rs-stage.master { --tone: #444; background: var(--st-master); color: var(--st-master-ink); }
 .rs-stage { border-radius: 999px; padding: 1px 9px; font-weight: 600; }
@@ -1820,8 +1820,8 @@ a.gbox:hover, button.gbox:hover, a.tbox:hover, .tree a.node:hover, a.chip:hover,
 /* the calibration grades: chunky, in the colours of the stages they lead to */
 .cb-grade, .cb-map div { border-radius: 16px; }
 .cb-map .g1, .cb-grade.g1 { --tone: var(--st-novice); background: var(--st-novice); color: var(--st-novice-ink); }
-.cb-map .g2, .cb-grade.g2 { --tone: var(--st-journeyman); background: var(--st-journeyman); color: var(--st-journeyman-ink); }
-.cb-map .g3, .cb-grade.g3 { --tone: var(--st-journeyman); background: color-mix(in srgb, var(--mint) 70%, var(--sky)); color: #222; }
+.cb-map .g2, .cb-grade.g2 { --tone: var(--st-adept); background: var(--st-adept); color: var(--st-adept-ink); }
+.cb-map .g3, .cb-grade.g3 { --tone: var(--st-adept); background: color-mix(in srgb, var(--mint) 70%, var(--sky)); color: #222; }
 .cb-map .g4, .cb-grade.g4 { --tone: var(--st-expert); background: var(--st-expert); color: var(--st-expert-ink); }
 .cb-grade { box-shadow: 0 4px 0 var(--tone-edge); transition: transform .06s ease, box-shadow .06s ease; }
 .cb-grade:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
@@ -4398,7 +4398,7 @@ b.rd-stretch { color: var(--amber); } b.rd-hard { color: var(--bad); }
 .lad-col { grid-row: 1; display: flex; flex-direction: column; justify-content: flex-end; align-self: stretch; min-width: 0; }
 .lad-col.novice { --st: var(--st-novice); --st-ink: var(--st-novice-ink); }
 .lad-col.apprentice { --st: var(--st-apprentice); --st-ink: var(--st-apprentice-ink); }
-.lad-col.journeyman { --st: var(--st-journeyman); --st-ink: var(--st-journeyman-ink); }
+.lad-col.adept { --st: var(--st-adept); --st-ink: var(--st-adept-ink); }
 .lad-col.expert { --st: var(--st-expert); --st-ink: var(--st-expert-ink); }
 .lad-col.master { --st: var(--st-master); --st-ink: var(--st-master-ink); }
 .lad-stack { display: flex; flex-wrap: wrap-reverse; justify-content: center; align-content: flex-start; gap: 4px; padding: 6px 0; min-height: 34px; }
@@ -4742,7 +4742,7 @@ a.ord-item .ord-main { cursor: pointer; }
 .ss-line { grid-row: 2; height: 3px; border-radius: 99px; margin: 6px 2px 0; background: var(--ink-3); }
 .ss-line { --c: var(--ink-3); background: var(--c); }
 .ss-line.novice { --c: var(--amber); } .ss-line.apprentice { --c: var(--green-ink); }
-.ss-line.journeyman { --c: var(--blue); } .ss-line.expert { --c: var(--purple); } .ss-line.master { --c: var(--lx-char); }
+.ss-line.adept { --c: var(--blue); } .ss-line.expert { --c: var(--purple); } .ss-line.master { --c: var(--lx-char); }
 /* the levels within a group: the lowest palest, the top one in the full colour */
 .ss-line.sh-a { background: color-mix(in srgb, var(--c) 55%, var(--panel)); }
 .ss-line.sh-b { background: color-mix(in srgb, var(--c) 78%, var(--panel)); }

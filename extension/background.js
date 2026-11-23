@@ -107,7 +107,7 @@ function compact(d) {
 
 /* make a queued change in the copy, as the site will make it */
 function applyTo(store, op) {
-  // marked Known, the site puts it in the reviews at Journeyman I (if it isn't in them already)
+  // marked Known, the site puts it in the reviews at Novice I (if it isn't in them already)
   if (op.t === 'mark') {
     if (op.s) { store.status[op.c] = 'learned'; if (HZ.index[op.c] && !store.items[op.c]) store.items[op.c] = Learn.stageName(Learn.LEARNED_FROM); }
     else delete store.status[op.c];
