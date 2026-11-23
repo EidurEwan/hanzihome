@@ -93,6 +93,7 @@ const need = {
   hsk: () => HZ.hsk ? Promise.resolve() : loadScript('data/hsk.js'),
   hskChars: () => HZ.hskChars ? Promise.resolve() : loadScript('data/hskchars.js'),
   charorder: () => HZ.charorder ? Promise.resolve() : loadScript('data/charorder.js'),
+  charfreq: () => HZ.charfreq ? Promise.resolve() : loadScript('data/charfreq.js'),
   wordorder: () => HZ.wordorder ? Promise.resolve() : loadScript('data/wordorder.js'),
   radicals: () => HZ.radicals ? Promise.resolve() : loadScript('data/radicals.js'),
   components: () => HZ.productiveComponents ? Promise.resolve() : loadScript('data/components.js'),

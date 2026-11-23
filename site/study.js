@@ -1302,9 +1302,8 @@ function drawStudy() {
         character's or word's page does that, with or without a path.</p></section>` : ''}
     <div class="lx-top${fresh ? ' first' : ''}">
     ${dayDone ? '' : `<div class="lx-hub${fresh ? ' solo' : ''}">
-      ${p.reviewsLeft ? reviewsTile : ''}
       ${lessonsTile}
-      ${!p.reviewsLeft && !fresh ? reviewsTile : ''}
+      ${p.reviewsLeft || !fresh ? reviewsTile : ''}
     </div>`}
     ${dayDone ? `<section class="lx-done" aria-labelledby="lx-done-h">
       <h2 id="lx-done-h"><span class="lx-done-tick" aria-hidden="true">✓</span>Done for today</h2>
@@ -1969,6 +1968,7 @@ function newSession(keys, mode = 'review') {
     wrap: false, parked: [],
     mode, practice: mode === 'practice', calibrating: mode === 'calibrate', start: Date.now(),
     before: Object.fromEntries(keys.map(k => [k, d.items[k] ? d.items[k].stage : 0])),   // for the summary
+    order: [],          // the items, in the order finished
     typed: {},          // the misses: {key: [{q, answer}]}
     first: {},          // each question's first answer: {key: {pinyin: {ok, near, ms}, meaning: …}}
     grades: {},         // the rating each item earned (1 again … 4 easy)
@@ -2004,7 +2004,6 @@ async function pageReviews() {
   if (cfg.sentences && it.kind === 'word' && !(k in s.sent)) s.sent[k] = await sentenceFor(k, it);
   if (s.panel === 'info' && !s.facts[k]) s.facts[k] = await itemFacts(k, it);
   const total = new Set(s.queue.map(x => x.k)).size, finished = s.right.length + s.wrong.length;
-  const pct = finished ? Math.round(100 * s.right.length / finished) : 100;
   const shown = s.shown;
   const can = { info: !!shown, sound: (!!shown || q === 'listen') && Sound.canSay(), settings: true, reveal: !shown,
     open: !!shown, wrap: true, undo: !!shown };
@@ -2012,12 +2011,32 @@ async function pageReviews() {
     reveal: 'Reveal the answer (Ctrl+Enter)', open: 'Open in a new tab (O)',
     wrap: s.wrap ? 'Stop wrapping up (W)' : 'Wrap up: finish the items started, then stop (W)', undo: 'Undo this answer (Ctrl+Z)' };
 
+  // how far through, and (with the percentage on) how the first answers are going, by skill
+  const live = { pron: [0, 0], mean: [0, 0] };
+  for (const f of Object.values(s.first)) for (const [qq, a] of Object.entries(f)) {
+    if (qq === 'write' || !a) continue;
+    const b = live[qq === 'pinyin' ? 'pron' : 'mean'];
+    b[1]++;
+    if (a.ok && !a.near) b[0]++;
+  }
+  const bars = { prog: total ? 100 * finished / total : 0 };
+  for (const b of ['pron', 'mean']) bars[b] = live[b][1] ? 100 * live[b][0] / live[b][1] : 0;
+  const was = s.bars || bars;
+  s.bars = bars;
+  const mini = (b, name) => `<span class="rv-mini ${b}" title="${name}: right first time">
+    <span class="rv-mini-bar"><i data-w="${bars[b]}" style="width:${was[b]}%"></i></span>${name}
+    <b>${live[b][1] ? `${Math.round(bars[b])}%` : '–'}</b></span>`;
+
   app.innerHTML = `
-    <div class="rv-top">${s.practice ? '<span class="rv-practice">Practice: the schedule stays as it is</span>' : ''}
+    <div class="rv-bars">
+      <div class="rv-prog" role="progressbar" aria-label="Items finished" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${finished}">
+        <i data-w="${bars.prog}" style="width:${was.prog}%"></i></div>
+    </div>
+    <div class="rv-top">${cfg.showPct ? `<span class="rv-live rv-bars">${mini('pron', 'Pronunciation')}${mini('mean', 'Meaning')}</span>` : ''}
+      ${s.practice ? '<span class="rv-practice">Practice: the schedule stays as it is</span>' : ''}
       ${s.calibrating ? '<span class="rv-practice">Calibration test</span>' : ''}
       ${s.mode === 'lessonquiz' ? '<span class="rv-practice">Lesson quiz</span>' : ''}
       ${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
-      ${cfg.showPct ? `<span title="Right first time">${pct}%</span>` : ''}
       ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
     ${q === 'listen' && !shown ? listenBand(it) : q === 'write' ? writeBand(it, shown)
       : cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
@@ -2050,6 +2069,8 @@ async function pageReviews() {
     ${s.panel === 'settings' ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('settings')}">${quizSettings(cfg)}</div>` : ''}
     ${s.panel === 'info' && shown ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('info')}">${infoPanel(k, Store.item(k), q)}</div>` : ''}`;
 
+  // the bars ease from where they were to where they are now
+  requestAnimationFrame(() => app.querySelectorAll('.rv-bars i[data-w]').forEach(i => { i.style.width = `${i.dataset.w}%`; }));
   const input = document.getElementById('rv-in') || document.querySelector('#rv-form .rv-enter');
   const fresh = s.asked !== s.i;
   // a new question is dealt in; an answer just given pops (right) or shakes (wrong)
@@ -2448,6 +2469,7 @@ function nextQuestion() {
       if (!s.practice) Store.learnSaved(k);
       if (!s.practice) Store.logDay(s.mode === 'lessonquiz' ? { l: 1 } : { r: 1, ok: right ? 1 : 0 });
       (right ? s.right : s.wrong).push(k);
+      s.order.push(k);
       markNav(currentPath());
     }
   }
@@ -2460,147 +2482,357 @@ function nextQuestion() {
   pageReviews();
 }
 
-/* After a session: how it went, every item with the stage it moved to (and what you
-   typed when you missed it), characters that became learned or slipped back, what's
-   next, and a practice round for the ones you missed. */
+/* After a session: the retention rate (all of it, then pronunciation and meaning), and
+   every item as a tile, four ways: in the order finished (or by how many tries each
+   took), by type, by SRS stage before and after, and by when each comes back. Hovering
+   Review again lights up the ones it would go over. */
 function reviewsDone() {
   const s = reviewState;
   reviewState = null;
   if (s.onDone) return s.onDone(s);        // (a part of something longer: Weak spots)
   if (!s.practice) { Store.logDay({ s: Math.round((Date.now() - s.start) / 1000) }); Store.save(); }
   const d = Store.load(), p = Store.plan(), now = Date.now();
-  const done = s.right.length + s.wrong.length;
-  const pct = done ? Math.round(100 * s.right.length / done) : 100;
-  const secs = Math.round((now - s.start) / 1000);
-  const time = secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${String(secs % 60).padStart(2, '0')}s`;
-  const title = s.practice ? 'Practice summary' : s.calibrating ? 'Calibration summary'
-    : s.mode === 'lessonquiz' ? 'Lessons learned' : 'Review summary';
-  // how the app rated each item from the answers, and how many got each rating
-  const rated = [0, 0, 0, 0, 0];
-  for (const k of Object.keys(s.grades)) rated[s.grades[k]]++;
-  const gradeTag = g => g ? `<span class="rs-grade g${g}" title="${esc(GRADE_WHY[g])}">${Learn.GRADE_NAMES[g]}</span>` : '';
+  const title = s.practice ? 'Practice Summary' : s.calibrating ? 'Calibration Summary'
+    : s.mode === 'lessonquiz' ? 'Lesson Summary' : 'Session Summary';
+  const order = (s.order && s.order.length ? s.order : [...s.right, ...s.wrong]).filter(k => d.items[k]);
+  const asked = [...new Set(order)];
+  const done = asked.length;
+  const tries = k => 1 + (s.typed[k] || []).length;
+  const isNew = k => s.mode === 'lessonquiz' || s.before[k] <= 1;
 
-  const stage = st => `<span class="rs-stage ${Learn.group(st).toLowerCase()}">${esc(Learn.stageName(st))}</span>`;
-  const typedFor = k => (s.typed[k] || []).map(t => `${{ pinyin: 'pronunciation', listen: 'meaning by ear', write: 'writing' }[t.q] || 'meaning'}
-      ${t.q === 'write' ? 'needed a hint' : t.answer ? `“${esc(t.answer)}”` : 'revealed'}`).join(', ');
-  // the end of a lesson quiz: all that was learned today, in place of the lists of right and missed
-  const sheet = s.mode === 'lessonquiz' && done > 0;
-  const tile = k => {
-    const it = d.items[k];
-    if (!it) return '';
-    const before = s.before[k], after = it.stage;
-    const move = stage(after) + (s.practice ? '' : after > before ? `<small class="up">↑ from ${esc(Learn.stageName(before))}</small>`
-      : after < before ? `<small class="down">↓ from ${esc(Learn.stageName(before))}</small>` : '<small>stays</small>');
-    const typed = typedFor(k);
-    const m = !s.practice && Learn.memory(it, now);
-    return `<a class="rs-item ${it.kind}" href="${itemHref(k)}">
-      <span class="rs-glyph han">${itemHtml(k)}</span>
-      <span class="rs-body"><span><b>${esc(it.pin)}</b> ${esc(primary(it))}</span>
-        <span class="rs-move">${gradeTag(s.grades[k])}${move}</span>
-        ${m ? `<span class="rs-mem" title="Stability: days until the chance of recall falls to 90%. Difficulty: 1 to 10.">
-          stability ${days(m.S)} · difficulty ${m.D.toFixed(1)}</span>` : ''}
-        ${typed ? `<span class="rs-typed">You answered: ${typed}</span>` : ''}</span></a>`;
-  };
-  const chars = ks => ks.filter(k => d.items[k] && d.items[k].kind !== 'word');
-  const learned = s.practice ? [] : chars(s.right).filter(k => s.before[k] < Learn.LEARNED_FROM && d.items[k].stage >= Learn.LEARNED_FROM);
-  const slipped = s.practice ? [] : chars(s.wrong).filter(k => s.before[k] >= Learn.LEARNED_FROM && d.items[k].stage < Learn.LEARNED_FROM);
-  const mastered = s.practice ? [] : Object.keys(s.grades).filter(k => d.items[k] && d.items[k].stage >= Learn.MASTER
-    && s.before[k] < Learn.MASTER);
-  // calibration: the ones not known at all could start again from a lesson
-  const forgot = s.calibrating ? Object.keys(s.grades).filter(k => s.grades[k] === 1 && d.items[k]) : [];
+  // retention: each question's first answer, all together, then pronunciation and meaning
+  const tally = { pron: [0, 0], mean: [0, 0], write: [0, 0] };
+  for (const k of asked) for (const [q, f] of Object.entries(s.first[k] || {})) {
+    const b = q === 'pinyin' ? 'pron' : q === 'write' ? 'write' : 'mean';
+    tally[b][1]++;
+    if (f && f.ok && !f.near) tally[b][0]++;
+  }
+  const pc = ([ok, n]) => n ? Math.round(100 * ok / n) : null;
+  const allQ = [tally.pron[0] + tally.mean[0] + tally.write[0], tally.pron[1] + tally.mean[1] + tally.write[1]];
+  const total = pc(allQ) ?? (done ? Math.round(100 * s.right.length / done) : 100);
+  const bars = [['total', 'Total', total], ['pron', 'Pronunciation', pc(tally.pron)],
+    ['mean', 'Meaning', pc(tally.mean)], ['write', 'Writing', pc(tally.write)]].filter(b => b[2] != null);
+
+  // what Review again goes over: the missed, and the ones back by tomorrow
+  const tomorrow = new Date(now).setHours(0, 0, 0, 0) + 2 * 864e5;
+  const pick = new Set(asked.filter(k => tries(k) > 1 || (d.items[k].stage >= 1 && d.items[k].due && d.items[k].due < tomorrow)));
+
+  const t1 = asked.filter(k => tries(k) === 1), t2 = asked.filter(k => tries(k) === 2), t3 = asked.filter(k => tries(k) > 2);
+  const items = itemsCard(asked, {
+    before: s.before, pick,
+    count: `<b>${done}</b> total${asked.some(isNew) ? `<b>${asked.filter(isNew).length}</b> new` : ''}`,
+    views: [['order', 'Finished order', asked],
+      ['tries', 'Tries', [['First try', t1, `${t1.length} / ${done}`], ['2 tries', t2, t2.length], ['3+ tries', t3, t3.length]]]],
+    good: k => tries(k) === 1,           // By type: the right first time, then the missed
+  });
+
+  const more = s.practice || s.calibrating ? 0 : p.reviewsLeft;
   const unsorted = s.calibrating ? calibrationSets().unsorted : [];
 
-  // what comes next
-  const upcoming = Object.values(d.items).filter(it => it.stage >= 1 && it.due > now)
-    .map(it => it.due).sort((a, b) => a - b);
-  const soon = upcoming.filter(t => t - now < Learn.DAY).length;
-  const when = t => {
-    const m = Math.round((t - now) / 60000);
-    return m < 60 ? `in ${Math.max(1, m)} minute${m === 1 ? '' : 's'}` : m < 60 * 24
-      ? `in ${Math.round(m / 60)} hour${Math.round(m / 60) === 1 ? '' : 's'}` : new Date(t).toLocaleString(undefined,
-        { weekday: 'long', hour: 'numeric', minute: '2-digit' });
-  };
-  const more = p.reviewsLeft, lessons = p.lessons.length;
-  // nothing left to do today: on to reading (not after practice or calibration, which are asides)
-  const readNext = !s.practice && !s.calibrating && done > 0 && !more && !lessons;
-
-  app.innerHTML = `<h1 class="page-title">${title}</h1>` + withRail(`
-    <section class="card rs-head">
-      <div class="rs-ring" style="--p:${done ? pct : 100}"><div><b>${pct}%</b><span>right first time</span></div></div>
-      <div>
-        <div class="rs-stats">
-          <div><b>${done}</b><span>${s.practice ? 'practiced' : 'reviewed'}</span></div>
-          <div class="ok"><b>${s.right.length}</b><span>right</span></div>
-          <div class="bad"><b>${s.wrong.length}</b><span>missed</span></div>
-          <div><b>${time}</b><span>time</span></div>
-        </div>
-        ${s.practice ? '<p class="small muted">Practice doesn’t change when they come back.</p>' : ''}
-        ${!s.practice && done ? `<p class="rs-rated">Rated from your answers: ${[4, 3, 2, 1].filter(g => rated[g])
-          .map(g => `${rated[g]} ${gradeTag(g)}`).join(' ')}</p>` : ''}
-        <div class="rs-actions">
-          ${unsorted.length ? `<button class="btn" id="rs-calibrate">Carry on sorting (${unsorted.length} left)</button>` : ''}
-          ${forgot.length ? `<button class="btn quiet" id="rs-relearn" title="Learn them again from a lesson, with a mnemonic">
-            Send the ${forgot.length} forgotten to lessons</button>` : ''}
-          ${s.wrong.length && !s.calibrating ? `<button class="btn" id="rs-practice">Practice the ${s.wrong.length} missed</button>` : ''}
-          ${more && !s.practice ? `<button class="btn${s.wrong.length ? ' quiet' : ''}" id="rs-more">Keep reviewing (${more})</button>` : ''}
-          ${lessons ? `<a class="btn quiet" href="#/lessons">Lessons (${lessons})</a>` : ''}
-          <a class="btn quiet" href="#/study">Back to Today</a>
+  app.innerHTML = `<h1 class="page-title ss-title">${title}</h1>` + withRail(`
+    <section class="card ss-card ss-ret">
+      <h2 class="ss-h">Retention Rate</h2>
+      <div class="ss-ret-row">
+        <p class="ss-big"><b>${total}</b><span>%</span></p>
+        <div class="ss-bars">
+          ${bars.map(([c, , v]) => `<div class="ss-bar ${c}"><i style="--w:${v}%"></i></div>`).join('')}
+          <p class="ss-legend">${bars.map(([c, name, v]) => `<span class="${c}"><i></i>${name}<b>${v}%</b></span>`).join('')}</p>
         </div>
       </div>
+      ${s.practice ? '<p class="small muted ss-note">Practice doesn’t change when they come back.</p>' : ''}
     </section>
-    ${readNext ? storyNextCard() : ''}
-    ${learned.length || slipped.length || mastered.length ? `<section class="card rs-news">
-      ${learned.length ? `<p><b class="han">${esc(learned.join(' '))}</b> reached Journeyman: ${learned.length === 1 ? 'it now counts' : 'they now count'}
-        as learned all over HanziHome.</p>` : ''}
-      ${mastered.length ? `<p><b class="han">${esc(mastered.join(' '))}</b> reached Master: you'd remember ${mastered.length === 1 ? 'it' : 'them'}
-        for two years and more.</p>` : ''}
-      ${slipped.length ? `<p><b class="han">${esc(slipped.join(' '))}</b> slipped below Journeyman, so ${slipped.length === 1 ? 'it is' : 'they are'}
-        back to learning until ${slipped.length === 1 ? 'it climbs' : 'they climb'} again.</p>` : ''}
-    </section>` : ''}
-    ${!done ? '<section class="card"><p class="empty">Nothing was finished in this session.</p></section>' : ''}
-    ${sheet ? `<h2 class="ls-title">Learned today</h2><div id="learned-sheet"></div>` : `
-    ${s.wrong.length ? `<section class="card"><h2 class="caps">Missed (${s.wrong.length})</h2>
-      <div class="rs-grid">${s.wrong.map(tile).join('')}</div></section>` : ''}
-    ${s.right.length ? `<section class="card"><h2 class="caps">Right (${s.right.length})</h2>
-      <div class="rs-grid">${s.right.map(tile).join('')}</div></section>` : ''}`}
-    <p class="small muted rs-next">${more ? `${more} more due now. ` : ''}${upcoming.length
-      ? `The next review is ${when(upcoming[0])}; ${soon} in the next 24 hours.` : 'No reviews coming up.'}</p>`, true);
+    ${done ? items : '<section class="card ss-card"><p class="empty">Nothing was finished in this session.</p></section>'}
+    <div class="ss-actions">
+      ${pick.size ? `<button class="btn ss-btn ss-again" id="ss-again">Review again (${pick.size})</button>` : ''}
+      ${more ? `<button class="btn quiet ss-btn" id="ss-more">Keep reviewing (${more})</button>` : ''}
+      ${unsorted.length ? `<button class="btn quiet ss-btn" id="ss-calibrate">Carry on sorting (${unsorted.length} left)</button>` : ''}
+      <a class="btn quiet ss-btn" href="#/study">Back to Today</a>
+    </div>`, true);
 
-  const again = document.getElementById('rs-practice');
-  if (again) again.addEventListener('click', () => startPractice(s.wrong));
-  const next = document.getElementById('rs-more');
+  const card = document.getElementById('ss-items');
+  wireItemsCard(card);
+  const again = document.getElementById('ss-again');
+  if (again) {
+    again.addEventListener('click', () => startPractice([...pick]));
+    const on = v => card && card.classList.toggle('preview', v);
+    again.addEventListener('pointerenter', () => on(true));
+    again.addEventListener('pointerleave', () => on(false));
+    again.addEventListener('focus', () => on(true));
+    again.addEventListener('blur', () => on(false));
+  }
+  const next = document.getElementById('ss-more');
   if (next) next.addEventListener('click', () => pageReviews());       // (already at #/reviews)
-  const cal = document.getElementById('rs-calibrate');
+  const cal = document.getElementById('ss-calibrate');
   if (cal) cal.addEventListener('click', () => startCalibration(byCommon(unsorted).slice(0, 50)));
-  const relearn = document.getElementById('rs-relearn');
-  if (relearn) relearn.addEventListener('click', () => {
-    for (const k of forgot) {
-      const it = Store.item(k);
-      if (it) { it.stage = 0; it.due = 0; it.prio = true; }     // a lesson, at the front of the queue
+  if (done && !s.practice) Motion.confetti(app.querySelector('.ss-big'));
+}
+
+/* The Items card: these items as coloured tiles, four ways. All (in the orders given in o.views:
+   a flat list of keys, or [heading, keys, count] groups), by type, by SRS stage, and by when each
+   comes back. o.before (stages before a session) adds Promoted/Demoted and Before/After to the
+   stage chart; o.pick marks the ones a button will go over; o.good splits By type into two rows. */
+function itemsCard(keys, o = {}) {
+  const d = Store.load(), now = Date.now();
+  const before = o.before || null, pick = o.pick || new Set();
+  const byKind = k => (d.items[k].kind || 'char');
+  const day0 = new Date(now).setHours(0, 0, 0, 0);
+  const dayOf = t => Math.max(0, Math.round((new Date(t).setHours(0, 0, 0, 0) - day0) / 864e5));
+  const due = k => d.items[k].due && d.items[k].stage >= 1;
+  const moveOf = k => { if (!before) return ''; const b = before[k], a = d.items[k].stage; return a > b ? 'up' : a < b ? 'down' : ''; };
+
+  const glyph = k => byKind(k) === 'sound' ? soundGlyph(k) : `<span class="han">${zh(glyphOf(k))}</span>`;
+  const tile = k => {
+    const it = d.items[k], len = byKind(k) === 'word' ? Math.min(4, [...glyphOf(k)].length) : 1;
+    const move = before && before[k] !== it.stage ? `${Learn.stageName(before[k])} → ${Learn.stageName(it.stage)}` : '';
+    return `<a class="fc-chip ss-t ${byKind(k)} l${len}${pick.has(k) ? ' pick' : ''}" href="${itemHref(k)}" data-k="${esc(k)}"
+      data-move="${esc(move)}" aria-label="${esc(`${itemText(k)} ${it.pin || primary(it) || ''}`)}">${glyph(k)}</a>`;
+  };
+  const tiles = (ks, cls = '') => `<div class="ss-tiles ${cls}">${ks.map(tile).join('')}</div>`;
+  const group = (name, n, body) => `<div class="ss-grp"><p class="ss-gh">${name}<span>${n}</span></p>${body}</div>`;
+  const seg = (name, opts, on) => `<div class="ss-seg" role="group" data-seg="${name}">${opts.map(([v, label]) =>
+    `<button type="button" data-v="${v}" aria-pressed="${v === on}">${label}</button>`).join('')}</div>`;
+
+  // All: a list, or groups of them
+  const views = o.views || [['all', 'All', keys]];
+  const viewHtml = body => body.length && Array.isArray(body[0])
+    ? body.filter(g => g[1].length).map(([h, ks, n]) => group(h, n, tiles(ks))).join('') : tiles(body);
+  const allPane = `<div class="ss-sub"><p class="ss-count">${o.count || `<b>${keys.length}</b> total`}</p>
+      ${views.length > 1 ? seg('all', views.map(([v, label]) => [v, label]), views[0][0]) : ''}</div>
+    ${views.map(([v, , body], i) => `<div data-view="${v}"${i ? ' hidden' : ''}>${viewHtml(body)}</div>`).join('')}`;
+
+  // By type: with o.good, the good ones first, then (on a line of their own) the rest
+  const KINDS = [['char', 'Characters'], ['word', 'Words'], ['comp', 'Components'], ['sound', 'Sounds']];
+  const typePane = KINDS.map(([kind, name]) => {
+    const ks = keys.filter(k => byKind(k) === kind);
+    if (!ks.length) return '';
+    if (!o.good) return group(name, ks.length, tiles(ks, 'sm'));
+    const ok = ks.filter(o.good), rest = ks.filter(k => !o.good(k));
+    return group(name, `${ok.length} / ${ks.length}`, (ok.length ? tiles(ok, 'sm') : '') + (rest.length ? tiles(rest, 'sm') : ''));
+  }).join('');
+
+  // a chart: a column of stacked tiles each, a count on top, a label or a coloured line under;
+  // each column as wide as its pile needs (about square), an empty one only a sliver: the lines
+  // under the stages span their columns, so they grow and shrink with them
+  const colWidth = n => !n ? 'minmax(10px, .25fr)' : `minmax(28px, ${Math.max(1, Math.ceil(Math.sqrt(n * 1.6)))}fr)`;
+  const cols = (columns, foot) => `<div class="ss-cols" style="grid-template-columns:${columns.map(c => colWidth(c.ks.length)).join(' ')}">${columns.map(c =>
+    `<div class="ss-col${c.ks.length ? '' : ' none'}" title="${esc(c.title || '')}"><span class="ss-n">${c.ks.length || ''}</span>
+      <div class="ss-stack">${c.ks.map(tile).join('')}</div></div>`).join('')}${foot}</div>`;
+
+  // SRS stage: each on the stage it stands on now (or, after a session, stood on before);
+  // after a session, all of them, the promoted or the demoted
+  const STEPS = Learn.MASTER;
+  const stageGroups = [];
+  for (let i = 0; i <= STEPS; i++) {
+    const g = Learn.group(i), last = stageGroups[stageGroups.length - 1];
+    if (last && last[0] === g) last[2] = i; else stageGroups.push([g, i, i]);
+  }
+  // a line under each stage, in its group's colour: the group's lower levels in paler shades of it
+  const stageFoot = stageGroups.map(([g, x, y]) => Array.from({ length: y - x + 1 }, (_, j) => {
+    const i = x + j, shade = y - i === 0 ? '' : y - i === 1 ? ' sh-b' : ' sh-a';
+    return `<span class="ss-line ${g.toLowerCase()}${y - x === 1 && shade ? ' sh-a' : shade}" data-k="line:${i}" style="grid-column:${i + 1}"
+      title="${esc(Learn.stageName(i))}"></span>`;
+  }).join('')).join('');
+  const stageChart = (ks, when) => cols(Array.from({ length: STEPS + 1 }, (_, i) => ({
+    title: Learn.stageName(i), ks: ks.filter(k => (when === 'before' ? before[k] : d.items[k].stage) === i) })), stageFoot);
+  let stagePane;
+  if (before) {
+    const ups = keys.filter(k => moveOf(k) === 'up'), downs = keys.filter(k => moveOf(k) === 'down');
+    stagePane = `<div class="ss-sub">
+        ${seg('move', [['all', 'All'], ['up', `Promoted ${ups.length}`], ['down', `Demoted ${downs.length}`]], 'all')}
+        ${seg('when', [['before', 'Before'], ['after', 'After']], 'after')}</div>
+      ${[['all', keys], ['up', ups], ['down', downs]].map(([m, ks]) => ['before', 'after'].map(w =>
+        `<div data-chart="${m}-${w}"${m === 'all' && w === 'after' ? '' : ' hidden'}>${stageChart(ks, w)}</div>`).join('')).join('')}`;
+  } else stagePane = `<div data-chart="all-after">${stageChart(keys, 'after')}</div>`;
+
+  // Next review: by how far off (due already, for ones waiting in the reviews)
+  const BUCKETS = [['Due now', -1, -1], ['Today', 0, 0], ['Tomorrow', 1, 1], ['2–3 days', 2, 3], ['4–7 days', 4, 7],
+    ['8–14 days', 8, 14], ['15+ days', 15, Infinity]];
+  const when = k => d.items[k].due <= now ? -1 : dayOf(d.items[k].due);
+  const byDue = keys.filter(due).sort((a, b) => d.items[a].due - d.items[b].due);
+  const nextCols = BUCKETS.map(([label, a, b]) => ({ label, title: label,
+    ks: byDue.filter(k => { const n = when(k); return n >= a && n <= b; }) })).filter(c => c.ks.length);
+  const nextPane = nextCols.length ? cols(nextCols, nextCols.map((c, i) =>
+    `<span class="ss-lab" style="grid-column:${i + 1}">${esc(c.label)}</span>`).join(''))
+    : '<p class="small muted">None of these are scheduled.</p>';
+
+  return `<section class="card ss-card ss-items" id="${o.id || 'ss-items'}" data-view0="${esc(views[0][0])}">
+      <div class="ss-items-head"><h2 class="ss-h">${o.title || 'Items'}</h2>
+        ${seg('tab', [['all', 'All'], ['type', 'By type'], ['stage', 'SRS stage'], ['next', 'Next review']], 'all')}</div>
+      <div data-pane="all">${allPane}</div>
+      <div data-pane="type" hidden>${typePane}</div>
+      <div data-pane="stage" hidden>${stagePane}</div>
+      <div data-pane="next" hidden>${nextPane}</div>
+    </section>`;
+}
+/* the Items card's switches (the tab, All's order, the stage chart's filter and before/after),
+   each change glided; and each tile's card on hover */
+function wireItemsCard(card) {
+  if (!card) return;
+  const state = { tab: 'all', all: card.dataset.view0, move: 'all', when: 'after' };
+  card.querySelectorAll('.ss-seg').forEach(g => g.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.getAttribute('aria-pressed') === 'true') return;
+    state[g.dataset.seg] = b.dataset.v;
+    g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    ssGlide(card, () => {
+      card.querySelectorAll('[data-pane]').forEach(x => { x.hidden = x.dataset.pane !== state.tab; });
+      card.querySelectorAll('[data-view]').forEach(x => { x.hidden = x.dataset.view !== state.all; });
+      card.querySelectorAll('[data-chart]').forEach(x => { x.hidden = x.dataset.chart !== `${state.move}-${state.when}`; });
+    });
+  }));
+  fcPopover(card);
+  wireSounds(card);
+}
+
+/* A switch in the summary's Items card: each tile glides from where it was to its place in
+   the new view (and grows or shrinks to its new size), ones new to the view pop in, ones
+   leaving it fade where they stood; everything else (counts, labels, headings, the view's own
+   switches) cross-fades; and the card eases to its new height. */
+const SS_FADE = '.ss-n, .ss-lab, .ss-gh, .ss-count, .ss-sub .ss-seg, [data-pane] > p';
+function ssGlide(card, change) {
+  const shown = () => [...card.querySelectorAll('.ss-t, .ss-line')].filter(t => t.offsetParent);
+  const texts = () => [...card.querySelectorAll(SS_FADE)].filter(t => t.offsetParent);
+  if (Motion.reduced() || !card.animate) return change();
+  card.getAnimations({ subtree: true }).forEach(a => a.finish());
+  card.querySelectorAll('.ss-ghost').forEach(g => g.remove());
+  const box0 = card.getBoundingClientRect();
+  const was = new Map(shown().map(t => [t.dataset.k, [t, t.getBoundingClientRect()]]));
+  const wasText = new Map(texts().map(t => [t, t.getBoundingClientRect()]));
+  // a copy of something leaving, fading (and shrinking, for a tile) where it stood
+  const ghost = (t, a, shrink) => {
+    const cs = getComputedStyle(t), g = t.cloneNode(true);
+    g.classList.add('ss-ghost');
+    g.removeAttribute('href');
+    g.removeAttribute('data-pane');
+    g.setAttribute('aria-hidden', 'true');
+    Object.assign(g.style, { position: 'absolute', left: `${a.left - box0.left}px`, top: `${a.top - box0.top}px`,
+      width: `${a.width}px`, height: `${a.height}px`, margin: 0, pointerEvents: 'none', boxSizing: 'border-box',
+      fontSize: cs.fontSize, fontWeight: cs.fontWeight, color: cs.color, whiteSpace: 'nowrap' });
+    card.appendChild(g);
+    g.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: shrink ? 'scale(.5)' : 'none' }],
+      { duration: shrink ? 260 : 200, easing: 'ease-in', fill: 'forwards' })
+      .finished.then(() => g.remove(), () => g.remove());
+  };
+  change();
+  const box1 = card.getBoundingClientRect();
+  const EASE = 'cubic-bezier(.2, .8, .2, 1)', MS = 520;
+  if (Math.abs(box1.height - box0.height) > 1) {
+    card.style.overflow = 'hidden';
+    card.animate([{ height: `${box0.height}px` }, { height: `${box1.height}px` }], { duration: MS, easing: EASE })
+      .finished.then(() => { card.style.overflow = ''; }, () => { card.style.overflow = ''; });
+  }
+  const now = shown(), stay = new Set();
+  now.forEach((t, i) => {
+    const old = was.get(t.dataset.k), r = t.getBoundingClientRect();
+    const delay = Math.min(i * 3, 180);
+    if (old) {
+      stay.add(t.dataset.k);
+      const [, a] = old;
+      t.animate([
+        { transformOrigin: '0 0', transform: `translate(${a.left - r.left}px, ${a.top - r.top}px) scale(${r.width ? a.width / r.width : 1}, ${r.height ? a.height / r.height : 1})` },
+        { transformOrigin: '0 0', transform: 'none' }], { duration: MS, delay, easing: EASE, fill: 'backwards' });
+    } else {
+      t.animate([{ opacity: 0, transform: 'scale(.4)' }, { opacity: 1, transform: 'none' }],
+        { duration: 320, delay: 160 + delay, easing: 'cubic-bezier(.3, 1.4, .5, 1)', fill: 'backwards' });
     }
-    Store.save();
-    markNav(currentPath());
-    relearn.outerHTML = '<span class="small">Sent to the front of your <a href="#/lessons">lessons</a>.</span>';
   });
-  Motion.countUp(app);
-  if (done) Motion.confetti(app.querySelector('.rs-ring'));
-  paintRail();
-  if (sheet) fillLearned(document.getElementById('learned-sheet'));
-  if (readNext) fillStoryNext();
+  for (const [k, [t, a]] of was) if (!stay.has(k)) ghost(t, a, true);
+  // the rest: what stays put stays; what goes fades out, what comes fades in as the tiles land
+  const nowText = new Set(texts());
+  for (const [t, a] of wasText) if (!nowText.has(t)) ghost(t, a, false);
+  for (const t of nowText) if (!wasText.has(t))
+    t.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, delay: 180, easing: 'ease-out', fill: 'backwards' });
+}
+
+/* ---- the end of a session, drawn ---- */
+
+/* a sound part as shown: a tone by its shape, the rest by their letters */
+const soundGlyph = k => k.startsWith('t:') && typeof tnShape === 'function'
+  ? `<span class="snd-key tn-m t${k.slice(2)}">${tnShape(+k.slice(2))}</span>` : `<span class="snd-key">${esc(itemText(k))}</span>`;
+/* a button that says a sound part, with a little wave while it plays */
+const soundPlayBtn = (k, cls) => `<button type="button" class="${cls} snd-play" data-part="${esc(k)}" aria-label="Hear ${esc(partName(k))}">
+  ${soundGlyph(k)}<i class="snd-wave" aria-hidden="true"><b></b><b></b><b></b><b></b></i></button>`;
+function wireSounds(root) {
+  if (!root) return;
+  root.querySelectorAll('.snd-play[data-part]').forEach(b => b.addEventListener('click', e => {
+    e.preventDefault();
+    Sound.part(b.dataset.part);
+    b.classList.remove('playing'); void b.offsetWidth; b.classList.add('playing');
+    clearTimeout(b._t);
+    b._t = setTimeout(() => b.classList.remove('playing'), 1200);
+  }));
+}
+
+/* a forecast chip's card, on hover or focus: the item, what it is, and when it's back */
+const FC_KIND = { char: 'Character', word: 'Word', comp: 'Component', sound: 'Sound' };
+function fcPopHtml(k, move) {
+  const it = Store.item(k);
+  if (!it) return '';
+  const kind = it.kind || 'char', sound = kind === 'sound';
+  const due = new Date(it.due), today = new Date().setHours(0, 0, 0, 0);
+  const diff = Math.round((new Date(it.due).setHours(0, 0, 0, 0) - today) / 864e5);
+  const at = due.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  const day = diff <= 0 ? 'today' : diff === 1 ? 'tomorrow' : due.toLocaleDateString(undefined, { weekday: 'long' });
+  const name = sound ? esc(partName(k)) : kind === 'comp' ? esc(partName(k)) : esc(it.pin || '');
+  const mean = sound ? { i: 'how a syllable begins', f: 'how a syllable ends', t: 'a tone' }[k[0]] : kind === 'comp' ? '' : primary(it);
+  return `<span class="fc-pop-g ${kind}">${sound ? soundGlyph(k) : `<span class="han">${zh(glyphOf(k))}</span>`}</span>
+    <span class="fc-pop-t"><b>${name}</b>${mean ? `<small>${esc(mean)}</small>` : ''}
+      <span class="fc-pop-kind">${FC_KIND[kind]}${move ? '' : ` · ${esc(Learn.stageName(it.stage))}`}</span></span>
+    ${move ? `<span class="fc-pop-move">${esc(move)}</span>` : ''}
+    <span class="fc-pop-when"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      Back ${day}${diff > 6 ? ` ${due.getDate()}` : ''} at ${at}</span>`;
+}
+function fcPopover(fc) {
+  const pop = document.createElement('div');
+  pop.className = 'fc-pop';
+  pop.setAttribute('aria-hidden', 'true');
+  fc.appendChild(pop);
+  let on = null;
+  const show = chip => {
+    if (on === chip) return;
+    on = chip;
+    pop.innerHTML = fcPopHtml(chip.dataset.k, chip.dataset.move);
+    pop.className = 'fc-pop';
+    const box = fc.getBoundingClientRect(), r = chip.getBoundingClientRect();
+    const w = pop.offsetWidth, h = pop.offsetHeight;
+    const mid = r.left + r.width / 2 - box.left;
+    const left = Math.max(8, Math.min(mid - w / 2, box.width - w - 8));
+    const below = r.top - h - 12 < 64;                    // no room above in the window (under the top bar): under the chip
+    pop.style.left = `${left}px`;
+    pop.style.top = `${below ? r.bottom - box.top + 10 : r.top - box.top - h - 10}px`;
+    pop.style.setProperty('--ax', `${mid - left}px`);
+    pop.classList.add('on', below ? 'below' : 'above');
+  };
+  const hide = () => { on = null; pop.classList.remove('on'); };
+  fc.querySelectorAll('.fc-chip').forEach(chip => {
+    chip.addEventListener('pointerenter', e => { if (e.pointerType !== 'touch') show(chip); });
+    chip.addEventListener('pointerleave', hide);
+    chip.addEventListener('focus', () => show(chip));
+    chip.addEventListener('blur', hide);
+  });
 }
 
 /* Learned today: every character, word, component and sound that had its lesson today, as it
    looks and nothing else. Each opens its own page in a new tab. At the end of a lesson quiz,
    and at #/learned. */
 const LEARNED_GROUPS = [['char', 'Characters'], ['word', 'Words'], ['comp', 'Components'], ['sound', 'Sounds']];
+// what the smaller groups are, beside the characters and words they serve
+const LEARNED_NOTES = { comp: 'The parts these characters are built from', sound: 'The pinyin sounds they use, each with its memory word' };
 const learnedToday = () => Learn.learnedOn(Store.load().items, Date.now());
 const learnedCount = by => LEARNED_GROUPS.reduce((n, [g]) => n + by[g].length, 0);
 
-function fillLearned(box) {
-  const by = learnedToday();
+function fillLearned(box, keys) {
+  // (or the given ones, by kind: the end of a review)
+  const by = keys ? Object.fromEntries(LEARNED_GROUPS.map(([g]) => [g, keys.filter(k => ((Store.item(k) || {}).kind || 'char') === g)]))
+    : learnedToday();
   box.innerHTML = !learnedCount(by) ? '<section class="card"><p class="empty">Nothing learned yet today.</p></section>'
-    : LEARNED_GROUPS.filter(([g]) => by[g].length).map(([g, title]) => `<section class="ls-group"><h2 class="sec-h">${title} <span class="muted">${by[g].length}</span></h2>
-        <div class="ls-tiles">${by[g].map(k => `<a class="ls-tile ${g} han" href="${itemHref(k)}" target="_blank" rel="noopener" aria-label="${esc(itemText(k))}, opens in a new tab">${itemHtml(k)}</a>`).join('')}</div></section>`).join('');
+    : LEARNED_GROUPS.filter(([g]) => by[g].length).map(([g, title]) => `<section class="ls-group ${g}"><h2 class="sec-h">${title} <span class="muted">${by[g].length}</span></h2>
+        ${LEARNED_NOTES[g] && (by.char.length || by.word.length) ? `<p class="ls-note">${LEARNED_NOTES[g]}</p>` : ''}
+        <div class="ls-tiles">${by[g].map(k => g === 'sound'
+          ? `<span class="ls-snd">${soundPlayBtn(k, 'ls-snd-play')}<a class="ls-snd-name" href="${itemHref(k)}" target="_blank" rel="noopener"
+              aria-label="${esc(partName(k))}, opens in a new tab">${esc(partName(k))}</a></span>`
+          : `<a class="ls-tile ${g} han" href="${itemHref(k)}" target="_blank" rel="noopener" aria-label="${esc(itemText(k))}, opens in a new tab">${itemHtml(k)}</a>`).join('')}</div></section>`).join('');
+  wireSounds(box);
 }
 
 function pageLearned() {
@@ -2962,7 +3194,6 @@ function pageStats() {
   if (!streak && log.length > 1) for (let i = log.length - 2; i >= 0 && (log[i].r || log[i].l); i--) streak++;   // today not yet
 
   const fc = Learn.forecast(items.map(e => e[1]), now, 14), maxF = Math.max(1, ...fc);
-  const groups = ['Novice', 'Apprentice', 'Journeyman', 'Expert', 'Master'];
   const hardest = items.filter(([, it]) => (it.hist || []).length >= 3)
     .map(([k, it]) => [k, it, (it.hist || []).filter(Boolean).length / it.hist.length])
     .sort((a, b) => a[2] - b[2] || (b[1].D || 0) - (a[1].D || 0)).slice(0, 12);
@@ -2970,6 +3201,46 @@ function pageStats() {
   // FSRS's chance of recall at each logged review, against what happened (Learn.predictionCheck)
   const pred = Learn.predictionCheck(d.items), PRED_MIN = 30;
   const pp = x => Math.round(100 * x) + '%';
+
+  // the study calendar: 26 weeks, Monday first, each day by how much you did
+  const CAL_WEEKS = 26, today0 = new Date(); today0.setHours(0, 0, 0, 0);
+  const calStart = new Date(today0); calStart.setDate(calStart.getDate() - ((calStart.getDay() + 6) % 7) - (CAL_WEEKS - 1) * 7);
+  const calDays = Array.from({ length: CAL_WEEKS * 7 }, (_, i) => {
+    const dt = new Date(calStart); dt.setDate(dt.getDate() + i);
+    const x = d.log[dayKey(dt.getTime() + 12 * 36e5)] || {};
+    return { dt, r: x.r || 0, ok: x.ok || 0, l: x.l || 0, future: dt > today0 };
+  });
+  const calMax = Math.max(1, ...calDays.map(x => x.r + x.l));
+  const calLevel = n => !n ? 0 : Math.min(4, 1 + Math.floor(3.999 * n / calMax));
+  const calActive = calDays.filter(x => x.r + x.l).length;
+  const calHtml = `<div class="st-cal" style="--weeks:${CAL_WEEKS}">
+      <div class="st-cal-m">${Array.from({ length: CAL_WEEKS }, (_, w) => {
+        // a month's name over its first week (and over the first column, unless the next month is about to start)
+        const a = calDays[w * 7].dt, b = w ? calDays[w * 7 - 7].dt : null, soon = calDays[Math.min(w * 7 + 14, calDays.length - 1)].dt;
+        const named = b ? a.getMonth() !== b.getMonth() : soon.getMonth() === a.getMonth();
+        return `<span>${named ? a.toLocaleDateString(undefined, { month: 'short' }) : ''}</span>`;
+      }).join('')}</div>
+      <div class="st-cal-w" aria-hidden="true"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span></div>
+      <div class="st-cal-g" role="img" aria-label="${calActive} days studied in the last ${CAL_WEEKS} weeks">${calDays.map((x, i) => x.future
+        ? '<i class="st-cal-c future"></i>'
+        : `<i class="st-cal-c l${calLevel(x.r + x.l)}${x.dt.getTime() === today0.getTime() ? ' today' : ''}" style="--i:${i}" data-tip="${esc(`<b>${x.dt.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</b>${
+            x.r + x.l ? `<span>${x.r} review${x.r === 1 ? '' : 's'}${x.r ? ` · ${pc(x.ok, x.r)} right` : ''}</span><span>${x.l} lesson${x.l === 1 ? '' : 's'}</span>` : '<span>Nothing studied</span>'}`)}"></i>`).join('')}</div>
+      <div class="st-cal-key small muted"><span>Less</span>${[0, 1, 2, 3, 4].map(l => `<i class="st-cal-c l${l}"></i>`).join('')}<span>More</span></div>
+    </div>`;
+
+  // every item by its chance of recall today, strongest first (Your items: weakest first)
+  const memOf = items.map(([k, it]) => [k, it, (Learn.memory(it, now) || { R: 0 }).R]).sort((a, b) => b[2] - a[2]);
+
+  // your items, as the session summary shows a session's: newest first, or weakest first
+  const keys = items.map(([k]) => k);
+  const newest = keys.slice().sort((x, y) => (d.items[y].learnt || 0) - (d.items[x].learnt || 0));
+  const learnedN = keys.filter(k => d.items[k].stage >= Learn.LEARNED_FROM).length;
+  const itemsHtml = itemsCard(keys, {
+    id: 'st-items', title: 'Your items',
+    count: `<b>${keys.length}</b> total<b>${learnedN}</b> learned`,
+    views: [['newest', 'Newest', newest], ['weakest', 'Weakest', memOf.map(([k]) => k).reverse()]],
+    good: k => d.items[k].stage >= Learn.LEARNED_FROM,     // By type: the learned, then the rest
+  });
 
   if (!items.length) {
     app.innerHTML = '<h1 class="page-title">Statistics</h1>' + withRail(`
@@ -2984,13 +3255,20 @@ function pageStats() {
   app.innerHTML = '<h1 class="page-title">Statistics</h1>' + withRail(`
     <section class="card">
       <div class="st-tiles">
-        <div><b>${streak}</b><span>day${streak === 1 ? '' : 's'} in a row</span></div>
-        <div><b>${total.r}</b><span>reviews in 30 days</span></div>
-        <div><b>${pc(total.ok, total.r)}</b><span>right first time</span></div>
-        <div><b>${total.l}</b><span>lessons in 30 days</span></div>
+        <div class="st-streak${streak ? ' on' : ''}"><b data-count="${streak}">${streak}</b><span>day${streak === 1 ? '' : 's'} in a row</span></div>
+        <div><b data-count="${total.r}">${total.r}</b><span>reviews in 30 days</span></div>
+        <div><b ${total.r ? `data-count="${Math.round(100 * total.ok / total.r)}" data-suffix="%"` : ''}>${pc(total.ok, total.r)}</b><span>right first time</span></div>
+        <div><b data-count="${total.l}">${total.l}</b><span>lessons in 30 days</span></div>
         <div><b>${mins(total.s)}</b><span>studied in 30 days</span></div>
       </div>
     </section>
+    <section class="card st-read" id="st-read" aria-busy="true"><h2 class="caps">How much you can read</h2><div class="st-wait"></div></section>
+    <section class="card st-grow" id="st-grow" aria-busy="true"><h2 class="caps">Characters you know</h2><div class="st-wait"></div></section>
+    <section class="card st-anim">
+      <div class="st-head"><h2 class="caps">Your study calendar</h2><span class="small muted">${calActive} day${calActive === 1 ? '' : 's'} in ${CAL_WEEKS} weeks</span></div>
+      ${calHtml}
+    </section>
+    ${itemsHtml}
     <section class="card">
       <h2 class="caps">The last 30 days</h2>
       <div class="st-days">${log.map((x, i) => `<div title="${esc(days[i])}: ${x.r} reviews (${pc(x.ok, x.r)} right), ${x.l} lessons">
@@ -3030,26 +3308,14 @@ function pageStats() {
         : new Date(now + i * Learn.DAY).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</span>
         <i style="width:${Math.round(100 * n / maxF)}%"></i><b>${n ? '+' + n : ''}</b></div>`).join('')}</div>
     </section>
-    <section class="card">
-      <h2 class="caps">Stages</h2>
-      <table><thead><tr><th></th>${groups.map(g => `<th>${g}</th>`).join('')}</tr></thead><tbody>
-        ${KINDS.filter(([kind]) => items.some(([, it]) => (it.kind || 'char') === kind)).map(([kind, name]) => `<tr><td><b>${name}</b></td>
-          ${groups.map(g => `<td class="num">${items.filter(([, it]) => (it.kind || 'char') === kind && Learn.group(it.stage) === g).length}</td>`).join('')}</tr>`).join('')}
-      </tbody></table>
-      <p class="small muted">Reviews are scheduled by FSRS, which keeps each item's difficulty and
-        stability (how many days until your chance of recalling it falls to 90%) and brings it back
-        when that chance falls to ${Math.round(cfg.retention * 100)}%. Each review is rated from your
-        answers: wrong is <i>again</i>, a slip of tone or a long think <i>hard</i>, right <i>good</i>,
-        right straight away <i>easy</i>. The stages are bands of stability: Novice under 4 days,
-        Apprentice from a week, Journeyman from a month (learned, on the rest of the site), Expert from
-        4 months, Master from 2 years. Characters you mark learned join at Journeyman; a
-        <a href="#/calibrate">calibration test</a> re-sorts them by how well you really know them.</p>
-    </section>
     ${hardest.length ? `<section class="card">
       <h2 class="caps">Hardest for you</h2>
       <div class="lx-chips">${hardest.map(([k, it, r]) => `<a class="lx-chip" href="${itemHref(k)}">
         <span class="han">${itemHtml(k)}</span><span>${esc(primary(it))} <small class="muted">${Math.round(100 * r)}% right</small></span></a>`).join('')}</div>
     </section>` : ''}`, true);
+  stDraw();
+  wireItemsCard(document.getElementById('st-items'));
+  stReading(d);
   document.getElementById('st-revlog').addEventListener('click', () => {
     const blob = new Blob([Learn.reviewLogCsv(Store.load().items).csv], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
@@ -3059,6 +3325,228 @@ function pageStats() {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
   paintRail();
+}
+
+/* the statistics page comes alive: numbers count up, cards play in as they scroll into
+   view, everything with data-tip gets a tooltip, and the curve a crosshair */
+function stDraw() {
+  const reduced = Motion.reduced();
+  // count up
+  app.querySelectorAll('.st-tiles b[data-count]').forEach(b => {
+    const to = +b.dataset.count, suf = b.dataset.suffix || '';
+    if (reduced || !to) return;
+    const t0 = performance.now(), dur = 900 + Math.min(600, to * 8);
+    const step = t => {
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      b.textContent = Math.round(to * e).toLocaleString() + suf;
+      if (p < 1 && b.isConnected) requestAnimationFrame(step);
+    };
+    b.textContent = '0' + suf;
+    requestAnimationFrame(step);
+  });
+  stWire(app);
+}
+
+/* cards that play in as they scroll into view, and the tooltip for anything with data-tip */
+function stWire(root) {
+  const cards = root.matches && root.matches('.st-anim') ? [root] : [...root.querySelectorAll('.st-anim')];
+  if (Motion.reduced() || !('IntersectionObserver' in window)) cards.forEach(c => c.classList.add('go'));
+  else {
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.replace('wait', 'go'); io.unobserve(e.target); }
+    }), { threshold: 0.2 });
+    cards.forEach(c => { c.classList.add('wait'); io.observe(c); });
+  }
+  root.querySelectorAll('[data-tip]').forEach(el => {
+    const on = () => { const r = el.getBoundingClientRect(); stTip(el.dataset.tip, r.left + r.width / 2, r.top); };
+    el.addEventListener('pointerenter', on);
+    el.addEventListener('focus', on);
+    el.addEventListener('pointerleave', stTipHide);
+    el.addEventListener('blur', stTipHide);
+  });
+  window.addEventListener('hashchange', stTipHide, { once: true });
+}
+function stTip(html, x, y) {
+  let tip = document.querySelector('.st-tip');
+  if (!tip) { tip = document.createElement('div'); tip.className = 'st-tip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip); }
+  tip.innerHTML = html;
+  tip.hidden = false;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = `${Math.max(8, Math.min(window.innerWidth - w - 8, x - w / 2)) + window.scrollX}px`;
+  tip.style.top = `${(y - h - 12 < 8 ? y + 22 : y - h - 12) + window.scrollY}px`;
+}
+function stTipHide() { const tip = document.querySelector('.st-tip'); if (tip) tip.hidden = true; }
+
+/* a chart's crosshair: the nearest point to the pointer, a line and dot on it, and its tooltip.
+   g: W (the viewBox width), L and R (the plot's margins), n (the last index), x(i), y(i), html(i) */
+function stCrosshair(svg, g) {
+  if (!svg) return;
+  const hair = svg.querySelector('.st-hair'), line = hair.querySelector('line'), dot = hair.querySelector('circle');
+  const move = e => {
+    const r = svg.getBoundingClientRect(), sx = (e.clientX - r.left) * g.W / r.width;
+    const i = Math.max(0, Math.min(g.n, Math.round((sx - g.L) / (g.W - g.L - g.R) * g.n)));
+    const x = g.x(i), y = g.y(i);
+    hair.hidden = false;
+    line.setAttribute('x1', x); line.setAttribute('x2', x);
+    dot.setAttribute('cx', x); dot.setAttribute('cy', y);
+    stTip(g.html(i), r.left + x * r.width / g.W, r.top + y * r.height / svg.viewBox.baseVal.height);
+  };
+  const hit = svg.querySelector('.st-hit');
+  hit.addEventListener('pointermove', move);
+  hit.addEventListener('pointerdown', move);
+  hit.addEventListener('pointerleave', () => { hair.hidden = true; stTipHide(); });
+}
+
+/* an original short passage of everyday Chinese, to show what you can read of it */
+const ST_PASSAGE = '今天天气很好，我和朋友一起去公园散步。我们看到很多人在那里跑步、唱歌和跳舞。有一个小孩子在学骑自行车，他的妈妈在后面帮他。大家都很开心。';
+
+/* How much you can read, and Characters you know: they need the character frequencies and the
+   HSK lists, so they fill in once those have loaded */
+async function stReading(d) {
+  await Promise.all([optional(need.charfreq()), optional(need.hskChars())]);
+  const read = document.getElementById('st-read'), grow = document.getElementById('st-grow');
+  if (!read || !grow) return;                          // gone to another page meanwhile
+  const known = Learn.knownChars(d), F = HZ.charfreq || {};
+  const pp1 = x => (x >= 10 ? Math.round(x) : Math.round(x * 10) / 10) + '%';
+
+  // ---- how much of everyday text your characters cover ----
+  if (!HZ.charfreq) read.remove();
+  else {
+    const ranked = Object.keys(F);                     // most common first
+    const cover = [...known].reduce((s, c) => s + (F[c] || 0), 0);
+    const unknown = ranked.filter(c => !known.has(c));
+    const need = goal => {
+      let s = cover, n = 0;
+      for (const c of unknown) { if (s >= goal) break; s += F[c]; n++; }
+      return s >= goal ? n : null;
+    };
+    const GOALS = [50, 75, 90];
+    const next = unknown.slice(0, 10);
+    const rankOf = new Map(ranked.map((c, i) => [c, i + 1]));
+    const R = 54, C = 2 * Math.PI * R;
+    const tick = g => { const a = 2 * Math.PI * g / 100 - Math.PI / 2; return [60 + 61 * Math.cos(a), 60 + 61 * Math.sin(a), 60 + 47 * Math.cos(a), 60 + 47 * Math.sin(a)]; };
+    const han = [...ST_PASSAGE].filter(c => /\p{Script=Han}/u.test(c));
+    const canRead = han.filter(c => known.has(c)).length;
+    read.removeAttribute('aria-busy');
+    read.classList.add('st-anim');
+    read.innerHTML = `<div class="st-head"><h2 class="caps">How much you can read</h2><span class="small muted">${known.size.toLocaleString()} character${known.size === 1 ? '' : 's'} known</span></div>
+      <div class="st-read-top">
+        <div class="st-ring" role="img" aria-label="Your characters make up ${pp1(cover)} of everyday Chinese text">
+          <svg viewBox="0 0 120 120"><circle class="st-ring-bg" cx="60" cy="60" r="${R}"/>
+            <circle class="st-ring-fg" cx="60" cy="60" r="${R}" style="--c:${C.toFixed(1)};--to:${(C * (1 - cover / 100)).toFixed(1)}"/>
+            ${GOALS.map(g => { const [x1, y1, x2, y2] = tick(g); return `<line class="st-ring-t${cover >= g ? ' done' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`; }).join('')}
+          </svg>
+          <div class="st-ring-n"><b data-count="${Math.round(cover)}" data-suffix="%">${pp1(cover)}</b><span>of everyday text</span></div>
+        </div>
+        <div class="st-read-txt">
+          <p>Of every 100 characters in everyday Chinese, about <b>${Math.round(cover)}</b> ${Math.round(cover) === 1 ? 'is one' : 'are ones'} you know.
+            The most common characters do most of the work, so each early one counts for a lot.</p>
+          <ul class="st-goals">${GOALS.map(g => {
+            const n = cover >= g ? 0 : need(g);
+            return `<li class="${cover >= g ? 'done' : ''}"><b>${g}%</b><span>${cover >= g ? 'Reached' : n == null ? 'Out of reach of this list'
+              : `${n.toLocaleString()} more of the most common characters`}</span></li>`;
+          }).join('')}</ul>
+        </div>
+      </div>
+      <h3 class="st-sub">Biggest jumps next</h3>
+      <div class="st-next">${next.map(c => `<a class="st-next-c" href="#/character/${encodeURIComponent(c)}"
+        data-tip="${esc(`<b class="han">${esc(c)}</b><span>The ${ordinal(rankOf.get(c))} most common character</span><span>${pp1(F[c])} of everyday text</span>`)}">
+        <span class="han">${zh(c)}</span><small>+${pp1(F[c])}</small></a>`).join('')}</div>
+      <h3 class="st-sub">What you can read of this</h3>
+      <p class="st-passage" aria-label="${canRead} of ${han.length} characters known">${[...ST_PASSAGE].map(c => /\p{Script=Han}/u.test(c)
+        ? `<span class="${known.has(c) ? 'k' : 'u'}">${esc(c)}</span>` : `<span class="p">${esc(c)}</span>`).join('')}</p>
+      <p class="small muted">You know <b>${canRead}</b> of its ${han.length} characters; the ones you don't are dimmed.</p>`;
+    stWire(read);
+    stCountUp(read);
+  }
+
+  // ---- characters you know, over time, against the size of each HSK level ----
+  const at = new Map();
+  const note = (c, when) => { if (when && (!at.has(c) || at.get(c) > when)) at.set(c, when); };
+  for (const [k, it] of Object.entries(d.items)) {
+    if (!(it.stage >= 1)) continue;
+    const when = it.learnt || it.joined || it.added;
+    if ((it.kind || 'char') === 'char') note(k, when);
+    else if (it.kind === 'word') for (const c of k) if (known.has(c)) note(c, when);
+  }
+  const undated = [...known].filter(c => !at.has(c)).length;      // marked known: there from the start
+  const DAY = Learn.DAY, day0 = new Date(); day0.setHours(0, 0, 0, 0);
+  const today = day0.getTime();
+  const first = at.size ? Math.min(...at.values()) : today;
+  const start = Math.min(new Date(first).setHours(0, 0, 0, 0), today - 13 * DAY);
+  const past = Math.round((today - start) / DAY);
+  const times = [...at.values()].sort((a, b) => a - b);
+  const countBy = end => { let n = 0; while (n < times.length && times[n] < end) n++; return n; };
+  const actual = Array.from({ length: past + 1 }, (_, i) => undated + countBy(start + (i + 1) * DAY));
+  const cur = actual[past];
+  const since = Math.max(7, Math.min(30, Math.ceil((Date.now() - first) / DAY)));
+  const pace = times.filter(x => x >= Date.now() - since * DAY).length / since;    // characters a day lately
+  // HSK levels by size: how many characters up to and including each
+  const sizes = [];
+  if (HZ.hskChars) {
+    const seen = new Set();
+    Object.keys(HZ.hskChars).sort((a, b) => a - b).forEach(l => { HZ.hskChars[l].forEach(c => seen.add(c)); sizes.push([+l, seen.size]); });
+  }
+  const goal = sizes.find(([, n]) => n > cur);
+  const ahead = goal && pace > 0 ? Math.min(365, Math.ceil((goal[1] - cur) / pace)) : 0;
+  const n = past + Math.max(ahead, pace > 0 ? 7 : 0);
+  const proj = i => i <= past ? actual[i] : Math.round(cur + pace * (i - past));
+  const top = Math.max(proj(n), goal ? goal[1] : cur, 10) * 1.1;
+  const W = 640, H = 240, L = 44, Rm = 14, T = 16, B = 28;
+  const x = i => L + (W - L - Rm) * i / Math.max(1, n), y = v => T + (H - T - B) * (1 - v / top);
+  const dateOf = i => new Date(start + i * DAY);
+  const fmt = (i, o = { day: 'numeric', month: 'short' }) => dateOf(i).toLocaleDateString(undefined, o);
+  const line = actual.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+  // dates: the start, today, the end, and a couple between where there's room
+  const ticks = [];
+  for (const v of [past, n, 0, Math.round(n / 3), Math.round(2 * n / 3)]) if (ticks.every(w => Math.abs(w - v) > n / 7)) ticks.push(v);
+  // counts: a round step (1, 2 or 5 times a power of ten), about four of them
+  const raw = top / 4, mag = Math.pow(10, Math.floor(Math.log10(raw))), stepY = [1, 2, 5, 10].map(m => m * mag).find(s => s >= raw);
+  const yTicks = Array.from({ length: Math.floor(top / stepY) + 1 }, (_, i) => i * stepY);
+  const goalDate = goal && ahead ? fmt(past + ahead, { day: 'numeric', month: 'long', year: past + ahead > 300 ? 'numeric' : undefined }) : '';
+  grow.removeAttribute('aria-busy');
+  grow.classList.add('st-anim');
+  grow.innerHTML = `<div class="st-head"><h2 class="caps">Characters you know</h2><span class="small muted">${pace > 0
+      ? `About ${pace >= 1 ? Math.round(pace * 10) / 10 : (Math.round(pace * 70) / 10)} a ${pace >= 1 ? 'day' : 'week'} lately` : 'None new lately'}</span></div>
+    <div class="st-curve st-growc">
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${cur} characters known${goalDate ? `; at this pace ${goal[1]}, as many as HSK 1${goal[0] > 1 ? `–${goal[0]}` : ''}, by ${goalDate}` : ''}">
+        <defs><linearGradient id="st-grow-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--green)" stop-opacity=".3"/><stop offset="1" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
+        ${yTicks.map(v => `<line class="st-grid" x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}"/><text class="st-ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toLocaleString()}</text>`).join('')}
+        ${sizes.filter(([, s]) => s <= top).map(([l, s]) => `<line class="st-hsk" x1="${L}" x2="${W - Rm}" y1="${y(s)}" y2="${y(s)}"/>
+          <text class="st-hsk-t" x="${L + 6}" y="${y(s) - 6}">HSK ${l > 1 ? `1–${l}` : '1'} · ${s.toLocaleString()}</text>`).join('')}
+        ${ticks.map(i => `<text class="st-ax" x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === n ? 'end' : 'middle'}">${i === past ? 'Today' : fmt(i)}</text>`).join('')}
+        <path class="st-grow-a" d="${line} L${x(past)} ${y(0)} L${x(0)} ${y(0)} Z" fill="url(#st-grow-fill)"/>
+        <path class="st-grow-l" d="${line}" pathLength="1"/>
+        ${n > past ? `<path class="st-grow-p" d="M${x(past)} ${y(cur)} L${x(n)} ${y(proj(n))}"/>` : ''}
+        <circle class="st-grow-now" cx="${x(past)}" cy="${y(cur)}" r="5"/>
+        ${goalDate ? `<circle class="st-grow-goal" cx="${x(past + ahead)}" cy="${y(goal[1])}" r="5"/>` : ''}
+        <g class="st-hair" hidden><line y1="${T}" y2="${H - B}"/><circle r="5"/></g>
+        <rect class="st-hit" x="${L}" y="0" width="${W - L - Rm}" height="${H}"/>
+      </svg></div>
+    <p class="small muted">${goalDate ? `At this pace you'd know <b>${goal[1].toLocaleString()}</b> characters, as many as HSK 1${goal[0] > 1 ? `–${goal[0]}` : ''},
+      by <b>${goalDate}</b>.` : goal ? 'Learn some new characters to see when you would reach the next HSK level.' : 'You know as many characters as all of HSK 1–6.'}
+      The dashed lines are the size of each HSK level; the dotted one is your pace carried on.</p>`;
+  stCrosshair(grow.querySelector('svg'), { W, L, R: Rm, n, x, y: i => y(proj(i)),
+    html: i => `<b>${i === past ? 'Today' : fmt(i, { weekday: 'short', day: 'numeric', month: 'short' })}</b>${i <= past
+      ? `<span>${proj(i).toLocaleString()} characters known</span>` : `<span>About ${proj(i).toLocaleString()} at this pace</span>`}` });
+  stWire(grow);
+}
+
+/* numbers that count up to their value */
+function stCountUp(root) {
+  if (Motion.reduced()) return;
+  root.querySelectorAll('b[data-count]').forEach(b => {
+    const to = +b.dataset.count, suf = b.dataset.suffix || '', end = b.textContent;
+    if (!to) return;
+    const t0 = performance.now(), dur = 900 + Math.min(600, to * 8);
+    const step = t => {
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      b.textContent = p < 1 ? Math.round(to * e).toLocaleString() + suf : end;
+      if (p < 1 && b.isConnected) requestAnimationFrame(step);
+    };
+    b.textContent = '0' + suf;
+    requestAnimationFrame(step);
+  });
 }
 
 /* L starts the lessons and R the reviews, from Today, when the tile has something to
