@@ -189,13 +189,13 @@ function exampleHtml(ex, w) {
     const han = [...z].some(isHan);
     // (punctuation as a ruby too, with an empty reading, so it sits on the characters' line)
     if (!han) return `<span class="ex-p"><ruby>${zh(z)}<rt aria-hidden="true">&nbsp;</rt></ruby></span>`;
-    const tag = z === w ? 'mark' : 'a';
+    // (the words are not links: a sentence is read where it is, not left for another page)
+    const tag = z === w ? 'mark' : 'span';
     let shown = zh(z);
     if (z !== w && [...w].length === 1 && z.includes(w)) {
       for (const x of new Set([w, toTrad(w)])) shown = shown.split(x).join(`<b class="ex-c">${x}</b>`);
     }
-    const href = z === w ? '' : ` href="#/${[...z].length > 1 ? 'word' : 'character'}/${encodeURIComponent(z)}"`;
-    return `<${tag} class="ex-w"${href}><ruby>${shown}<rt>${esc(ps[i] || '')}</rt></ruby></${tag}>`;
+    return `<${tag} class="ex-w"><ruby>${shown}<rt>${esc(ps[i] || '')}</rt></ruby></${tag}>`;
   }).join('')}</div><p class="ex-en">${esc(ex[2])}</p>`;
 }
 

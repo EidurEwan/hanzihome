@@ -655,15 +655,150 @@ const mnCtx = (k, it, f) => it.kind === 'comp' ? { comps: (f.subs || []).concat(
   : it.kind === 'sound' ? { sounds: [[itemText(k), it.mean]] }
   : { self: it.kind === 'char' || it.kind === 'word' ? glyphOf(k) : '', comps: f.comps || [], sounds: f.sounds || [] };
 
+/* a word's characters on one line, smaller the more there are, so a long one fits the band */
+const GLYPH_FIT = [1, 1, 1, .74, .58, .48, .42];
+function glyphFit(k, it) {
+  const n = it.kind === 'word' ? [...glyphOf(k)].length : 1;
+  return n < 3 ? itemHtml(k) : `<span class="lx-fit" style="font-size:${GLYPH_FIT[Math.min(n, 6)]}em">${itemHtml(k)}</span>`;
+}
 /* the coloured band at the top: the item, and optionally its reading and meaning */
 function band(k, it, show) {
   return `<div class="lx-band ${it.kind}">
     ${show ? `<div class="lx-pin">${esc(it.pin)}</div>` : '<div class="lx-pin">&nbsp;</div>'}
-    <div class="lx-glyph han">${itemHtml(k)}</div>
+    <div class="lx-glyph han">${glyphFit(k, it)}</div>
     ${show ? `<div class="lx-mean">${esc((it.mean || '').split(';')[0])}</div>` : ''}
     <span class="lx-kind">${kindName(it)}</span>
   </div>`;
 }
+
+/* The card, as the lessons and reviews draw it: the item's band in a deck, with cards
+   peeking out behind it, and a dark foot joined under it (the question, or the lesson's
+   steps). What peeks out says what the card stands among: in a review, the colours of the
+   next items to come; in a lesson, a character's parts (or, for a part, the character it
+   is for), so its prerequisites show. */
+function deck(bandHtml, behind, foot, extra) {
+  return `<div class="dk${behind ? ' dk-has-behind' : ''}">${behind || ''}
+    <div class="dk-front"><div class="dk-card">${bandHtml}${extra || ''}</div>
+    <div class="dk-foot">${foot}</div></div></div>`;
+}
+/* A prerequisite's lesson opening, as the deck changing places (s.fly, kept by Learn): the
+   part grows out of where it sat in the row into the front card, the character it is for
+   steps back into the card behind ("part of"), and the other parts sink away behind them.
+   Instead of a card dealt in; once only. */
+/* where an element is on the page (not the window, which may scroll in between) */
+const pageRect = el => { const r = el.getBoundingClientRect(); return { left: r.left + scrollX, top: r.top + scrollY, width: r.width, height: r.height }; };
+function flyFromPart(s, k) {
+  const fly = s.fly, from = fly && fly.parts[k];
+  s.fly = null;
+  const dk = app.querySelector('.dk'), front = app.querySelector('.dk-front');
+  if (!from || !dk || !front || Motion.reduced()) return false;
+  toLessonTop();
+  const to = pageRect(front);
+  if (!to.width || !to.height) return false;
+  const ease = 'cubic-bezier(.2, .8, .2, 1)';
+  // r1 drawn where r0 is: the transform that puts it there
+  const at = (r0, r1) => `translate(${r0.left + r0.width / 2 - (r1.left + r1.width / 2)}px, ${r0.top + r0.height / 2 - (r1.top + r1.height / 2)}px) scale(${r0.width / r1.width}, ${r0.height / r1.height})`;
+  front.animate([{ transform: at(from.rect, to), opacity: .5 }, { opacity: 1, offset: .3 }, { transform: 'none', opacity: 1 }],
+    { duration: 600, easing: ease });
+  // the character, from the front to the card behind
+  const owner = app.querySelector('.dk-o');
+  if (owner && fly.card) {
+    owner.animate([{ transform: at(fly.card, pageRect(owner)), opacity: .9 }, { transform: 'none', opacity: 1 }],
+      { duration: 600, easing: ease });
+  }
+  // the other parts, where they were, sinking behind the cards
+  const base = pageRect(dk);
+  for (const [p, { rect, html }] of Object.entries(fly.parts)) {
+    if (p === k) continue;
+    const box = document.createElement('div');
+    box.innerHTML = html;
+    const g = box.firstElementChild;
+    g.removeAttribute('data-k');
+    g.classList.add('dk-ghost');
+    Object.assign(g.style, { left: `${rect.left - base.left}px`, top: `${rect.top - base.top}px` });
+    dk.prepend(g);
+    g.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(46px) scale(.75)', opacity: 0 }],
+      { duration: 380, easing: 'ease-in', fill: 'forwards' }).onfinish = () => g.remove();
+  }
+  return true;
+}
+/* a new card dealt onto the deck: its band and foot together, as one card */
+const dealCard = () => Motion.play(app.querySelector('.dk-front') || app.querySelector('.lx-band'), 'm-deal');
+/* The next cards, in the order they will come (n of them): the queue from here, with each
+   question put off as deferQuestion will put it off, the one being asked taken as answered. */
+function upNext(s, n = 2) {
+  const { k, q } = s.queue[s.i];
+  const t = Object.assign({}, s, { queue: [...s.queue],
+    answered: Object.assign({}, s.answered, { [k]: Object.assign({}, s.answered[k], { [q]: true }) }),
+    first: Object.assign({}, s.first, { [k]: Object.assign({ [q]: { ok: true } }, s.first[k]) }) });
+  const out = [];
+  for (let i = s.i + 1; i < t.queue.length && out.length < n; i++) {
+    t.i = i;
+    for (let m = 0; m < t.queue.length && deferQuestion(t); m++);
+    if (Store.item(t.queue[i].k)) out.push(t.queue[i].k);
+  }
+  return out;
+}
+/* behind a review's card: the next two cards, each in its kind's colour (the nearer one in front) */
+function deckNext(s) {
+  const next = upNext(s);
+  if (!next.length) return '';
+  return `<div class="dk-behind dk-next" aria-hidden="true">${next.map((k, i) =>
+    `<span class="dk-b b${i + 1} ${Store.item(k).kind || 'char'}"></span>`).reverse().join('')}</div>`;
+}
+/* Reviews: a new card, as the stack moving up. The card just answered goes off to the side,
+   the card behind it comes forward to the front, the one behind that takes its place, and a
+   new one shows at the back. (st: the deck as it was, from deckState, before the page was drawn.)
+   The first card of all is dealt. */
+const deckState = () => {
+  const dk = app.querySelector('.dk');
+  if (!dk) return null;
+  const r = el => el && pageRect(el), front = dk.querySelector('.dk-front');
+  return { front: r(front), html: front && front.outerHTML, b1: r(dk.querySelector('.dk-b.b1')), b2: r(dk.querySelector('.dk-b.b2')) };
+};
+function stackForward(st) {
+  const dk = app.querySelector('.dk'), front = dk && dk.querySelector('.dk-front');
+  if (!st || !st.front || !st.b1 || !front || Motion.reduced()) return dealCard();
+  const ease = 'cubic-bezier(.2, .8, .2, 1)';
+  const at = (r0, r1) => `translate(${r0.left + r0.width / 2 - (r1.left + r1.width / 2)}px, ${r0.top + r0.height / 2 - (r1.top + r1.height / 2)}px) scale(${r0.width / r1.width}, ${r0.height / r1.height})`;
+  const base = pageRect(dk);
+  // the card answered, off to the left
+  const box = document.createElement('div');
+  box.innerHTML = st.html;
+  const ghost = box.firstElementChild;
+  ghost.classList.add('dk-gone');
+  Object.assign(ghost.style, { left: `${st.front.left - base.left}px`, top: `${st.front.top - base.top}px`, width: `${st.front.width}px` });
+  dk.append(ghost);
+  ghost.animate([{ transform: 'none', opacity: 1 }, { transform: 'translate(-70%, 30px) rotate(-12deg)', opacity: 0 }],
+    { duration: 260, easing: 'cubic-bezier(.4, 0, .9, .6)', fill: 'forwards' }).onfinish = () => ghost.remove();
+  // the one behind, to the front: its own colour growing to the full card, its face fading in
+  front.animate([{ transform: at(st.b1, pageRect(front)), opacity: .8 }, { transform: 'none', opacity: 1 }],
+    { duration: 280, easing: ease });
+  front.querySelectorAll('.lx-band > *, .dk-foot > *').forEach(x => x.animate([{ opacity: 0 }, { opacity: 0, offset: .35 }, { opacity: 1 }], { duration: 280 }));
+  // the back card to the middle, and a new one in at the back
+  const b1 = dk.querySelector('.dk-b.b1'), b2 = dk.querySelector('.dk-b.b2');
+  if (b1 && st.b2) b1.animate([{ transform: at(st.b2, pageRect(b1)), opacity: .5 }, { transform: 'none' }], { duration: 280, easing: ease });
+  else if (b1) b1.animate([{ transform: 'translateY(-14px) scale(.94)', opacity: 0 }, { transform: 'none' }], { duration: 280, easing: ease });
+  if (b2) b2.animate([{ transform: 'translateY(-14px) scale(.94)', opacity: 0 }, { opacity: 0, offset: .3 }, { transform: 'none' }], { duration: 320, easing: ease });
+}
+/* behind a lesson's card: what it is made of ([[glyph, gloss, kind]]), as small cards */
+function deckParts(parts) {
+  if (!parts.length) return '';
+  return `<div class="dk-behind dk-parts" aria-label="Made of: ${esc(parts.map(p => p[1] || p[0]).join(', '))}">${parts.slice(0, 6).map(([c, , kd, k], i) =>
+    `<span class="dk-p ${kd}" style="--i:${i}"${k ? ` data-k="${esc(k)}"` : ''}>${kd === 'sound' ? `<span class="snd-key">${esc(c)}</span>` : `<span class="han">${esc(c)}</span>`}</span>`).join('')}</div>`;
+}
+/* behind a part's card: the character (or word) it is learned for */
+function deckOwner(owner) {
+  if (!owner) return '';
+  const it = Store.item(owner);
+  return `<div class="dk-behind dk-owner"><span class="dk-o ${it ? it.kind : 'char'}"><small>part of</small>
+    <span class="han">${zh(glyphOf(owner))}</span>${it ? `<span>${esc(primary(it))}</span>` : ''}</span></div>`;
+}
+/* a lesson's parts, as deckParts takes them */
+const lessonParts = (it, f) => it.kind === 'word' ? (f.parts || []).map(([c, g]) => [c, g, 'char'])
+  : it.kind === 'char' ? (f.comps || []).map(([c, g]) => [c, g, 'comp']).concat((f.sounds || []).map(([c, g]) => [c, g, 'sound'])) : [];
+/* a section of a lesson, or of the info panel, as a tile */
+const lxTile = (title, body, cls) => `<section class="lt-tile${cls ? ' ' + cls : ''}">${title ? `<h3>${title}</h3>` : ''}${body}</section>`;
 
 /* a listening question: only the sound, played as it opens (▶ or P plays it again) */
 function listenBand(it) {
@@ -1507,13 +1642,13 @@ async function pageLessons() {
   let body = '';
   if (s.tab === 0) {
     body = it.kind === 'word'
-      ? `<h3>Characters</h3><p class="muted">This word is made of these characters. Can you see how they
-          make its meaning and its sound?</p>${chips(f.parts)}`
-      : `<h3>Component composition</h3><p class="muted">This character is made of these components. Can you see where they are?</p>
-         ${f.comps.length ? chips(f.comps, 'comp') : '<p class="muted small">It has no components with a name of their own.</p>'}
-         ${f.sounds.length ? `<h3>Sound composition</h3><p class="muted">Its pronunciation, <b>${esc(it.pin)}</b>, is these three
-           sounds: its beginning is a person, its ending a building, and its tone where at that building (1 in front, 2 inside, 3 basement, 4 bathroom, 5 roof). Can you hear how they make the syllable?</p>${chips(f.sounds, 'snd')}` : ''}
-         ${f.sound ? `<p class="muted small"><span class="han">${esc(f.sound[0])}</span> ${esc(f.sound[1])} also hints at the sound.</p>` : ''}`;
+      ? lxTile('Characters', `<p class="muted">This word is made of these characters. Can you see how they
+          make its meaning and its sound?</p>${chips(f.parts)}`, 'wide')
+      : lxTile('Made of', `${f.comps.length ? chips(f.comps, 'comp') : '<p class="muted small">It has no components with a name of their own.</p>'}
+           <p class="muted small">Can you see where they are?</p>`, f.sounds.length ? '' : 'wide')
+        + (f.sounds.length ? lxTile('Sounds like', `${chips(f.sounds, 'snd')}<p class="muted small">Its pronunciation, <b>${esc(it.pin)}</b>, is these three
+           sounds: its beginning is a person, its ending a building, and its tone where at that building (1 in front, 2 inside, 3 basement, 4 bathroom, 5 roof). Can you hear how they make the syllable?</p>
+           ${f.sound ? `<p class="muted small"><span class="han">${esc(f.sound[0])}</span> ${esc(f.sound[1])} also hints at the sound.</p>` : ''}`, 'span2') : '');
   } else if (s.tab === 1) {
     const scaffold = it.kind === 'word' ? f.parts.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g)}`).join(' + ')
       : it.kind === 'char' ? f.comps.map(([c, g]) => `<b class="han">${esc(c)}</b> ${esc(g || '?')}`).join(' + ')
@@ -1521,7 +1656,7 @@ async function pageLessons() {
     // (your own story is optional when there is one already: it waits behind a link until
     // you write one)
     const ownShut = !!f.mn && !it.mnemonic;
-    body = `<h3>Mnemonic</h3>
+    body = lxTile('Mnemonic', `
       ${scaffold || it.kind === 'char' ? `<p class="muted">${scaffold ? scaffold + ' → ' : ''}<b class="han">${esc(itemText(k))}</b> ${esc(primary(it))}
         ${it.pin ? `· sounds <b>${esc(it.pin)}</b>` : ''}</p>` : ''}
       ${f.mn ? `<div class="mn lx-mn-builtin">${mnHtml(f.mn, ctx)}</div>` : ''}
@@ -1532,32 +1667,29 @@ async function pageLessons() {
       <div class="lx-own" id="lx-own"${ownShut ? ' hidden' : ''}>
         <textarea id="lx-mn" rows="${f.mn ? 2 : 4}" placeholder="${f.mn ? 'Your own story, shown instead of the one above…' : 'Make up a little story that joins the parts, the meaning and the sound…'}">${esc(it.mnemonic || '')}</textarea>
         <p class="small muted" id="lx-mn-state">Saved as you type.</p>
-      </div>
-      <h3>${part ? 'Name' : 'Meaning'}</h3>
-      <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
+      </div>`, 'wide')
+      + lxTile(part ? 'Name' : 'Meaning', `<dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(primary(it))}</b></dd>
         <dt>Alternatives</dt><dd>${others(it).length ? esc(others(it).join(', ')) : '<span class="muted">none</span>'}</dd></dl>
-      ${it.kind === 'sound' ? `<p><button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button></p>` : ''}
-      ${part ? '' : `<h3>Pronunciation</h3>
-      <dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}
-        ${Sound.canSay() ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`}`;
+      ${it.kind === 'sound' ? `<p><button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button></p>` : ''}`, part ? 'wide' : 'span2')
+      + (part ? '' : lxTile('Pronunciation', `<dl class="lx-dl"><dt>Primary</dt><dd><b>${esc(numbered(it.pin))}</b> · ${esc(it.pin)}
+        ${Sound.canSay() ? '<button type="button" class="btn quiet lx-say" id="lx-say">▶ Hear it</button>' : ''}</dd></dl>`));
   } else if (s.tab === 2) {
-    body = `<h3>Examples</h3>
-      ${it.kind === 'comp' ? `<p class="muted">Characters with this component. Can you see where it is in each of them?</p>${chips(f.words)}`
-      : it.kind === 'sound' ? `<p class="muted">Common characters with this sound:</p>${chips(f.words)}`
-      : `${it.ex && it.ex.text ? `<p class="muted">Where you found it:</p>${foundIn(k, it)}` : ''}
-      ${f.ex.length ? `<p class="muted">How it is used:</p>${f.ex.map(ex => `<div class="example">${exampleHtml(ex, k)}</div>`).join('')}
-        ${it.kind === 'word' && HZ.winfo[k][3] ? `<p class="word-use"><b>Good to know:</b> ${esc(HZ.winfo[k][3])}</p>` : ''}` : ''}
-      ${f.words.length ? `<p class="muted">Words it is in:</p>
-        <div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/word/' + encodeURIComponent(w))).join('')}</div>` : ''}
-      ${!(it.ex && it.ex.text) && !f.words.length && !f.ex.length ? '<p class="muted">No examples yet.</p>' : ''}
-      ${it.kind === 'word' ? `<p><a class="small" href="#/word/${encodeURIComponent(k)}" target="_blank">The word's card →</a></p>` : ''}`}`;
+    body = it.kind === 'comp' ? lxTile('Examples', `<p class="muted">Characters with this component. Can you see where it is in each of them?</p>${chips(f.words)}`, 'wide')
+      : it.kind === 'sound' ? lxTile('Examples', `<p class="muted">Common characters with this sound:</p>${chips(f.words)}`, 'wide')
+      : `${it.ex && it.ex.text ? lxTile('Where you found it', foundIn(k, it), 'wide') : ''}
+      ${f.ex.length ? lxTile('In sentences <span class="lt-hint">· tap one for its pinyin</span>', f.ex.map(ex =>
+          `<div class="example lx-pinless" tabindex="0" aria-label="A sentence: Enter shows its pinyin">${exampleHtml(ex, k)}</div>`).join('')
+        + (it.kind === 'word' && HZ.winfo[k][3] ? `<p class="word-use"><b>Good to know:</b> ${esc(HZ.winfo[k][3])}</p>` : ''), 'wide lx-ex') : ''}
+      ${f.words.length ? lxTile('Words it is in', `<div class="lx-chips">${f.words.map(([w, p]) => lxChip(w, p, '#/word/' + encodeURIComponent(w))).join('')}</div>`, 'wide') : ''}
+      ${!(it.ex && it.ex.text) && !f.words.length && !f.ex.length ? lxTile('Examples', '<p class="muted">No examples yet.</p>', 'wide') : ''}
+      ${it.kind === 'word' ? `<p class="lt-after"><a class="small" href="#/word/${encodeURIComponent(k)}" target="_blank">The word's card →</a></p>` : ''}`;
   } else {
     // the pronunciation first; the meaning only once that is right (a part: its name only)
     if (part && s.pinOk !== k) { s.pinOk = k; s.pinAnswer = ''; }
     const pinDone = s.pinOk === k;
     // answered right: it stays, with the answer, until you go on (Next, or Enter)
     var passed = s.passed === k;
-    body = `<h3>Confirmation</h3>
+    body = lxTile('Confirmation', `
       <p class="muted">${part ? `Its <b>name</b>?` : 'Its <b>pronunciation</b>, with tone numbers (like pin1yin1), and its <b>meaning</b>.'}</p>
       <form id="lx-quiz" autocomplete="off">
         ${part ? '' : `<input id="lx-pin" class="lx-input${pinDone ? ' ok' : ''}" placeholder="Pronunciation…" spellcheck="false"
@@ -1565,16 +1697,19 @@ async function pageLessons() {
         ${pinDone || !part ? `<input id="lx-mean" class="lx-input${passed ? ' ok' : ''}" placeholder="${part ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en" enterkeyhint="go" aria-label="${part ? 'Name' : 'Meaning'}"${passed ? ` value="${esc(s.meanAnswer || '')}" readonly` : ''}>` : ''}
         <div id="lx-verdict" aria-live="assertive">${passed ? rightHtml : ''}</div>
         <button class="btn" type="submit">${passed ? 'Next ›' : 'Check'}</button>
-      </form>`;
+      </form>`, 'wide');
   }
 
-  app.innerHTML = band(k, it, !quiz) + `
-    <nav class="lx-tabs" role="tablist" aria-label="Lesson steps">${tabs.map((t, i) => i < first ? '' : `<button type="button" role="tab"
+  // what peeks out behind the card: a character's parts; for a part, the character it is for
+  const owner = part ? s.batch.slice(s.i + 1).find(x => { const xi = Store.item(x); return xi && Learn.partsOf(x, xi).includes(k); }) : null;
+  app.innerHTML = deck(band(k, it, !quiz), part ? deckOwner(owner) : deckParts(lessonParts(it, f)),
+    `<nav class="lx-tabs" role="tablist" aria-label="Lesson steps">${tabs.map((t, i) => i < first ? '' : `<button type="button" role="tab"
       data-t="${i}" class="${i === s.tab ? 'on' : ''}" aria-selected="${i === s.tab}" aria-controls="lx-panel" aria-label="${t}"
-      >${SHORT_TAB[t] ? `<span class="lx-tab-long">${t}</span><span class="lx-tab-short">${SHORT_TAB[t]}</span>` : t}</button>`).join('')}</nav>
+      >${SHORT_TAB[t] ? `<span class="lx-tab-long">${t}</span><span class="lx-tab-short">${SHORT_TAB[t]}</span>` : t}</button>`).join('')}</nav>`,
+    `<span class="dk-stage">New · ${esc(kindName(it))}</span>`) + `
     <div class="lx-body">
       <button type="button" class="lx-arrow prev" ${s.tab === first ? 'disabled' : ''} aria-label="Previous step">‹</button>
-      <div class="lx-main" id="lx-panel" role="tabpanel" aria-label="${tabs[s.tab]}">${body}</div>
+      <div class="lx-main lt-tiles" id="lx-panel" role="tabpanel" aria-label="${tabs[s.tab]}">${body}</div>
       <button type="button" class="lx-arrow next" ${quiz ? 'disabled' : ''} aria-label="Next step">›</button>
     </div>
     <div class="lx-step">
@@ -1588,7 +1723,7 @@ async function pageLessons() {
 
   wireQuizNow(s);
   // a new item is dealt in; another tab slides in from the side it is on
-  if (!s.drawn || s.drawn.k !== k) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  if (!s.drawn || s.drawn.k !== k) { if (!flyFromPart(s, k)) dealCard(); }
   else if (s.drawn.tab !== s.tab) Motion.play(app.querySelector('.lx-main'), s.tab > s.drawn.tab ? 'm-next' : 'm-prev');
   // (a phone scrolled down to the last step's end would open the next one half-way down)
   if (!s.drawn || s.drawn.k !== k || s.drawn.tab !== s.tab) toLessonTop();
@@ -1629,6 +1764,16 @@ async function pageLessons() {
   if (s.said !== k) { s.said = k; Sound.say(k); }
   const say = document.getElementById('lx-say');
   if (say) say.addEventListener('click', () => Sound.say(k, true));
+  // a sentence's pinyin shows only once you ask for it: a click (or Enter) on the sentence
+  app.querySelectorAll('.lx-pinless').forEach(ex => {
+    const flip = e => {
+      if (ex.classList.contains('pin-on') && e.target.closest('a')) return;   // (shown: its words open as links)
+      if (e.target.closest('a')) e.preventDefault();
+      ex.classList.toggle('pin-on');
+    };
+    ex.addEventListener('click', flip);
+    ex.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === ex) { e.preventDefault(); e.stopPropagation(); flip(e); } });
+  });
 
   const mn = document.getElementById('lx-mn'), mnOpen = document.getElementById('lx-mn-open');
   if (mnOpen) mnOpen.addEventListener('click', () => {
@@ -1848,15 +1993,17 @@ async function lessonIntro(goal, k, s) {
     ${partKind(p) === 'sound' ? `<span class="snd-key">${esc(itemText(p))}</span>` : `<span class="han">${zh(glyphOf(p))}</span>`}
     <span>${esc(name(p))}</span><small>${label[state(p)]}</small></span>`;
   const comps = parts.filter(p => partKind(p) !== 'sound'), sounds = parts.filter(p => partKind(p) === 'sound');
-  app.innerHTML = band(goal, g, true) + `
-    <nav class="lx-tabs"><button class="on">Learn this ${g.kind === 'word' ? 'word' : 'character'}?</button></nav>
-    <div class="lx-body"><div class="lx-main lx-intro">
-      <h3>Prerequisites</h3>
-      <p class="muted">${g.kind === 'word' ? 'These are the characters this word is made of.'
+  const behind = comps.concat(sounds).map(p => [partKind(p) === 'sound' ? itemText(p) : glyphOf(p), name(p),
+    g.kind === 'word' ? 'char' : partKind(p) || 'comp', p]);
+  app.innerHTML = deck(band(goal, g, true), deckParts(behind),
+    `<span>Learn this <b>${g.kind === 'word' ? 'word' : 'character'}</b>?</span>`, `<span class="dk-stage">New · ${esc(kindName(g))}</span>`) + `
+    <div class="lx-body"><div class="lx-main lx-intro lt-tiles">
+      ${lxTile(fresh.length ? `First, its ${fresh.length} new part${fresh.length === 1 ? '' : 's'}` : 'Its parts', `
+      ${parts.length ? `<div class="lx-chips intro-parts">${comps.concat(sounds).map(chip).join('')}</div>` : ''}
+      <p class="muted small">${g.kind === 'word' ? 'These are the characters this word is made of.'
         : 'These are the components and sounds this character is made of.'}
         ${fresh.length ? `The ones you haven't learned yet come first, each with a short lesson, then ${zh(goal)} itself.`
-          : `You know them all: straight on to ${zh(goal)}.`}</p>
-      ${parts.length ? `<div class="lx-chips intro-parts">${comps.concat(sounds).map(chip).join('')}</div>` : ''}
+          : `You know them all: straight on to ${zh(goal)}.`}</p>`, 'wide')}
       <p class="row intro-go"><button class="btn quiet" id="lx-intro-skip">⏭ Skip</button>
         <button class="btn" id="lx-intro-go">Learn</button></p>
     </div></div>
@@ -1864,12 +2011,16 @@ async function lessonIntro(goal, k, s) {
     ${quizNow(s)}`;
   wireQuizNow(s);
   // the character comes in, once: Learn going straight on to its own lesson doesn't bring it in again
-  if (!s.drawn || s.drawn.k !== goal) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  if (!s.drawn || s.drawn.k !== goal) { dealCard(); Motion.play(app.querySelector('.dk-parts'), 'm-parts-in'); }
   s.drawn = { k: goal, tab: s.tab };
   toLessonTop();
   const go = document.getElementById('lx-intro-go');
   go.focus({ preventScroll: true });
-  go.addEventListener('click', () => { s.intro.push(goal); s.justOpened = goal; pageLessons(); });
+  go.addEventListener('click', () => {
+    s.fly = { parts: {}, card: pageRect(app.querySelector('.dk-front')) };
+    app.querySelectorAll('.dk-p[data-k]').forEach(p => { s.fly.parts[p.dataset.k] = { rect: pageRect(p), html: p.outerHTML }; });
+    s.intro.push(goal); s.justOpened = goal; pageLessons();
+  });
   document.getElementById('lx-intro-skip').addEventListener('click', () => {
     // to the back of the queue, with the parts nothing else waiting needs
     const now = Date.now(), others = Object.keys(d.items).filter(x => x !== goal && d.items[x].stage === 0);
@@ -2027,59 +2178,72 @@ async function pageReviews() {
     <span class="rv-mini-bar"><i data-w="${bars[b]}" style="width:${was[b]}%"></i></span>${name}
     <b>${live[b][1] ? `${Math.round(bars[b])}%` : '–'}</b></span>`;
 
+  // the session: each item a segment (a long one, a single bar), done right, missed, now, to come
+  const order = [...new Set(s.queue.map(x => x.k))];
+  const segs = order.length <= 60 ? `<div class="rv-segs" role="progressbar" aria-label="Items finished" aria-valuemin="0"
+      aria-valuemax="${total}" aria-valuenow="${finished}" style="--n:${order.length}">${order.map(x =>
+      `<i class="${s.right.includes(x) ? 'ok' : s.wrong.includes(x) ? 'bad' : x === k ? 'now' : s.misses[x] ? 'miss' : ''}"></i>`).join('')}</div>`
+    : `<div class="rv-bars"><div class="rv-prog" role="progressbar" aria-label="Items finished" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${finished}">
+        <i data-w="${bars.prog}" style="width:${was.prog}%"></i></div></div>`;
+  const modeName = s.practice ? 'Practice' : s.calibrating ? 'Calibration test' : s.mode === 'lessonquiz' ? 'Lesson quiz' : 'Reviews';
+  const ask = q === 'pinyin' ? 'What\'s the <b>pronunciation</b>?' : q === 'write' ? '<b>Write</b> it'
+    : it.kind === 'comp' ? 'What\'s its <b>name</b>?' : q === 'listen' ? 'What does it <b>mean</b>? <span class="dk-sub">from its sound</span>'
+    : 'What does it <b>mean</b>?';
+  const stage = it.stage >= 1 && !s.calibrating ? `<span class="dk-stage">${esc(Learn.stageName(it.stage))}</span>` : '';
+
+  // a miss: the answer, to show in the box (the pinyin with its tone marks, or the meaning)
+  const fix = shown && !shown.ok && q !== 'write' ? (q === 'pinyin' ? it.pin : primary(it)) : '';
+  const wasDeck = s.asked !== s.i && s.asked != null ? deckState() : null;
   app.innerHTML = `
-    <div class="rv-bars">
-      <div class="rv-prog" role="progressbar" aria-label="Items finished" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${finished}">
-        <i data-w="${bars.prog}" style="width:${was.prog}%"></i></div>
+    <div class="rv-head">
+      <span class="rv-title">${modeName}</span>
+      <span class="rv-of"><b>${Math.min(finished + 1, total)}</b> of ${total}</span>
+      ${cfg.showPct ? `<span class="rv-live rv-bars">${mini('pron', 'Pronunciation')}${mini('mean', 'Meaning')}</span>` : ''}
+      <span class="rv-flex"></span>
+      ${cfg.showCount ? `<span class="rv-dot ok" title="Right first time">${s.right.length} right</span>
+        <span class="rv-dot bad">${s.wrong.length + order.filter(x => s.misses[x] && !s.wrong.includes(x)).length} missed</span>` : ''}
+      <span class="rv-end"><button type="button" class="rv-link${s.wrap ? ' on' : ''}" data-tool="wrap" title="${esc(labels.wrap)}">${s.wrap ? 'Wrapping up' : 'Wrap up'}</button>
+      <button type="button" class="rv-icon${s.panel === 'settings' ? ' on' : ''}" data-tool="settings" title="${esc(labels.settings)}"
+        aria-label="${esc(labels.settings)}">${toolIcon('settings')}</button></span>
     </div>
-    <div class="rv-top">${cfg.showPct ? `<span class="rv-live rv-bars">${mini('pron', 'Pronunciation')}${mini('mean', 'Meaning')}</span>` : ''}
-      ${s.practice ? '<span class="rv-practice">Practice: the schedule stays as it is</span>' : ''}
-      ${s.calibrating ? '<span class="rv-practice">Calibration test</span>' : ''}
-      ${s.mode === 'lessonquiz' ? '<span class="rv-practice">Lesson quiz</span>' : ''}
-      ${s.wrap ? '<span class="rv-wrapping">Wrapping up</span>' : ''}
-      ${cfg.showCount ? `<span title="Right first time">✓ ${s.right.length}</span><span>${total - finished} left</span>` : ''}</div>
-    ${q === 'listen' && !shown ? listenBand(it) : q === 'write' ? writeBand(it, shown)
-      : cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false)}
-    <div class="rv-prompt">${kindName(it)} <b>${{ pinyin: 'Pronunciation', write: 'Write it' }[q] || (it.kind === 'comp' ? 'Name' : 'Meaning')}?</b>
-      ${q === 'listen' ? '<span class="muted">from its sound</span>' : ''}</div>
+    ${s.panel === 'settings' ? `<div class="rv-panel rv-panel2">${quizSettings(cfg)}</div>` : ''}
+    ${segs}
+    ${s.practice ? '<p class="rv-note">Practice: the schedule stays as it is</p>' : ''}
+    ${deck(q === 'listen' && !shown ? listenBand(it) : q === 'write' ? writeBand(it, shown)
+      : cfg.sentences && s.sent[k] ? sentenceBand(it, s.sent[k]) : band(k, it, false), deckNext(s), `<span>${ask}</span>`, stage)}
     <form id="rv-form" autocomplete="off"${q === 'write' ? ' class="rv-writing"' : ''}>
       ${q === 'write' ? `<p class="rv-write-msg" id="rv-write-msg">${shown ? '' : 'Draw each stroke in order. After three misses on a stroke, its outline shows.'}</p>
         <button class="rv-enter" ${shown ? '' : 'hidden'}>Next</button>` : `
       <input id="rv-in" class="rv-input ${shown ? (shown.ok ? 'ok' : 'bad') : ''}" enterkeyhint="go"
-        aria-label="${q === 'pinyin' ? 'Pronunciation, with tone numbers' : it.kind === 'comp' ? 'Name' : 'Meaning'}${shown ? (shown.ok ? ': right' : ': wrong') : ''}"
+        aria-label="${q === 'pinyin' ? 'Pronunciation, with tone numbers' : it.kind === 'comp' ? 'Name' : 'Meaning'}${shown ? (shown.ok ? ': right' : `: wrong, it is ${fix}`) : ''}"
         placeholder="${q === 'pinyin' ? 'pin1yin1' : it.kind === 'comp' ? 'Name…' : 'Meaning…'}" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" lang="en"
-        ${shown ? 'readonly' : ''} value="${shown ? esc(shown.answer) : ''}">
+        ${shown ? 'readonly' : ''} value="${shown ? esc(shown.answer) : ''}"${fix ? ' data-fix' : ''}>
+      ${fix ? `<p class="rv-fix" aria-hidden="true">${shown.answer.trim() ? `<s>${esc(shown.answer)}</s><span class="rv-fix-to">→</span>` : ''}<b>${esc(fix)}</b></p>` : ''}
       <p class="rv-hint" id="rv-hint" hidden>That isn't pinyin. Check it and try again.</p>`}
     </form>
-    ${shown ? `<div class="rv-after">
+    ${shown && (q === 'write' || shown.mixed) ? `<div class="rv-after">
       ${q === 'write' ? `<p class="${shown.ok ? 'lx-right' : 'lx-wrong'}">${shown.revealed ? 'Here is how it is written: it comes again later.'
         : shown.ok ? (shown.slips ? `Written, with ${shown.slips} ${shown.slips === 1 ? 'slip' : 'slips'}.` : 'Written without a slip.')
         : `${shown.hinted} ${shown.hinted === 1 ? 'stroke' : 'strokes'} needed the outline: it comes again later.`}</p>`
-      : shown.ok ? '' : `<p class="lx-wrong">${q === 'pinyin'
-        ? `It is <b>${esc(numbered(it.pin))}</b> (${esc(it.pin)}).` : `It means <b>${esc(primary(it))}</b>.`}
-        ${shown.mixed ? `<br><span class="rv-mixed">“${esc(shown.answer)}” is <a href="${itemHref(shown.mixed)}" target="_blank" class="han">${itemHtml(shown.mixed)}</a>
+      : `<p class="small">${shown.mixed ? `<span class="rv-mixed">“${esc(shown.answer)}” is <a href="${itemHref(shown.mixed)}" target="_blank" class="han">${itemHtml(shown.mixed)}</a>
           ${esc((Store.item(shown.mixed) || {}).pin || '')}: compare them on the Today page.</span>` : ''}</p>`}
-      <p class="row">
-        ${!shown.ok && (q === 'meaning' || q === 'listen') && shown.answer.trim() ? '<button class="btn quiet" id="rv-syn">My answer was right</button>' : ''}
-        ${q === 'write' ? '' : '<button type="button" class="btn rv-next" id="rv-next">Next ›</button>'}
-        <span class="small muted rv-enter-hint">Enter for the next one</span></p>
     </div>` : ''}
-    <div class="rv-tools">${TOOLS.map(t => `<button type="button" class="rv-tool${s.panel === t || (t === 'wrap' && s.wrap) ? ' on' : ''}"
-      data-tool="${t}" title="${esc(labels[t])}" aria-label="${esc(labels[t])}"${can[t] ? '' : ' disabled'}>${toolIcon(t)}</button>`).join('')}</div>
-    ${s.panel === 'settings' ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('settings')}">${quizSettings(cfg)}</div>` : ''}
-    ${s.panel === 'info' && shown ? `<div class="rv-panel" style="--at:${TOOLS.indexOf('info')}">${infoPanel(k, Store.item(k), q)}</div>` : ''}`;
+    <div class="rv-tools">${['info', 'sound', 'reveal', 'open', 'undo'].map(t => `<button type="button" class="rv-tool${s.panel === t ? ' on' : ''}"
+      data-tool="${t}" title="${esc(labels[t])}" aria-label="${esc(labels[t])}"${can[t] ? '' : ' disabled'}>${toolIcon(t)}<span>${
+      { info: 'Info', sound: 'Hear it', reveal: 'I don\'t know', open: 'Open', undo: 'Undo' }[t]}</span></button>`).join('')}${fix && shown.answer.trim() ? `<button type="button" class="rv-tool rv-typo" id="rv-typo" title="It was a typo: count it as right">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg><span>It was a typo</span></button>` : ''}${shown && q !== 'write' ? '<button type="button" class="btn rv-next" id="rv-next">Next ›</button>' : ''}</div>
+    ${s.panel === 'info' && shown ? `<div class="rv-panel rv-panel2 rv-tiles">${infoPanel(k, Store.item(k), q)}</div>` : ''}`;
 
   // the bars ease from where they were to where they are now
   requestAnimationFrame(() => app.querySelectorAll('.rv-bars i[data-w]').forEach(i => { i.style.width = `${i.dataset.w}%`; }));
   const input = document.getElementById('rv-in') || document.querySelector('#rv-form .rv-enter');
   const fresh = s.asked !== s.i;
   // a new question is dealt in; an answer just given pops (right) or shakes (wrong)
-  if (fresh) Motion.play(app.querySelector('.lx-band'), 'm-deal');
+  if (fresh) stackForward(wasDeck);
   const nextBtn = document.getElementById('rv-next');
   if (nextBtn) nextBtn.addEventListener('click', () => nextQuestion());
   if (s.judged) {
-    const wrong = app.querySelector('.rv-after .lx-wrong');
-    announce(s.shown && s.shown.ok ? 'Right.' : 'Not quite. ' + (wrong ? wrong.textContent.replace(/\s+/g, ' ').trim() : ''));
+    announce(s.shown && s.shown.ok ? 'Right.' : fix ? `Not quite. ${q === 'pinyin' ? 'It is' : 'It means'} ${fix}.` : 'Not quite.');
     Motion.play(document.getElementById('rv-in'), s.shown && s.shown.ok ? 'm-pop' : 'm-shake');
     Motion.play(app.querySelector('.rv-after'), 'm-rise');
     s.judged = false;
@@ -2138,11 +2302,10 @@ async function pageReviews() {
     }
     pageReviews();
   });
-  const syn = document.getElementById('rv-syn');
-  if (syn) syn.addEventListener('click', () => {
-    // accept it: remember the wording, and take back the miss and the repeat
+  const typo = document.getElementById('rv-typo');
+  if (typo) typo.addEventListener('click', () => {
+    // a slip of the keys: take back the miss and the repeat, and count it as right
     Sound.rip();
-    addSynonym(k, shown.answer);
     takeBack(k, q);
     const f = (s.first[k] || {})[q];
     if (f) { f.ok = true; f.near = false; }
@@ -2529,15 +2692,17 @@ function reviewsDone() {
   const more = s.practice || s.calibrating ? 0 : p.reviewsLeft;
   const unsorted = s.calibrating ? calibrationSets().unsorted : [];
 
-  app.innerHTML = `<h1 class="page-title ss-title">${title}</h1>` + withRail(`
+  const mins = Math.max(1, Math.round((now - s.start) / 60000));
+  const head = s.practice ? 'Practice done' : s.calibrating ? 'Calibration done' : s.mode === 'lessonquiz' ? 'Lesson quiz done' : 'Reviews done';
+  const counts = { total: allQ, pron: tally.pron, mean: tally.mean, write: tally.write };
+  app.innerHTML = `<div class="ss-top"><h1 class="page-title ss-title">${head}</h1>
+      <p class="ss-meta">${done} item${done === 1 ? '' : 's'} · ${mins} min</p></div>` + withRail(`
     <section class="card ss-card ss-ret">
-      <h2 class="ss-h">Retention Rate</h2>
-      <div class="ss-ret-row">
-        <p class="ss-big"><b>${total}</b><span>%</span></p>
-        <div class="ss-bars">
-          ${bars.map(([c, , v]) => `<div class="ss-bar ${c}"><i style="--w:${v}%"></i></div>`).join('')}
-          <p class="ss-legend">${bars.map(([c, name, v]) => `<span class="${c}"><i></i>${name}<b>${v}%</b></span>`).join('')}</p>
-        </div>
+      <div class="ss-ring" style="--p:${total}" role="img" aria-label="${total}% right first time"><span><b>${total}</b>%</span></div>
+      <div class="ss-ring-lab"><b>Right first time</b>${allQ[1] ? `<span>${allQ[0]} of ${allQ[1]} answers</span>` : ''}</div>
+      <div class="ss-bars2">
+        ${bars.filter(([c]) => c !== 'total').map(([c, name, v]) => `<div class="ss-bar2 ${c}"><p><span>${name}</span>
+          <span><b>${v}%</b>${counts[c][1] ? ` · ${counts[c][0]} of ${counts[c][1]}` : ''}</span></p><div class="ss-bar ${c}"><i style="--w:${v}%"></i></div></div>`).join('')}
       </div>
       ${s.practice ? '<p class="small muted ss-note">Practice doesn’t change when they come back.</p>' : ''}
     </section>
@@ -2564,7 +2729,7 @@ function reviewsDone() {
   if (next) next.addEventListener('click', () => pageReviews());       // (already at #/reviews)
   const cal = document.getElementById('ss-calibrate');
   if (cal) cal.addEventListener('click', () => startCalibration(byCommon(unsorted).slice(0, 50)));
-  if (done && !s.practice) Motion.confetti(app.querySelector('.ss-big'));
+  if (done && !s.practice) Motion.confetti(app.querySelector('.ss-ring'));
 }
 
 /* The Items card: these items as coloured tiles, four ways. All (in the orders given in o.views:
@@ -2596,8 +2761,7 @@ function itemsCard(keys, o = {}) {
   const views = o.views || [['all', 'All', keys]];
   const viewHtml = body => body.length && Array.isArray(body[0])
     ? body.filter(g => g[1].length).map(([h, ks, n]) => group(h, n, tiles(ks))).join('') : tiles(body);
-  const allPane = `<div class="ss-sub"><p class="ss-count">${o.count || `<b>${keys.length}</b> total`}</p>
-      ${views.length > 1 ? seg('all', views.map(([v, label]) => [v, label]), views[0][0]) : ''}</div>
+  const allPane = `${views.length > 1 ? `<div class="ss-sub ss-sub-end">${seg('all', views.map(([v, label]) => [v, label]), views[0][0])}</div>` : ''}
     ${views.map(([v, , body], i) => `<div data-view="${v}"${i ? ' hidden' : ''}>${viewHtml(body)}</div>`).join('')}`;
 
   // By type: with o.good, the good ones first, then (on a line of their own) the rest
@@ -2632,8 +2796,12 @@ function itemsCard(keys, o = {}) {
     return `<span class="ss-line ${g.toLowerCase()}${y - x === 1 && shade ? ' sh-a' : shade}" data-k="line:${i}" style="grid-column:${i + 1}"
       title="${esc(Learn.stageName(i))}"></span>`;
   }).join('')).join('');
+  // under the lines, the names of the groups that have any of these items (an empty one is only a sliver)
+  const stageLabs = (ks, when) => stageGroups.filter(([, x, y]) => ks.some(k => {
+    const st = when === 'before' ? before[k] : d.items[k].stage; return st >= x && st <= y;
+  })).map(([g, x]) => `<span class="ss-lab ss-stage-lab" style="grid-column:${x + 1}">${esc(g)}</span>`).join('');
   const stageChart = (ks, when) => cols(Array.from({ length: STEPS + 1 }, (_, i) => ({
-    title: Learn.stageName(i), ks: ks.filter(k => (when === 'before' ? before[k] : d.items[k].stage) === i) })), stageFoot);
+    title: Learn.stageName(i), ks: ks.filter(k => (when === 'before' ? before[k] : d.items[k].stage) === i) })), stageFoot + stageLabs(ks, when));
   let stagePane;
   if (before) {
     const ups = keys.filter(k => moveOf(k) === 'up'), downs = keys.filter(k => moveOf(k) === 'down');
@@ -2656,7 +2824,7 @@ function itemsCard(keys, o = {}) {
     : '<p class="small muted">None of these are scheduled.</p>';
 
   return `<section class="card ss-card ss-items" id="${o.id || 'ss-items'}" data-view0="${esc(views[0][0])}">
-      <div class="ss-items-head"><h2 class="ss-h">${o.title || 'Items'}</h2>
+      <div class="ss-items-head"><h2 class="ss-h">${o.title || 'Items'} <span class="ss-count">${o.count || `<b>${keys.length}</b> total`}</span></h2>
         ${seg('tab', [['all', 'All'], ['type', 'By type'], ['stage', 'SRS stage'], ['next', 'Next review']], 'all')}</div>
       <div data-pane="all">${allPane}</div>
       <div data-pane="type" hidden>${typePane}</div>
