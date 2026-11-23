@@ -86,6 +86,9 @@ async function strokeData(ch) {
   return (HZ.strokes[b] || {})[ch] || null;
 }
 
+/* a single Chinese character (what is a character, not a word, however it came) */
+const oneChar = w => [...String(w || '')].length === 1 && isHan(w);
+
 const need = {
   writer: () => window.HanziWriter ? Promise.resolve() : loadScript('vendor/hanzi-writer.min.js'),
   comps: () => HZ.comps ? Promise.resolve() : loadScript('data/comps.js'),
@@ -185,6 +188,14 @@ const Store = {
     for (const [k, was, now] of [['t:1', 'Rooftop', 'Front'], ['t:2', 'Staircase', 'Inside'], ['t:4', 'Trapdoor', 'Bathroom'], ['t:5', 'Front Step', 'Roof']]) {
       if (d.items[k] && d.items[k].mean === was) d.items[k].mean = now;
     }
+    // A single character is a character, not a word, wherever it was marked or added (the
+    // extension and the Words page could mark one as a word): its item and its mark move over.
+    for (const [w, st] of Object.entries(d.wstatus)) {
+      if (!oneChar(w)) continue;
+      if (st && !d.status[w]) d.status[w] = st;
+      delete d.wstatus[w];
+    }
+    for (const [k, it] of Object.entries(d.items)) if (it.kind === 'word' && oneChar(k)) it.kind = 'char';
     // Characters marked Known are in the reviews too, from Journeyman I. The ones
     // that aren't yet (from before, or from a device that didn't do this) get their
     // first reviews spread over the next month, most common first, 20 a day at most.
@@ -226,7 +237,7 @@ const Store = {
      reviews spread over the next month as the characters' are */
   adoptKnownWords() {
     const d = this.load(), now = Date.now();
-    const known = Object.keys(d.wstatus).filter(w => d.wstatus[w] === 'learned' && !d.items[w] && wordEntries(w).length);
+    const known = Object.keys(d.wstatus).filter(w => d.wstatus[w] === 'learned' && !oneChar(w) && !d.items[w] && wordEntries(w).length);
     if (!known.length) return 0;
     const span = Math.max(30, Math.ceil(known.length / 20)) * Learn.DAY;
     known.forEach((w, i) => { d.items[w] = Learn.known('word', wordInfo(w), now, Math.round(span * i / known.length)); });
@@ -263,8 +274,9 @@ const Store = {
   chars(s) { const d = this.load(); return Object.keys(d.status).filter(c => d.status[c] === s); },
 
   /* words have a status of their own, kept apart from the characters' */
-  wstatus(w) { return this.load().wstatus[w] || null; },
+  wstatus(w) { return oneChar(w) ? this.status(w) : this.load().wstatus[w] || null; },
   setWStatus(w, s, info) {
+    if (oneChar(w)) return this.setStatus(w, s);      // a one-character word is the character
     const d = this.load();
     if (s) d.wstatus[w] = s; else delete d.wstatus[w];
     // marked learned: in the reviews at Journeyman I, first review a month on (as characters)
@@ -322,6 +334,7 @@ const Store = {
   //      schedules them, site/study.js draws the pages) ----
   item(k) { return this.load().items[k] || null; },
   learnAdd(k, kind, info) {
+    if (kind === 'word' && oneChar(k)) { kind = 'char'; info = charInfo(k); }   // a one-character word is the character
     const d = this.load(), now = Date.now();
     const knownAlready = (kind === 'char' ? d.status : kind === 'word' ? d.wstatus : {})[k] === 'learned';
     if (!d.items[k] && knownAlready) {            // known already: no lesson, into the reviews (as marking it does)
