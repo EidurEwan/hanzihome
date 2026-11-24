@@ -96,18 +96,16 @@ function drawLookalike() {
   }
   if (s.i >= s.qs.length) return s.onDone ? s.onDone(s) : laDone();
   const q = s.qs[s.i], a = s.answered;
-  const head = `<div class="la-top"><span>Look-alikes${s.only ? `: ${zhOne(s.only)}` : ''}</span>
-    <span class="la-prog" style="--w:${(100 * s.i) / s.qs.length}%"><i></i></span>
-    <span>${s.i + 1} / ${s.qs.length}</span></div>`;
+  const head = practiceHead(`Look-alikes${s.only ? `: ${zhOne(s.only)}` : ''}`, s.i, s.qs.length, s.res || [], s.onDone ? null : '#/practice');
   const state = c => !a ? '' : c === q.t ? ' right' : c === a.choice ? ' wrong' : ' dim';
   let ask;
   if (q.kind === 'pick') {
-    ask = `<p class="la-ask">Which one is <b>${esc(laPin(q.t))}</b>, <i>${esc(laMean(q.t))}</i>?</p>
+    ask = `<p class="la-ask la-band">Which one is <b>${esc(laPin(q.t))}</b>, <i>${esc(laMean(q.t))}</i>?</p>
       <div class="la-opts">${q.opts.map((c, n) => `<button class="la-opt${state(c)}" data-c="${esc(c)}" ${a ? 'disabled' : ''}
         aria-label="Option ${n + 1}"><span class="han">${zhOne(c)}</span><small>${n + 1}</small></button>`).join('')}</div>`;
   } else {
-    ask = `<p class="la-ask">What does this one mean?</p>
-      <div class="la-glyph han">${zhOne(q.t)}</div>
+    ask = `<div class="dk la-dk"><div class="dk-card"><div class="la-glyph han">${zhOne(q.t)}</div></div>
+      <div class="dk-foot"><span>What does it <b>mean</b>?</span></div></div>
       <div class="la-means">${q.opts.map((c, n) => `<button class="la-mean${state(c)}" data-c="${esc(c)}" ${a ? 'disabled' : ''}>
         <small>${n + 1}</small><b>${esc(laPin(c))}</b> ${esc(laMean(c))}</button>`).join('')}</div>`;
   }
@@ -120,7 +118,7 @@ function drawLookalike() {
       ${parts.some(ps => ps.some(x => x.own)) ? '<p class="small muted">The highlighted parts are what tell them apart.</p>' : ''}
       <p class="row"><button class="btn" id="la-next">${s.i + 1 < s.qs.length ? 'Next' : 'See how you did'}</button>
         <span class="small muted">or press Enter</span></p></section>` : '';
-  app.innerHTML = head + `<section class="card la-q">${ask}</section>` + compare;
+  app.innerHTML = head + `<section class="la-q">${ask}</section>` + compare;
   if (!a) Motion.play(app.querySelector('.la-q'), 'm-deal');
   else {
     const right = app.querySelector('.la-opt.right, .la-mean.right'), wrong = app.querySelector('.la-opt.wrong, .la-mean.wrong');
@@ -139,6 +137,7 @@ function laAnswer(c) {
   if (!q || s.answered) return;
   const ok = c === q.t;
   s.answered = { choice: c, ok };
+  (s.res = s.res || []).push(ok);
   if (ok) { s.right++; Sound.ding(); } else s.missed.push([q.t, c]);
   laLog(q.t, ok);
   drawLookalike();

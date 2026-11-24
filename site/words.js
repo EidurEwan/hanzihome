@@ -378,9 +378,41 @@ async function pageWord(w) {
 
 const WORD_SOURCES = [['common', 'Most common'], ['hsk1', 'HSK 1'], ['hsk2', 'HSK 2'], ['hsk3', 'HSK 3'],
   ['hsk4', 'HSK 4'], ['hsk5', 'HSK 5'], ['hsk6', 'HSK 6'], ['mine', 'Yours']];
-const COMMON_WORDS = 10000, WORDS_PER_PAGE = 100;
+const COMMON_WORDS = 10000, WORDS_PER_PAGE = 200;
+/* what is typed in the list's filter box: kept while you page, switch lists and come back */
+let wdQuery = '';
 
 /* #/words/<source>/<filter>/<page> */
+/* a word as a card, as the character lists' are (green once Known, blue in your lessons),
+   its pinyin and meaning on one line, its status as one button, and a way into lessons.
+   fb: [word, trad, pinyin, meaning] for when the dictionary doesn't have it (an HSK list's own) */
+const WD_BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 4 5v13c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5v13"/></svg>';
+function wordRowHtml(w, known = Store.wstatus(w) === 'learned', fb = null, extra = '') {
+  const e = wordEntries(w)[0] || fb || [w, '', '', ''], it = Store.item(w);
+  const mean = plainMeaning(e[3]).split(/;s*/).slice(0, 3).join('; ');
+  return `<div class="wd-row"${extra}><a class="tile wd-tile${known ? ' learned' : it ? ' learning' : ''}" href="#/word/${encodeURIComponent(w)}"><span class="g">${zh(w)}</span><span class="n">${wordRank(w) || ''}</span></a>
+    <a class="wd-text" href="#/word/${encodeURIComponent(w)}" title="${esc(e[2])} · ${esc(mean)}"><b>${esc(e[2])}</b> · ${esc(mean)}</a>
+    <button type="button" class="wd-st${known ? ' on' : ''}" data-wt="${esc(w)}" aria-pressed="${known}" title="${known ? 'Known. Switch to Unknown' : 'Unknown. Switch to Known'}">${known ? 'Known' : 'Unknown'}</button>
+    ${known ? '<span class="wd-add-gap"></span>' : it ? `<a class="wd-add on" href="#/study" title="In your lessons${it.stage ? ` · ${esc(Learn.stageName(it.stage))}` : ''}" aria-label="In your lessons">${WD_BOOK}</a>`
+      : `<button type="button" class="wd-add" data-addw="${esc(w)}" title="Add to lessons" aria-label="Add ${esc(w)} to lessons">+</button>`}</div>`;
+}
+/* the rows' buttons: Known/Unknown, and into the lessons; redraw after each */
+function wireWordRows(root, redraw) {
+  root.querySelectorAll('[data-wt]').forEach(b => b.addEventListener('click', () => {
+    Store.setWStatus(b.dataset.wt, Store.wstatus(b.dataset.wt) === 'learned' ? null : 'learned');
+    markNav(currentPath());
+    redraw();
+  }));
+  root.querySelectorAll('[data-addw]').forEach(b => b.addEventListener('click', () => {
+    Store.learnAdd(b.dataset.addw, 'word', wordInfo(b.dataset.addw));
+    markNav(currentPath());
+    redraw();
+  }));
+}
+/* the list's column heads, once per column */
+const WD_HEAD = '<div class="wd-head"><span>Word · pinyin · meaning</span><span class="wd-head-st">Status</span><span class="wd-head-add" title="Add to lessons">+</span></div>';
+const wdHeads = n => WD_HEAD + (n > 1 ? WD_HEAD.replace('class="wd-head"', 'class="wd-head wd-head2"') : '');
+
 async function pageWords(src, filter, page) {
   src = WORD_SOURCES.some(x => x[0] === src) ? src : 'common';
   if (filter === 'learning') filter = 'learned';       // (Learning and Learned are one now: Known)
@@ -399,39 +431,53 @@ async function pageWords(src, filter, page) {
   const st = w => Store.wstatus(w) || 'unknown';
   const counts = { all: list.length, unknown: 0, learned: 0 };
   list.forEach(w => { counts[st(w)]++; });
-  const shown = filter === 'all' ? list : list.filter(w => st(w) === filter);
-  const pages = Math.max(1, Math.ceil(shown.length / WORDS_PER_PAGE));
-  page = Math.min(page, pages);
-  const rows = shown.slice((page - 1) * WORDS_PER_PAGE, page * WORDS_PER_PAGE);
+  const byStatus = filter === 'all' ? list : list.filter(w => st(w) === filter);
   const base = `/words/${src}/${filter}`;
   const learned = Store.words('learned').length;
+  const row = w => wordRowHtml(w, st(w) === 'learned');
+  const match = q => {
+    q = q.trim().toLowerCase();
+    if (!q) return () => true;
+    const bare = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '');
+    const qb = bare(q);
+    return w => {
+      if (w.includes(q)) return true;
+      const e = wordEntries(w)[0];
+      return !!e && (bare(e[2].toLowerCase()).includes(qb) || plainMeaning(e[3]).toLowerCase().includes(q));
+    };
+  };
+  const body = () => {
+    const shown = byStatus.filter(match(wdQuery));
+    const pages = Math.max(1, Math.ceil(shown.length / WORDS_PER_PAGE));
+    page = Math.min(page, pages);
+    const rows = shown.slice((page - 1) * WORDS_PER_PAGE, page * WORDS_PER_PAGE);
+    // (two to a line, in order across: 1 2, 3 4, …)
+    return rows.length ? `<div class="wd-cols">${wdHeads(rows.length)}${rows.map(row).join('')}</div>
+      <div class="wd-foot">${pager(base, page, shown.length, WORDS_PER_PAGE) || `<span class="muted small">${num(shown.length)} word${shown.length === 1 ? '' : 's'}</span>`}</div>`
+      : `<p class="empty wd-empty">${wdQuery ? 'Nothing here matches that.' : 'No words here.'}</p>`;
+  };
 
   app.innerHTML = '<h1 class="page-title">Words</h1>' + withRail(`
-    <p class="lede">Words have a status of their own: mark the ones you know, or add them to your
-       lessons. A word becomes Known once you have had its lesson.
-       You know <b>${num(learned)}</b> words.</p>
-    <div class="tabs">${WORD_SOURCES.map(([k, n]) => `<a class="${k === src ? 'on' : ''}" href="#/words/${k}/${filter}">${n}</a>`).join('')}</div>
-    <section class="card">
-      <div class="filters">${[['all', 'All'], ['unknown', 'Unknown'], ['learned', 'Known']].map(([k, n]) =>
-        `<a href="#/words/${src}/${k}" class="${k === filter ? 'on' : ''} ${k}">${n} (${num(counts[k])})</a>`).join('')}</div>
-      ${rows.length ? `<table class="wordtable"><thead><tr><th>#</th><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th><th></th></tr></thead><tbody>
-        ${rows.map(w => {
-          const e = wordEntries(w)[0] || [w, '', '', ''], it = Store.item(w);
-          return `<tr><td class="num muted">${wordRank(w) || ''}</td>
-            <td class="g"><a class="han" href="#/word/${encodeURIComponent(w)}">${zh(w)}</a></td>
-            <td><b>${esc(e[2])}</b></td><td class="muted">${esc(plainMeaning(e[3]).split(/;\s*/).slice(0, 3).join('; '))}</td>
-            <td>${wordSeg(w)}</td>
-            <td>${it ? `<a class="small" href="#/study">${it.stage ? esc(Learn.stageName(it.stage)) : 'In lessons'}</a>`
-              : `<button class="btn quiet small" data-addw="${esc(w)}" title="Add to lessons">＋</button>`}</td></tr>`;
-        }).join('')}</tbody></table>`
-        : '<p class="empty">No words here.</p>'}
-      ${pager(base, page, shown.length, WORDS_PER_PAGE)}
+    <p class="lede">Mark the words you know, or add them to your lessons. A word becomes Known once
+       you have had its lesson. You know <b>${num(learned)}</b> words.</p>
+    <section class="wd-list">
+      <div class="wd-bar">
+        <nav class="wd-src" aria-label="Which words">${WORD_SOURCES.map(([k, n]) => `<a class="${k === src ? 'on' : ''}" href="#/words/${k}/${filter}">${n}</a>`).join('')}</nav>
+        <div class="wd-filters">${[['all', 'All'], ['unknown', 'Unknown'], ['learned', 'Known']].map(([k, n]) =>
+          `<a href="#/words/${src}/${k}" class="${k === filter ? 'on' : ''}">${n} ${num(counts[k])}</a>`).join('')}
+          <label class="wd-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+            <input type="search" id="wd-q" placeholder="Filter this list" aria-label="Filter this list by word, pinyin or meaning" value="${esc(wdQuery)}" autocomplete="off"></label></div>
+      </div>
+      <div id="wd-body">${body()}</div>
     </section>`, true);
-  wireWordSegs(app, () => render(true));
-  app.querySelectorAll('[data-addw]').forEach(b => b.addEventListener('click', () => {
-    Store.learnAdd(b.dataset.addw, 'word', wordInfo(b.dataset.addw));
-    markNav(currentPath());
-    render(true);
-  }));
+  const wire = () => wireWordRows(app, () => { const y = window.scrollY; render(true); window.scrollTo(0, y); });
+  wire();
+  const q = document.getElementById('wd-q');
+  q.addEventListener('input', () => {
+    wdQuery = q.value;
+    page = 1;
+    document.getElementById('wd-body').innerHTML = body();
+    wire();
+  });
   paintRail();
 }

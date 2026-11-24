@@ -1428,10 +1428,12 @@ function tileBoard(id, chars, opts) {
     unknown: chars.filter(c => !d.status[c]).length,
     learned: chars.filter(c => d.status[c] === 'learned').length,
   };
-  return `<div class="filters" id="${id}-filters">
-      <button data-f="all" class="on">All (${num(counts.all)})</button>
-      <button data-f="unknown">Unknown (${num(counts.unknown)})</button>
-      <button data-f="learned" class="learned">Known (${num(counts.learned)})</button>
+  return `<div class="filters cb-filters" id="${id}-filters">
+      <button data-f="all" class="on">All ${num(counts.all)}</button>
+      <button data-f="unknown">Unknown ${num(counts.unknown)}</button>
+      <button data-f="learned" class="learned">Known ${num(counts.learned)}</button>
+      <label class="wd-q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+        <input type="search" id="${id}-q" placeholder="Filter this list" aria-label="Filter this list by character, pinyin or meaning" autocomplete="off"></label>
       <button data-multi="1" class="multi">Select several</button>
     </div>
     <div class="selbar" id="${id}-selbar" hidden>
@@ -1464,10 +1466,19 @@ function wireTileBoard(id, chars, opts) {
     const n = document.getElementById(id + '-seln');
     if (n) n.textContent = picked.size;
   };
+  /* the filter box: the character itself, its pinyin (tone marks or not) or its meaning */
+  let query = '';
+  const bare = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '').toLowerCase();
+  const matches = c => {
+    if (!query) return true;
+    if (query.includes(c)) return true;
+    const e = HZ.index[c] || [], q = bare(query);
+    return (!!q && bare(e[2] || '').includes(q)) || String(e[3] || '').toLowerCase().includes(query.trim().toLowerCase());
+  };
   const paint = () => {
     const d = Store.load();
-    const keep = c => filter === 'all' ? true
-      : filter === 'unknown' ? !d.status[c] : d.status[c] === filter;
+    const keep = c => matches(c) && (filter === 'all' ? true
+      : filter === 'unknown' ? !d.status[c] : d.status[c] === filter);
     const body = document.getElementById(id + '-body');
     if (!body) return;
     // group into bands of the underlying order so filtered views stay locatable
@@ -1484,7 +1495,7 @@ function wireTileBoard(id, chars, opts) {
         ).join('')}</div>`;
     }
     if (more) html += `<p class="hsk-more"><button type="button" class="btn quiet" data-more="1">Show ${num(opts.first)} more</button></p>`;
-    body.innerHTML = any ? html : '<p class="empty">Nothing in this group yet.</p>';
+    body.innerHTML = any ? html : `<p class="empty">${query ? 'Nothing here matches that.' : 'Nothing in this group yet.'}</p>`;
     const moreBtn = body.querySelector('[data-more]');
     if (moreBtn) moreBtn.addEventListener('click', () => { shown += opts.first; paint(); });
     body.querySelectorAll('.tile').forEach(t => {
@@ -1523,9 +1534,9 @@ function wireTileBoard(id, chars, opts) {
       const b = f2.querySelector('button[data-f="' + k + '"]');
       if (b) b.textContent = text;
     };
-    put('all', 'All (' + num(n.all) + ')');
-    put('unknown', 'Unknown (' + num(n.unknown) + ')');
-    put('learned', 'Known (' + num(n.learned) + ')');
+    put('all', 'All ' + num(n.all));
+    put('unknown', 'Unknown ' + num(n.unknown));
+    put('learned', 'Known ' + num(n.learned));
   };
 
   _boardUpdate = ch => {
@@ -1552,6 +1563,8 @@ function wireTileBoard(id, chars, opts) {
       rerenderKeepingScroll();
     }
   });
+  const q = document.getElementById(id + '-q');
+  if (q) q.addEventListener('input', () => { query = q.value.trim(); shown = opts.first || Infinity; paint(); });
   const f = document.getElementById(id + '-filters');
   if (f) f.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -2871,7 +2884,7 @@ const HSK_FIRST_ROWS = 30;
 
 async function pageHsk(level) {
   app.innerHTML = LOADING;
-  await Promise.all([need.hskChars(), need.hsk()]);
+  await Promise.all([need.hskChars(), need.hsk(), optional(need.words())]);
   const chars = HZ.hskChars[String(level)] || [];
   const words = HZ.hsk[String(level)] || [];
   const learned = Store.chars('learned');
@@ -2879,28 +2892,30 @@ async function pageHsk(level) {
   app.innerHTML = '<h1 class="page-title">HSK character lists</h1>' + withRail(`
     <p class="lede">Track your progress through the HSK levels. Each level lists the
        characters it introduces, then its vocabulary.</p>
-    <div class="tabs">${[1, 2, 3, 4, 5, 6].map(n =>
-      `<a class="${n === level ? 'on' : ''}" href="#/hsk-${n}">HSK ${n}</a>`).join('')}</div>
+    <nav class="wd-src hsk-levels" aria-label="HSK level">${[1, 2, 3, 4, 5, 6].map(n =>
+      `<a class="${n === level ? 'on' : ''}" href="#/hsk-${n}"${n === level ? ' aria-current="page"' : ''}>HSK ${n}</a>`).join('')}</nav>
     ${hskPushCard(hskStanding().find(p => p.level === level))}
     <section class="card">
       <h2>Characters introduced at HSK ${level}</h2>
       ${chars.length ? tileBoard('hsk', chars) : '<p class="empty">No characters listed.</p>'}
     </section>
-    <section class="card">
+    <section class="card hsk-vocab">
       <h2>HSK ${level} vocabulary <span class="muted">(${num(words.length)})</span></h2>
       <div class="bar accent"><i style="width:${words.length ? readable.length / words.length * 100 : 0}%"></i></div>
       <p class="small muted">${readable.length} of ${words.length} words use only characters
          you know; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
          of the words. <a href="#/words/hsk${level}">Words page →</a></p>
-      <table class="wordtable"><thead><tr><th>Word</th><th>Pinyin</th><th>Meaning</th><th>Status</th></tr></thead>
-        ${[words.slice(0, HSK_FIRST_ROWS), words.slice(HSK_FIRST_ROWS)].map((rows, i) => rows.length ? `<tbody${i ? ' id="hsk-rest" hidden' : ''}>${rows.map(w => `<tr>
-          <td class="g"><a class="han" href="#/word/${encodeURIComponent(w[0])}">${zh(w[0])}</a></td>
-          <td><b>${esc(w[1])}</b></td><td class="muted">${esc(w[2])}</td><td>${wordSeg(w[0])}</td></tr>`).join('')}</tbody>` : '').join('')}
-      </table>
+      <div class="wd-list"><div class="wd-cols">${wdHeads(words.length)}${words.map((w, i) =>
+        wordRowHtml(w[0], undefined, [w[0], '', w[1], w[2]], i >= HSK_FIRST_ROWS ? ' data-rest hidden' : '')).join('')}</div></div>
       ${words.length > HSK_FIRST_ROWS ? `<p class="hsk-more"><button type="button" class="btn quiet" id="hsk-all">Show all ${num(words.length)} words</button></p>` : ''}
     </section>`);
   const all = document.getElementById('hsk-all');
-  if (all) all.addEventListener('click', () => { document.getElementById('hsk-rest').hidden = false; all.parentElement.remove(); });
+  if (all) all.addEventListener('click', () => { app.querySelectorAll('.wd-row[data-rest]').forEach(r => { r.hidden = false; }); all.parentElement.remove(); });
+  // after a change, redraw where you were, with the whole list still open if it was
+  wireWordRows(app, () => {
+    const y = window.scrollY, open = !document.getElementById('hsk-all');
+    pageHsk(level).then(() => { if (open) document.getElementById('hsk-all')?.click(); window.scrollTo(0, y); });
+  });
   wireWordSegs(app);
   wireHskPush(app, () => { markNav(currentPath()); pageHsk(level); });
   if (chars.length) wireTileBoard('hsk', chars, { band: 100, label: c => (HZ.index[c] || [])[0] || '' });

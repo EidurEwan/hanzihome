@@ -128,13 +128,13 @@ function orderItem(k, kind, n, extra = '') {
   return `<div class="ord-item ${kind} ${mark}${extra}" data-k="${esc(k)}" data-kind="${kind}">
     <button type="button" class="ord-main" aria-label="${esc(label)}">
       ${n ? `<small class="ord-n">${n}</small>` : ''}${mark === 'prio' ? '<i class="ord-mark" aria-hidden="true">★</i>' : ''}
-      <span class="han">${zh(k)}</span><small class="ord-pin">${esc(info.pin)}</small>${ordMean(info.mean)}</button>
+      <span class="ord-face"><span class="han">${zh(k)}</span><small class="ord-pin">${esc(info.pin)}</small></span>${ordMean(info.mean)}</button>
     <span class="ord-acts">${acts}</span></div>`;
 }
 /* a tile's meaning: its first sense, short */
 const ordMean = m => {
   const first = String(m || '').split(/[;；]|\s\(/)[0].trim();
-  return first ? `<small class="ord-mean" title="${esc(m)}">${esc(first)}</small>` : '';
+  return `<small class="ord-mean"${first ? ` title="${esc(m)}"` : ''}>${esc(first) || '&nbsp;'}</small>`;
 };
 const ORD_ICO = {
   up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg>',
@@ -245,7 +245,7 @@ function ordLearnedHtml() {
   const tiles = (ks, kind) => ks.map(k => {
     const it = d.items[k];
     return `<a class="ord-item ${kind} learned" href="${kind === 'word' ? '#/word/' : '#/character/'}${encodeURIComponent(k)}">
-      <span class="ord-main"><span class="han">${zh(k)}</span><small class="ord-pin">${esc(it.pin || '')}</small>${ordMean(orderInfo(k, kind).mean)}</span></a>`;
+      <span class="ord-main"><span class="ord-face"><span class="han">${zh(k)}</span><small class="ord-pin">${esc(it.pin || '')}</small></span>${ordMean(orderInfo(k, kind).mean)}</span></a>`;
   }).join('');
   const chars = of('char'), words = of('word');
   return !chars.length && !words.length ? '<p class="empty">Nothing learned yet. Your first lessons are on Today.</p>'
