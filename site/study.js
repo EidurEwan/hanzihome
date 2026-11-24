@@ -1488,7 +1488,23 @@ function drawStudy() {
       <a href="#/lessons">Lessons <b>${p.lessons.length}</b>${lessonNote ? ` <span>· ${esc(lessonNote)}</span>` : ''}</a>
       <a href="#/reviews">Reviews <b>${p.reviewsLeft}</b>${reviewNote ? ` <span>· ${esc(reviewNote)}</span>` : ''}</a></p>`;
 
-  app.innerHTML = '<h1 class="page-title">Today</h1>' + withRail(`
+  // the reviews to come, day by day, for the Coming up card
+  const fcRows = fc.map((v, i) => `<div class="td-fc-row"><span>${dayName(i)}</span>
+      <span class="td-fc-bar" aria-hidden="true"><i style="width:${Math.round(v / max * 100)}%"></i></span><b>${num(v)}</b></div>`).join('');
+  const comingCard = `<section class="card td-coming" aria-labelledby="td-coming-h">
+      <div class="td-card-head"><h2 class="caps" id="td-coming-h">Coming up</h2>
+        ${fresh ? '' : `<span class="small muted">${num(fc.reduce((a, b) => a + b, 0))} in the next 7 days</span>`}</div>
+      <div class="lx-today${fresh ? ' solo' : ''}" aria-label="Done today">
+      ${meter('Lessons', p.lessonsToday, cfg.lessonLimit, readyList.length ? `Ready now: ${listed(readyList)}.${ready.sound
+        ? ' Sounds are short: they do not count towards the daily limit, or this number.' : ''}` : '', counted)}
+      ${fresh ? '' : meter('Reviews', p.reviewsToday, cfg.reviewLimit, '', p.reviewsLeft)}
+      </div>
+      ${fresh ? '' : `<div class="td-fc" role="list" aria-label="Reviews due each day">${fcRows}</div>`}
+      ${learnedCount(learnedToday()) ? `<a class="lx-learned small" href="#/learned">Learned today (${learnedCount(learnedToday())}) →</a>` : ''}
+    </section>`;
+  app.dataset.layout = 'wide';
+  const dateLine = new Date(now).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  app.innerHTML = `<h1 class="page-title">Today</h1><p class="lede td-date">${esc(dateLine)}</p>` + withRail(`
     ${p.vacation ? `<section class="card lx-vac">
       <h2>On vacation</h2>
       <p class="muted">Since ${esc(new Date(cfg.vacation).toLocaleDateString())}. Lessons and reviews wait until
@@ -1503,7 +1519,8 @@ function drawStudy() {
       <p class="small muted">${newcomer ? `Know some characters already? <a href="#/frequency">Mark them as learned</a> and the lessons
         skip them, or bring an Anki deck (<a href="#/settings">Settings</a>). ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
         character's or word's page does that, with or without a path.</p></section>` : ''}
-    <div class="lx-top${fresh ? ' first' : ''}">
+    <div class="td-grid${fresh ? ' first' : ''}">
+    <div class="td-main lx-top${fresh ? ' first' : ''}">
     ${dayDone ? '' : `<div class="lx-hub${fresh ? ' solo' : ''}">
       ${lessonsTile}
       ${p.reviewsLeft || !fresh ? reviewsTile : ''}
@@ -1514,14 +1531,11 @@ function drawStudy() {
       ${doneRow}
     </section>
     ${storyNextCard()}` : ''}
-    <div class="lx-today${fresh ? ' solo' : ''}" aria-label="Done today">
-      ${meter('Lessons', p.lessonsToday, cfg.lessonLimit, readyList.length ? `Ready now: ${listed(readyList)}.${ready.sound
-        ? ' Sounds are short: they do not count towards the daily limit, or this number.' : ''}` : '', counted)}
-      ${fresh ? '' : meter('Reviews', p.reviewsToday, cfg.reviewLimit, '', p.reviewsLeft)}
-      ${aheadLine}
-      ${learnedCount(learnedToday()) ? `<a class="lx-learned small" href="#/learned">Learned today (${learnedCount(learnedToday())}) →</a>` : ''}
+    ${comingCard}
     </div>
-    ${nextTen.length ? `<section class="lx-next" aria-labelledby="lx-next-h">
+    <div class="td-side">
+    ${fresh ? '' : coverageCard()}
+    ${nextTen.length ? `<section class="card lx-next" aria-labelledby="lx-next-h">
       <div class="lx-next-head"><h2 id="lx-next-h">Next up</h2><a class="small" href="#/queue">See all →</a></div>
       <div class="lx-queue">${nextTen.map(k => { const kind = d.items[k] ? d.items[k].kind : 'char';
         return `<a class="lx-q ${kind} han" href="${itemHref(k)}" title="${kind === 'word' ? 'Word' : 'Character'}: open its page">${zh(k)}</a>`; }).join('')}</div>
@@ -1531,6 +1545,7 @@ function drawStudy() {
       ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
         ${cfg.pathDaily} new characters a day · <a href="#/settings">change</a></p>` : ''}
     </section>` : ''}
+    </div>
     </div>
     ${fresh && !p.vacation ? firstSteps() : ''}
     ${fresh ? '' : streakCard()}
@@ -1543,8 +1558,7 @@ function drawStudy() {
     <section class="card" id="lc-card" hidden></section>
     ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
     ${leechCard(d, now)}
-    ${fresh ? '' : `<h2 class="sec-h">Your progress</h2>
-    <div class="home-grid">${railHtml()}</div>`}
+    ${fresh ? '' : `<div class="td-more">${studyNextCard()}</div>`}
 `, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   wireLeeches(redraw);
