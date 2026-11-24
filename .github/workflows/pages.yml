@@ -27,6 +27,18 @@ jobs:
         with:
           path: site
           name: github-pages-${{ github.run_attempt }}
-      - uses: actions/deploy-pages@v4
+      # The artifact can take a few seconds to be listed after its upload; deploy-pages
+      # looking for it straight away fails with "No artifacts named ... were found".
+      # So wait, and if it still isn't there, wait longer and try once more.
+      - run: sleep 15
+      - id: deploy
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+      - if: steps.deploy.outcome == 'failure'
+        run: sleep 60
+      - if: steps.deploy.outcome == 'failure'
+        uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
