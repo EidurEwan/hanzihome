@@ -70,6 +70,14 @@ function grNextPoint(ready) {
   return { p, eyebrow: 'Left longest', go: 'Practise', href: `#/grammar/${p.id}/practice` };
 }
 
+/* a point's pattern, as a few chips for its card: the short parts of its first way of saying it
+   (A + 是 + B), or just its number when the parts are long */
+function grChips(p, n) {
+  const parts = p.pattern.split('·')[0].split('+').map(x => x.trim().replace(/[？?。]$/, '')).filter(Boolean);
+  if (parts.length < 2 || parts.length > 4 || parts.some(x => [...x].length > 4)) return [String(n)];
+  return parts.flatMap((x, i) => [...(i ? ['+'] : []), /[㐀-鿿]/.test(x) ? `<span class="han">${esc(x)}</span>` : esc(x)]);
+}
+
 function grList() {
   const g = Store.load().grammar, pts = HZ.gpoints;
   const ready = new Map(pts.map(p => [p, grReady(p).length]));
@@ -79,19 +87,17 @@ function grList() {
   const levels = [...new Set(pts.map(p => p.level))];
   app.innerHTML = `<h1 class="page-title">Grammar</h1>
     <p class="lede">Short explanations, and practice at building sentences. Never scheduled, never counted.</p>
-    ${next ? `<a class="pr-next gr-next" href="${next.href || `#/grammar/${next.p.id}`}">
-      <span class="gr-next-num" aria-hidden="true">${pts.indexOf(next.p) + 1}</span>
-      <span class="pr-next-text"><small class="pr-eyebrow">${next.eyebrow}</small><b class="han">${esc(next.p.title)}</b><span class="han">${esc(next.p.pattern)}</span></span>
-      <span class="pr-go" aria-hidden="true">${next.go} <span>→</span></span></a>` : ''}
-    <div class="gr-sum">
-      <p><b>${nRead}</b> of ${pts.length} read · <b>${nReady}</b> ready to practise</p>
-      <p class="small muted">Each point's practice opens once you have learned the characters in its sentences, in lessons or marked Known.</p>
+    ${next ? heroCard({ kind: 'grammar', eyebrow: `${next.eyebrow} · point ${pts.indexOf(next.p) + 1}`, chips: grChips(next.p, pts.indexOf(next.p) + 1),
+      title: `<span class="han">${esc(next.p.title)}</span>`, sub: `<span class="han">${esc(next.p.pattern)}</span> · ${next.go === 'Read' ? 'a short read, then practice' : 'a round of practice'}`,
+      go: next.go, href: next.href || `#/grammar/${next.p.id}` }) : ''}
+    <div class="pt-grid three">
+      ${ptTile('Read', `<b class="pt-big">${nRead} <small>of ${pts.length}</small></b>${ptBar(nRead / pts.length, 'grammar')}`)}
+      ${ptTile('Ready to practise', `<b class="pt-big">${nReady}</b><span class="pt-note">Each opens once you know the characters in its sentences</span>`)}
+      ${ptTile('Daily round', `<a class="pt-link" href="#/grammar/daily">Six sentences →</a><span class="pt-note">from the points you have read</span>`)}
     </div>
     ${levels.map(l => {
       const here = pts.filter(p => p.level === l), done = here.filter(seen).length;
-      return `<div class="gr-level"><h2 class="sec-h">Around HSK ${l}</h2>
-        <span class="gr-level-n">${done} / ${here.length} read</span>
-        <span class="xs-bar" aria-hidden="true"><i style="--w:${Math.round(100 * done / here.length)}%"></i></span></div>
+      return `<div class="pt-label"><h2>Around HSK ${l}</h2><span>${done} / ${here.length} read</span></div>
       <div class="gr-list">${here.map(p => grPointCard(p, ready.get(p))).join('')}</div>`;
     }).join('')}`;
 }

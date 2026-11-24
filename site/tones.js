@@ -145,26 +145,30 @@ const TN_RULES = {
   yi4: '一 is first tone alone, but before a first, second or third tone it falls, as a fourth tone does.',
 };
 
+const TN_HOW = { 1: 'high and level', 2: 'rises', 3: 'dips low', 4: 'falls sharply', 5: 'short and light' };
 /* the tiles for the tones. first: the first syllable can't be neutral */
 function tnButtons(neutral) {
   return `<div class="tn-tones${neutral ? ' five' : ''}" id="tn-tones">${[1, 2, 3, 4, ...(neutral ? [5] : [])].map(t =>
-    `<button type="button" class="tn-tone" data-t="${t}" aria-label="${t === 5 ? 'Neutral tone' : `Tone ${t}, ${TN_NAMES[t]}`}">${tnShape(t)}<b>${t === 5 ? 'Neutral' : t}</b></button>`).join('')}</div>`;
+    `<button type="button" class="tn-tone" data-t="${t}" aria-label="${t === 5 ? 'Neutral tone' : `Tone ${t}, ${TN_NAMES[t]}`}">${tnShape(t)}<b>${t === 5 ? 'Neutral' : t}</b><small>${TN_HOW[t]}</small></button>`).join('')}</div>`;
 }
 
 function tnRun(kind, round, crumb, finish) {
   let at = 0, right = 0;
+  const res = [], title = crumb.replace(/<[^>]+>/g, '').replace(/\s*\/\s*/g, ' · '), quit = (/href="([^"]+)"/.exec(crumb) || [])[1];
   tnWatch();
   const show = () => {
     const q = round[at];
     if (!q) return finish(right);
     const two = q.lets.length === 2, got = [];
     let over = false;
-    app.innerHTML = `<p class="crumb">${crumb} / ${at + 1} of ${round.length}</p>
-      <section class="card tn-q">
-        <button type="button" class="tn-play" id="tn-play" aria-label="Listen again"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></button>
-        <p class="small muted tn-again">Listen again <kbd>R</kbd></p>
+    app.innerHTML = `${practiceHead(title, at, round.length, res, quit)}
+      <section class="tn-q">
+        <div class="dk tn-dk"><div class="dk-card"><div class="tn-band">
+          <span class="dk-stage">Listen again · R</span>
+          <div class="tn-slots" id="tn-slots"></div>
+          <button type="button" class="tn-play" id="tn-play" aria-label="Listen again"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></button>
+        </div></div><div class="dk-foot"><span>Which ${two ? '<b>two tones</b>' : '<b>tone</b>'}?</span></div></div>
         <p class="small tn-fail" id="tn-fail" hidden>That recording didn't load. If you run HanziHome from your computer, check start-hanzihome.bat is still open; otherwise check your connection.</p>
-        <div class="tn-slots" id="tn-slots"></div>
         <div id="tn-buttons">${tnButtons(two)}</div>
         <div id="gr-result" hidden aria-live="polite"></div>
       </section>`;
@@ -190,6 +194,9 @@ function tnRun(kind, round, crumb, finish) {
       over = true;
       const ok = q.tones.every((t, i) => got[i] === t);
       if (ok) right++;
+      res.push(ok);
+      const head = app.querySelector('.pq-head');
+      if (head) { const sg = head.nextElementSibling; if (sg && sg.classList.contains('rv-segs')) sg.remove(); head.outerHTML = practiceHead(title, at, round.length, res, quit); }
       tnNote(q, got);
       buttons.querySelectorAll('button').forEach(b => {
         b.disabled = true;
@@ -282,19 +289,20 @@ function tnPractice(kind) {
 /* how your ear is doing, once there is enough to say */
 function tnEarCard() {
   const d = Store.load().tones, ear = tnEar();
-  const asked = Object.values(ear).reduce((s, e) => s + e[1], 0);
-  if (asked < 15) return '';
-  const rows = [1, 2, 3, 4, 5].filter(t => ear[t] && ear[t][1]).map(t => {
-    const p = Math.round(ear[t][0] / ear[t][1] * 100);
-    return `<div class="tn-ear-row"><span class="tn-ear-name">${tnShape(t)}<span>${t === 5 ? 'Neutral' : `Tone ${t}`}</span></span><span class="bar"><i style="width:${p}%"></i></span><b>${p}%</b></div>`;
+  const asked = Object.values(ear).reduce((s, e) => s + e[1], 0), enough = asked >= 15;
+  const rows = [1, 2, 3, 4, 5].map(t => {
+    const e = ear[t], p = enough && e && e[1] ? Math.round(e[0] / e[1] * 100) : null;
+    return `<div class="tn-ear-row"><span class="tn-ear-name">${tnShape(t)}<span>${t === 5 ? 'Neutral' : `Tone ${t}`}</span></span>${ptBar((p || 0) / 100, 'sound')}<b>${p === null ? '–' : p + '%'}</b></div>`;
   }).join('');
   const mixes = Object.entries(d).filter(([k, v]) => k.startsWith('mix:') && v >= 3).sort((a, b) => b[1] - a[1]);
-  let mix = '';
-  if (mixes.length) {
+  let mix = enough ? '' : '<span class="pt-note">Fills in after a round or two.</span>';
+  if (enough && mixes.length) {
     const [, a, b] = /^mix:(\d)>(\d)$/.exec(mixes[0][0]);
-    mix = `<p class="small muted">Your most common mix-up: hearing a ${TN_NAMES[a]} tone as a ${TN_NAMES[b]} tone.</p>`;
+    mix = `<span class="pt-note">Your most common mix-up: hearing a ${TN_NAMES[a]} tone as a ${TN_NAMES[b]} tone.</span>`;
   }
-  return `<h2 class="sec-h">Your ear</h2><section class="card tn-ear">${rows}${mix}</section>`;
+  const runs = Object.keys(TN_KINDS).reduce((n, k) => n + ((d[k] && d[k].runs) || 0), 0);
+  return `<div class="pt-grid three tn-ear-grid">${ptTile('How well you hear each tone', `<div class="tn-ear">${rows}</div>${mix}`, 'span2')}
+    ${ptTile('Rounds done', `<b class="pt-big">${runs}</b><span class="pt-note">in all</span>`)}</div>`;
 }
 
 function tnHome() {
@@ -305,14 +313,24 @@ function tnHome() {
     const r = Store.load().tones[k];
     return r && r.runs ? `Best ${r.best} of ${r.of}` : TN_KINDS[k].note;
   };
+  const d = Store.load().tones, tried = Object.keys(TN_KINDS).filter(k => d[k] && d[k].runs);
+  // where to start: one syllable, then two, then the changes; once all are tried, the one done least lately
+  const pick = !tried.includes('single') ? 'single' : !tried.includes('pairs') ? 'pairs' : !tried.includes('changes') ? 'changes'
+    : Object.keys(TN_KINDS).sort((a, b) => (d[a].last || 0) - (d[b].last || 0))[0];
+  const what = { single: ['Which tone is it?', `${TN_ROUND} syllables`], pairs: ['Which two tones?', `${TN_ROUND} words`],
+    changes: ['What do you actually hear?', `${TN_ROUND} words that change`] }[pick];
+  const shape = t => `<svg viewBox="0 0 40 28" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TN_SHAPE[t]}</svg>`;
   app.innerHTML = `<h1 class="page-title">Tones</h1>
-    <p class="lede">Train your ear to tell the tones apart. It asks about sounds, not characters, so you can start any time. Nothing here is scheduled, and it doesn't count towards your lessons or reviews.</p>
-    <section class="card"><h2>Hear each tone</h2>
-      <div class="tn-meet">${[1, 2, 3, 4, 5].map(t => `<button type="button" class="tn-tone" data-t="${t}" aria-label="Hear ${syl[t]}, ${t === 5 ? 'the neutral tone' : `tone ${t}`}">${tnShape(t)}<b>${syl[t]}</b>
-        <small>${how[t]}</small>${S[t] ? `<small class="tn-place">${esc(S[t][0])}, in your mnemonics</small>` : ''}</button>`).join('')}</div>
-    </section>
-    <div class="xs-grid tn-kinds">${Object.entries(TN_KINDS).map(([k, K]) => `<a class="xs-tile" href="#/tones/${k}"><span class="ico ${K.colour}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${K.glyph}</svg></span>
-      <span class="xs-text"><b>${K.title}</b><small>${esc(did(k))}</small></span></a>`).join('')}</div>
+    <p class="lede">Train your ear to tell the tones apart. It asks about sounds, not characters, so you can start any time. Never scheduled, never counted.</p>
+    ${heroCard({ kind: 'sound', eyebrow: `${tried.length ? 'Suggested' : 'Start here'} · ${TN_KINDS[pick].title}`, chips: [1, 2, 3, 4].map(shape),
+      title: what[0], sub: `${what[1]} · about 2 minutes${d[pick] && d[pick].runs ? ` · best ${d[pick].best} of ${d[pick].of}` : ''}`,
+      go: 'Start', href: pick === 'changes' && !tried.includes('changes') ? '#/tones/changes' : `#/tones/${pick}${pick === 'changes' ? '/go' : ''}` })}
+    ${ptTile('Hear each tone', `<div class="tn-meet">${[1, 2, 3, 4, 5].map(t => `<button type="button" class="tn-tone" data-t="${t}" aria-label="Hear ${syl[t]}, ${t === 5 ? 'the neutral tone' : `tone ${t}`}">${tnShape(t)}<b>${syl[t]}</b>
+        <small>${how[t]}</small>${S[t] ? `<small class="tn-place">${esc(S[t][0])}</small>` : ''}</button>`).join('')}</div>
+      ${S[1] ? '<span class="pt-note">Tap one to hear it. The tag is its room in your mnemonics.</span>' : '<span class="pt-note">Tap one to hear it.</span>'}`, 'tn-meet-tile')}
+    <div class="pt-label"><h2>Ways to practise</h2></div>
+    <div class="pt-grid three">${Object.entries(TN_KINDS).map(([k, K]) => `<a class="pt-tile pt-item" href="#/tones/${k}"><span class="ico ${K.colour}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${K.glyph}</svg></span>
+      <span class="pt-text"><b>${K.title}</b><small>${esc(K.note)}</small><small class="pt-meta">${d[k] && d[k].runs ? `Best: <b>${d[k].best} of ${d[k].of}</b>` : k === 'changes' ? 'Starts with a short read' : 'Not tried yet'}</small></span></a>`).join('')}</div>
     ${tnEarCard()}`;
   tnWatch();
   app.querySelectorAll('.tn-meet .tn-tone').forEach(b => b.addEventListener('click', () => {

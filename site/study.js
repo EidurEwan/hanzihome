@@ -798,6 +798,50 @@ function deckOwner(owner) {
 const lessonParts = (it, f) => it.kind === 'word' ? (f.parts || []).map(([c, g]) => [c, g, 'char'])
   : it.kind === 'char' ? (f.comps || []).map(([c, g]) => [c, g, 'comp']).concat((f.sounds || []).map(([c, g]) => [c, g, 'sound'])) : [];
 /* a section of a lesson, or of the info panel, as a tile */
+/* Practice, redrawn (2026-11): each page leads with one card in its own colour (what to do
+   next, with a few glyphs or shapes) and a dark button under it, which Enter presses too.
+   o: {kind: char|word|comp|sound|phrase|grammar, eyebrow, chips: [html], title, sub, go,
+   href, or id for a button wired by the page; note: a line under the button} */
+function heroCard(o) {
+  const chips = (o.chips || []).map(c => c === '+' ? '<span class="hero-plus" aria-hidden="true">+</span>' : `<span class="hero-chip">${c}</span>`).join('');
+  const go = o.href ? `<a class="hero-go" href="${o.href}">${o.go}<span class="hero-key" aria-hidden="true">· Enter</span></a>`
+    : `<button type="button" class="hero-go" id="${o.id}">${o.go}<span class="hero-key" aria-hidden="true">· Enter</span></button>`;
+  return `<div class="hero">
+    <div class="hero-card ${o.kind || 'char'}" data-hero aria-hidden="true">
+      ${o.eyebrow ? `<span class="hero-eyebrow">${o.eyebrow}</span>` : ''}
+      ${chips ? `<span class="hero-chips">${chips}</span>` : ''}
+      <b class="hero-title">${o.title}</b>${o.sub ? `<span class="hero-sub">${o.sub}</span>` : ''}
+    </div>
+    ${go}${o.note ? `<p class="hero-note">${o.note}</p>` : ''}</div>`;
+}
+/* the card does what its button does; Enter, from nowhere in particular, presses it */
+document.addEventListener('click', e => {
+  const card = e.target.closest && e.target.closest('[data-hero]');
+  if (card) { const b = card.parentNode.querySelector('.hero-go'); if (b) b.click(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey || e.repeat) return;
+  const t = e.target;
+  if (t && t !== document.body && t.closest && t.closest('a, button, input, textarea, select, [contenteditable], dialog')) return;
+  if (document.querySelector('dialog[open]')) return;
+  const b = document.querySelector('#app .hero-go');
+  if (b) { e.preventDefault(); b.click(); }
+});
+/* a practice round's head, as a review's: what it is, how far, right and missed, and a way out.
+   res: one entry per question so far, true (right) or false (missed) */
+function practiceHead(title, at, n, res, quit) {
+  const right = res.filter(r => r).length, missed = res.length - right;
+  const segs = n <= 60 ? `<div class="rv-segs" style="--n:${n}" aria-hidden="true">${Array.from({ length: n }, (_, i) =>
+    `<i class="${i < res.length ? (res[i] ? 'ok' : 'bad') : i === at ? 'now' : ''}"></i>`).join('')}</div>` : '';
+  return `<div class="rv-head pq-head"><span class="rv-title">${title}</span>
+    <span class="rv-of"><b>${Math.min(at + 1, n)}</b> of ${n}</span><span class="rv-flex"></span>
+    ${res.length ? `<span class="rv-dot ok">${right} right</span><span class="rv-dot bad">${missed} missed</span>` : ''}
+    ${quit ? `<a class="rv-icon" href="${quit}" aria-label="Stop" title="Stop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>` : ''}
+  </div>${segs}`;
+}
+/* a white tile, for practice pages (as lessons' lxTile) */
+const ptTile = (label, body, cls = '') => `<section class="pt-tile${cls ? ' ' + cls : ''}">${label ? `<h3>${label}</h3>` : ''}${body}</section>`;
+const ptBar = (p, cls = '') => `<span class="pt-bar${cls ? ' ' + cls : ''}" aria-hidden="true"><i style="--w:${Math.round(100 * Math.max(0, Math.min(1, p)))}%"></i></span>`;
 const lxTile = (title, body, cls) => `<section class="lt-tile${cls ? ' ' + cls : ''}">${title ? `<h3>${title}</h3>` : ''}${body}</section>`;
 
 /* a listening question: only the sound, played as it opens (▶ or P plays it again) */
@@ -1215,6 +1259,26 @@ function practiceNext(st) {
   return { ...pick, why: `${when} ${pick.why}` };
 }
 
+/* the suggestion, as Practice's lead card: its colour, and a few of what it is about */
+function practiceHero(next, st) {
+  const tone = t => `<svg viewBox="0 0 40 28" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true">${TN_SHAPE[t]}</svg>`;
+  const han = c => `<span class="han">${zhOne(c)}</span>`;
+  let kind = 'char', chips = [];
+  if (next.href === '#/weak') {
+    chips = wkItems().slice(0, 4).map(k => `<span class="han">${itemHtml(k)}</span>`);
+    if (!chips.length) chips = wkLooks().slice(0, 4).map(han);
+    if (!chips.length) chips = [1, 2, 3, 4].map(tone);
+  } else if (next.href === '#/grammar/daily') { kind = 'grammar'; chips = ['A', '+', han('是'), '+', 'B']; }
+  else if (next.href === '#/lookalikes') { kind = 'comp'; chips = (st.looks.pair || []).map(han); }
+  else if (next.href === '#/tones') { kind = 'sound'; chips = [1, 2, 3, 4].map(tone); }
+  else if (next.href === '#/phrases') {
+    kind = 'phrase';
+    const n = typeof phNext === 'function' && HZ.phrases ? phNext() : null;
+    chips = n && n.chips ? n.chips.slice(0, 3).map(han) : [han('你好')];
+  }
+  return { kind, eyebrow: 'Suggested now', chips, title: esc(next.title), sub: esc(next.why), go: 'Start', href: next.href };
+}
+
 /* Practice this week: the days you practised anything (from the times each kind keeps: a
    round's last, a point read, a phrase learned, a look-alike or weak spot asked), the rounds
    done in all, and how often you're right where that is counted. */
@@ -1286,11 +1350,7 @@ function drawPractice(final) {
   const nextIco = { '#/weak': ICO.weak, '#/grammar/daily': ICO.daily, '#/lookalikes': ICO.looks, '#/tones': ICO.tones, '#/phrases': ICO.phrases }[next.href];
   app.innerHTML = '<h1 class="page-title">Practice</h1>' + withRail(`
     <p class="lede">Extra practice, whenever you like. It never adds to your reviews.</p>
-    <a class="pr-next" href="${next.href}">
-      <span class="ico ${next.colour}">${icon(nextIco)}</span>
-      <span class="pr-next-text"><small class="pr-eyebrow">Suggested now</small><b>${esc(next.title)}</b><span>${esc(next.why)}</span></span>
-      <span class="pr-go" aria-hidden="true">Start <span>→</span></span>
-    </a>
+    ${heroCard(practiceHero(next, st))}
     <a class="pr-mix" href="#/weak/mix"><span class="pr-mix-ico" aria-hidden="true">${icon('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/>')}</span>
       <span class="pr-mix-text"><b>Can't choose? Quick mix</b><small>A few tones${st.looks.open ? ', look-alikes' : ''}${st.weak.n ? ' and weak spots' : ''} in one round · about 2 minutes</small></span>
       <span class="pr-mix-go" aria-hidden="true">→</span></a>
@@ -1362,7 +1422,7 @@ function drawStudy() {
   // a tile: its name, how many, a note, and (when there is something to start) what
   // pressing it does and about how long it takes
   const tile = (cls, name, n, note, active = n, go = '') => `<a class="lx-tile ${cls}${active ? '' : ' idle'}" href="#/${cls}"${active ? ` aria-keyshortcuts="${cls[0].toUpperCase()}"` : ''}>
-    <b>${name}</b><span>${n}</span>${note ? `<em>${esc(note)}</em>` : ''}${active && go ? `<small class="lx-go"><span class="lx-go-t">${go}</span><kbd class="lx-kbd" title="Shortcut: ${cls[0].toUpperCase()}">${cls[0].toUpperCase()}</kbd></small>` : ''}</a>`;
+    <b>${name}</b><span>${n}</span>${note ? `<em>${esc(note)}</em>` : ''}${active && go ? `<small class="lx-go"><span class="lx-go-t">${go}</span></small>` : ''}</a>`;
   // about how long: a lesson (meet it, then its quiz) ~40 s, a sound ~15 s, a review ~10 s
   // ("about" goes on a phone, where the tile is narrow)
   const aboutMin = sec => `<span class="lx-about">about </span>${Math.max(1, Math.round(sec / 60))}&nbsp;min`;
@@ -1408,8 +1468,14 @@ function drawStudy() {
   };
   const reviewsTile = tile('reviews', 'Reviews', p.reviewsLeft, reviewNote || (p.reviewsLeft ? '' : whenNext(nextDue)),
     p.reviewsLeft, `Start · ${aboutMin(p.reviewsLeft * 10)}`);
-  const lessonsTile = tile('lessons', 'Lessons', counted || ready.sound, counted && ready.sound
-    ? `+ ${ready.sound} short sound${ready.sound === 1 ? '' : 's'}` : !counted && ready.sound ? 'Short sounds' : lessonNote,
+  // the Lessons tile's number: the characters and words; the components and short sounds
+  // that come with them are said under it (or, with no character or word ready, counted)
+  const mainN = ready.char + ready.word;
+  const parts = [ready.comp && `${ready.comp} component${ready.comp === 1 ? '' : 's'}`,
+    ready.sound && `${ready.sound} short sound${ready.sound === 1 ? '' : 's'}`].filter(Boolean);
+  const partsNote = !parts.length ? '' : mainN ? '+ ' + parts.join(' · ')
+    : [ready.comp && 'Components', ready.sound && (ready.comp ? 'short sounds' : 'Short sounds')].filter(Boolean).join(' and ');
+  const lessonsTile = tile('lessons', 'Lessons', mainN || ready.comp + ready.sound, partsNote || lessonNote,
     p.lessons.length, `${fresh ? 'Start your first lesson' : 'Start'} · ${aboutMin(counted * 40 + ready.sound * 15)}`);
   // the reviews to come, so a big day isn't a surprise: tomorrow, and the week after today
   const fc8 = Learn.forecast(items.map(e => e[1]), now, 8);

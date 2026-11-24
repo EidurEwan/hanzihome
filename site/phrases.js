@@ -114,6 +114,11 @@ function phChatHtml(u, big = false) {
   </div>`;
 }
 
+/* a few short phrases, to show on a card: without their punctuation, and only short ones */
+function phChips(units, glyph) {
+  const out = units.map(u => phZh(u.ex).replace(/[，。！？、；：,.!?;:…“”"'（）()\s]/g, '')).filter(t => t && t.length <= 4).slice(0, 3);
+  return out.length ? out : [glyph];
+}
 /* where to carry on: a category you have started and not finished, then the first you
    haven't started; with everything learned, a round on all of it */
 function phNext() {
@@ -123,27 +128,34 @@ function phNext() {
   if (!c) return { href: '#/phrases/all/practice', colour: 'mint', glyph: '练', eyebrow: 'All learned', title: 'Practise everything',
     why: 'Every phrase is learned. A mixed round keeps them fresh.', go: 'Practise' };
   const n = Math.min(PH_BATCH, left(c));
-  return { href: `#/phrases/${c.id}/learn`, colour: c.colour, glyph: c.glyph, eyebrow: started ? 'Carry on' : 'Start here',
+  return { chips: phChips(c.units.filter(u => !phLearned(u)), c.glyph), href: `#/phrases/${c.id}/learn`, colour: c.colour, glyph: c.glyph, eyebrow: started ? 'Carry on' : 'Start here',
     title: c.title, why: `${n} new ${n === 1 ? 'phrase' : 'phrases'}, one at a time. ${esc(c.blurb)}`, go: `Learn ${n}` };
 }
 
 function phList() {
   const total = phUnits().length, have = phUnits().filter(phLearned).length, next = phNext();
+  const due = phUnits().filter(phLearned).length >= 3;
   app.innerHTML = `<h1 class="page-title">Phrases</h1>
     <p class="lede">Everyday phrases, questions and answers, learned whole.</p>
-    <a class="pr-next ph-next" href="${next.href}">
-      <span class="ico ${next.colour} han" aria-hidden="true">${esc(next.glyph)}</span>
-      <span class="pr-next-text"><small class="pr-eyebrow">${next.eyebrow}</small><b>${esc(next.title)}</b><span>${next.why}</span></span>
-      <span class="pr-go" aria-hidden="true">${next.go} <span>→</span></span></a>
-    <div class="ph-sum">
-      <p><b>${have}</b> of ${total} learned</p>
-      ${have >= 3 && next.href !== '#/phrases/all/practice' ? '<a class="btn quiet" href="#/phrases/all/practice">Practise everything</a>' : ''}
+    ${heroCard({ kind: 'phrase', eyebrow: `${next.eyebrow}${next.href.endsWith('/learn') ? ` · ${esc(next.title)}` : ''}`,
+      chips: (next.chips || [next.glyph]).map(t => `<span class="han">${zhOne(t)}</span>`),
+      title: next.href.endsWith('/learn') ? `${next.go.replace('Learn ', '')} new phrase${next.go === 'Learn 1' ? '' : 's'}` : esc(next.title),
+      sub: next.why.replace(/^\d+ new phrases?, one at a time\. /, ''), go: next.go, href: next.href })}
+    <div class="pt-grid three">
+      ${ptTile('Learned', `<b class="pt-big">${have} <small>of ${total}</small></b>${ptBar(have / total, 'phrase')}`)}
+      ${ptTile('Practise', due ? `<a class="pt-link" href="#/phrases/all/practice">A round on everything you've learned →</a>`
+        : '<span class="pt-note">Opens once you have learned three phrases.</span>')}
+      ${ptTile('How it works', '<span class="pt-note">Learned whole, a few at a time. Never added to your reviews.</span>')}
     </div>
-    <div class="ph-cats">${HZ.phrases.map(c => {
-      const n = c.units.filter(phLearned).length, all = n === c.units.length;
-      return `<a class="xs-tile ph-cat${all ? ' all' : ''}" href="#/phrases/${c.id}"><span class="ico ${c.colour} han" aria-hidden="true">${esc(c.glyph)}</span>
-        <span class="xs-text"><b>${esc(c.title)}</b><small>${all ? 'All learned ✓' : n ? `${n} of ${c.units.length} learned` : esc(c.blurb)}</small>
-        ${n ? `<span class="xs-bar" aria-hidden="true"><i style="--w:${Math.round(100 * n / c.units.length)}%"></i></span>` : ''}</span></a>`;
+    <div class="pt-label"><h2>${HZ.phrases.length} topics</h2><span>Do them in any order</span></div>
+    <div class="pt-grid ph-cats">${HZ.phrases.map(c => {
+      const n = c.units.filter(phLearned).length, all = n === c.units.length, here = next.href === `#/phrases/${c.id}/learn`;
+      const eg = c.units.find(u => !u.answers) || c.units[0];
+      return `<a class="pt-tile pt-item ph-cat${all ? ' all' : ''}${here ? ' here' : ''}" href="#/phrases/${c.id}"><span class="ico ${c.colour} han" aria-hidden="true">${esc(c.glyph)}</span>
+        <span class="pt-text"><span class="pt-row"><b>${esc(c.title)}</b>${here ? `<span class="pt-tag">${next.eyebrow}</span>` : all ? '<span class="pt-tag done">All learned</span>' : ''}</span>
+          <small>${esc(c.blurb)}</small>
+          <span class="pt-eg han">${zhOne(phZh(eg.ex))}</span>
+          <span class="pt-prog">${ptBar(n / c.units.length, 'phrase')}<small>${n} of ${c.units.length}</small></span></span></a>`;
     }).join('')}</div>`;
 }
 
@@ -167,26 +179,29 @@ function phCat(c) {
   const phrases = c.units.filter(u => !u.answers), qa = c.units.filter(u => u.answers);
   const acts = (cls = '') => `${left.length ? `<a class="btn${cls}" href="#/phrases/${c.id}/learn">Learn ${Math.min(PH_BATCH, left.length)} new</a>` : ''}
     ${canPractise ? `<a class="btn${left.length ? ' quiet' : ''}${cls}" href="#/phrases/${c.id}/practice">Practise</a>` : ''}`;
+  const n = Math.min(PH_BATCH, left.length);
   app.innerHTML = `<p class="crumb"><a href="#/phrases">Phrases</a> / ${esc(c.title)}</p>
-    <section class="card ph-head" id="ph-head"><h1>${esc(c.title)}</h1>
-      <p class="muted">${esc(c.blurb)}</p>
-      <div class="ph-head-n"><span><b>${have}</b> of ${c.units.length} learned</span>
-        <span class="xs-bar" aria-hidden="true"><i style="--w:${Math.round(100 * have / c.units.length)}%"></i></span></div>
-      <p class="gr-actions">${acts()}</p>
-      ${canPractise ? '' : '<p class="small muted">Practice opens once you have learned three phrases.</p>'}
-      ${Sound.canSay() ? `<div class="ph-listen"><button type="button" class="btn quiet ph-play" data-play-all aria-pressed="false">▶ Play all</button>${phSpeedHtml()}
-        <span class="small muted">Every phrase and reply, one after another</span></div>` : ''}</section>
+    <div id="ph-head">${heroCard({ kind: 'phrase', eyebrow: `Topic · ${have} of ${c.units.length} learned`,
+      chips: [`<span class="han">${esc(c.glyph)}</span>`], title: esc(c.title), sub: `${esc(c.blurb)}${ptBar(have / c.units.length, 'on-card')}`,
+      ...(left.length ? { go: `Learn ${n} new`, href: `#/phrases/${c.id}/learn` } : { go: 'Practise', href: `#/phrases/${c.id}/practice` }),
+      note: left.length && canPractise ? `<a href="#/phrases/${c.id}/practice">Or practise the ${have} you know</a>`
+        : canPractise ? '' : 'Practice opens once you have learned three phrases.' })}</div>
+    ${Sound.canSay() ? `<section class="pt-tile ph-listen"><button type="button" class="btn ph-play pt-play-all" data-play-all aria-pressed="false">▶ Play all</button>
+      <span class="pt-note">Every phrase and reply, one after another</span>
+      ${phSpeedHtml()}</section>` : ''}
     ${left.length || canPractise ? `<div class="ph-bar-wrap"><div class="ph-bar" id="ph-bar" aria-hidden="true">
       <span class="ph-bar-t"><span class="ico ${c.colour} han">${esc(c.glyph)}</span><b>${esc(c.title)}</b><small>${have} / ${c.units.length}</small></span>
       <span class="ph-bar-acts">${Sound.canSay() ? '<button type="button" class="btn quiet small ph-play" data-play-all aria-pressed="false">▶ Play all</button>' : ''}${acts(' small')}</span></div></div>` : ''}
-    <h2 class="sec-h">Phrases</h2><div class="decomp-box pad">${phrases.map(phRow).join('')}</div>
-    <h2 class="sec-h">Questions and answers</h2><div class="decomp-box pad">${qa.map(phRow).join('')}</div>`;
+    <div class="pt-label"><h2>Phrases · ${phrases.length}</h2><span>${phrases.filter(phLearned).length} learned · tap ✓ to mark one</span></div>
+    <div class="pt-grid ph-tiles">${phrases.map(phRow).join('')}</div>
+    <div class="pt-label"><h2>Questions and answers · ${qa.length}</h2><span>Learn the question, recognise the replies</span></div>
+    <div class="pt-grid one ph-tiles ph-qa">${qa.map(phRow).join('')}</div>`;
   phWireSay();
   phWirePlay();
   /* the buttons stay at hand once the card with them has scrolled away */
   const bar = document.getElementById('ph-bar'), head = document.getElementById('ph-head');
   if (bar) {
-    const acts = head.querySelector('.gr-actions');
+    const acts = head.querySelector('.hero-go');
     const top = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--topbar-h'), 10) || 60;
     let queued = false, shown = null;
     const check = () => {
@@ -235,11 +250,15 @@ function phLearn(c) {
     const u = batch[at];
     if (!u) return done();
     shown = false;
-    app.innerHTML = `<p class="crumb">${crumb} / ${at + 1} of ${batch.length}</p>
-      <section class="card ph-learn hide-en" id="ph-card">
-        <p class="ph-recall small muted" id="ph-recall">What do you think it means? Then see.</p>
-        ${u.answers ? phChatHtml(u, true) : `<div class="ph-answer"><div class="example ph-big">${exampleHtml(u.ex, '')}</div>${phSayBtn(phZh(u.ex))}</div>
-        ${u.note ? `<p class="muted">${esc(u.note)}</p>` : ''}`}
+    const ask = `What do you think ${u.answers ? 'they' : 'it'}&nbsp;<b>mean${u.answers ? '' : 's'}</b>?`;
+    app.innerHTML = `${practiceHead(`Phrases · ${esc(c.title)}`, at, batch.length, [], `#/phrases/${c.id}`)}
+      <section class="ph-learn hide-en${u.answers ? ' ph-learn-qa' : ''}" id="ph-card">
+        <p class="ph-recall small muted" id="ph-recall" hidden></p>
+        ${u.answers ? `<p class="la-band ph-band">${ask}</p><div class="pt-tile">${phChatHtml(u, true)}</div>`
+          : `<div class="dk ph-dk"><div class="dk-card"><div class="ph-band-card"><span class="dk-stage">New phrase</span>
+            <div class="ph-answer"><div class="example ph-big">${exampleHtml(u.ex, '')}</div>${phSayBtn(phZh(u.ex))}</div></div></div>
+            <div class="dk-foot"><span>${ask}</span></div></div>
+            ${u.note ? `<p class="muted ph-note">${esc(u.note)}</p>` : ''}`}
         <p class="gr-actions"><button type="button" class="btn" id="ph-next">Show the meaning <kbd class="gr-key in-btn" aria-hidden="true">Enter</kbd></button>
           ${Sound.canSay() ? '<span class="ph-keys small muted"><kbd class="gr-key">Space</kbd> hear it again</span>' : ''}</p>
       </section>`;

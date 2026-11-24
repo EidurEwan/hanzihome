@@ -40,20 +40,22 @@ const wkTile = (k, kind) => `<a class="ls-tile ${kind} han" href="${itemHref(k)}
 
 function wkOverview() {
   const d = Store.load(), items = wkItems().slice(0, WK_ITEMS), looks = wkLooks(), tones = wkTones();
-  const parts = (items.length ? 1 : 0) + (looks.length ? 1 : 0) + (tones ? 1 : 0);
+  const parts = (items.length ? 1 : 0) + (looks.length ? 1 : 0) + (tones ? 1 : 0), n = items.length + looks.length + (tones ? 1 : 0);
   app.innerHTML = '<h1 class="page-title">Weak spots</h1>' + withRail(!parts ? `<section class="card">
       <p class="empty">Nothing to work on yet.</p>
       <p class="small muted">What you keep missing in reviews, look-alikes and tones will show up here.</p>
       <p><a class="btn quiet" href="#/study">Back to Today</a></p></section>` : `
-    <p class="row ls-actions"><button class="btn" id="wk-start">Start</button>
-      <a class="btn quiet" href="#/study">Back to Today</a></p>
-    <p class="small muted wk-note">A short round. It doesn't change when your reviews come back.</p>
-    ${items.length ? `<section class="ls-group"><h2 class="sec-h">Keep missing</h2>
-      <div class="ls-tiles">${items.map(k => wkTile(k, d.items[k].kind || 'char')).join('')}</div></section>` : ''}
-    ${looks.length ? `<section class="ls-group"><h2 class="sec-h">Mix up</h2>
-      <div class="ls-tiles">${looks.map(c => `<a class="ls-tile char han" href="#/character/${encodeURIComponent(c)}" target="_blank" rel="noopener" aria-label="${esc(c)}, opens in a new tab">${zhOne(c)}</a>`).join('')}</div></section>` : ''}
-    ${tones ? `<section class="ls-group"><h2 class="sec-h">Tones</h2>
-      <div class="ls-tiles">${tones.tones.map(t => `<a class="ls-tile wk-tone" href="#/tones" target="_blank" rel="noopener" aria-label="Tone ${t}, opens in a new tab">${tnShape(t)}</a>`).join('')}</div></section>` : ''}`, true);
+    ${heroCard({ kind: 'char', eyebrow: `${n} you keep missing`,
+      chips: [...items.slice(0, 4).map(k => `<span class="han">${itemHtml(k)}</span>`), ...looks.slice(0, Math.max(0, 4 - items.length)).map(c => `<span class="han">${zhOne(c)}</span>`),
+        ...(tones && items.length + looks.length < 4 ? tones.tones.map(t => tnShape(t)) : [])],
+      title: `Clear ${n} weak spot${n > 1 ? 's' : ''}`, sub: `A short round · about ${Math.max(1, Math.round(n * 0.4))} minute${Math.round(n * 0.4) > 1 ? 's' : ''}`, go: 'Start', id: 'wk-start' })}
+    <div class="pt-grid three">
+      ${ptTile('Keep missing', `${items.length ? `<div class="ls-tiles">${items.map(k => wkTile(k, d.items[k].kind || 'char')).join('')}</div>` : ''}
+        ${looks.length ? `<h3>Mix up</h3><div class="ls-tiles">${looks.map(c => `<a class="ls-tile char han" href="#/character/${encodeURIComponent(c)}" target="_blank" rel="noopener" aria-label="${esc(c)}, opens in a new tab">${zhOne(c)}</a>`).join('')}</div>` : ''}
+        ${tones ? `<h3>Tones</h3><div class="ls-tiles">${tones.tones.map(t => `<a class="ls-tile wk-tone" href="#/tones" target="_blank" rel="noopener" aria-label="Tone ${t}, opens in a new tab">${tnShape(t)}</a>`).join('')}</div>` : ''}`, 'span2')}
+      ${ptTile('This round', `<b class="pt-big">~${Math.max(1, Math.round(n * 0.4))} min</b><span class="pt-note">${[items.length && 'Pronunciation and meaning', looks.length && 'telling look-alikes apart', tones && 'a few tones'].filter(Boolean).join(', ')}. It doesn't change when your reviews come back.</span>`)}
+    </div>
+    <p class="hero-note"><a href="#/study">Back to Today</a></p>`, true);
   const start = document.getElementById('wk-start');
   if (start) start.addEventListener('click', wkStart);
   paintRail();
