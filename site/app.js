@@ -28,7 +28,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 18;
+const DATA_VERSION = 19;
 
 const _loading = {};
 function loadScript(src) {
@@ -184,6 +184,8 @@ const Store = {
     for (const k of ['lessonOrder', 'wordLimit', 'wordWait', 'wordUnlock']) delete d.study[k];
     // so were the initials: from jobs to the figures, in lessons taken or waiting
     Learn.recastSounds(d.items);
+    // components were renamed and meanings tidied: items made before take the new ones
+    Learn.refreshNames(d.items, HZ.index);
     // the tone places were renamed: lessons of them already taken or waiting take the new name
     for (const [k, was, now] of [['t:1', 'Rooftop', 'Front'], ['t:2', 'Staircase', 'Inside'], ['t:4', 'Trapdoor', 'Bathroom'], ['t:5', 'Front Step', 'Roof']]) {
       if (d.items[k] && d.items[k].mean === was) d.items[k].mean = now;
