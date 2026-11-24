@@ -38,8 +38,8 @@ const countBy = field => {
 };
 const plural = (n, one) => `${n.toLocaleString()} ${one}${n === 1 ? '' : 's'}`;
 /* ü for v; the buzzing -i of zhi chi shi is told apart from the -i of bi */
-const endingText = v => v === 'ih' ? '-i (buzz)' : '-' + finalText(v);
-const beginningText = v => v ? v + '-' : 'none';
+const endingText = v => itemText('f:' + v).replace(/^-i$/, v === 'ih' ? '-i (buzz)' : '-i');
+const beginningText = v => v || HZ.sounds.initials[v][2] ? itemText('i:' + v) : 'none';
 const sylText = s => s.replace(/v/g, 'ü');
 
 const playBtn = (attrs, label) => `<button type="button" class="snd-play" ${attrs} aria-label="${esc(label)}">▶</button>`;
@@ -124,6 +124,7 @@ function libDetail(type, v, page) {
         + syllables(rows) + used(rows, `/sounds/beginning/${v}`);
     }
   }
+  if (type === 'ending' && v === 'none') v = '';
   if (type === 'ending' && S.finals[v]) {
     const rows = all.filter(r => r.final === v);
     return back('endings') + head(endingText(v), S.finals[v][0], S.finals[v][1], playBtn(`data-part="f:${v}"`, 'Play ' + endingText(v)))

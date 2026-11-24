@@ -24,10 +24,25 @@ for (const name of process.argv.slice(2)) {
       if (!/\{Roof\}/.test(m) && /\b(roofs?|rooftops?)\b/i.test(text)) say(`${k}: mentions another tone's place: roof`);
       if (/\btrapdoors?\b/i.test(text)) say(`${k}: mentions an old tone place: trapdoor`);
       for (const sd of x.sound) if (m.split('{' + sd.replace(/^\S+ /, '') + '}').length > 2) say(`${k}: {${sd.replace(/^\S+ /, '')}} more than once`);
+      if (n.startsWith('scene2')) {
+        const want = x.sound.map(sd => '{' + sd.replace(/^\S+ /, '') + '}');
+        for (const t of m.match(/\{[^}]+\}/g) || []) if (!want.includes(t)) say(`${k}: stray token ${t}`);
+        const old = /\b(Casper|Mario|Frodo|Tarzan|Naruto|Gandalf|Kermit|James Bond|Shrek|Charlie Brown|Sherlock|Robocop|Sailor Moon|Yoshi|Walter White)\b/.exec(text);
+        if (old) say(`${k}: old cast figure ${old[1]}`);
+      }
       if (words < 35 || words > 95) say(`${k}: ${words} words`);
       for (const sd of x.sound) if (!m.includes('{' + sd.replace(/^\S+ /, '') + '}')) say(`${k}: no {${sd.replace(/^\S+ /, '')}}`);
       if ((m.match(/\*\*[^*]+\*\*/g) || []).length < 2) say(`${k}: the meaning should be in **…** twice`);
       for (const [g, nm] of x.parts) if (!nm.toLowerCase().split(/\s+/).every(wd => m.toLowerCase().includes(wd.length > 4 ? wd.slice(0, -1) : wd))) say(`${k}: doesn't use ${g} "${nm}"`);
+      return;
+    }
+    if (n === 'compren') {
+      const m = o.m || '';
+      if (!m.toLowerCase().includes('**' + x.name.toLowerCase())) say(`${k}: story has no **${x.name}**`);
+      for (const [g, nm] of x.parts) if (!m.toLowerCase().includes('*' + nm.toLowerCase().split(/\s+/)[0].slice(0, 4))) say(`${k}: doesn't use ${g} "${nm}"`);
+      if (m.split(/\s+/).length > 45) say(`${k}: story too long`);
+      if (!o.why) say(`${k}: no why`);
+      if (x.task === 'story' && o.why !== x.why) say(`${k}: why should stay as it is`);
       return;
     }
     if (n.startsWith('compmn')) {
