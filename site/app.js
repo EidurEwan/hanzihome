@@ -28,7 +28,7 @@ const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 18;
+const DATA_VERSION = 19;
 
 const _loading = {};
 function loadScript(src) {
