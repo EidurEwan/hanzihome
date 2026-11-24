@@ -485,6 +485,64 @@
     return changed;
   }
 
+  /* Components renamed to match their look (or their meaning, when it is a thing, an
+     adjective or a direction): a component's item keeps the name its lesson taught, so
+     items made before ask for the old one. {component: [old name, name now]} */
+  const RENAMED_COMPS = {
+    '白': ["white dove","white"], '甘': ["candy","sweet"], '音': ["music","loudspeaker"], '青': ["moss","green"],
+    '艮': ["glare","stubborn"], '正': ["goal line","correct"], '上': ["upstairs","up"], '齐': ["trimmed hedge","neat"],
+    '亚': ["silver medal","second"], '少': ["pinch","few"], '良': ["good meal","good"], '黄': ["yolk","yellow"],
+    '赤': ["red cheeks","red"], '下': ["downstairs","down"], '西': ["bird nest","west"], '丕': ["plinth","grand"],
+    '古': ["antique","ancient"], '肰': ["moon dog","dog meat"], '早': ["early bird","early"], '半': ["half","TV antenna"],
+    '只': ["lone bird","kettle"], '次': ["queue","next"], '吉': ["lucky charm","lucky"], '先': ["front runner","first"],
+    '内': ["inner room","inside"], '公': ["town square","public"], '专': ["spindle","special"], '全': ["treasure chest","whole"],
+    '亢': ["high collar","high"], '呆': ["blank stare","dull"], '卑': ["fan","low"], '孝': ["dutiful son","filial"],
+    '尧': ["emperor","Emperor Yao"], '奇': ["oddball","strange"], '直': ["plumb line","straight"], '右': ["feeding hand","right"],
+    '另': ["spare part","other"], '多': ["many moons","many"], '真': ["magnifying glass","true"], '番': ["footprint field","foreign"],
+    '同': ["matching cup","same"], '罙': ["deep cave","deep"], '昭': ["spotlight","bright"], '壮': ["strongman","strong"],
+    '洛': ["riverbank","Luo River"], '向': ["weathervane","towards"], '竟': ["finale","unexpected"], '匹': ["matching pair","pair of socks"],
+    '单': ["racket","single"], '寅': ["temple arrow","reverent"], '间': ["gap","sunlit gate"], '邦': ["country","farmland"],
+    '空': ["empty room","empty"], '奂': ["makeover","brilliant"], '卓': ["beacon","outstanding"], '贵': ["price tag","expensive"],
+    '匀': ["even shares","even"], '昏': ["twilight","dusk sky"], '急': ["racing heart","urgent"], '曲': ["song","music box"],
+    '秀': ["blossom","elegant"], '替': ["substitute","bench player"], '苟': ["scruffy dog","careless"], '異': ["strange mask","different"],
+    '步': ["step","footprints"], '暴': ["heatwave","violent"], '乔': ["stilts","tall"], '敏': ["acrobat","quick"],
+    '闰': ["leap month","gate king"], '帝': ["sky god","emperor"], '溥': ["floodplain","vast"], '夜': ["night","night sky"],
+    '奄': ["sudden flash","sudden"], '诸': ["headcount","various"], '焦': ["barbecue","scorched"], '堇': ["violet","clay"],
+    '府': ["mansion","government office"], '旬': ["ten days","calendar"], '光': ["light","torchbearer"], '重': ["heavy weight","heavy"],
+    '武': ["warrior","martial"], '会': ["meeting","meeting room"], '征': ["march","marching boots"], '逢': ["chance meeting","handshake"],
+    '利': ["sickle","sharp"], '肃': ["stern face","solemn"], '亶': ["silo","sincere"], '宛': ["rice bowl","winding"],
+    '旁': ["roadside","side"], '亨': ["shrine hall","smooth"], '危': ["teetering man","dangerous"], '聚': ["gathering","huddle"],
+    '难': ["caught bird","difficult"], '秋': ["autumn","autumn leaves"], '舜': ["eyeblink","Emperor Shun"], '庶': ["kitchen","common"],
+    '宜': ["cozy room","suitable"], '新': ["firewood","new"], '春': ["springtime","cherry blossom"], '便': ["shortcut","convenient"],
+    '夏': ["summer","sunburn"], '普': ["broad daylight","universal"], '如': ["echo","parrot"], '浦': ["cattail","riverbank"],
+    '累': ["yarn pile","tired"], '息': ["breath","nostrils"], '欣': ["grin","glad"], '迷': ["lost traveller","lost"],
+    '华': ["fireworks","magnificent"], '凶': ["booby trap","fierce"], '考': ["exam","exam paper"], '乐': ["joy bells","happy"],
+    '臭': ["stink","sniffer dog"], '妥': ["soothing hand","settled"], '柔': ["springy twig","soft"], '戛': ["clank","clanging helmet"],
+    '怱': ["hurry","hasty"], '恣': ["runaway heart","unrestrained"], '康': ["rice husk","healthy"], '贱': ["bargain bin","cheap"],
+    '虚': ["ruins","hollow"],
+  };
+  /* gives component items their new names (only where the item still has the old one,
+     so a name of your own stays), and puts a character's main meaning now (index: HZ.index)
+     first in its item's meaning, keeping the old ones so past answers still count. Only
+     where the item has the reading the index has. How many items it changed. */
+  function refreshNames(items, index) {
+    let changed = 0;
+    for (const [c, [was, now]] of Object.entries(RENAMED_COMPS)) {
+      const it = items['c:' + c];
+      if (it && it.mean === was) { it.mean = now; changed++; }
+    }
+    for (const [k, it] of Object.entries(items)) {
+      const e = index && index[k];
+      if ((it.kind || 'char') !== 'char' || !e || !e[3] || (it.pin && it.pin !== e[2])) continue;
+      const main = String(e[3]).split(/;s*/)[0].trim(), mean = String(it.mean || '');
+      if (!main || mean.split(/;s*/)[0].trim().toLowerCase() === main.toLowerCase()) continue;
+      const rest = mean.split(/;s*/).filter(x => x && x.trim().toLowerCase() !== main.toLowerCase());
+      it.mean = [main, ...rest].join('; ');
+      changed++;
+    }
+    return changed;
+  }
+
   /* the characters extra practice may use (d is the store): those whose lesson is done or
      marked Known, and those of a word that is. Not one still waiting for its lesson. */
   function knownChars(d) {
@@ -969,7 +1027,7 @@
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
     pickChars, pickScores, pathSync, wordOrder, PATH_FACTS, hskProgress, hskIsNear, hskNearlyDone,
-    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, refreshNames, RENAMED_COMPS, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,

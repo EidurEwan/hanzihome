@@ -304,6 +304,20 @@ check('plan: prioritized parts still come just before their own character', () =
     ['c:白', 'i:d', '的', 'c:日', 'i:sh', '是']);
 });
 
+check('refreshNames: renamed components and new main meanings reach items made before', () => {
+  const index = { 好: [1, 0, 'hǎo', 'good; well; proper'], 长: [2, 0, 'cháng', 'long; length'] };
+  const items = {
+    'c:白': { kind: 'comp', mean: 'white dove' }, 'c:甘': { kind: 'comp', mean: 'my sugar' },
+    好: { kind: 'char', pin: 'hǎo', mean: 'well; good' }, 长: { kind: 'char', pin: 'zhǎng', mean: 'to grow' },
+  };
+  assert.strictEqual(L.refreshNames(items, index), 2);
+  assert.strictEqual(items['c:白'].mean, 'white');
+  assert.strictEqual(items['c:甘'].mean, 'my sugar', 'a name of your own stays');
+  assert.strictEqual(items.好.mean, 'good; well', 'the main meaning first, the old ones kept');
+  assert.strictEqual(items.长.mean, 'to grow', 'another reading is left alone');
+  assert.strictEqual(L.refreshNames(items, index), 0, 'a second pass changes nothing');
+});
+
 check('soundOf: beginning (with its glide), ending and tone, as the sound cast has them', () => {
   const so = s => { const x = L.soundOf(s); return [x.initial, x.final, x.tone].join(' '); };
   assert.strictEqual(so('bàn'), 'b an 4');
