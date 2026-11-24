@@ -5271,3 +5271,63 @@ a.pt-tile.pt-item:focus-visible { outline: 3px solid var(--accent); outline-offs
 .cb-filters button.multi.on { box-shadow: none; }
 .hsk-levels { margin-bottom: 18px; }
 .wd-src.hsk-levels { width: max-content; max-width: 100%; box-sizing: border-box; background: color-mix(in srgb, var(--ink-3) 13%, transparent); }
+
+
+/* =====================================================================
+   Big screens: the whole app a size up
+   ---------------------------------------------------------------------
+   Everything here is sized in pixels for a laptop, so on a 1440p or 4K
+   monitor (at 100% scaling) the page was a narrow column of small text
+   in a sea of empty space. Past a laptop's size the top bar, the menu
+   and the page are drawn larger with `zoom`, in steps by both width and
+   height (so an ultrawide doesn't zoom in until the page is too short).
+   Popups hang off <body>, outside the zoom, so they still land where
+   JS puts them; motion.js uiZoom() lets the in-page animations measure
+   in the page's own units. Browser zoom still works on top: it changes
+   the screen's CSS width, and so which step applies.
+   ===================================================================== */
+@supports (zoom: 1) {
+  @media (min-width: 1800px) and (min-height: 960px) { :root { --ui-z: 1.125; } }
+  @media (min-width: 2200px) and (min-height: 1150px) { :root { --ui-z: 1.3; } }
+  @media (min-width: 2500px) and (min-height: 1350px) { :root { --ui-z: 1.5; } }
+  @media (min-width: 3200px) and (min-height: 1700px) { :root { --ui-z: 1.75; } }
+  @media (min-width: 3600px) and (min-height: 2000px) { :root { --ui-z: 2; } }
+  @media (min-width: 1800px) and (min-height: 960px) {
+    .topbar, .sidebar, #app { zoom: var(--ui-z); }
+    /* the pinned menu is drawn larger, so the page steps further over for it */
+    body.nav-pinned .shell { padding-left: calc(var(--drawer-w) * var(--ui-z)); }
+    /* a zoomed box's vh is zoomed with it: back to the screen's height */
+    .readlist { max-height: calc(62vh / var(--ui-z)); }
+    .st-nav-list { max-height: calc(100vh / var(--ui-z) - 84px); }
+    #app:has(> .lx-batch) { min-height: calc(min(100dvh / var(--ui-z), 940px) - var(--topbar-h, 60px)); }
+  }
+}
+
+/* ---- phones: the word list ----
+   One line a word left a phone a few letters of the meaning ("Zhōng guó · C…"): the
+   pinyin and meaning wrap onto a second line instead, and the row's own padding is trimmed. */
+@media (max-width: 600px) {
+  .wd-row { gap: 8px; padding: 6px 10px; }
+  .wd-text { white-space: normal; line-height: 1.35; display: -webkit-box; -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
+  .wd-text b { white-space: nowrap; }
+  .wd-st { width: 70px; }
+}
+/* (the smallest phones: the word and its buttons on one line, its pinyin and meaning across the
+   whole row under them) */
+@media (max-width: 400px) {
+  .wd-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "tile . st add" "text text text text"; row-gap: 4px; padding-block: 8px; }
+  #app .tile.wd-tile { grid-area: tile; justify-self: start; }
+  .wd-text { grid-area: text; }
+  .wd-st { grid-area: st; }
+  .wd-add, .wd-add-gap { grid-area: add; }
+}
+/* (the smallest phones: a lesson's new parts, two to a line, had no room for "new" beside the
+   name, and it ran out of its chip into the next: it goes under the name) */
+@media (max-width: 400px) {
+  .lx-intro .intro-part { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 0; }
+  .lx-intro .intro-part > .han, .lx-intro .intro-part > .snd-key { grid-row: span 2; }
+  .lx-intro .intro-part > span:not(.han):not(.snd-key) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+  .lx-intro .intro-part small { margin-left: 0; line-height: 1.2; }
+}

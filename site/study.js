@@ -687,7 +687,7 @@ function deck(bandHtml, behind, foot, extra) {
    steps back into the card behind ("part of"), and the other parts sink away behind them.
    Instead of a card dealt in; once only. */
 /* where an element is on the page (not the window, which may scroll in between) */
-const pageRect = el => { const r = el.getBoundingClientRect(); return { left: r.left + scrollX, top: r.top + scrollY, width: r.width, height: r.height }; };
+const pageRect = el => { const r = el.getBoundingClientRect(), z = uiZoom(); return { left: (r.left + scrollX) / z, top: (r.top + scrollY) / z, width: r.width / z, height: r.height / z }; };
 function flyFromPart(s, k) {
   const fly = s.fly, from = fly && fly.parts[k];
   s.fly = null;
@@ -1811,7 +1811,7 @@ async function pageLessons() {
   // (on a phone the tabs scroll sideways: the open one in the middle)
   const onTab = tabBar.querySelector('.on');
   if (onTab && tabBar.scrollWidth > tabBar.clientWidth) {
-    const r = onTab.getBoundingClientRect(), box = tabBar.getBoundingClientRect();
+    const r = localRect(onTab), box = localRect(tabBar);
     tabBar.scrollLeft += r.left - box.left - (box.width - r.width) / 2;
   }
   tabBar.addEventListener('keydown', e => {
@@ -2930,9 +2930,9 @@ function ssGlide(card, change) {
   if (Motion.reduced() || !card.animate) return change();
   card.getAnimations({ subtree: true }).forEach(a => a.finish());
   card.querySelectorAll('.ss-ghost').forEach(g => g.remove());
-  const box0 = card.getBoundingClientRect();
-  const was = new Map(shown().map(t => [t.dataset.k, [t, t.getBoundingClientRect()]]));
-  const wasText = new Map(texts().map(t => [t, t.getBoundingClientRect()]));
+  const box0 = localRect(card);
+  const was = new Map(shown().map(t => [t.dataset.k, [t, localRect(t)]]));
+  const wasText = new Map(texts().map(t => [t, localRect(t)]));
   // a copy of something leaving, fading (and shrinking, for a tile) where it stood
   const ghost = (t, a, shrink) => {
     const cs = getComputedStyle(t), g = t.cloneNode(true);
@@ -2949,7 +2949,7 @@ function ssGlide(card, change) {
       .finished.then(() => g.remove(), () => g.remove());
   };
   change();
-  const box1 = card.getBoundingClientRect();
+  const box1 = localRect(card);
   const EASE = 'cubic-bezier(.2, .8, .2, 1)', MS = 520;
   if (Math.abs(box1.height - box0.height) > 1) {
     card.style.overflow = 'hidden';
@@ -2958,7 +2958,7 @@ function ssGlide(card, change) {
   }
   const now = shown(), stay = new Set();
   now.forEach((t, i) => {
-    const old = was.get(t.dataset.k), r = t.getBoundingClientRect();
+    const old = was.get(t.dataset.k), r = localRect(t);
     const delay = Math.min(i * 3, 180);
     if (old) {
       stay.add(t.dataset.k);
@@ -3028,7 +3028,7 @@ function fcPopover(fc) {
     on = chip;
     pop.innerHTML = fcPopHtml(chip.dataset.k, chip.dataset.move);
     pop.className = 'fc-pop';
-    const box = fc.getBoundingClientRect(), r = chip.getBoundingClientRect();
+    const box = localRect(fc), r = localRect(chip);
     const w = pop.offsetWidth, h = pop.offsetHeight;
     const mid = r.left + r.width / 2 - box.left;
     const left = Math.max(8, Math.min(mid - w / 2, box.width - w - 8));

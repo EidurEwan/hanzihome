@@ -3291,7 +3291,7 @@ function paintSettingsNav() {
         // keep it in view in the panel, without moving the page
         const list = nav.querySelector('.st-nav-list');
         if (wide.matches && list) {
-          const r = b.getBoundingClientRect(), box = list.getBoundingClientRect();
+          const r = localRect(b), box = localRect(list);
           if (r.top < box.top || r.bottom > box.bottom) list.scrollTop += r.top - box.top - box.height / 2;
         }
       } else b.removeAttribute('aria-current');
