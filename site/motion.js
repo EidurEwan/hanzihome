@@ -178,5 +178,21 @@ const Motion = (() => {
   return { page, enter, countUp, play, confetti, reduced };
 })();
 
+/* How much larger the page is drawn than its CSS pixels (style.css, "Big screens": 1 on
+   most screens). Rects from getBoundingClientRect are in screen pixels; a length set on an
+   element inside the page (left, a translate, scrollTop) is in the page's own, so a distance
+   measured on screen is divided by this before it is used there. Measured, not read from
+   the CSS, so it is right in a browser that draws `zoom` some other way, or not at all. */
+function uiZoom() {
+  const a = document.getElementById('app');
+  const z = a && a.offsetWidth ? a.getBoundingClientRect().width / a.offsetWidth : 1;
+  return Math.abs(z - 1) < 0.01 ? 1 : z;
+}
+/* an element's rect, in the page's own pixels */
+function localRect(el) {
+  const r = el.getBoundingClientRect(), z = uiZoom();
+  return { left: r.left / z, top: r.top / z, right: r.right / z, bottom: r.bottom / z, width: r.width / z, height: r.height / z };
+}
+
 /* phones only show :active on a press if something is listening for touches */
 document.addEventListener('touchstart', () => {}, { passive: true });

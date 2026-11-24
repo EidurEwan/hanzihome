@@ -430,11 +430,11 @@ function grRun(round, crumb, finish) {
       let locked = false, dragged = false;
 
       /* where every tile was, so that after drawing each one glides from there (FLIP) */
-      const where = () => new Map([...app.querySelectorAll('.gr-ex .gr-tile[data-i]')].map(b => [b.dataset.i, b.getBoundingClientRect()]));
+      const where = () => new Map([...app.querySelectorAll('.gr-ex .gr-tile[data-i]')].map(b => [b.dataset.i, localRect(b)]));
       const glide = was => {
         if (reduced() || !was) return;
         app.querySelectorAll('.gr-ex .gr-tile[data-i]').forEach(b => {
-          const a = was.get(b.dataset.i), n = b.getBoundingClientRect();
+          const a = was.get(b.dataset.i), n = localRect(b);
           if (!a) return;
           const dx = a.left - n.left, dy = a.top - n.top;
           if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
@@ -475,7 +475,8 @@ function grRun(round, crumb, finish) {
           const dx = ev.clientX - x0, dy = ev.clientY - y0;
           if (!on && Math.hypot(dx, dy) < 6) return;
           if (!on) { on = true; b.classList.add('dragging'); try { b.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } }
-          b.style.transform = `translate(${dx}px, ${dy}px) scale(1.06)`;
+          const z = uiZoom();
+          b.style.transform = `translate(${dx / z}px, ${dy / z}px) scale(1.06)`;
           // where it would go: before the first tile whose middle it hasn't passed (in reading order)
           const rest = others();
           let to = rest.length;
