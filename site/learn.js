@@ -454,21 +454,33 @@
 
   const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 
-  /* The initials were once jobs, and a sound's item keeps the name its lesson teaches, so
-     items made back then still ask for the job. [sound's key]: [old name, name now] */
+  /* The beginnings were once jobs, then a first cast of figures; a sound's item keeps the
+     name its lesson teaches, so items made back then still ask for an old one.
+     [sound's key]: [old names, name now] */
   const OLD_CAST = {
-    'i:': ['Ghost', 'Casper'], 'i:b': ['Baker', 'Batman'], 'i:p': ['Pirate', 'Pikachu'], 'i:m': ['Magician', 'Mario'],
-    'i:f': ['Firefighter', 'Frodo'], 'i:d': ['Dentist', 'Darth Vader'], 'i:t': ['Tailor', 'Tarzan'], 'i:n': ['Ninja', 'Naruto'],
-    'i:l': ['Lifeguard', 'Lara Croft'], 'i:g': ['Gardener', 'Gandalf'], 'i:k': ['King', 'Kermit'], 'i:h': ['Hunter', 'Homer'],
-    'i:j': ['Juggler', 'James Bond'], 'i:q': ['Cheerleader', 'Chewbacca'], 'i:x': ['Shepherd', 'Shrek'], 'i:zh': ['Jockey', 'Joker'],
-    'i:ch': ['Chef', 'Charlie Brown'], 'i:sh': ['Sheriff', 'Sherlock'], 'i:r': ['Robot', 'Robocop'], 'i:z': ['Zookeeper', 'Zorro'],
-    'i:c': ['Tsar', 'Cookie Monster'], 'i:s': ['Sailor', 'Sailor Moon'], 'i:y': ['Yogi', 'Yoshi'], 'i:w': ['Wizard', 'Walter White'],
+    'i:': [['Ghost','Casper'], 'Invisible Man'], 'i:b': [['Baker'], 'Batman'], 'i:p': [['Pirate','Pikachu'], 'Pac-Man'],
+    'i:m': [['Magician','Mario'], 'Madonna'], 'i:f': [['Firefighter','Frodo'], 'Fred Flintstone'], 'i:d': [['Dentist'], 'Darth Vader'],
+    'i:t': [['Tailor','Tarzan'], 'Tony Stark'], 'i:n': [['Ninja','Naruto'], 'Nadal'], 'i:l': [['Lifeguard'], 'Lara Croft'],
+    'i:g': [['Gardener','Gandalf'], 'Garfield'], 'i:k': [['King','Kermit'], 'King Kong'], 'i:h': [['Hunter','Homer'], 'Homer Simpson'],
+    'i:zh': [['Jockey'], 'Joker'], 'i:ch': [['Chef','Charlie Brown'], 'Charlie Chaplin'], 'i:sh': [['Sheriff','Sherlock'], 'Shakira'],
+    'i:r': [['Robot','Robocop'], 'Rocky'], 'i:z': [['Zookeeper'], 'Zorro'], 'i:c': [['Tsar'], 'Cookie Monster'],
+    'i:s': [['Sailor','Sailor Moon'], 'Sonic'], 'i:y': [['Yogi','Yoshi'], 'Yoda'], 'i:w': [['Wizard','Walter White'], 'Wonder Woman'],
   };
-  /* gives the items made under the old cast the names they have now; how many it changed */
+  /* sounds the present cast no longer has: the beginnings j q x (now ji- ju- qi- …) and the
+     endings that began with a glide (-ian is now bi- + -an) or were a lone vowel (-i, -u, ü) */
+  const RETIRED_SOUNDS = new Set(['i:j', 'i:q', 'i:x', ...['i', 'ih', 'ia', 'ie', 'iao', 'iu', 'ian', 'in', 'iang', 'ing',
+    'iong', 'u', 'ua', 'uo', 'uai', 'ui', 'uan', 'un', 'uang', 'v', 've', 'van', 'vn'].map(f => 'f:' + f)]);
+  /* brings items made under an old cast up to the present one: renamed sounds take their
+     name now, retired sounds go, and a character learnt from a retired sound forgets its
+     parts so they are looked up again. How many items it changed. */
   function recastSounds(items) {
     let changed = 0;
     for (const [k, [was, now]] of Object.entries(OLD_CAST)) {
-      if (items[k] && items[k].mean === was) { items[k].mean = now; changed++; }
+      if (items[k] && was.includes(items[k].mean)) { items[k].mean = now; changed++; }
+    }
+    for (const k of Object.keys(items)) {
+      if (RETIRED_SOUNDS.has(k)) { delete items[k]; changed++; }
+      else if (items[k].parts && items[k].parts.some(p => RETIRED_SOUNDS.has(p))) { delete items[k].parts; changed++; }
     }
     return changed;
   }
@@ -796,17 +808,32 @@
     return { letters: letters.replace(/ü/g, 'v'), tones };
   }
 
-  /* A syllable's sound as HanziHome teaches it (site/data/sounds.js): {initial, final,
-     tone}. y and w count as initials (ya: y + a; yu: y + ü), ü is v (nǚ: n + v), and
-     the buzzing -i after zh ch sh r z c s is "ih". The first syllable only. */
-  const INITIALS = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+  /* A syllable's sound as HanziHome teaches it (site/data/sounds.js, built from
+     build/mnemonics/cast2.js, whose split() this mirrors): {initial, final, tone}, where
+     the "initial" is the beginning, the consonant with the glide after it (bàn b + an,
+     biàn bi + an, guì gu + ei, nǚ nv + nothing), and the "final" is the ending, what is
+     left: "" when nothing is (yī, wǔ, shì, bù, jí). After a glide, -iu -ui -in -un -ing are
+     the endings -ou -ei -en -en -eng. y and w are beginnings of their own (yu- too).
+     The first syllable only; ng, hm and the like come out as {'', '', tone}. */
+  const AFTER = { '': '', i: 'ei', u: 'ou', n: 'en', ng: 'eng' };
+  const after = r => (r in AFTER ? AFTER[r] : r);
   function soundOf(pin) {
     const p = parsePinyin(String(pin || '').trim().split(/\s+/)[0]);
-    const initial = INITIALS.find(i => p.letters.startsWith(i) && p.letters.length > i.length) || '';
-    let final = p.letters.slice(initial.length);
-    if (/^[jqxy]$/.test(initial) && final[0] === 'u') final = 'v' + final.slice(1);
-    if (/^(zh|ch|sh|r|z|c|s)$/.test(initial) && final === 'i') final = 'ih';
-    return { initial, final, tone: p.tones[0] || 5 };
+    const tone = p.tones[0] || 5;
+    const m = /^(zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?(.*)$/.exec(p.letters);
+    const ini = m[1] || '', rest = m[2];
+    let b = ini, e = rest;
+    if (!/[aeiouv]/.test(rest)) return { initial: '', final: '', tone };
+    if (ini === 'y') {
+      if (rest[0] === 'u') { b = 'yu'; e = after(rest.slice(1)); }
+      else e = rest === 'i' ? '' : rest[0] === 'i' ? after(rest.slice(1)) : rest;
+    } else if (ini === 'w') e = rest === 'u' ? '' : rest;
+    else if (/^[jqx]$/.test(ini)) { b = ini + (rest[0] === 'i' ? 'i' : 'u'); e = after(rest.slice(1)); }
+    else if (/^[nl]$/.test(ini) && rest[0] === 'v') { b = ini + 'v'; e = after(rest.slice(1)); }
+    else if (/^(zh|ch|sh|r|z|c|s)$/.test(ini) && rest === 'i') e = '';
+    else if (/^[bpmdtnl]$/.test(ini) && rest[0] === 'i') { b = ini + 'i'; e = after(rest.slice(1)); }
+    else if (ini && rest[0] === 'u') { b = ini + 'u'; e = after(rest.slice(1)); }
+    return { initial: b, final: e, tone };
   }
 
   /* the expected pinyin's syllables, each with its tone (5 = neutral) */

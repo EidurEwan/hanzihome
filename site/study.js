@@ -93,8 +93,9 @@ const finalText = f => f.replace(/^v/, 'ü').replace('ih', 'i');
 /* an item's key as shown: 半, b-, -an, 4 */
 function itemText(k) {
   if (k.startsWith('c:')) return k.slice(2);
-  if (k.startsWith('i:')) return (k.slice(2) || 'Ø') + '-';
-  if (k.startsWith('f:')) return '-' + finalText(k.slice(2));
+  const S = HZ.sounds, v = k.slice(2);
+  if (k.startsWith('i:')) return ((S && S.initials[v] && S.initials[v][2]) || v || 'Ø') + '-';
+  if (k.startsWith('f:')) return (S && S.finals[v] && S.finals[v][2]) || '-' + finalText(v);
   if (k.startsWith('t:')) return k.slice(2);
   return k;
 }

@@ -304,16 +304,17 @@ check('plan: prioritized parts still come just before their own character', () =
     ['c:白', 'i:d', '的', 'c:日', 'i:sh', '是']);
 });
 
-check('soundOf: initial, final and tone, as the sound cast has them', () => {
+check('soundOf: beginning (with its glide), ending and tone, as the sound cast has them', () => {
   const so = s => { const x = L.soundOf(s); return [x.initial, x.final, x.tone].join(' '); };
   assert.strictEqual(so('bàn'), 'b an 4');
-  assert.strictEqual(so('yuè'), 'y ve 4');
-  assert.strictEqual(so('zhī'), 'zh ih 1');
-  assert.strictEqual(so('nǚ'), 'n v 3');
-  assert.strictEqual(so('qù'), 'q v 4');
+  assert.strictEqual(so('yuè'), 'yu e 4');
+  assert.strictEqual(so('zhī'), 'zh  1');
+  assert.strictEqual(so('nǚ'), 'nv  3');
+  assert.strictEqual(so('qù'), 'qu  4');
   assert.strictEqual(so('ér'), ' er 2');
   assert.strictEqual(so('de'), 'd e 5');
-  assert.strictEqual(so('xiǎo jiě'), 'x iao 3');
+  assert.strictEqual(so('xiǎo jiě'), 'xi ao 3');
+  assert.strictEqual(so('huài'), 'hu ai 4');
 });
 
 check('plan: words wait for their characters, characters for their components', () => {

@@ -57,6 +57,13 @@ const host = async req => {
     assert.deepStrictEqual([1, 2, 3, 4, 5].map(t => HZ.sounds.tones[t][0]), ['Front', 'Inside', 'Basement', 'Bathroom', 'Roof']);
   });
 
+  await check('a glide belongs to the beginning; nothing left is the empty ending', () => {
+    const got = ['bàn', 'biàn', 'guì', 'nǚ', 'shì', 'yī', 'wǔ', 'jiǔ', 'xióng', 'yuán', 'lún', 'jīng', 'ài']
+      .map(p => { const s = L.soundOf(p); return s.initial + '|' + s.final; });
+    assert.deepStrictEqual(got, ['b|an', 'bi|an', 'gu|ei', 'nv|', 'sh|', 'y|', 'w|', 'ji|ou', 'xi|ong', 'yu|an', 'lu|en', 'ji|eng', '|ai']);
+    for (const x of got) { const [i, f] = x.split('|'); assert.ok(HZ.sounds.initials[i] && HZ.sounds.finals[f], x); }
+  });
+
   await check('every scene has its reading\'s person, building and tone place', () => {
     const bad = [];
     for (const [c, e] of Object.entries(HZ.cmnem)) {
@@ -83,19 +90,24 @@ const host = async req => {
     assert.deepStrictEqual(bad, []);
   });
 
-  await check('items from the old cast take the names the lessons teach now', () => {
-    assert.deepStrictEqual(Object.keys(L.OLD_CAST).sort(), Object.keys(HZ.sounds.initials).map(v => 'i:' + v).sort());
+  await check('items from the old casts take the names the lessons teach now', () => {
     const items = {};
-    for (const [v, row] of Object.entries(HZ.sounds.initials)) {
-      assert.strictEqual(L.OLD_CAST['i:' + v][1], row[0], 'initial ' + v);
-      items['i:' + v] = { kind: 'sound', mean: L.OLD_CAST['i:' + v][0], syn: ['mine'] };
+    for (const [k, [was, now]] of Object.entries(L.OLD_CAST)) {
+      assert.strictEqual(HZ.sounds.initials[k.slice(2)][0], now, k);
+      items[k] = { kind: 'sound', mean: was[was.length - 1], syn: ['mine'] };
     }
-    assert.strictEqual(L.recastSounds(items), 24);
-    for (const [v, row] of Object.entries(HZ.sounds.initials)) assert.strictEqual(items['i:' + v].mean, row[0]);
+    items['i:j'] = { kind: 'sound', mean: 'James Bond' };
+    items['f:ian'] = { kind: 'sound', mean: 'Yen Exchange' };
+    items['变'] = { kind: 'char', parts: ['c:亦', 'i:b', 'f:ian', 't:4'] };
+    items['半'] = { kind: 'char', parts: ['c:半', 'i:b', 'f:an', 't:4'] };
+    const n = Object.keys(L.OLD_CAST).filter(k => L.OLD_CAST[k][0].length).length;
+    assert.strictEqual(L.recastSounds(items), n + 3);
+    for (const [k, [, now]] of Object.entries(L.OLD_CAST)) assert.strictEqual(items[k].mean, now);
     assert.deepStrictEqual(items['i:y'].syn, ['mine']);
+    assert(!items['i:j'] && !items['f:ian'], 'retired sounds go');
+    assert(!items['变'].parts && items['半'].parts, 'only a character with a retired sound looks its parts up again');
     assert.strictEqual(L.recastSounds(items), 0, 'a second pass changes nothing');
-    const y = items['i:y'];
-    assert(L.checkMeaning('Yoshi', y));
+    assert.strictEqual(L.recastSounds({ 'i:m': { kind: 'sound', mean: 'Magician' } }), 1, 'the jobs too');
     const other = { 'i:y': { kind: 'sound', mean: 'My own name' } };
     L.recastSounds(other);
     assert.strictEqual(other['i:y'].mean, 'My own name');
@@ -105,7 +117,8 @@ const host = async req => {
     const have = new Set(fs.readdirSync(path.join(SITE, 'audio', 's')));
     const S = HZ.sounds;
     for (const v of Object.keys(S.initials)) assert(have.has(S.heard.initials[v] + '1.mp3'), 'beginning ' + v);
-    for (const v of Object.keys(S.finals)) assert(have.has(S.heard.finals[v] + '1.mp3'), 'ending ' + v);
+    for (const v of Object.keys(S.finals)) if (v) assert(have.has(S.heard.finals[v] + '1.mp3'), 'ending ' + v);
+    assert.strictEqual(S.heard.finals[''], '', 'the empty ending (the Shed) has nothing to hear');
     for (const t of [1, 2, 3, 4]) assert(have.has(`ma${t}.mp3`), 'tone ' + t);
     assert(fs.readFileSync(path.join(SITE, 'data', 'audio.js'), 'utf8').includes('|吗|'), 'neutral tone word');
   });

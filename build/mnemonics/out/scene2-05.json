@@ -1,0 +1,602 @@
+[
+ {
+  "c": "刘",
+  "m": "{Lisa Simpson} steps {Inside} the {Boathouse} carrying a *tattooed blade*, a stage sword covered in swirly tattoos. Mystery-meat loaf is on the school menu, so she slashes her petition in the air: 'Vote to **kill** the loaf!' The whole class cheers, the blade glows, and the loaf is voted dead. Lisa has politely chosen to **kill** it."
+ },
+ {
+  "c": "读",
+  "m": "{Dua Lipa} glides {Inside} the {Shed} on roller skates and sets up a glittery *market stall* selling disco books. Each book comes with a *small speech bubble* that pops out and floats up as she **reads** it aloud. She counts her new rules on her fingers: **read** first, then dance. The customers line up to **read**."
+ },
+ {
+  "c": "啊",
+  "m": "{Invisible Man} tiptoes to the {Front} of the {Spa} and lifts a cup of tea into the air, with nobody holding it. A plump *auntie* in a bathrobe sees the cup float, and her *mouth* drops open in a perfect O. '**Ah!**' she gasps. Then, 'Ahh, **ah**, a ghost!' and the cup pours itself."
+ },
+ {
+  "c": "超",
+  "m": "{Charlie Chaplin} waddles to the {Front} of the {Tower} where a *runner* stretches for a race. A *town crier* rings his bell: 'Who will **overtake** him?' Chaplin slips on a banana peel that shoots him past the runner. He silently tips his bowler hat, **overtakes** the crier too, and spins his cane in triumph."
+ },
+ {
+  "c": "免",
+  "m": "{Mr. Bean} tiptoes into the {Basement} of the {Mansion} on exam day. A sly *dodger* in a striped cap ducks every desk and slides out of every question. Bean copies him, stamps his teddy bear's paw on a certificate, and grins. It says he is **exempt**. The teacher sighs: a bear-approved, **exempt** pupil."
+ },
+ {
+  "c": "压",
+  "m": "{Yoda} hops to the {Front} of the {Spa} and lifts a heavy *cliff* with the Force, holding it above a *clod* of mud. 'To **press**, I must,' he mutters, and lowers the cliff slowly. It **presses** the clod flat into a perfect spa face mask. 'Press down, easy it is.'"
+ },
+ {
+  "c": "银",
+  "m": "{Yoda} wanders {Inside} the {Funfair} where a *stubborn* mule blocks the carousel and will not budge. Yoda flicks a handful of *gold coins* at it with the Force. Mid-air, they turn shiny **silver**. The mule is so dazzled by the **silver** that it trots off, jingling. 'Gold, not,' says Yoda. 'Silver, better.'"
+ },
+ {
+  "c": "买",
+  "m": "{Madonna} strikes a pose in the {Basement} of the {Island} department store and fills a huge *shopping basket* with cone-shaped hats. Dancers carry it behind her, struggling. She wants to **buy** every cone in the store. 'I will **buy** it all!' she sings, and the cashier hands her a new look as a receipt."
+ },
+ {
+  "c": "皇",
+  "m": "{Houdini} slips {Inside} the {Hangar}, wrapped in chains, and escapes with a ta-da before anyone blinks. A heavy *golden crown* drops from the ceiling onto his head. The crowd kneels. Houdini, **emperor** of escapes, waves, then vanishes the throne itself. 'Long live the **emperor**!' they cheer, looking for him."
+ },
+ {
+  "c": "养",
+  "m": "{Yoda} tiptoes into the {Basement} of the {Hangar} carrying a spotty egg. It hatches into a fluffy chick, and he **raises** it with tiny spoonfuls of swamp soup. 'To **raise** you, I will,' he says. It grows and grows into a giant bird. Yoda still sits on its head, **raising** it proudly."
+ },
+ {
+  "c": "伊",
+  "m": "{Yoda} hops to the {Front} of the {Shed} where a stern *magistrate* in a powdered wig bangs his gavel at a nervous *standing person*. 'Who broke the vase?' Everyone points at **him**. 'He did,' says Yoda, then backwards: 'Did it, **he** did.' Even the vase says **he**."
+ },
+ {
+  "c": "怀",
+  "m": "{Houdini} sneaks {Inside} the {Island} gate with a *standing heart*, a red cushion shaped like a heart, hidden in his coat against his **bosom**. A guard holds up a *no sign*: nothing allowed in! Houdini flips the sign over, pats his **bosom**, and the heart beats right through the guard's nose. Magic!"
+ },
+ {
+  "c": "执",
+  "m": "{Joker} cackles {Inside} the {Shed} and snaps *handcuffs* onto a rubber chicken, then onto himself, then onto the door. Guards rush to **grasp** him, but he squirts them with a flower and slips free. He **grasps** the key with his toes and keeps laughing at the handcuffed chicken."
+ },
+ {
+  "c": "副",
+  "m": "{Nick Fury} paces in the {Bathroom} of the {Shed} and briefs his team, one eyebrow raised. 'The star is the *full jar* of pickles. The **secondary** hero is the *standing knife*, a rubber butter knife by the sink.' The helicarrier hums. The knife salutes: always **secondary**, never forgotten."
+ },
+ {
+  "c": "乱",
+  "m": "{Luigi} wobbles into the {Bathroom} of the {Mansion} and finds a giant *tongue* sliding on a *ski* across the wet tiles. Towels fly, soap bubbles fill the air, a ghost sneezes. The whole room is in **disorder**. 'Mamma mia!' he cries, vacuuming up the **disorder** one sock at a time."
+ },
+ {
+  "c": "抗",
+  "m": "{King Kong} stomps into the {Bathroom} of the {Hangar} where a foamy *helping hand* tries to drag him into the tub. He roars and **resists**, hanging from a *high* shelf by one finger. 'No bath!' he beats his chest. Kong will **resist** until the water goes cold."
+ },
+ {
+  "c": "犯",
+  "m": "{Fred Flintstone} barges into the {Bathroom} of the {Mansion} yelling 'Yabba dabba!' and **offends** everyone. His *prowling dog* Dino knocks over the soap, and a stuffy *bowing man* stands in the doorway, bowing deeper at each rude noise. Fred **offends** him again with a loud burp. 'Sorry!' says Fred, which **offends** him more."
+ },
+ {
+  "c": "追",
+  "m": "{Judy Hopps} hops to the {Front} of the {Lake} cabin and spots a runaway doughnut cart rolling down the *road*. She bounces over a pile of *sandbags* and **chases** it with her carrot pen. Faster, higher hops! She **chases** it across the dock and writes it a parking ticket."
+ },
+ {
+  "c": "帮",
+  "m": "{Batman} glides to the {Front} of the {Hangar} where a farmer's *farmland* is flooded after a leak. He fires his grappling hook, drains the water, and tosses the farmer a *towel*. 'You **help** me?' asks the farmer. Alfred nods: Batman likes to **help**, growling quietly about it."
+ },
+ {
+  "c": "宣",
+  "m": "{Michael Schumacher} screeches to the {Front} of the {Mansion} in his red car, leaps out, and lifts a *megaphone*. 'Ladies and gentlemen!' he **announces**, as guests tumble out of the windows. He **announces** the grand dinner, wins a race to the door, and sprays champagne over the news."
+ },
+ {
+  "c": "佛",
+  "m": "{Fred Flintstone} charges {Inside} the {Fort} honking his foot-car and meets a *standing person* sitting calmly in meditation. A *dollar sign* on a donation box floats past. The **Buddha** only smiles. Fred goes quiet, bows, and tiptoes away. Even a caveman learns peace from the **Buddha**."
+ },
+ {
+  "c": "岁",
+  "m": "{Dr. Seuss} rhymes in the {Bathroom} of the {Lake} cabin, where a wobbly *mountain* of birthday cake teeters over the tub. A *dusk moon* peeks in the window and counts the candles. 'How old? Seven **years of age**! Oh my, the years add up, one **year of age** per sweet candle.'"
+ },
+ {
+  "c": "航",
+  "m": "{Homer Simpson} wanders {Inside} the {Hangar} and finds a *boat* parked at the top of a *high* ramp. He climbs in with a doughnut. 'Mmm.' The boat slides down and **sails** all the way across the shiny floor. Homer **sails** past forklifts and out the open door. 'D'oh, I'm **sailing**!'"
+ },
+ {
+  "c": "优",
+  "m": "{Yoda} judges a vegetable show at the {Front} of the {Boathouse}. A *standing person* proudly shows a giant pumpkin with one huge *wart*. Yoda taps it with his stick. '**Excellent**, this pumpkin is.' Everyone cheers: the **excellent** pumpkin wins a blue ribbon, wart and all."
+ },
+ {
+  "c": "怪",
+  "m": "{Gru} sneaks into the {Bathroom} of the {Island} lair and finds a marble *saint* statue with a glowing *standing heart* that beats, thump, thump. The Minions stare and giggle. 'Very **strange**,' says Gru, freezing the statue with his ray. It is still **strange**: now it hums."
+ },
+ {
+  "c": "香",
+  "m": "{Shiva} dances at the {Front} of the {Hangar} in a ring of fire, four arms swirling. Each hand holds a stick of *incense*, and the smoke spirals up through the rafters. The whole place turns **fragrant**. Planes sniff, mechanics sigh, and even the oil can smells **fragrant** as the dance slows into calm."
+ },
+ {
+  "c": "著",
+  "m": "{Judy Hopps} hops into the {Bathroom} of the {Shed} and finds a *busy man* scribbling autographs on blades of *grass* for a long line of fans. Flashbulbs pop. Judy joins the queue with her carrot pen. 'You're **famous**!' she says. 'Only with lawns,' he sighs, and signs again. The most **famous** grass in town."
+ },
+ {
+  "c": "田",
+  "m": "{Tinker Bell} jingles {Inside} the {Mansion} ballroom and sprinkles pixie dust over the dance floor. It sprouts into a green *rice field*, neat squares and all, with ducks wading in. The chandelier now hangs over a muddy **field**. Tinker Bell glows red, jealous that the **field** gets all the compliments."
+ },
+ {
+  "c": "铁",
+  "m": "{Tinker Bell} jingles into the {Basement} of the {Hut} to mend a pot. She tosses *gold coins* at it, but they clang and turn grey and hard: plain **iron**. A *lost arrow* in the corner is **iron** too, and gets stuck in the pot. She glows with temper and bends the **iron** back."
+ },
+ {
+  "c": "控",
+  "m": "{King Kong} stomps into the {Bathroom} of the {Lagoon} house where a *helping hand* gives him a remote **control** for an *empty* bathtub. Each button floods the room. He roars, presses gently, and finally takes **control**: the water rises to just the right level, and Kong, in control, beats his chest."
+ },
+ {
+  "c": "税",
+  "m": "{Shuri} hums in the {Bathroom} of the {Lake} cabin where a gloomy *money changer* in a green visor weighs every *grain stalk* on her vibranium scale. 'That is the **tax**,' he says. Her hologram counts: one stalk in ten, **tax** paid. Shuri teases her brother by sending him the bill."
+ },
+ {
+  "c": "左",
+  "m": "{Zoolander} pouts his Blue Steel in the {Basement} of the {Fort}, but the catwalk bends **left** and he can't turn **left**. A big arrow pointing *left* glows on the wall. He turns right, right, right, and ends up spinning on the spot. Really, really ridiculously confused by **left**."
+ },
+ {
+  "c": "右",
+  "m": "{Yoda} paddles into the {Bathroom} of the {Boathouse} and points his stick at a bright arrow pointing *right*. 'Turn **right**, you must.' He lifts a rubber duck with the Force and steers it **right**, then **right** again. The duck is right: this way is the **right** way."
+ },
+ {
+  "c": "份",
+  "m": "{Fred Flintstone} stomps into the {Bathroom} of the {Funfair} where a *standing person* hands out ribs: one **portion** each. Fred snatches three **portions**, and his foot-car tips over. 'Yabba dabba, my **portion**!' Dino steals one, and Fred is left with a tiny **portion** and a big sulk."
+ },
+ {
+  "c": "穿",
+  "m": "{Chewbacca} roars at the {Front} of the {Mansion} and **wears** a necklace made from a giant *fang*, with his bandolier over the top. He steps out of a *cave* in the garden that serves as his wardrobe. The guests gasp. He **wears** everything: hat, scarf, boots. He growls: fashion."
+ },
+ {
+  "c": "艺",
+  "m": "{Yoda} stands in the {Bathroom} of the {Shed} and lifts blades of *grass* with the Force, weaving them into a graceful *swan*. 'Art, this is,' he says. The swan flaps, the tub cheers, and the whole room is now **art**. Even backwards, the **art** looks good."
+ },
+ {
+  "c": "背",
+  "m": "{Batman} glides into the {Bathroom} of the {Lake} cabin. His compass points *north*, straight at a full *moon* in the window. He turns his **back** on both and glowers at the mirror, cape billowing down his **back**. Alfred taps that very **back**: 'Sir, you are brooding at the shower curtain again.'"
+ },
+ {
+  "c": "阵",
+  "m": "{Joker} cackles in the {Bathroom} of the {Funfair} and lines up rubber ducks in a **troop formation** on a *hillside* of soap suds. Each duck pulls a toy *cart*. They march, squeak, and squirt on command. Joker salutes his **troop formation**, which instantly falls into a bubble bath."
+ },
+ {
+  "c": "草",
+  "m": "{Cookie Monster} lumbers into the {Basement} of the {Tower} and finds an *early* sunrise painted on the wall. A patch of *grass* shoots up from the floor. 'Me want cookie!' he cries. But there is only **grass**. He munches the **grass** anyway, spraying green crumbs everywhere."
+ },
+ {
+  "c": "脚",
+  "m": "{Jim Carrey} pulls an impossible face in the {Basement} of the {Tower} as his rubbery **foot** stretches to kick a *moon*-shaped balloon. A dog barks, a sign reads *retreat*, and the **foot** snaps back with a twang. 'Alrighty then!' he shouts, hopping on one **foot**."
+ },
+ {
+  "c": "概",
+  "m": "{Garfield} lounges in the {Bathroom} of the {Island} shack with a *finished meal*, an empty lasagne dish, under a *tree* painted on the wall. 'In **general**,' he sighs, 'I eat, then nap. That is the **general** plan.' He kicks Odie off the bath mat and naps."
+ },
+ {
+  "c": "恶",
+  "m": "{Invisible Man} floats in the {Bathroom} of the {Hut} muttering an **evil** laugh. His **evil** plan takes just a *second*: steal every towel. A bandaged hand lifts a glowing *heart*, a prop he thinks is scary, and cackles. The towels leave. Nobody is afraid. The **evil** plan fails."
+ },
+ {
+  "c": "块",
+  "m": "{Kung Fu Panda} belly-bounces into the {Bathroom} of the {Island} hut and breaks a **chunk** of *soil* loose with his paw. An *archer's ring* slips from it and spins around his finger. 'Skadoosh!' he shouts, snapping the **chunk** into smaller **chunks**. Dumplings for everyone."
+ },
+ {
+  "c": "顿",
+  "m": "{Dua Lipa} skates into the {Bathroom} of the {Funfair} and her disco song **pauses** in mid-note. A *camp* of fans, in tiny tents, each flips a *page* of lyrics and waits. She **pauses** for a whole beat, counts her new rules on her fingers, and the song starts again."
+ },
+ {
+  "c": "敢",
+  "m": "{Garfield} creeps into the {Basement} of the {Mansion} where Odie bets that the cat will not **dare** steal the last lasagne from a sleeping butler. Garfield pokes the butler with a *cane*. 'I **dare**,' he says, and does. The butler snores. Garfield has the lasagne and **dares** a nap."
+ },
+ {
+  "c": "守",
+  "m": "{Shakira} sways into the {Basement} of the {Boathouse} to **guard** a golden chest under a toy *roof*. Her *thumb* is pressed on the alarm button, her hips swing, and thieves who tiptoe in start dancing. She **guards** the chest with a hip shake until morning."
+ },
+ {
+  "c": "酒",
+  "m": "{Jim Carrey} slithers into the {Basement} of the {Boathouse} and hugs a clay *wine jug*. His rubber face pulls long. *Water drops* leak from his sleeve into the jug and turn into **wine**. 'Smokin'!' he cries. The grape-only **wine** bubbles over, and he mops up the purple puddle with his face."
+ },
+ {
+  "c": "岛",
+  "m": "{Darth Vader} breathes heavily in the {Basement} of the {Tower}, then lifts a whole *island* out of the floor with the Force. Palm trees sway, a crab sulks, and the **island** hovers over his helmet. 'I find your lack of sand disturbing,' he booms. The **island** lands gently again."
+ },
+ {
+  "c": "托",
+  "m": "{Tupac} stands at the {Front} of the {Fort} and **entrusts** his notebook of rhymes to a *helping hand* in a white glove. He freestyles a quick verse: 'I **entrust** it to you.' A *grass blade* marks his page. The hand salutes: it is **entrusted** with the poems, calmly."
+ },
+ {
+  "c": "央",
+  "m": "{Yoda} hops to the {Front} of the {Hangar} carrying a *yoke* with two buckets of swamp water. 'Centre, the yoke must be,' he says, balancing it with the Force. He floats it to the exact **centre** of the hangar, where it hovers. Every plane lines up around the **centre**."
+ },
+ {
+  "c": "户",
+  "m": "{Houdini} wriggles out of a trunk in the {Bathroom} of the {Shed} and strolls through a *door* into the family kitchen. Every *door* of the whole **household** is locked, but he opens them all with a wink. The entire **household** claps: grandmother, twins, dog, and the astonished cat. Ta-da!"
+ },
+ {
+  "c": "烈",
+  "m": "{Lisa Simpson} blows her saxophone in the {Bathroom} of the {Hut} for a *lineup* of fans waiting in a queue. The solo gets so **intense** that glowing *embers* rise from the bell of the horn. Her hair spikes up. The fans fan themselves. 'That was too **intense**,' she says, and tries a gentler tune."
+ },
+ {
+  "c": "洋",
+  "m": "{Yoda} steps {Inside} the {Hangar}, waves his stick, and *water drops* start falling. They swell and swell until a vast **ocean** covers the floor. A *sheep* paddles by on a surfboard, bleating. 'An **ocean**, you wanted?' says Yoda, floating a plane on the **ocean** waves like a toy."
+ },
+ {
+  "c": "哥",
+  "m": "{Garfield} lounges at the {Front} of the {Hut} when a bigger orange cat, his **elder brother**, strolls up and takes his lasagne. 'My **elder brother**,' sighs Garfield, 'takes the best bit.' The cat in charge nods like a boss. Garfield kicks Odie instead, then naps."
+ },
+ {
+  "c": "索",
+  "m": "{Dr. Seuss} rhymes in the {Basement} of the {Fort}: 'I **search**, I **search**, for my red-striped hat!' He follows a trail of colourful *silk skein* threads that loops over the chairs, through a teapot, and into a wobbly tower. The **search** ends when the hat finds him."
+ },
+ {
+  "c": "胡",
+  "m": "{Houdini} leaps {Inside} the {Shed} in a **reckless** stunt, dangling from a rope above a tank, tickled by a sea lion's enormous *whiskers*. 'That is **reckless**!' shouts the crowd. He sneezes, drops, and vanishes. The tank is empty, the *whiskers* wave, and a **reckless** ta-da echoes."
+ },
+ {
+  "c": "款",
+  "m": "{Kung Fu Panda} sneaks into the {Basement} of the {Mansion} to count the noodle shop's **funds**. Halfway through he gives a huge *yawn*, and his belly bounces so hard the coins fly everywhere. 'Skadoosh!' Po chases his **funds** around the room, rolling dumplings on the floor."
+ },
+ {
+  "c": "靠",
+  "m": "{King Kong} sways sleepily in the {Bathroom} of the {Tower}, a mug of *coffee* in one hand. He **leans on** a giant statue of a *cow head*, which moos in surprise. Kong **leans on** it harder, and it moos louder. The whole bathroom wobbles. He needs that *coffee*."
+ },
+ {
+  "c": "评",
+  "m": "{Pikachu} bounces {Inside} the {Jungle} and sticks a *small speech bubble* on a *flat* pancake. He **comments** only in one word: 'Pika!' His review of the pancake: 'Pika-pika!' Parrots nod. The pancake wobbles proudly. Four stars, each one a spark. That is how Pikachu **comments** on food."
+ },
+ {
+  "c": "版",
+  "m": "{Batman} prints a newspaper in the {Basement} of the {Mansion} on a heavy *wood slice* carved with letters. A *rebel* in a leather jacket sneaks in and steals the very first **edition**. Batman fires a grappling hook, gets it back, and grumbles. Alfred notes: this is the late **edition**."
+ },
+ {
+  "c": "宝",
+  "m": "{Batman} descends into the {Basement} of the {Tower}, where a tiny *roof* on stilts shelters a chest. Within, a glittering *jade gem* glows: **treasure**! He scans it with a gadget from his utility belt, fires his grappling hook, and hauls up the **treasure**. \"This **treasure** will not be stolen,\" he growls. Alfred polishes it."
+ },
+ {
+  "c": "座",
+  "m": "{Zoolander} struts into the {Bathroom} of the {Fort} and looks for a **seat** at a fashion show held in a garden *shed*. A *sitting pair* of models already have the best row. He pouts his Blue Steel, but all that is left is the toilet **seat**. Really, really ridiculously good-looking on a **seat**."
+ },
+ {
+  "c": "释",
+  "m": "{Shakira} sways into the {Bathroom} of the {Shed} and follows muddy *animal tracks* across the steamy tiles. Her hips **explain** each step: left paw, right paw, dance! The tracks lead to a wet puppy in the bathtub. 'Now I **explain** it!' she sings, and the puppy wags."
+ },
+ {
+  "c": "景",
+  "m": "{Jim Carrey} stretches his rubbery face into a picture frame in the {Basement} of the {Jungle} hut and mimics the painted *landscape* on the wall. Rivers, mountains, a moody sunset: he copies the whole **scenery** with his cheeks. 'Alrighty then!' The **scenery** blinks back, impressed."
+ },
+ {
+  "c": "顾",
+  "m": "{Gru} must **look after** a *trapped man* who is stuck in a big jar in the {Bathroom} of the {Shed}. Gru, the grumpy dad, reads him a bedtime story, one *page* at a time. The Minions bring a pillow. Gru **looks after** him until he falls asleep, scarf and all."
+ },
+ {
+  "c": "弟",
+  "m": "{Deadpool} breaks the fourth wall in the {Bathroom} of the {Shed} and turns to us: 'Folks, meet my **younger brother**.' A *little brother* in a smaller red mask waves and steals a chimichanga. 'He is my **younger brother**, and yes, he is shorter. No, I did not shrink him.'"
+ },
+ {
+  "c": "登",
+  "m": "{Darth Vader} breathes loudly at the {Front} of the {Jungle} and uses the Force to lift a wooden ladder up a giant tree. A *climber* in a bright helmet starts to **climb**. 'I find your **climb** lacking,' booms Vader, raising the ladder higher, step by step, so the *climber* can **climb** right to the sky."
+ },
+ {
+  "c": "货",
+  "m": "{Houdini} stands in the {Bathroom} of the {Fort} and points to a *shape-shifter* who turns into every kind of **goods**: a teapot, a hat, a crate of apples. A *shell* becomes a pearl necklace. 'Fresh **goods**!' he calls. Customers gasp as the **goods** change shape right in their hands."
+ },
+ {
+  "c": "互",
+  "m": "{Houdini} balances a long *plank* on a barrel in the {Bathroom} of the {Shed} like a see-saw. Across from him sits a pig in a mask with a rubber *pig snout*. Each scratches the other's back: a **mutual** deal. 'Friends, this is **mutual** help!' he declares, and both rise and fall in perfect **mutual** balance."
+ },
+ {
+  "c": "付",
+  "m": "{Nick Fury} marches into the {Bathroom} of the {Shed} and slaps a golden card on the counter. A nervous *cashier* in a paper hat looks up. 'You must **pay** for the helicarrier-sized pizza,' he says. Fury taps his eyepatch. 'I **pay** in full, and I never carry less.'"
+ },
+ {
+  "c": "伯",
+  "m": "{Batman} glides {Inside} the {Fort} and meets a *standing person* with a head of snowy *white* hair, a cheerful man who pinches his cheek. 'My **uncle**,' Batman growls. 'My **uncle** visits every year.' Alfred serves tea. Even a brooding hero must smile when his **uncle** brings cookies."
+ },
+ {
+  "c": "慢",
+  "m": "{Madonna} strikes a pose in the {Bathroom} of the {Mansion}, trailing a *long veil* across the tiles. Her *standing heart* prop beats, thump, thump. She moves in **slow** motion, one **slow** step at a time. Her dancers wait, arms folded, tapping their feet. A **slow** reinvention, the longest in pop history."
+ },
+ {
+  "c": "欧",
+  "m": "{Invisible Man} floats to the {Front} of the {Boathouse} holding a *district map*. A giant *yawn* unwraps his bandage. He points to a blue area on the map, **Europe**, and drifts his boat there. 'To **Europe**!' he whispers. Seagulls see only a coat and hat sailing to **Europe**."
+ },
+ {
+  "c": "换",
+  "m": "{Houdini} grins in the {Bathroom} of the {Mansion}. A *helping hand* snatches a *brilliant* diamond from a tray, and in a flash the diamond is **exchanged** for a rubber duck. Houdini swings the cloth: **exchange** back! The guests applaud the **exchange**, and the helper hand takes a bow."
+ },
+ {
+  "c": "闻",
+  "m": "{Wonder Woman} strides {Inside} the {Funfair} and presses an *ear* against a *gate* with a locked padlock. She **hears** a whisper behind it. Her golden lasso loops through the gate and makes the whisperer tell the truth. She **hears** the whole story: it's only a sleepy clown snoring."
+ },
+ {
+  "c": "危",
+  "m": "{Wonder Woman} lands at the {Front} of the {Lake} cabin and spots a *dangerous* boulder rolling toward a picnic. 'Danger!' she cries. Her bracelets flash, the boulder bounces off, and her golden lasso lassoes it to a tree. The ducks clap. She ties a ribbon on the **danger**, and the **danger** is over."
+ },
+ {
+  "c": "忙",
+  "m": "{Madonna} strikes pose after pose {Inside} the {Hangar}, so **busy** that her *standing heart* beeps like a pager. A cartoon *tombstone* nearby reads 'Free Time, RIP'. Dancers rush in, a wardrobe truck arrives, a stage rises. 'I'm too **busy**!' she sings. A **busy** queen: new look every minute."
+ },
+ {
+  "c": "核",
+  "m": "{Homer Simpson} munches a peach under a *tree* {Inside} the {Hut} greenhouse and bites down on the **pit**. 'D'oh!' he yelps. A *wild boar* snorts, grabs the **pit** in its tusks, and trots off with it. Homer stares at the empty hand, then reaches for a doughnut instead. 'Mmm.'"
+ },
+ {
+  "c": "暗",
+  "m": "{Invisible Man} floats into the {Bathroom} of the {Mansion} and switches off a paper *sun* hanging above the tub. The room turns **dark**. A *loudspeaker* crackles: 'Lights out!' Towels float in the **dark**, a soap bar drifts by on its own, and the sound of a bandage unwinding fills the **dark**."
+ },
+ {
+  "c": "姐",
+  "m": "{Jim Carrey} stands in the {Basement} of the {Hut} while a *woman* climbs a *stepladder* for the top shelf. She is his **older sister**. He pulls an impossible face and copies her voice perfectly: 'I'm your **older sister**!' She points sternly down at him. Alrighty then: the **older sister** wins."
+ },
+ {
+  "c": "介",
+  "m": "{Jim Carrey} dresses as a *go-between* in the {Bathroom} of the {Hut} and **introduces** two shy strangers. 'Mr. Toothbrush, meet Mr. Soap!' he cries. He pulls a face for each, bows, and links their hands. The shy ones laugh. A very rubbery way to **introduce** friends."
+ },
+ {
+  "c": "坏",
+  "m": "{Houdini} lifts a cloth in the {Bathroom} of the {Island} cabin and finds a pot of **bad** *soil*. A *no sign* hangs on the pot: do not plant here! The flowers droop, the soil smells **bad**, and the crowd groans. Houdini waves his cloth: the **bad** soil vanishes. Ta-da!"
+ },
+ {
+  "c": "讨",
+  "m": "{Tony Stark} lands in the {Basement} of the {Tower} and sets up a hologram meeting. Little *small speech bubbles* pop out of JARVIS and Tony. They **discuss** the new suit: colour, jets, gadgets. Each *thumb* goes up for approval. The suit speaks last, and they **discuss** it until midnight."
+ },
+ {
+  "c": "丽",
+  "m": "{Lisa Simpson} paints a sign on a rough *plank* in the {Bathroom} of the {Shed}: 'BEAUTIFUL'. She plays a saxophone solo, and everything she looks at turns **beautiful**: the tiles, the tub, the soap. 'This is **beautiful**,' she sighs. Bart sticks out his tongue. Lisa carries on, **beautiful** and serene."
+ },
+ {
+  "c": "良",
+  "m": "{Lisa Simpson} marches {Inside} the {Hangar} with a big stamp that says *good* in red ink. She stamps every plane with a loud thump. A **good** grade for the wings, a **good** grade for the wheels. Straight A's all round. The hangar has never been so **good**."
+ },
+ {
+  "c": "序",
+  "m": "{Michael Schumacher} lines up bottles of champagne in the {Bathroom} of the {Shed} in perfect **order**: first, second, third. He places an *offering* of cups on a tiny *shed* model, then checks the **order** with a stopwatch. A two-second pit stop to fix it. Everything is in **order**."
+ },
+ {
+  "c": "升",
+  "m": "{Shakira} sways at the {Front} of the {Jungle} and her hips make a patch of *grass* **rise** slowly up a playground *slide*. Up, up, it goes, and the stage **rises** too. 'Waka Waka!' she sings. The monkeys cheer as her hips lift the whole dance floor, **rising**."
+ },
+ {
+  "c": "监",
+  "m": "{Jim Carrey} puts on a trench coat like a stern *inspector* at the {Front} of the {Mansion} to **supervise** the party. He pokes the punch bowl, checks the cake, and pulls a giant magnifying face. 'Smokin'!' he cries. He must **supervise** every guest, even the tiny ones, and does it with rubber eyebrows."
+ },
+ {
+  "c": "临",
+  "m": "{Lisa Simpson} stands {Inside} the {Funfair} to **face** a huge roller coaster. She sighs and straightens her pearls. Tall, loud, and twisty: she must **face** it. 'Wise beyond my years,' she mutters, climbing in. Bart waves from below. She **faces** her fear and gets a straight A in bravery."
+ },
+ {
+  "c": "亮",
+  "m": "{Lisa Simpson} places a lamp on a *small table* in the {Bathroom} of the {Hangar} and clicks it on. The whole place turns **bright**, so **bright** that planes squint. She plays a gentle sax tune, and the **bright** lamp hums along. Even the shadows put on sunglasses."
+ },
+ {
+  "c": "露",
+  "m": "{Luigi} wobbles into the {Bathroom} of the {Shed} with his ghost hoover. *Rain* drips from the ceiling and washes mud off a *pathway* of tiles, which **reveals** a sneaky ghost behind the tub. 'Mamma mia!' He gulps with fright, then hoovers it up. The rain **reveals** all."
+ },
+ {
+  "c": "永",
+  "m": "{Yoda} sits in the {Basement} of the {Lagoon} hut and watches a tiny *stream* trickle across the floor. 'Flows **forever**, it does,' he says. Nine hundred years old, he has seen it flow **forever**. Ducks float past. He nods. The stream keeps going, **forever**, and so does his patience."
+ },
+ {
+  "c": "呼",
+  "m": "{Houdini} puts a silver *whistle* in his *mouth* at the {Front} of the {Shed} and blows. He wants to **call** an elephant. The whistle sounds, and a puff of smoke clears: a tiny elephant appears. 'Louder!' He **calls** again, and a grand herd arrives. Ta-da! Never stop to **call**."
+ },
+ {
+  "c": "味",
+  "m": "{Wonder Woman} nibbles a leaf from a tiny *sapling* in the {Bathroom} of the {Lake} cabin. Her *mouth* puckers. Her golden lasso makes her tell the truth: 'The **taste** is awful!' She tries again. 'Still awful!' The sapling shakes its leaves: honest **taste**, honest review."
+ },
+ {
+  "c": "野",
+  "m": "{Yoda} sits in the {Basement} of the {Hut} as swampy *wilderness* spreads across the floor. Weeds, frogs, lilies: a **wild field**. He lifts the weeds with the Force, one by one. 'A **wild field**, this is,' he says. His house is wild and loved. Frogs hop through the **wild field**."
+ },
+ {
+  "c": "架",
+  "m": "{Jim Carrey} builds a **frame** from a young *tree* in the {Bathroom} of the {Spa} and paints a *plus sign* on its side. He hangs towels on the **frame** and strikes a pose. The **frame** wobbles, tilts, and collapses in a heap. He pulls a rubbery face. 'Smokin'!' he says."
+ },
+ {
+  "c": "域",
+  "m": "{Usain Bolt} sprints through every **region** in the {Bathroom} of the {Shed}: one patch of *soil* after another, each with a tiny *guard post*. He crosses a **region** in a flash, strikes his lightning-bolt pose, and dances. The guards salute as he finishes the whole **region** first."
+ },
+ {
+  "c": "沙",
+  "m": "{Shakira} belly-dances at the {Front} of the {Spa} and her hips shake **sand** from a dune made of *sand*. The **sand** swirls in the air like glitter. She sings 'Waka Waka' and the whole beach cheers. A camel hums along. By the end of the song the **sand** is everywhere."
+ },
+ {
+  "c": "掉",
+  "m": "{Deadpool} flips in the {Bathroom} of the {Tower} and a *helping hand* hands him a prize: an *outstanding* trophy. It **drops**. He catches it with his toes. 'Folks, I never **drop** things,' he tells us, and **drops** it again. A chimichanga falls too. Oops."
+ },
+ {
+  "c": "括",
+  "m": "{Kung Fu Panda} stands in the {Bathroom} of the {Fort} reading a menu aloud. A *helping hand* adds dumplings, and a *tongue* sticks out for noodles. The menu **includes** soup, rice, a bun, and a bath. 'It **includes** everything!' says Po. His belly bounces. 'Skadoosh!'"
+ },
+ {
+  "c": "舰",
+  "m": "{Jim Carrey} squeezes into the {Bathroom} of the {Mansion} and turns a toy *boat* into a mighty **warship**. A tiny *watcher* with binoculars peers from the funnel. Jim's rubber face becomes the cannon, and his cheeks go boom. 'Alrighty then!' The **warship** sails across the tub, and the bubbles surrender."
+ },
+ {
+  "c": "鱼",
+  "m": "{Usain Bolt} dashes {Inside} the {Shed} and challenges a *fish* in a bowl to a race. The **fish** swims one lap, Bolt sprints one lap, and the **fish** wins by a fin. Bolt strikes his lightning-bolt pose anyway and dances. The **fish** blows a bubble and flaps a tiny gold medal."
+ },
+ {
+  "c": "杂",
+  "m": "{Zorro} swings on a chandelier {Inside} the {Spa} and pries open a crate with a *crowbar*. Out tumbles a *bare tree* and a **mixed** pile of socks, sardines, spoons, and one rubber duck. He slashes a Z through the **mixed** heap, sorts nothing, and vanishes laughing."
+ },
+ {
+  "c": "误",
+  "m": "{Wonder Woman} swoops into the {Bathroom} of the {Shed} and finds a *loudmouth* blurting out a **mistake** in a *small speech bubble*. 'Two plus two is five!' Her golden lasso loops him, and he must tell the truth. 'It's four.' She smiles. The **mistake** is fixed, and he never makes that **mistake** again."
+ },
+ {
+  "c": "湾",
+  "m": "{Wonder Woman} parks her invisible jet at the {Front} of the {Mansion} where *water drops* gather into a curved blue **bay** across the lawn. A *bent bow* shape of sand circles it. She waves her lasso, and swans glide in. 'A **bay**,' she says, 'right in the garden.' She leaves it for the ducks."
+ },
+ {
+  "c": "吉",
+  "m": "{Jim Carrey} hops {Inside} the {Shed} and finds a *lucky* four-leaf clover under a plank. 'Smokin'!' He pulls a green rubber grin. Everything goes right: a **lucky** bounce, a **lucky** catch, a **lucky** sneeze that blows the door open. By evening the whole shed is **lucky**."
+ },
+ {
+  "c": "减",
+  "m": "{Jim Carrey} shakes a giant jar of *salt* over a pile of *icicles* in the {Basement} of the {Mansion}. The icicles shrink and **decrease** to nothing. 'Alrighty then!' he says, pulling a face that also starts to **decrease**: smaller and smaller, until only his grin is left. The **decrease** continues."
+ },
+ {
+  "c": "编",
+  "m": "{Beyoncé} stands at the {Front} of the {Mansion} while a wind machine blows her hair. She **weaves** shimmering *silk thread* into her braid, one loop at a time, in perfect rhythm. A *nameboard* on the door reads 'The Beyhive'. Fans copy her moves and **weave** their own braids. Single ladies, **weaving**."
+ },
+ {
+  "c": "楚",
+  "m": "{Chewbacca} growls in the {Basement} of the {Shed}, where fog covers a tiny *grove* of trees. He unrolls a *bolt of cloth* and wipes the fog away with a mighty swipe. Now everything is **clear**. Chewbacca roars with joy: a **clear** view of the grove, at last."
+ },
+ {
+  "c": "肯",
+  "m": "{King Kong} stands stubbornly in the {Basement} of the {Funfair} and is not **willing** to ride the carousel. A *stop sign* blocks the way, and a *moon* painted on the ceiling beams down. He sighs, beats his chest, and finally becomes **willing**. 'Rooaar!' He gets on, **willing** to be a kid for one ride."
+ },
+ {
+  "c": "测",
+  "m": "{Cookie Monster} sits in the {Bathroom} of the {Hut} with a *rulebook* open on his knee. 'Me **measure**!' he cries, lining up *water drops* on a ruler. Then he eats the ruler. He **measures** milk, **measures** flour, **measures** cookies, and then eats every measurement. Crumbs everywhere."
+ },
+ {
+  "c": "败",
+  "m": "{Batman} glides into the {Bathroom} of the {Island} cabin and **defeats** a villain who flings a giant *shell* at him. A batarang knocks the shell away, and a rubber *cane* hooks the villain's ankle. The villain flops into the tub. Batman growls, satisfied: **defeat** achieved, with no splash."
+ },
+ {
+  "c": "屋",
+  "m": "{Wonder Woman} lands at the {Front} of the {Shed} and lifts a *cottage* in her hands, easy as a teacup. 'A **house**!' she says, turning it upside down. A cat tumbles out. She sets the **house** back down, rings the bell, and closes the door. The tiny **house** is safe."
+ },
+ {
+  "c": "跑",
+  "m": "{Pac-Man} races through a maze in the {Basement} of the {Tower}, delivering a *parcel*. His *kicking foot* of a pal kicks a power pellet. 'Waka waka!' Pac-Man **runs**, turns a corner, and **runs** straight through the wall, wrapping around the edge of the screen. Four ghosts chase, but Pac-Man **runs** faster."
+ },
+ {
+  "c": "梦",
+  "m": "{Madonna} naps in the {Bathroom} of the {Jungle} lodge and **dreams** of a *grove* where a *dusk moon* hangs in the trees. In her **dream** she strikes a pose and invents a new look: a cone gown of leaves. The dancers wake her. 'More **dream**,' she says, going back to sleep."
+ },
+ {
+  "c": "散",
+  "m": "{Sonic} spins into the {Bathroom} of the {Mansion} like a blue buzzsaw and **scatters** a bag of *scattered seeds* across the tiles. Birds peck. He spins again, **scattering** gold rings too. 'Too slow!' he says, tapping his foot while the birds hurry. The seeds **scatter** everywhere, and Sonic is gone."
+ },
+ {
+  "c": "温",
+  "m": "{Wonder Woman} steps to the {Front} of the {Funfair} with a *warm bowl* of soup. *Water drops* of steam rise from it. Her golden lasso makes the soup tell the truth: 'I am only **warm**, not hot.' She sips it. **Warm**, just right. She shares it with the dodgem car."
+ },
+ {
+  "c": "困",
+  "m": "{Kung Fu Panda} bounces into the {Bathroom} of the {Funfair} and gets **trapped**, squashed in a tiny box beside a *trapped tree* in a planter. His belly bulges. He bounces, but he is **trapped**. 'Skadoosh!' he cries, and finally pops out of the **trapped** corner."
+ },
+ {
+  "c": "剑",
+  "m": "{Jim Carrey} pulls a rubbery face in the {Bathroom} of the {Mansion} at a noisy *assembly* of knights. A rubber *standing knife* in his hand stretches long and thin into a gleaming **sword**. 'Smokin'!' He swings the **sword**, and his face stretches with it. The knights bow to the grand **sword**."
+ },
+ {
+  "c": "渐",
+  "m": "{Jim Carrey} watches *water drops* fall onto a *chopping block* in the {Bathroom} of the {Mansion}. **Gradually** the drops wear a dent, **gradually** the dent becomes a dip. His face morphs **gradually** too, bit by bit, until his chin is a duck's beak. 'Alrighty then!'"
+ },
+ {
+  "c": "封",
+  "m": "{Fred Flintstone} stomps to the {Front} of the {Jungle} hut with a letter. He presses a *jade tablet* seal into hot wax and presses his *thumb* on top to **seal** it. 'Yabba dabba, sealed!' The wax cracks. Dino sniffs. Fred has to **seal** it again, and now the **seal** says 'Fred's thumb'."
+ },
+ {
+  "c": "救",
+  "m": "{Jim Carrey} dives into the {Bathroom} of the {Boathouse} to **save** a rubber duck stuck in the drain. A big *fur coat* serves as a life jacket, and a long *cane* hooks the duck. He pulls impossible faces for courage. 'Smokin'!' The duck is **saved**. Jim, soaked, has to **save** the coat next."
+ },
+ {
+  "c": "贵",
+  "m": "{Gru} sneaks into the {Bathroom} of the {Lake} cabin and spots a toilet made of diamonds with an *expensive* tag. He gasps. 'Minions, we steal it!' The tag says it is too **expensive** to flush. Gru frowns: too **expensive**, even for a villain, and settles for a cheap one."
+ },
+ {
+  "c": "枪",
+  "m": "{Chip} scampers at the {Front} of the {Hangar} and carves a toy water **gun** from a *tree* branch, taking the wood from the oak by a *barn*. He loads it with acorns. 'Squeak!' The **gun** squirts a stream across the hangar, and Dale gets soaked. Chip's silly **gun** never hurts a thing."
+ },
+ {
+  "c": "缺",
+  "m": "{Chupacabra} slinks to the {Front} of the {Hut} to sip milk, but the *clay jar* is empty. There is a **lack** of milk. Its red eyes glow, and an *archer's ring* rolls from the jar. It hisses at the **lack**, then slinks away. Not even a photo, and a total **lack** of milk."
+ },
+ {
+  "c": "楼",
+  "m": "{Lara Croft} scrambles {Inside} the {Boathouse} and climbs a *tree* that grows right through a tall **building**. The **building** is shaped like a *tall bun* of hair, with windows for eyes. She swings from a branch to the top floor, solves a puzzle, and bows. The **building** wobbles, then settles."
+ },
+ {
+  "c": "县",
+  "m": "{Shiva} dances in a ring of fire in the {Bathroom} of the {Mansion} and spreads a giant map of the **county** on the wall. He climbs a *stepladder* to reach the far corner, and each *elbow* points to a village. Four arms trace the **county** borders. A majestic way to read a **county**."
+ },
+ {
+  "c": "尚",
+  "m": "{Shakira} wiggles her hips in the {Bathroom} of the {Hangar}, and a dusty *attic* hatch pops open in the ceiling. The concert goes on at midnight: she is **still** dancing, **still** singing \"Waka Waka\", and the mirror is **still** clapping along, and the crowd will not go home."
+ },
+ {
+  "c": "毫",
+  "m": "{Homer Simpson} wanders {Inside} the {Tower} and finds a *fur* ball stuck on his doughnut. 'D'oh!' He sniffs it, shrugs, and eats it anyway. 'Not even a **tiny bit** of regret.' Not a **tiny bit** of shame either. 'Mmm.' He naps on a **tiny bit** of floor."
+ },
+ {
+  "c": "移",
+  "m": "{Yoda} stands {Inside} the {Shed} and **moves** *many* *grain stalks* across the floor with the Force. The sacks drift up, glide over to the corner, and settle in a neat stack. 'Move, you will,' he says. Everything is **moved**, even the shed's cat. Only Yoda does not **move**."
+ },
+ {
+  "c": "娘",
+  "m": "{Nemo} swims {Inside} the {Hangar} through a flooded runway and finds his **mother**, a kind *woman* with a net feeding the fish. She puts a gold star sticker that says *good* on his small fin. 'My **mother** is good!' he cries. Dory forgets, remembers, then forgets his **mother** again."
+ },
+ {
+  "c": "朋",
+  "m": "{Pac-Man} chomps {Inside} the {Jungle} and finds the four ghosts, his *buddies*, waiting by a banana tree. They stop chasing him and share a pizza of dots. 'Waka waka,' he says, which means '**friend**'. The ghosts nod. A true **friend** never chases you past the edge of the screen."
+ },
+ {
+  "c": "画",
+  "m": "{Houdini} stands in the {Bathroom} of the {Spa} with a stick of chalk and **draws** a door on a *plank*. He **draws** a handle, a keyhole, a welcome mat, and then walks through it. The crowd gasps. 'Ta-da!' The **drawing** swings shut. Houdini waves from the other side."
+ },
+ {
+  "c": "班",
+  "m": "{Batman} teaches his **class** at the {Front} of the {Mansion}. Two *twin jades* serve as pointers on the blackboard, and Alfred hands out the homework. 'Detective **class** is in session,' growls Batman. The **class** takes notes about capes. A very well-behaved **class**."
+ },
+ {
+  "c": "智",
+  "m": "{Joker} sets up a prank in the {Bathroom} of the {Shed}: a bucket on a door. A *sage* with a long white beard reads a book in the *sun* and avoids it. 'That's **wisdom**,' says the sage. Joker cackles. His next prank will need more **wisdom**."
+ },
+ {
+  "c": "亦",
+  "m": "{Yoda} hops into the {Bathroom} of the {Shed} and finds a *sweating man* running on the spot. 'Hot, you are,' he says. 'And also, **also**, wet, you are.' The man nods. The shed is hot, **also** wet, and Yoda is **also** a little sweaty. 'Also!'"
+ },
+ {
+  "c": "耳",
+  "m": "{Invisible Man} floats down to the {Basement} of the {Car Park} and leaves a giant *ear* hovering in the air where his head should be. Nobody can see him, but they can see the **ear** listening. The **ear** wiggles, a hat tilts, and a bandage twitches. 'I hear you,' says the **ear**."
+ },
+ {
+  "c": "恩",
+  "m": "{Invisible Man} floats to the {Front} of the {Funfair} and gives a shy stranger a *warm hug*. She cannot see him, only feels the hug. It is an act of **kindness**. 'Thank you!' she says to nobody. Such **kindness**. The coat and hat wave happily and drift away."
+ },
+ {
+  "c": "短",
+  "m": "{Dua Lipa} glides into the {Basement} of the {Mansion} on roller skates and counts her new rules on her fingers. Each rule is **short**: just three words. An *arrow* on the wall marks where the **short** list ends. A *bean* stalk grows up and stays **short**. 'Keep it **short**,' she tells us."
+ },
+ {
+  "c": "掌",
+  "m": "{Joker} cackles in the {Basement} of the {Hangar} and shows us his empty **palm**. It holds a trick playing card. He flicks a *palm* leaf from his sleeve, waves it, and a squirting flower appears. 'Look into my **palm**!' he laughs, and the **palm** squirts you."
+ },
+ {
+  "c": "恐",
+  "m": "{King Kong} sits in the {Basement} of the {Lagoon} hut wearing a neck *brace*, frozen with fear. A tiny mouse scurries by. His *heart* thumps loudly. He is **afraid** of mice. 'Rooaar!' It is a wee squeak of fright. Giant Kong is **afraid**, so the mouse keeps going."
+ },
+ {
+  "c": "遗",
+  "m": "{Yoda} hops {Inside} the {Shed} and drops an *expensive* hat on the *road* outside, forgetting it as he goes. He **leaves** it **behind** on purpose. A frog finds it. 'To **leave behind**, easy it is,' he says. The shed only holds what he has left."
+ },
+ {
+  "c": "固",
+  "m": "{Gru} zaps his freeze ray in the {Bathroom} of the {Shed} at an *ancient* plaster wall and a *fence* around it. Both turn rock **solid** at once. The Minions poke the **solid** wall, giggling. 'This is **solid**!' says Gru, bonking his head on it. Very **solid**."
+ },
+ {
+  "c": "席",
+  "m": "{Shiva} calmly spreads a woven *towel* as a **seat** {Inside} the {Shed}, and sits gracefully with his four arms resting. A little **seat** for the god of dance, but he sits as if on a throne. Even a **seat** can be majestic. The towel flaps, glad to serve."
+ },
+ {
+  "c": "松",
+  "m": "{Sonic} spins to the {Front} of the {Lagoon} and finds a swing hanging from a *tree* in a *public* park, its rope **loose**. He tugs it, and it flaps loosely. 'Too **loose**!' he says, tapping his foot. He tightens it, then loosens his shoes. All of a sudden, everything is **loose**."
+ },
+ {
+  "c": "秘",
+  "m": "{Mr. Bean} tiptoes into the {Bathroom} of the {Shed} to hide a **secret** note under a *grain stalk*. A *pinned heart* sits on the note: a love letter for Teddy. Bean looks around nervously. Nobody must know the **secret**. He pulls a tiny face to keep the **secret**, and swallows the note."
+ },
+ {
+  "c": "谢",
+  "m": "{Shiva} bows to a crowd in the {Bathroom} of the {Hut}, four arms clasped. A *small speech bubble* floats from each hand: 'Thank you.' An *archer* in the audience cheers and aims a heart-shaped balloon at the ceiling. Shiva smiles. He **thanks** everyone, and they **thank** him back."
+ },
+ {
+  "c": "鲁",
+  "m": "{Luigi} wobbles into the {Basement} of the {Shed} and finds a **crass** *fish* flopping in the *sun* and burping out loud at a lady. 'Mamma mia, **crass**!' he cries. The **crass** fish winks, burps again, and flips off the table. Luigi apologizes to the lady for its **crass** manners."
+ },
+ {
+  "c": "遇",
+  "m": "{Usain Bolt} sprints down the *road* in the {Bathroom} of the {Shed} and **meets** a cheeky *monkey* on the lane. The monkey wants a race. Bolt grins, strikes his lightning pose, and they run. Bolt wins; the monkey is delighted. 'Nice to **meet** you!' he says. A fun way to **meet**."
+ },
+ {
+  "c": "康",
+  "m": "{King Kong} munches broccoli at the {Front} of the {Hangar}, flexing his arms. A sign says *healthy* in green. He beats his chest, and the sign lights up. 'Rooaar!' He is big, strong, and **healthy**. A dozen apples later, he is the most **healthy** ape in the city."
+ }
+]
