@@ -5271,3 +5271,213 @@ a.pt-tile.pt-item:focus-visible { outline: 3px solid var(--accent); outline-offs
 .cb-filters button.multi.on { box-shadow: none; }
 .hsk-levels { margin-bottom: 18px; }
 .wd-src.hsk-levels { width: max-content; max-width: 100%; box-sizing: border-box; background: color-mix(in srgb, var(--ink-3) 13%, transparent); }
+
+/* ======================================================================
+   Redesign (2026-11-24): Today, the Reader, the HSK lists and Settings, each with a layout
+   of its own, from the same parts (cards, small caps headings, pills, the character cards).
+   ====================================================================== */
+
+/* a wider column for Today and the Reader (app.dataset.layout, set by the page) */
+#app[data-layout="wide"] > * { max-width: 1040px; }
+#app[data-layout="wide"] .dash { grid-template-columns: minmax(0, 1fr); }
+#app .caps, #app h2.caps { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+
+/* ---- Today: the tiles and what's coming on the left, your reading on the right ---- */
+.td-date { margin: -8px auto 18px; }
+.td-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 320px); gap: 20px; align-items: start; margin-bottom: 20px; }
+.td-grid.first { grid-template-columns: minmax(0, 1fr); }
+.td-main, .td-side { display: grid; gap: 16px; min-width: 0; align-content: start; }
+.td-main .lx-hub { margin-bottom: 6px; }
+.td-side .card, .td-main .card, .td-more .card { margin: 0; padding: 16px 18px; }
+.td-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.td-coming .lx-today { margin: 0 0 14px; }
+.td-fc { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+.td-fc-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 40px; align-items: center; gap: 10px; font-size: 14px; }
+.td-fc-row > span:first-child { color: var(--ink-2); }
+.td-fc-row b { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.td-fc-bar { display: block; height: 8px; border-radius: 99px; background: var(--panel-2); overflow: hidden; }
+.td-fc-bar i { display: block; height: 100%; min-width: 2px; border-radius: inherit; background: var(--yellow); }
+.td-coming .lx-learned { display: inline-block; margin-top: 10px; }
+.td-side .card h2 { margin-top: 0; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.td-side .donut { flex-wrap: wrap; gap: 12px; }
+.td-side .donut .btn { white-space: normal; font-size: 13px; }
+.td-side .lx-next { padding: 16px 18px; }
+.td-side .lx-next-head h2 { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.td-more { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 4px; }
+@container (max-width: 760px) {
+  .td-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- the Reader: the story to read next, then a shelf of covers ---- */
+.rd-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 20px; margin-bottom: 18px; }
+.rd-top .lede { flex: 1 1 420px; margin: 0; }
+.rd-next { display: flex; flex-wrap: wrap; gap: 20px; padding: 16px; margin-bottom: 26px; }
+.rd-next[hidden] { display: none; }
+.rd-next-text { flex: 1 1 320px; min-width: 0; display: grid; gap: 8px; align-content: start; padding: 4px 0; }
+.rd-next-text p { margin: 0; }
+.rd-next-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.rd-next-title a { font-size: 26px; line-height: 1.3; font-weight: 600; color: var(--ink); }
+.rd-next-lines { font-size: 18px; line-height: 1.8; color: var(--ink); }
+.rd-known { background: var(--green-soft); border-radius: 3px; }
+
+.rd-cover { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 3 / 4; border-radius: 12px;
+  color: #fff; box-shadow: 0 4px 0 rgba(0, 0, 0, .14); font-size: 56px; line-height: 1; text-decoration: none; }
+.rd-cover.sky { background: var(--lx-sound, #4cc4f2); color: #0e3446; }
+.rd-cover.orange { background: #f4a340; color: #3a2400; }
+.rd-cover.green { background: var(--green); }
+.rd-cover.pink { background: var(--pink); }
+.rd-cover.purple { background: var(--lx-word); }
+.rd-cover.blue { background: var(--lx-comp, #2f6bd8); }
+.rd-cover-done { position: absolute; left: 8px; bottom: 8px; padding: 2px 8px; border-radius: 99px; background: #fff; color: var(--green-ink);
+  font-size: 11px; font-weight: 600; line-height: 1.5; }
+.rd-cover.big { flex: 0 0 150px; aspect-ratio: auto; min-height: 190px; flex-direction: column; justify-content: space-between;
+  align-items: stretch; padding: 14px; box-sizing: border-box; font-size: 72px; }
+.rd-cover.big .han { text-align: center; }
+.rd-cover.big small { font-size: 12px; font-weight: 600; line-height: 1.3; }
+.rd-cover.big small:first-child { letter-spacing: .08em; text-transform: uppercase; }
+.rd-cover.big:hover { text-decoration: none; }
+
+.rd-shelf-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.rd-levels { margin: 0; }
+.rd-levels button.on { background: var(--yellow); border-color: var(--yellow); color: #222; }
+.rd-level { margin-bottom: 26px; }
+.rd-level[hidden] { display: none; }
+.rd-level-h { margin: 4px 0 12px; font-size: 15px; font-weight: 600; }
+.rd-level-h .muted { font-weight: 400; font-size: 13px; margin-left: 6px; }
+.rd-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 22px 16px; }
+.rd-book { display: grid; gap: 4px; align-content: start; color: var(--ink); text-decoration: none; min-width: 0; }
+.rd-book:hover { text-decoration: none; }
+.rd-book:hover .rd-cover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0, 0, 0, .14); }
+.rd-book .rd-cover { margin-bottom: 6px; transition: transform .12s ease, box-shadow .12s ease; }
+.rd-book-zh { font-size: 16px; font-weight: 600; }
+.rd-book-en { font-size: 12px; color: var(--ink-2); line-height: 1.35; }
+.rd-book-pct { font-size: 11px; color: var(--ink-2); }
+
+/* the readability rating: five dots and a word */
+.rd-rate { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; }
+.rd-dots { display: inline-flex; gap: 3px; }
+.rd-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-2); }
+.rd-next-title .rd-rate { font-size: 13px; }
+.rd-next-title .rd-dots i { width: 8px; height: 8px; }
+.rd-rate.rd-easy, .rd-rate.rd-ok { color: var(--green-ink); }
+.rd-rate.rd-stretch { color: #8a5f00; }
+.rd-rate.rd-hard { color: #c2185b; }
+.rd-rate.rd-easy .rd-dots i.on, .rd-rate.rd-ok .rd-dots i.on { background: var(--green-ink); }
+.rd-rate.rd-stretch .rd-dots i.on { background: #b07d00; }
+.rd-rate.rd-hard .rd-dots i.on { background: #c2185b; }
+
+/* ---- the HSK lists: a card for each level, with how far you are ---- */
+.hsk-pick { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 0 0 16px; }
+.hsk-lv { display: grid; gap: 4px; padding: 10px 12px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line);
+  color: var(--ink); text-decoration: none; min-width: 0; }
+.hsk-lv:hover { text-decoration: none; border-color: var(--ink-3); }
+.hsk-lv.on { border: 2px solid var(--ink); padding: 9px 11px 11px; }
+.hsk-lv b { font-size: 15px; font-weight: 600; }
+.hsk-lv span { font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.hsk-lv-bar { display: block; height: 4px; border-radius: 99px; background: var(--panel-2); overflow: hidden; margin-top: 2px; }
+.hsk-lv-bar i { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+@media (max-width: 640px) { .hsk-pick { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.hsk-chars-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-bottom: 4px; }
+.hsk-chars-head h2 { margin: 0; }
+.tile-key { display: flex; gap: 14px; margin: 0; }
+.tile-key span { display: inline-flex; align-items: center; gap: 6px; }
+.tile-key i { width: 12px; height: 12px; border-radius: 4px; background: var(--panel); border: 2px solid var(--tile-edge); }
+.tile-key i.learned { background: var(--green-soft); border-color: var(--green); }
+.tile-key i.learning { background: var(--blue-soft); border-color: var(--blue); }
+
+/* ---- Settings: the sections down the side, plain rows on the page ---- */
+.st-nav .st-nav-sub { display: none; }
+.st-nav .st-nav-sec:has(.on) .st-nav-sub { display: block; }
+.st-nav .st-nav-h { font-size: 14px; padding-top: 7px; padding-bottom: 7px; }
+.st-nav .st-nav-sec { margin-bottom: 2px; }
+.st-main .dash section.card { background: none; border: 0; box-shadow: none; border-radius: 0; padding: 26px 0 0; margin: 0 0 22px;
+  border-top: 1px solid var(--line); }
+.st-main .dash section.card:first-child { border-top: 0; padding-top: 0; }
+.st-main .dash section.card > h2 { font-size: 19px; margin: 0 0 6px; }
+.st-main .st-field { max-width: none; margin: 0; padding: 14px 0; border-bottom: 1px solid var(--line); }
+@container (min-width: 900px) {
+  /* the label and its note on the left, the controls stacked on the right */
+  .st-main .st-field:has(> .st-label) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); column-gap: 28px; row-gap: 0; align-items: start; }
+  .st-main .st-field:has(> .st-label) > :not(.st-label):not(.st-note) { grid-column: 2; margin: 0 0 8px; }
+  .st-main .st-field > .st-label { grid-column: 1; grid-row: 1; margin: 0; line-height: 24px; }
+  /* (the note starts under the label, whatever the height of the controls beside it) */
+  .st-main .st-field:has(> .st-label) > .st-note { grid-column: 1; grid-row: 1 / span 12; margin: 26px 0 0; }
+}
+.st-main .st-label { font-weight: 500; font-size: 15px; }
+/* the colour themes: a round swatch each */
+.st-main .pal-pick { display: flex; flex-wrap: wrap; gap: 8px; }
+.st-main .pal { width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 0; display: block; overflow: hidden;
+  background: var(--f); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); position: relative; }
+.st-main .pal .pal-sw { display: none; }
+.st-main .pal.on { box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--ink); }
+.st-main .pal::after { content: ""; position: absolute; inset: 50% 0 0 50%; background: var(--d); }
+.st-main .dash section.card > .st-field:last-child, .st-main .dash section.card > :last-child > .st-field:last-child { border-bottom: 0; }
+@container (max-width: 560px) {
+  .rd-shelf { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 18px 12px; }
+  .rd-cover { font-size: 40px; }
+  .rd-next { gap: 14px; }
+  .rd-cover.big { flex: 0 0 96px; min-height: 128px; padding: 10px; font-size: 44px; }
+  .rd-next-text { flex-basis: 180px; }
+  .rd-next-title a { font-size: 22px; }
+  .rd-next-lines { font-size: 16px; }
+}
+
+
+/* =====================================================================
+   Big screens: the whole app a size up
+   ---------------------------------------------------------------------
+   Everything here is sized in pixels for a laptop, so on a 1440p or 4K
+   monitor (at 100% scaling) the page was a narrow column of small text
+   in a sea of empty space. Past a laptop's size the top bar, the menu
+   and the page are drawn larger with `zoom`, in steps by both width and
+   height (so an ultrawide doesn't zoom in until the page is too short).
+   Popups hang off <body>, outside the zoom, so they still land where
+   JS puts them; motion.js uiZoom() lets the in-page animations measure
+   in the page's own units. Browser zoom still works on top: it changes
+   the screen's CSS width, and so which step applies.
+   ===================================================================== */
+@supports (zoom: 1) {
+  @media (min-width: 1800px) and (min-height: 960px) { :root { --ui-z: 1.125; } }
+  @media (min-width: 2200px) and (min-height: 1150px) { :root { --ui-z: 1.3; } }
+  @media (min-width: 2500px) and (min-height: 1350px) { :root { --ui-z: 1.5; } }
+  @media (min-width: 3200px) and (min-height: 1700px) { :root { --ui-z: 1.75; } }
+  @media (min-width: 3600px) and (min-height: 2000px) { :root { --ui-z: 2; } }
+  @media (min-width: 1800px) and (min-height: 960px) {
+    .topbar, .sidebar, #app { zoom: var(--ui-z); }
+    /* the pinned menu is drawn larger, so the page steps further over for it */
+    body.nav-pinned .shell { padding-left: calc(var(--drawer-w) * var(--ui-z)); }
+    /* a zoomed box's vh is zoomed with it: back to the screen's height */
+    .readlist { max-height: calc(62vh / var(--ui-z)); }
+    .st-nav-list { max-height: calc(100vh / var(--ui-z) - 84px); }
+    #app:has(> .lx-batch) { min-height: calc(min(100dvh / var(--ui-z), 940px) - var(--topbar-h, 60px)); }
+  }
+}
+
+/* ---- phones: the word list ----
+   One line a word left a phone a few letters of the meaning ("Zhōng guó · C…"): the
+   pinyin and meaning wrap onto a second line instead, and the row's own padding is trimmed. */
+@media (max-width: 600px) {
+  .wd-row { gap: 8px; padding: 6px 10px; }
+  .wd-text { white-space: normal; line-height: 1.35; display: -webkit-box; -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
+  .wd-text b { white-space: nowrap; }
+  .wd-st { width: 70px; }
+}
+/* (the smallest phones: the word and its buttons on one line, its pinyin and meaning across the
+   whole row under them) */
+@media (max-width: 400px) {
+  .wd-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "tile . st add" "text text text text"; row-gap: 4px; padding-block: 8px; }
+  #app .tile.wd-tile { grid-area: tile; justify-self: start; }
+  .wd-text { grid-area: text; }
+  .wd-st { grid-area: st; }
+  .wd-add, .wd-add-gap { grid-area: add; }
+}
+/* (the smallest phones: a lesson's new parts, two to a line, had no room for "new" beside the
+   name, and it ran out of its chip into the next: it goes under the name) */
+@media (max-width: 400px) {
+  .lx-intro .intro-part { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; row-gap: 0; }
+  .lx-intro .intro-part > .han, .lx-intro .intro-part > .snd-key { grid-row: span 2; }
+  .lx-intro .intro-part > span:not(.han):not(.snd-key) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+  .lx-intro .intro-part small { margin-left: 0; line-height: 1.2; }
+}

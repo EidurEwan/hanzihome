@@ -1318,11 +1318,11 @@ function pager(base, page, total, per) {
 /* below this many known characters the coverage card asks what you know already; from
    it on, it sends you to read (the graded stories start making sense around here) */
 const READ_FROM = 300;
-function railHtml() {
+function railHtml() { return coverageCard() + studyNextCard(); }
+/* Reading coverage: how much of an ordinary text is characters you know (Today's side column) */
+function coverageCard() {
   const learned = Store.chars('learned');
   const cov = coverage(learned);
-  // with a learning path on, the path already chooses what comes next: these are extras
-  const cfg = Store.cfg(), extras = !!(cfg.path && cfg.path !== 'off');
   return `
   <section class="card">
     <h2>Reading coverage <i class="info-i" title="How much of an ordinary Chinese text is made of characters you know">i</i></h2>
@@ -1333,7 +1333,13 @@ function railHtml() {
         ${learned.length < READ_FROM
           ? '<a class="btn" href="#/frequency">Mark the ones you already know</a>'
           : '<a class="btn" href="#/reader">Practice your reading</a>'}</div></div>
-  </section>
+  </section>`;
+}
+/* Study next / Add extras: characters worth learning soon (paintRail fills it) */
+function studyNextCard() {
+  // with a learning path on, the path already chooses what comes next: these are extras
+  const cfg = Store.cfg(), extras = !!(cfg.path && cfg.path !== 'off');
+  return `
   <section class="card">
     <div class="rail-head">
       <h2>${extras ? 'Add extras' : 'Study next'} <i class="info-i" tabindex="0" title="${extras
@@ -2118,26 +2124,39 @@ async function pageReader() {
   HZ.stories.forEach(st => (byLevel[st.l] = byLevel[st.l] || []).push(st));
 
   const done = new Set(storiesDone());
-  const card = st => {
+  // a book's cover: its colour, and the last character of its title
+  const COVERS = ['sky', 'orange', 'green', 'pink', 'purple', 'blue'];
+  const coverGlyph = st => { const h = [...st.zh].filter(isHan); return h.length ? h[h.length - 1] : st.zh[0]; };
+  const card = (st, i) => {
     const r = readability(st);
-    return `<a class="story" href="#/reader/${st.id}">
-      <span class="story-tag">${esc(st.tag)}${done.has(st.id) ? ' <b class="story-done">✓ Read</b>' : ''}</span>
-      <span class="story-zh han">${zhOne(st.zh)}</span>
-      <span class="story-en">${esc(st.en)}</span>
-      <span class="story-stat"><i class="rd-bar rd-${r.band}"><i style="width:${Math.round(r.share * 100)}%"></i></i>
-        ${Math.round(r.share * 100)}% of words known · <b class="rd-${r.band}">${r.label}</b></span>
+    return `<a class="rd-book" href="#/reader/${st.id}">
+      <span class="rd-cover ${COVERS[i % COVERS.length]}" aria-hidden="true"><span class="han">${zhOne(coverGlyph(st))}</span>
+        ${done.has(st.id) ? '<b class="rd-cover-done">✓ Read</b>' : ''}</span>
+      <span class="rd-book-zh han">${zhOne(st.zh)}</span>
+      <span class="rd-book-en">${esc(st.en)}</span>
+      ${rdRating(r)}
+      <span class="rd-book-pct">${Math.round(r.share * 100)}% of words known${done.has(st.id) ? '<span class="sr-only"> · read</span>' : ''}</span>
     </a>`;
   };
-
+  const levels = Object.keys(byLevel).sort();
+  app.dataset.layout = 'wide';
   app.innerHTML = '<h1 class="page-title">Reader</h1>' + withRail(`
-    <p class="lede">Characters stick far better in context than in a list. These are short
-       original stories graded by HSK level — every character is clickable, and the ones you
-       have marked are coloured as you read. You can paste your own text at the bottom.</p>
-    ${Object.keys(byLevel).sort().map(l => `
-      <h2 class="sec-h">${esc(HZ.levelNames[l])} (HSK ${l})</h2>
-      <div class="storygrid">${byLevel[l].map(card).join('')}</div>`).join('')}
+    <div class="rd-top">
+      <p class="lede">Short original stories graded by HSK level. Tap any word for its meaning; the
+         ones you have marked are coloured as you read.</p>
+      <a class="btn quiet" href="#rd-own" id="rd-own-go">Paste your own text</a>
+    </div>
+    <section class="card rd-next" id="rd-next" aria-label="Read next" hidden></section>
+    <div class="rd-shelf-head">
+      <h2 class="caps" id="rd-shelf-h">Stories</h2>
+      <div class="filters rd-levels" role="group" aria-label="Level">${levels.map(l =>
+        `<button type="button" data-rl="${l}" aria-pressed="false">HSK ${l}</button>`).join('')}</div>
+    </div>
+    ${levels.map(l => `<section class="rd-level" data-level="${l}" aria-label="${esc(HZ.levelNames[l])}, HSK ${l}">
+      <h3 class="rd-level-h">${esc(HZ.levelNames[l])} · HSK ${l} <span class="muted">${byLevel[l].length} stories</span></h3>
+      <div class="rd-shelf">${byLevel[l].map(card).join('')}</div></section>`).join('')}
 
-    <h2 class="sec-h">Your own text</h2>
+    <h2 class="sec-h" id="rd-own">Your own text</h2>
     <div class="decomp-box pad">
       <p class="muted small">Paste anything — an article, a chat, a textbook passage. It opens in
         the same reader as the stories, split into words with the meaning each one has there.
@@ -2163,6 +2182,22 @@ async function pageReader() {
         title="Drag me to the bookmarks bar">📖 Read in HanziHome</a></p>
       <p class="small muted">In the desktop app, Read the screen does this for anything on screen.</p>
     </div>` : ''}`);
+  // the shelf: one level at a time (the level of the story to read next, until you pick one)
+  const showLevel = l => {
+    app.querySelectorAll('.rd-level').forEach(s => { s.hidden = s.dataset.level !== String(l); });
+    app.querySelectorAll('[data-rl]').forEach(b => {
+      const on = b.dataset.rl === String(l);
+      b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+    });
+  };
+  app.querySelectorAll('[data-rl]').forEach(b => b.addEventListener('click', () => showLevel(b.dataset.rl)));
+  showLevel(levels[0]);
+  document.getElementById('rd-own-go').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('rd-own').scrollIntoView({ block: 'start' });
+    document.getElementById('reader-text').focus({ preventScroll: true });
+  });
+  fillReadNext(showLevel);
   document.getElementById('do-read').addEventListener('click', () => {
     const t = document.getElementById('reader-text').value;
     if (!t.trim()) return;
@@ -2330,6 +2365,44 @@ function readability(st) {
   const [label, band] = share >= 0.95 ? ['Easy', 'easy'] : share >= 0.85 ? ['Comfortable', 'ok']
     : share >= 0.7 ? ['A stretch', 'stretch'] : share > 0 ? ['Hard', 'hard'] : ['All new', 'hard'];
   return { share, label, band, known: seen.learned.size, learning: seen.learning.size, fresh: seen.new.size };
+}
+
+/* how readable a story is, as five dots and a word (from readability: how many of its words you know) */
+const RD_DOTS = { easy: 5, ok: 4, stretch: 3, hard: 2 };
+function rdRating(r) {
+  const n = r.share > 0 ? RD_DOTS[r.band] : 1;
+  return `<span class="rd-rate rd-${r.band}" role="img" aria-label="Readability ${n} of 5: ${esc(r.label)}">
+    <span class="rd-dots" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<i${i < n ? ' class="on"' : ''}></i>`).join('')}</span>${esc(r.label)}</span>`;
+}
+/* The Reader's top card: the story to read next (storyForYou), with its first lines, the
+   words you know marked in them. Opens the shelf at its level. */
+async function fillReadNext(showLevel) {
+  const box = document.getElementById('rd-next'), pick = await storyForYou();
+  if (!box || !pick || !box.isConnected) return;
+  const st = pick.st, r = readability(st), opened = new Set(storiesOpened());
+  const glyphs = [...st.zh].filter(isHan), cover = glyphs.length ? glyphs[glyphs.length - 1] : st.zh[0];
+  // the first sentence or two, as they are in the story: a known word marked
+  let shown = 0;
+  const lines = [];
+  for (const tk of st.seg[0] || []) {
+    if (shown > 34) break;
+    if (typeof tk === 'string') {
+      const w = st.g[tk][0];
+      lines.push(wordState(w) === 'learned' ? `<span class="rd-known">${zhOne(w)}</span>` : zhOne(w));
+      shown += w.length;
+    } else { lines.push(esc(tk.s || '')); shown += (tk.s || '').length; }
+  }
+  box.innerHTML = `<a class="rd-cover big sky" href="#/reader/${st.id}" tabindex="-1" aria-hidden="true">
+      <small>HSK ${st.l}</small><span class="han">${zhOne(cover)}</span><small>${esc(st.en)}</small></a>
+    <div class="rd-next-text">
+      <h2 class="caps">${opened.has(st.id) ? 'Pick up where you were' : pick.ready ? 'Read next: at your level' : 'Read next'}</h2>
+      <p class="rd-next-title"><a class="han" href="#/reader/${st.id}">${zhOne(st.zh)}</a>${rdRating(r)}</p>
+      <p class="rd-next-lines han" lang="zh">${lines.join('')}…</p>
+      <p class="small muted">${pick.known} of its ${pick.total} characters learned · ${Math.round(r.share * 100)}% of its words known</p>
+      <p><a class="btn" href="#/reader/${st.id}">${opened.has(st.id) ? 'Continue' : 'Read it'}</a></p>
+    </div>`;
+  box.hidden = false;
+  if (showLevel) showLevel(st.l);
 }
 
 /* A story to read next, after a session or when today's study is done: the hardest one you
@@ -2889,14 +2962,19 @@ async function pageHsk(level) {
   const words = HZ.hsk[String(level)] || [];
   const learned = Store.chars('learned');
   const readable = words.filter(w => [...w[0]].every(c => !isHan(c) || learned.includes(c)));
+  const standing = hskStanding();
   app.innerHTML = '<h1 class="page-title">HSK character lists</h1>' + withRail(`
     <p class="lede">Track your progress through the HSK levels. Each level lists the
        characters it introduces, then its vocabulary.</p>
-    <nav class="wd-src hsk-levels" aria-label="HSK level">${[1, 2, 3, 4, 5, 6].map(n =>
-      `<a class="${n === level ? 'on' : ''}" href="#/hsk-${n}"${n === level ? ' aria-current="page"' : ''}>HSK ${n}</a>`).join('')}</nav>
-    ${hskPushCard(hskStanding().find(p => p.level === level))}
-    <section class="card">
-      <h2>Characters introduced at HSK ${level}</h2>
+    <nav class="hsk-pick" aria-label="HSK level">${standing.map(p => {
+      const pct = p.total ? Math.round(p.done / p.total * 100) : 0;
+      return `<a class="hsk-lv${p.level === level ? ' on' : ''}" href="#/hsk-${p.level}"${p.level === level ? ' aria-current="page"' : ''}>
+        <b>HSK ${p.level}</b><span>${num(p.done)} of ${num(p.total)}</span>
+        <i class="hsk-lv-bar" aria-hidden="true"><i style="width:${pct}%"></i></i></a>`; }).join('')}</nav>
+    ${hskPushCard(standing.find(p => p.level === level))}
+    <section class="card hsk-chars">
+      <div class="hsk-chars-head"><h2>Characters introduced at HSK ${level}</h2>
+        <p class="tile-key small muted" aria-hidden="true"><span><i class="learned"></i>Known</span><span><i class="learning"></i>Learning</span><span><i></i>New</span></p></div>
       ${chars.length ? tileBoard('hsk', chars) : '<p class="empty">No characters listed.</p>'}
     </section>
     <section class="card hsk-vocab">
@@ -3289,7 +3367,7 @@ function paintSettingsNav() {
         // keep it in view in the panel, without moving the page
         const list = nav.querySelector('.st-nav-list');
         if (wide.matches && list) {
-          const r = b.getBoundingClientRect(), box = list.getBoundingClientRect();
+          const r = localRect(b), box = localRect(list);
           if (r.top < box.top || r.bottom > box.bottom) list.scrollTop += r.top - box.top - box.height / 2;
         }
       } else b.removeAttribute('aria-current');
@@ -3693,6 +3771,8 @@ paintIcons().catch(() => {});
 
 function render(keepScroll) {
   _boardUpdate = null;
+  // (Today and the Reader set a wider column for themselves; every other page has the usual one)
+  delete app.dataset.layout;
   const path = currentPath();
   markNav(path);
   paintHub(path);
