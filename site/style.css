@@ -5284,9 +5284,12 @@ a.pt-tile.pt-item:focus-visible { outline: 3px solid var(--accent); outline-offs
 
 /* ---- Today: the tiles and what's coming on the left, your reading on the right ---- */
 .td-date { margin: -8px auto 18px; }
-.td-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 320px); gap: 20px; align-items: start; margin-bottom: 20px; }
+.td-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 320px); gap: 20px; align-items: stretch; margin-bottom: 20px; }
 .td-grid.first { grid-template-columns: minmax(0, 1fr); }
-.td-main, .td-side { display: grid; gap: 16px; min-width: 0; align-content: start; }
+/* each column fills the row, and its last card grows to the bottom: the two columns
+   always end level (Coming up on the left, Next up on the right) */
+.td-main, .td-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.td-main > :last-child, .td-side > :last-child { flex-grow: 1; }
 .td-main .lx-hub { margin-bottom: 6px; }
 .td-side .card, .td-main .card, .td-more .card { margin: 0; padding: 16px 18px; }
 .td-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
