@@ -23,13 +23,14 @@ const Motion = (() => {
      browsers can't, or the drawer is closing over the change, the new page just rises in.
      update() draws the page, and may return a promise for when it has. */
   const HOLD = 180;
-  function page(update) {
+  function page(update, quiet) {
     // (a dissolve would freeze the drawer part way out, so with the drawer going the page just rises)
     const drawer = document.getElementById('sidebar');
     const drawerMoving = drawer && (drawer.classList.contains('open') || drawer.getAnimations().length > 0);
     const canDissolve = document.startViewTransition && !reduced() && !document.hidden && !drawerMoving;
     if (!canDissolve) return update();
     dissolving = true;
+    document.documentElement.classList.toggle('m-quiet', !!quiet);
     const vt = document.startViewTransition(() => {
       // (a page that fails still reaches the app's error page, not just this transition)
       const drawn = Promise.resolve().then(update).catch(e => { Promise.reject(e); });
@@ -37,6 +38,7 @@ const Motion = (() => {
     });
     // (a transition skipped by the next click, or a hidden tab, isn't a failure)
     for (const p of [vt.ready, vt.finished, vt.updateCallbackDone]) p.catch(() => {});
+    vt.finished.finally(() => document.documentElement.classList.remove('m-quiet')).catch(() => {});
   }
 
   /* a new page (not a redraw of this one): what it measures fills (#app.entering, in the
