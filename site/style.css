@@ -2805,7 +2805,7 @@ a.mn-chip:hover { text-decoration: none; outline: 1px solid var(--lx-sound); }
 .ord-item .ord-n { position: absolute; top: 3px; left: 6px; font-size: 10px; color: var(--ink-3); }
 .ord-item .ord-mark { position: absolute; top: 2px; right: 5px; font-style: normal; font-size: 13px; color: var(--accent); }
 .ord-item.prio { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
-.ord-item.skip { opacity: .55; }
+.ord-item.skip { opacity: .5; filter: grayscale(1); border-style: dashed; background: transparent; }
 .ord-more { text-align: center; margin: 16px 0; }
 .ord-dlg { width: min(340px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--line-2); border-radius: 14px;
   background: var(--panel); color: inherit; text-align: center; }
