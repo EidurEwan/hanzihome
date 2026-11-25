@@ -2805,7 +2805,7 @@ a.mn-chip:hover { text-decoration: none; outline: 1px solid var(--lx-sound); }
 .ord-item .ord-n { position: absolute; top: 3px; left: 6px; font-size: 10px; color: var(--ink-3); }
 .ord-item .ord-mark { position: absolute; top: 2px; right: 5px; font-style: normal; font-size: 13px; color: var(--accent); }
 .ord-item.prio { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
-.ord-item.skip { opacity: .5; filter: grayscale(1); border-style: dashed; background: transparent; }
+
 .ord-more { text-align: center; margin: 16px 0; }
 .ord-dlg { width: min(340px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--line-2); border-radius: 14px;
   background: var(--panel); color: inherit; text-align: center; }
@@ -4816,6 +4816,10 @@ a.lx-q.prio:hover { box-shadow: 0 0 0 3px var(--yellow); }
 .ord-item[class*=" hsk"]::after { right: 8px; bottom: 8px; box-shadow: 0 0 0 2px rgb(255 255 255 / .85); }
 .ord-act { background: rgb(0 0 0 / .28); color: #fff; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .ord-item { transition: none; } }
+/* a skipped one: a plain grey tile, its text faint but readable, in light and dark */
+.ord-item.skip, .ord-item.skip.word { --face: var(--panel-2); --edge: var(--line-2); color: var(--ink-3); }
+.ord-item.skip .han, .ord-item.skip small, .ord-item.skip .ord-n { color: var(--ink-3); }
+.ord-item.skip[class*=" hsk"]::after { opacity: .45; }
 /* the tiles as small review cards: the face in its own colour with a light rim */
 .ord-item { border-radius: 14px; }
 .ord-main { min-height: 96px; padding: 10px 4px 8px; box-sizing: border-box; border: 5px solid color-mix(in srgb, var(--face) 52%, #fff);
