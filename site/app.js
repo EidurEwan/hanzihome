@@ -1015,18 +1015,24 @@ const newPlace = () => {
   history.replaceState({ ...history.state, hzPlace: placeId }, '');
 };
 newPlace();
+let shownPath = null;   // (set once currentPath is defined, below)
 window.addEventListener('hashchange', () => {
   scrollOf.set(placeId, window.scrollY);
   const back = history.state && history.state.hzPlace;
   if (back) placeId = back; else newPlace();
   const y = back ? scrollOf.get(back) : undefined;
-  Motion.page(() => (y === undefined ? render() : Promise.resolve(render(true)).then(() => window.scrollTo(0, y))));
+  // (a page next to the last one, in the same place, swaps quietly: see hubOf)
+  const from = shownPath; shownPath = currentPath();
+  const quiet = !!hubOf(from) && hubOf(from) === hubOf(shownPath);
+  Motion.page(() => (y === undefined ? render() : Promise.resolve(render(true)).then(() => window.scrollTo(0, y))), quiet);
 });
 /* Today (#/study) is the home page: the old dashboard's addresses open it too */
 const currentPath = () => {
   const h = decodeURIComponent(location.hash.replace(/^#/, ''));
   return !h.startsWith('/') || h === '/' || /^\/dashboard(\/|$)/.test(h) ? '/study' : h;
 };
+
+shownPath = currentPath();
 
 /* pages the menu keeps under one entry, with tabs along the top of each. Every page keeps
    its own address, so links to them go on working. */

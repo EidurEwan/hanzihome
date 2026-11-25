@@ -3122,6 +3122,9 @@ html { scrollbar-gutter: stable; }
 @keyframes m-page-in { from { opacity: 0; transform: translateY(8px); } }
 ::view-transition-old(root) { animation: none; opacity: 1; mix-blend-mode: normal; }
 ::view-transition-new(root) { animation: m-page-in .2s var(--m-ease) both; mix-blend-mode: normal; }
+/* (between pages of one place, say HSK 1 and HSK 2, the title and tabs don't move: the
+   page only fades, as one that slid in would shake what stays the same) */
+:root.m-quiet::view-transition-new(root) { animation: m-fade .14s var(--m-ease) both; }
 @media (min-width: 901px) {
   .topbar { view-transition-name: hz-top; }
   ::view-transition-group(hz-top) { animation: none; }
