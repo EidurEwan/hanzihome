@@ -1023,7 +1023,9 @@ window.addEventListener('hashchange', () => {
   const y = back ? scrollOf.get(back) : undefined;
   // (a page next to the last one, in the same place, swaps quietly: see hubOf)
   const from = shownPath; shownPath = currentPath();
-  const quiet = !!hubOf(from) && hubOf(from) === hubOf(shownPath);
+  // (or one more view of the same page: the word list's other sources and filters)
+  const first = p => (p || '').split('/')[1];
+  const quiet = (!!hubOf(from) && hubOf(from) === hubOf(shownPath)) || (first(from) === first(shownPath) && from !== shownPath);
   Motion.page(() => (y === undefined ? render() : Promise.resolve(render(true)).then(() => window.scrollTo(0, y))), quiet);
 });
 /* Today (#/study) is the home page: the old dashboard's addresses open it too */
