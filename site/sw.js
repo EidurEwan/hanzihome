@@ -3,8 +3,7 @@
  * desktop app, which has everything on disk).
  *
  * Every file is kept in one cache as it is first used, so whatever you have opened
- * opens again offline. Settings → Use offline puts the rest in too (data/ is ~70 MB:
- * app.js offlineAll). The page itself (index.html) is asked for over the network
+ * opens again offline. The page itself (index.html) is asked for over the network
  * first, so a new version shows as soon as there is one; everything else carries a
  * ?v= version in its address (app.js DATA_VERSION, index.html's script tags) and is
  * served from the cache, where a newer version of a file replaces the older one.

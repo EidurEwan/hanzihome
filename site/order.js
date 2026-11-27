@@ -233,28 +233,34 @@ function ordWhen(day) {
   return `In about ${m} month${m === 1 ? '' : 's'}`;
 }
 
-/* how far along: what you know, against the HSK characters, a bar a level */
-function ordProgress(kind) {
+/* the HSK levels of one kind: a character's (hskchars.js) or a word's (hsk.js, words of two
+   characters or more), each counted at the lowest level it is in */
+const ordLevelOf = (kind, k) => kind === 'char' ? charHsk(k) : hskOf(k);
+function ordLevels(kind) {
+  const src = kind === 'char' ? HZ.hskChars || {} : HZ.hsk || {};
+  return Object.keys(src).sort((x, y) => x - y).map(l => [l, (kind === 'char' ? src[l] : src[l].map(x => x[0]))
+    .filter(k => (kind === 'char' || [...k].length > 1) && ordLevelOf(kind, k) === +l)]);
+}
+/* what you know of one kind: learned in lessons, or marked */
+function ordKnown(kind) {
   const d = Store.load();
-  const had = Object.keys(d.items).filter(k => d.items[k].kind === kind && d.items[k].stage >= 1);
-  if (kind === 'word') {
-    return `<div class="ord-prog"><p class="ord-prog-h"><b>${had.length.toLocaleString()}</b> word${had.length === 1 ? '' : 's'} learned
-      <a href="#/queue/learned">See them</a></p></div>`;
-  }
-  const known = new Set(had);
-  Object.keys(d.status || {}).forEach(c => { if ([...c].length === 1) known.add(c); });
-  const levels = Object.keys(HZ.hskChars || {}).sort((x, y) => x - y);
-  const per = levels.map(l => {
-    const all = HZ.hskChars[l].filter(c => charHsk(c) === +l);
-    return [l, all.filter(c => known.has(c)).length, all.length];
-  });
+  const known = new Set(Object.keys(d.items).filter(k => d.items[k].kind === kind && d.items[k].stage >= 1));
+  if (kind === 'char') Object.keys(d.status || {}).forEach(c => { if ([...c].length === 1) known.add(c); });
+  else Object.keys(d.wstatus || {}).forEach(w => { if (d.wstatus[w] === 'learned') known.add(w); });
+  return known;
+}
+
+/* how far along: what you know, against the HSK characters or words, a bar a level */
+function ordProgress(kind) {
+  const known = ordKnown(kind), levels = ordLevels(kind), name = kind === 'char' ? 'character' : 'word';
+  const per = levels.map(([l, all]) => [l, all.filter(c => known.has(c)).length, all.length]);
   const total = per.reduce((n, [, , a]) => n + a, 0), have = per.reduce((n, [, h]) => n + h, 0);
   return `<div class="ord-prog">
-    <p class="ord-prog-h"><b>${known.size.toLocaleString()}</b> character${known.size === 1 ? '' : 's'} learned${total
-      ? `<span>· ${(total - have).toLocaleString()} to go in HSK 1–${levels[levels.length - 1]}</span>` : ''}
+    <p class="ord-prog-h"><b>${known.size.toLocaleString()}</b> ${name}${known.size === 1 ? '' : 's'} learned${total
+      ? `<span>· ${(total - have).toLocaleString()} to go in HSK 1–${levels[levels.length - 1][0]}</span>` : ''}
       <a href="#/queue/learned">See them</a></p>
     ${total ? `<div class="ord-bars" role="list" aria-label="By HSK level">${per.map(([l, h, a]) => `<div class="ord-bar" role="listitem"
-        aria-label="${hskName(l)}: ${h} of ${a}" title="${hskName(l)}: ${h} of ${a} characters"><span>${hskName(l)}</span>
+        aria-label="${hskName(l)}: ${h} of ${a}" title="${hskName(l)}: ${h} of ${a} ${name}s"><span>${hskName(l)}</span>
         <i style="--w:${a ? Math.max(h ? 3 : 0, Math.round(100 * h / a)) : 0}%"></i><small>${h}/${a}</small></div>`).join('')}</div>` : ''}
   </div>`;
 }
@@ -281,7 +287,7 @@ async function pageQueue(tab, count) {
   if (!document.querySelector('.ord-items')) app.innerHTML = LOADING;
   await fillPath();
   await Promise.all([optional(need.cmnem()), optional(need.cnames()), optional(need.charorder()), optional(need.hskChars()),
-    tab === 'words' ? optional(need.wordorder()) : null]);
+    tab === 'words' ? optional(need.wordorder()) : null, tab === 'words' ? optional(need.hsk()) : null]);
   const tabs = `<div class="tabs">
       <a class="${tab === 'chars' ? 'on' : ''}" href="#/queue/chars">Character order</a>
       <a class="${tab === 'words' ? 'on' : ''}" href="#/queue/words">Word order</a>
@@ -304,24 +310,37 @@ async function pageQueue(tab, count) {
   const skipped = skipList().filter(k => (kind === 'word') === ([...k].length > 1) && !inline.has(k));
   const off = !cfg.path || cfg.path === 'off';
 
-  // the characters by when they come: today's still to do, then the day's new characters a day
-  const d = Store.load();
-  const per = Math.max(1, cfg.pathDaily || 5);
-  const todayLeft = kind === 'char' && !off ? Store.plan().lessons.filter(k => d.items[k] && d.items[k].kind === 'char').length : 0;
-  const dayOf = i => i < todayLeft ? 0 : 1 + Math.floor((i - todayLeft) / per);
-  const dated = kind === 'char' && !off;
-  // an HSK level done: after the last of its characters still to learn, if that's on the page
-  const known = new Set(Object.keys(d.items).filter(k => d.items[k].stage >= 1).concat(Object.keys(d.status || {})));
-  const doneAfter = new Map();
-  if (kind === 'char') {
-    const at = new Map(shown.map((c, i) => [c, i])), skips = new Set(skipList());
-    Object.keys(HZ.hskChars || {}).sort((x, y) => x - y).forEach(l => {
-      const left = HZ.hskChars[l].filter(c => charHsk(c) === +l && !known.has(c) && !skips.has(c));
-      if (!left.length || left.some(c => !at.has(c))) return;
-      const i = Math.max(...left.map(c => at.get(c)));
-      doneAfter.set(i, [...(doneAfter.get(i) || []), [l, HZ.hskChars[l].filter(c => charHsk(c) === +l).length]]);
+  // the characters by when they come: today's still to do, then the day's share of characters
+  // (less in fact when they bring components, or more when there are too few words)
+  const d = Store.load(), split = Learn.dailySplit(cfg), lessons = Store.plan().lessons;
+  const todayOf = kd => lessons.filter(k => d.items[k] && d.items[k].kind === kd).length;
+  const perChar = Math.max(1, isFinite(split.chars) ? split.chars : 15), charsToday = off ? 0 : todayOf('char');
+  const charDay = i => i < charsToday ? 0 : 1 + Math.floor((i - charsToday) / perChar);
+  // the words: the day's share of words, each on a day after its last new character's
+  let wordDays = [];
+  if (kind === 'word' && !off && split.words > 0) {
+    const cd = new Map(upcomingChars(ORDER_WORD_HORIZON).map((c, i) => [c, charDay(i)])), env = learnEnv();
+    let day = 0, room = todayOf('word');
+    if (!room) { day = 1; room = split.words; }
+    wordDays = shown.map(w => {
+      const ready = Math.max(0, ...[...w].map(c => (env.level(c) || 0) >= 1 || !cd.has(c) ? 0 : cd.get(c) + 1));
+      if (ready > day) { day = ready; room = split.words; }
+      const at = day;
+      if (--room <= 0) { day++; room = split.words; }
+      return at;
     });
   }
+  const dated = !off && (kind === 'char' || wordDays.length > 0);
+  const dayOf = i => kind === 'char' ? charDay(i) : wordDays[i];
+  // an HSK level done: after the last of its characters (or words) still to learn, if that's on the page
+  const known = ordKnown(kind), doneAfter = new Map();
+  const at = new Map(shown.map((c, i) => [c, i])), skips = new Set(skipList());
+  ordLevels(kind).forEach(([l, all]) => {
+    const left = all.filter(c => !known.has(c) && !skips.has(c));
+    if (!left.length || left.some(c => !at.has(c))) return;
+    const i = Math.max(...left.map(c => at.get(c)));
+    doneAfter.set(i, [...(doneAfter.get(i) || []), [l, all.length]]);
+  });
   let html = '', last = null, i = -1;
   for (const { k, skip } of rows) {
     if (skip) { html += orderItem(k, kind); continue; }
@@ -334,10 +353,10 @@ async function pageQueue(tab, count) {
         last = when;
       }
     }
-    const lv = kind === 'char' ? charHsk(k) : 0;
+    const lv = ordLevelOf(kind, k);
     html += orderItem(k, kind, i + 1, `${dated && dayOf(i) >= 28 ? ' far' : ''}${lv ? ` hsk${lv}` : ''}`);
     for (const [l, all] of doneAfter.get(i) || []) {
-      html += `<p class="ord-mile"><b>${hskName(l)} complete</b><span>All ${all} of its characters${dated ? `, ${ordWhen(dayOf(i)).toLowerCase()}` : ''}</span></p>`;
+      html += `<p class="ord-mile"><b>${hskName(l)} complete</b><span>All ${all} of its ${kind === 'char' ? 'characters' : 'words'}${dated ? `, ${ordWhen(dayOf(i)).toLowerCase()}` : ''}</span></p>`;
     }
   }
   app.innerHTML = `<h1 class="page-title">Upcoming</h1>
@@ -347,8 +366,8 @@ async function pageQueue(tab, count) {
     ${tabs}
     ${ordProgress(kind)}
     <p class="small muted">${off ? 'Your learning path is off, so this shows only what you added.'
-      : tab === 'words' ? `Learning path: ${pathName}. Words use whatever your new characters and components leave of your daily limit of ${cfg.lessonLimit || 'no'} lessons.`
-      : `Learning path: ${pathName}, ${cfg.pathDaily} new characters a day.`}
+      : tab === 'words' ? `Learning path: ${pathName}, ${dailyLine(cfg)}. ${split.words ? `Up to ${split.words} word${split.words === 1 ? '' : 's'} a day.` : 'No words a day: set how many in Settings.'}`
+      : `Learning path: ${pathName}, ${dailyLine(cfg)}. Characters bring their new components, which count too.`}
       <a href="#/settings">Change</a>${tab === 'words' && !off ? '<br>Each word comes after you have learned all its characters.' : ''}</p>
     ${shown.length ? `<div class="ord-items${dated ? ' dated' : ''}">${html}</div>`
       : `<p class="empty">${off ? 'Nothing here yet. Turn on a learning path in Settings, or add some yourself.' : 'Nothing to come.'}</p>`}

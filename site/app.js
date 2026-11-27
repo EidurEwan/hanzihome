@@ -188,7 +188,12 @@ const Store = {
     for (const it of Object.values(d.items)) Learn.adopt(it);
     // (the day's lessons are now characters first, words with what is left, and a word waits
     // until its characters have had their lessons: what these settings used to choose)
-    for (const k of ['lessonOrder', 'wordLimit', 'wordWait', 'wordUnlock']) delete d.study[k];
+    for (const k of ['lessonOrder', 'wordWait', 'wordUnlock']) delete d.study[k];
+    // (and these are no longer settings: everyone has the defaults, learn.js DEFAULTS)
+    for (const k of ['autoChars', 'autoComps', 'prioRespect', 'validate', 'sentences', 'write']) delete d.study[k];
+    // and the day's lessons are now two numbers: new items a day, and how many of them are
+    // words (the path's characters a day and its words switch became those)
+    Learn.migrateLessonCfg(d.study);
     // so were the initials: from jobs to the figures, in lessons taken or waiting
     Learn.recastSounds(d.items);
     // components were renamed and meanings tidied: items made before take the new ones
@@ -3330,19 +3335,9 @@ function pageSettings() {
           .map(([v, l]) => `<option value="${v}"${Store.cfg().script === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
         <p class="st-note">How characters and words are shown, on every page and in the stories. Searching, lessons and
           answers work the same either way.</p></div>
-      <div class="st-field"><div class="st-label">Tutorials</div>
-        <div class="row tour-pick">
-          <button class="btn quiet" id="show-tour">How HanziHome works</button>
-          <button class="btn quiet" data-guide="pictures">How the mnemonic pictures work</button>
-          <button class="btn quiet" data-guide="sync">Set up sync</button>
-          <button class="btn quiet" data-guide="api">Get a translator key</button></div>
-        <p class="st-note">A few slides each: how learning Mandarin works and how HanziHome teaches it; the picture names
-          the mnemonics give components and sounds; syncing your progress between devices with a Google Sheet; and
-          getting a free Google AI Studio key for the translator.</p></div>
     </section>
     <section class="card" id="study-card"></section>
     <section class="card" id="translate-card"></section>
-    ${offlineCan() ? '<section class="card" id="offline-card"><h2>Use offline</h2></section>' : ''}
     <section class="card">
       <h2>Character goal</h2>
       <p class="muted small">How many of the most common characters you are aiming to learn. Today's Reading coverage
@@ -3358,20 +3353,6 @@ function pageSettings() {
       ${syncCardBody()}
     </section>
     <section class="card">
-      <h2>Your data</h2>
-      <p class="muted small">Progress lives in this browser's localStorage. Unless you turn on
-         sync above, nothing leaves the machine. Export keeps a copy you can re-import later.</p>
-      <div class="row">
-        <button class="btn quiet" id="export">Export JSON</button>
-        <button class="btn quiet" id="import">Import JSON</button>
-        <button class="btn quiet" id="import-file">Import a file…</button>
-        <input type="file" id="import-pick" accept=".json,application/json" hidden>
-        <button class="btn quiet" id="reset">Reset everything</button></div>
-      <textarea id="io" rows="4" style="width:100%;margin-top:11px;display:none;font-family:inherit;
-        padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></textarea>
-    </section>
-    ${ankiCard()}
-    <section class="card">
       <h2>Data set</h2>
       <ul class="facts">
         <li><b>${num(+HZ.meta.n_chars)}</b> characters indexed</li>
@@ -3385,51 +3366,11 @@ function pageSettings() {
     const v = parseInt(document.getElementById('goal').value, 10);
     if (v > 0) { Store.load().goal = v; Store.save(); go('/study'); }
   });
-  const io = document.getElementById('io');
-  document.getElementById('export').addEventListener('click', () => {
-    io.style.display = 'block'; io.value = JSON.stringify(Store.load()); io.select();
-  });
-  document.getElementById('import').addEventListener('click', () => {
-    if (io.style.display === 'none') { io.style.display = 'block'; io.value = ''; io.focus(); return; }
-    let data;
-    try { data = JSON.parse(io.value); } catch (e) { alert('That is not valid JSON.'); return; }
-    if (!data || typeof data !== 'object' || Array.isArray(data) || !data.status || typeof data.status !== 'object') {
-      alert('That is not a HanziHome export.'); return;
-    }
-    const count = Object.keys(data.status).length;
-    if (!confirm(`Replace this device's progress with the pasted copy (${count} characters marked)?`)) return;
-    localStorage.setItem(Store.key, JSON.stringify(data));
-    if (Sync.on()) Sync.update({ held: null });
-    Store.data = null; Store.load(); Store.save(); render();
-  });
-  // a file exported earlier, or a recovered copy: it replaces what is here
-  document.getElementById('import-file').addEventListener('click', () => document.getElementById('import-pick').click());
-  document.getElementById('import-pick').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    let data;
-    try { data = JSON.parse(await file.text()); } catch (err) { alert('That file is not valid JSON.'); return; }
-    if (!data || typeof data !== 'object' || !data.status) { alert('That file is not a HanziHome export.'); return; }
-    const count = Object.keys(data.status).length;
-    if (!confirm(`Replace this device's progress with the file's (${count} characters marked)?`)) return;
-    localStorage.setItem(Store.key, JSON.stringify(data));
-    if (Sync.on()) Sync.update({ held: null });
-    Store.data = null; Store.load(); Store.save(); render();
-  });
-  document.getElementById('reset').addEventListener('click', () => {
-    const msg = Sync.on() ? 'Erase all progress, lists and notes? This also empties the synced copy in your Google Sheet.'
-                          : 'Erase all progress, lists and notes?';
-    if (confirm(msg)) {
-      Sync.update({ reset: true, held: null });     // (the script only lets an emptied copy through on purpose)
-      localStorage.removeItem(Store.key); Store.data = null; Store.load(); Store.save(); render();
-    }
-  });
   document.getElementById('theme').addEventListener('change', e => {
     // light to dark (and back) as a cross-fade, where the browser can
     const go = () => { setTheme(e.target.value); paintBarColour(); render(true); };
     recolour(go);
   });
-  document.getElementById('show-tour').addEventListener('click', () => showTour(0));
   app.querySelectorAll('[data-pal]').forEach(b => b.addEventListener('click', () => {
     const go = () => {
       setPalette(b.dataset.pal);
@@ -3444,8 +3385,6 @@ function pageSettings() {
     render(true);
   });
   wireSyncCard();
-  wireAnki(() => render(true));
-  if (offlineCan()) paintOffline();
   paintStudySettings();
   // (the Translator card is filled in first, or the menu is drawn without it and redrawn
   // a moment later, jumping)
@@ -3480,7 +3419,10 @@ function paintSettingsNav() {
     const sections = [...dash.querySelectorAll('section.card')].map(card => {
       const h = card.querySelector('h2');
       if (!h) return null;
-      const subs = [...card.querySelectorAll('.st-label, h3.st-h, details.path-compare > summary')];
+      // a card in groups (Lessons and reviews: Daily lessons, Reviews, Sounds …) lists the
+      // settings before its first group, then only the groups
+      const all = [...card.querySelectorAll('.st-label, h3.st-h')], first = all.findIndex(el => el.matches('h3.st-h'));
+      const subs = first < 0 ? all : all.filter((el, i) => i < first || el.matches('h3.st-h'));
       return { h, subs };
     }).filter(Boolean);
     const sig = sections.map(s => textOf(s.h) + ':' + s.subs.map(textOf).join(',')).join('|');
@@ -3780,65 +3722,11 @@ function wireSyncCard() {
 /* ============================ offline ============================
    Served from a web address (GitHub Pages), the site installs a service worker
    (sw.js) that keeps each file once used, so what you have opened opens again
-   without a connection, and Settings → Use offline can fetch the rest. Opened
+   without a connection. Opened
    from disk or in the desktop app, everything is already local. */
 const offlineCan = () => 'serviceWorker' in navigator && 'caches' in window && !window.hanzihomeDesktop
   && (location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
 if (offlineCan()) navigator.serviceWorker.register('sw.js').catch(e => console.warn('offline:', e));
-
-/* every file the site can load on demand, as loadScript asks for it */
-function offlineFiles() {
-  const hex = n => ('0' + n.toString(16)).slice(-2);
-  const buckets = Array.from({ length: HZ.meta.buckets || 64 }, (_, i) => hex(i));
-  return ['comps', 'words', 'hsk', 'hskchars', 'radicals', 'components', 'prodchars', 'phon1', 'phon2',
-    'stories', 'readings', 'readerwords', 's2t', 'cnames', 'cmnem', 'winfo', 'charex', 'gpoints', 'phrases', 'tones', 'sounds', 'audio', 'lookalike', 'charorder', 'wordorder'].map(f => `data/${f}.js`)
-    .concat(buckets.map(b => `data/c/${b}.js`), buckets.map(b => `data/s/${b}.js`),
-      ['textstory.js', 'anki.js', 'zip.js', 'books.js', 'vendor/hanzi-writer.min.js', 'vendor/fzstd.js', 'vendor/sql-asm.js'])
-    .map(f => f + '?v=' + DATA_VERSION);
-}
-async function offlineStatus() {
-  const cache = await caches.open('hanzihome');
-  const have = new Set((await cache.keys()).map(r => new URL(r.url).pathname + new URL(r.url).search));
-  const base = new URL('.', location.href).pathname;
-  const files = offlineFiles();
-  return { files, kept: files.filter(f => have.has(base + f)).length };
-}
-/* fetch whatever isn't kept yet, four at a time; progress(done, total) */
-async function offlineAll(progress) {
-  const cache = await caches.open('hanzihome');
-  const { files } = await offlineStatus();
-  let done = 0, failed = 0;
-  const queue = files.slice();
-  const worker = async () => {
-    while (queue.length) {
-      const f = queue.shift();
-      try { if (!(await cache.match(f))) await cache.add(f); } catch (e) { failed++; }
-      progress(++done, files.length);
-    }
-  };
-  await Promise.all([worker(), worker(), worker(), worker()]);
-  return failed;
-}
-async function paintOffline() {
-  const box = document.getElementById('offline-card');
-  if (!box) return;
-  const { files, kept } = await offlineStatus();
-  const all = kept === files.length;
-  box.innerHTML = `<h2>Use offline</h2>
-    <p class="muted small">${all ? 'Everything is kept on this device: HanziHome works without a connection.'
-      : `Pages you have opened work without a connection. ${kept} of ${files.length} data files are kept; the rest
-        (stroke order, example words, the reader's dictionary) load the first time you need them.`}
-      On a phone, add it to the home screen (the browser's Share or ⋮ menu) to open it like an app.</p>
-    ${all ? '' : '<div class="row"><button class="btn" id="offline-all">Keep everything (about 70 MB)</button><span class="small muted" id="offline-msg"></span></div>'}`;
-  const btn = document.getElementById('offline-all');
-  if (btn) btn.addEventListener('click', async () => {
-    btn.disabled = true;
-    const msg = document.getElementById('offline-msg');
-    const failed = await offlineAll((d, n) => { msg.textContent = `${d} of ${n}…`; });
-    if (failed) msg.textContent = `${failed} files couldn't be fetched. Try again with a connection.`;
-    else paintOffline();
-  });
-}
 
 /* ============================ appearance ============================
    Light or dark: the device's preference unless Settings says otherwise. The

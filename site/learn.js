@@ -423,9 +423,9 @@
   /* HanziHero's application settings, as far as they apply here (every item here is
      one you added yourself, so there is no course, dictionary queue or skipping) */
   const DEFAULTS = {
-    batch: 5,                  // lessons per batch
-    lessonLimit: 15,           // lessons a day (0: no limit)
-    wordLimit: Infinity,       // how many of those may be words (all that the characters leave)
+    lessonLimit: 15,           // new items a day: words, characters and components (0: no limit; sounds don't count)
+    lessonWords: null,         // how many of those are words (null: the recommended share, WORD_SHARE of them);
+                               // characters and their components fill the rest
     reviewLimit: 0,            // a soft limit on reviews a day (0: none)
     retention: 0.9,            // FSRS: review when the chance of recall has fallen to this
     charUnlock: 'now',         // a character waits for its components: 'now' | 'learned' | 'familiar'
@@ -434,8 +434,6 @@
     autoChars: true,           // adding a word adds its characters too, prioritized
     autoComps: true,           // adding a character adds its new components too, learnt first
     path: 'off',               // a learning path that fills the lessons: 'off' | 'mix' | 'common' | 'hsk'
-    pathDaily: 5,              // ...with this many new characters a day
-    pathWords: true,           // ...and words with what is left of the lesson limit
     questionOrder: 'pinyin',   // 'pinyin': pronunciation then meaning, in pairs; 'random': shuffled
     lessonOrder: 'chars',      // 'chars' first | 'words' first | 'mix'
     prioRespect: true,         // prioritized items keep to the limits and the lesson order
@@ -446,11 +444,47 @@
     script: 'simp',            // characters shown 'simp' | 'trad' | 'both' (app.js zh)
     listen: false,             // also ask an item's meaning from its sound alone, first
     write: false,              // also ask to write a character, last (hanzi-writer)
-    voice: 'female', speed: 'normal', muteSfx: false, muteVoice: false,
+    voice: 'female', muteSfx: false, muteVoice: false,
     audio: 'recorded',         // 'recorded': people's recordings (site/audio/), else 'browser': its voice
     vacation: 0,               // when vacation mode began (0: not on vacation)
   };
   const settings = s => Object.assign({}, DEFAULTS, s || {});
+
+  /* The recommended share of the day's new items that are words: 65%. It is the default, and
+     follows the total until you choose a number of words yourself. */
+  const WORD_SHARE = 0.65;
+  const recommendedWords = total => Math.round(total * WORD_SHARE);
+
+  /* The day's new items, split: {total, words, chars, recommended}. total is lessonLimit
+     (Infinity: no limit); words is lessonWords, or the recommended share when it isn't set
+     (recommended: true), never more than the total; chars is what that leaves for characters
+     and their components (they also take any share the words can't use). */
+  function dailySplit(cfg) {
+    const c = settings(cfg), total = c.lessonLimit > 0 ? c.lessonLimit : Infinity;
+    if (total === Infinity) return { total, words: Infinity, chars: Infinity, recommended: false };
+    const own = c.lessonWords != null && c.lessonWords !== '' && isFinite(c.lessonWords);
+    const words = Math.max(0, Math.min(own ? Number(c.lessonWords) : recommendedWords(total), total));
+    return { total, words, chars: total - words, recommended: !own };
+  }
+
+  /* Old lesson settings to the two numbers there are now (the study settings, changed in
+     place): the daily limit stays the total (no limit becomes 50). Words: none if the path's
+     words were off; what a path's characters a day, chosen yourself, used to leave of the
+     total; otherwise the recommended share (left unset, so it follows the total). True if
+     anything changed. */
+  function migrateLessonCfg(study) {
+    if (!study || typeof study !== 'object') return false;
+    let changed = false;
+    if (study.lessonLimit === 0) { study.lessonLimit = 50; changed = true; }
+    const path = study.path && study.path !== 'off';
+    if (study.lessonWords === undefined && path && (study.pathWords === false || study.pathDaily > 0)) {
+      const total = study.lessonLimit > 0 ? study.lessonLimit : DEFAULTS.lessonLimit;
+      study.lessonWords = study.pathWords === false ? 0 : Math.max(0, Math.min(total, total - study.pathDaily));
+      changed = true;
+    }
+    for (const k of ['pathDaily', 'pathWords', 'wordLimit']) if (k in study) { delete study[k]; changed = true; }
+    return changed;
+  }
 
   const isHan = c => { const n = c.codePointAt(0); return (n >= 0x3400 && n <= 0x9fff) || n >= 0x20000; };
 
@@ -662,35 +696,53 @@
     out.waiting.forEach(k => put(k, 0));            // (anything left: a loop of parts)
     out.waiting = seq;
 
-    let left = cfg.lessonLimit ? Math.max(0, cfg.lessonLimit - out.lessonsToday) : Infinity;
-    let words = cfg.lessonLimit ? Math.max(0, Math.min(cfg.wordLimit, cfg.lessonLimit) - out.wordsToday) : Infinity;
-    // the path's characters: the queue always holds the next ones, but only so many a day
-    // are ready (a star, or a lesson being taken again, doesn't count)
-    let pathLeft = cfg.path && cfg.path !== 'off'
-      ? Math.max(0, cfg.pathDaily - today.filter(k => it(k).path && it(k).kind === 'char').length) : Infinity;
-    // The day's limit: first the characters, each with the new components it brings, then
-    // words with what is left. A character that doesn't fit ends the characters for the day,
-    // unless it is the first: a big one mustn't hold everything up for ever.
+    // The day's new items: so many words, and characters (with the new components each
+    // brings) for the rest. Prioritised items come first and count too (unless they are
+    // set to ignore the limits); the words' share goes to characters when there aren't
+    // that many words ready.
+    const split = dailySplit(cfg);
+    const charsToday = today.filter(k => it(k).kind === 'char').length;
+    let left = Math.max(0, split.total - out.lessonsToday);
+    let words = Math.max(0, Math.min(split.words - out.wordsToday, left));
     const offered = new Set(), costed = new Set();
-    let charsDone = false;
-    for (const k of out.waiting) {
-      if (out.locked[k] || isPart.has(k) || it(k).kind === 'comp' || it(k).kind === 'sound') continue;
-      const word = it(k).kind === 'word';
-      if (it(k).prio && !cfg.prioRespect) { offered.add(k); continue; }
-      if (word && words <= 0) continue;
-      if (!word && charsDone) continue;
-      const fromPath = !word && it(k).path && !it(k).prio && !it(k).learnt;
-      if (fromPath && pathLeft <= 0) continue;
-      const fresh = word ? [] : partsOf(k, it(k)).filter(p => p !== k && inQueue.has(p) && it(p).kind === 'comp' && !costed.has(p));
-      if (1 + fresh.length > left) {
-        if (word) continue;
-        if (out.lessonsToday || offered.size) { charsDone = true; continue; }
-      }
-      fresh.forEach(p => costed.add(p));
-      left = Math.max(0, left - 1 - fresh.length);
-      if (fromPath) pathLeft--;
+    const lesson = k => !out.locked[k] && !isPart.has(k) && it(k).kind !== 'comp' && it(k).kind !== 'sound';
+    const isWord = k => it(k).kind === 'word';
+    const cost = k => isWord(k) ? 1
+      : 1 + partsOf(k, it(k)).filter(p => p !== k && inQueue.has(p) && it(p).kind === 'comp' && !costed.has(p)).length;
+    const take = k => {
+      const c = cost(k);
+      if (!isWord(k)) partsOf(k, it(k)).forEach(p => { if (inQueue.has(p) && it(p).kind === 'comp') costed.add(p); });
+      left = Math.max(0, left - c);
+      if (isWord(k)) words = Math.max(0, words - 1);
       offered.add(k);
-      if (word) words--;
+    };
+    // a character that doesn't fit ends the characters for the day, unless it is the day's
+    // first: a big one mustn't hold everything up for ever (it may go over the limit)
+    let charsDone = false, anyChar = charsToday > 0;
+    const tryChar = (k, budget) => {
+      if (charsDone) return false;
+      if (cost(k) > budget && (anyChar || budget <= 0)) { charsDone = true; return false; }
+      take(k);
+      anyChar = true;
+      return true;
+    };
+    // 1. what you prioritised, in its order
+    for (const k of out.waiting) {
+      if (!lesson(k) || !it(k).prio) continue;
+      if (!cfg.prioRespect) { offered.add(k); continue; }
+      if (isWord(k)) { if (words > 0 && left > 0) take(k); }
+      else tryChar(k, left);
+    }
+    // 2. characters, leaving room for the words that are ready
+    const readyWords = out.waiting.filter(k => lesson(k) && isWord(k) && !offered.has(k));
+    for (const k of out.waiting) {
+      if (!lesson(k) || isWord(k) || offered.has(k)) continue;
+      if (!tryChar(k, left - Math.min(words, readyWords.length, left))) break;
+    }
+    // 3. the words, with their share (or what the characters left of it)
+    for (const k of readyWords) {
+      if (words <= 0 || left <= 0) break;
+      take(k);
     }
     // ...and the components and sounds of those (small lessons on the way to a character:
     // they don't count), or of nothing waiting; not the parts of a character held back
@@ -780,7 +832,9 @@
      you added, starred or pushed to finish an HSK level stays, and so does a lesson being
      taken again. -> {drop: the keys that no longer belong, want: how many the path should add} */
   function pathSync(items, cfg, kind = 'char') {
-    const active = !!(cfg.path && cfg.path !== 'off' && cfg.pathDaily && (kind !== 'word' || cfg.pathWords !== false));
+    // (enough characters for the whole day, as they fill what the words don't use; the words' share of words)
+    const split = dailySplit(cfg), daily = kind === 'word' ? split.words : split.total;
+    const active = !!(cfg.path && cfg.path !== 'off' && daily > 0 && isFinite(daily));
     const keys = Object.keys(items).filter(k => (items[k].kind || 'char') === kind);
     const auto = k => { const it = items[k]; return it.path && it.stage === 0 && !it.learnt && !it.prio && !it.hskPush; };
     const drop = keys.filter(k => auto(k) && (!active || items[k].path !== cfg.path));
@@ -791,14 +845,14 @@
       return !gone.has(k) && it.stage === 0 && !it.learnt && (it.path || it.hskPush);
     });
     // too many for the number chosen: the last the path added go first
-    const extra = waiting.length - cfg.pathDaily;
+    const extra = waiting.length - daily;
     if (extra > 0) {
       const newest = waiting.filter(auto).map((k, i) => [k, i])
         .sort((a, b) => items[b[0]].added - items[a[0]].added || b[1] - a[1]).slice(0, extra).map(x => x[0]);
       drop.push(...newest);
-      return { drop, want: Math.max(0, cfg.pathDaily - (waiting.length - newest.length)) };
+      return { drop, want: Math.max(0, daily - (waiting.length - newest.length)) };
     }
-    return { drop, want: cfg.pathDaily - waiting.length };
+    return { drop, want: daily - waiting.length };
   }
 
   /* The order words will be learnt in. A word can't come before its characters, so each
@@ -1028,7 +1082,7 @@
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
     pickChars, pickScores, pathSync, wordOrder, PATH_FACTS, hskProgress, hskIsNear, hskNearlyDone,
-    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, refreshNames, RENAMED_COMPS, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dayStart, plan, reviewOrder,
+    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, refreshNames, RENAMED_COMPS, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dailySplit, migrateLessonCfg, WORD_SHARE, recommendedWords, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,

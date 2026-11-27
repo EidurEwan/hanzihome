@@ -28,7 +28,7 @@ function phMark(u, on) {
 const PH_SPEED = 'hanzihome.phraseSpeed';
 const phSpeed = () => { try { return localStorage.getItem(PH_SPEED) === 'slow' ? 'slow' : ''; } catch (e) { return ''; } };
 function phSay(text) {
-  const cfg = { ...Store.cfg(), ...(phSpeed() ? { speed: 'slow' } : {}) };
+  const cfg = { ...Store.cfg(), slow: !!phSpeed() };
   if (Sound.voices().length || cfg.audio === 'browser') return Sound.speak(text, cfg);
   need.audio().then(() => Sound.recorded(text, null, cfg) || Sound.speak(text, cfg), () => Sound.speak(text, cfg));
 }

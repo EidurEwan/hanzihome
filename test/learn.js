@@ -175,26 +175,46 @@ function world(items, status = {}, comps = {}) {
 }
 const queued = (kind, added, extra) => Object.assign(L.newItem(kind, { pin: 'x', mean: 'x' }, t0 + added), extra || {});
 
-check('plan: lesson order, word limit and daily limit', () => {
+check('plan: the day is so many new items, so many of them words', () => {
   const items = { 一: queued('char', 1), 二: queued('char', 2), 三: queued('char', 3),
     一二: queued('word', 4), 二三: queued('word', 5), 一三: queued('word', 6) };
-  const cfg = { lessonLimit: 4, wordLimit: 2, wordWait: false, lessonOrder: 'words' };
+  const cfg = { lessonLimit: 4, lessonWords: 2, wordWait: false };
   const env = world(items);
-  // words first, but a word's characters, waiting too, come just before it
-  assert.deepStrictEqual(L.plan(items, cfg, t0, env).lessons, ['一', '二', '一二', '三']);
-  // characters first, as they are unless asked: words with what is left
-  assert.deepStrictEqual(L.plan(items, { lessonLimit: 4, wordWait: false }, t0, env).lessons, ['一', '二', '三', '一二']);
-  assert.deepStrictEqual(L.plan(items, { ...cfg, lessonOrder: 'mix', lessonLimit: 0 }, t0, env).lessons,
-    ['一', '二', '一二', '三', '二三', '一三']);
-  // two lessons done today: two left, and one of them may be a word
+  // two words, and characters for the rest; a word's characters, waiting too, come just before it
+  assert.deepStrictEqual(L.plan(items, cfg, t0, env).lessons, ['一', '二', '一二', '二三']);
+  // no words: all characters (as many as there are)
+  assert.deepStrictEqual(L.plan(items, { ...cfg, lessonWords: 0 }, t0, env).lessons, ['一', '二', '三']);
+  // all words
+  assert.deepStrictEqual(L.plan(items, { ...cfg, lessonWords: 4 }, t0, env).lessons.filter(k => k.length === 2).sort(), ['一二', '一三', '二三'].sort());
+  // never more words than the total
+  assert.deepStrictEqual(L.dailySplit({ lessonLimit: 5, lessonWords: 9 }), { total: 5, words: 5, chars: 0, recommended: false });
+  assert.deepStrictEqual(L.dailySplit({ lessonLimit: 15, lessonWords: 4 }), { total: 15, words: 4, chars: 11, recommended: false });
+  assert.deepStrictEqual(L.dailySplit({ lessonLimit: 0 }), { total: Infinity, words: Infinity, chars: Infinity, recommended: false });
+  // no limit: everything ready
+  assert.strictEqual(L.plan(items, { ...cfg, lessonLimit: 0 }, t0, env).lessons.length, 6);
+  // two lessons done today, one a word: two left, one of them a word
   L.finishLesson(items['一二'], t0);
   L.finishLesson(items['一'], t0);
-  assert.deepStrictEqual(L.plan(items, cfg, t0 + 1000, env).lessons, ['二', '三']);
+  assert.deepStrictEqual(L.plan(items, cfg, t0 + 1000, env).lessons, ['二', '二三']);
   // tomorrow the limits start again
   assert.strictEqual(L.plan(items, cfg, t0 + DAY, env).lessons.length, 4);
 });
 
-check('the daily limit: characters and their new components first, then words', () => {
+check('plan: too few words ready, and characters fill their share', () => {
+  const items = { 一: queued('char', 1), 二: queued('char', 2), 三: queued('char', 3), 四: queued('char', 4),
+    五六: queued('word', 5), 三四: queued('word', 6) };
+  const env = world(items, { 五: 'learned', 六: 'learned' });
+  // 3 words asked for, but only 1 ready (三四 waits for its characters): 3 characters fill the rest
+  const p = L.plan(items, { lessonLimit: 4, lessonWords: 3 }, t0, env);
+  assert.deepStrictEqual(p.locked, { 三四: ['三', '四'] });
+  assert.deepStrictEqual(p.lessons, ['五六', '一', '二', '三']);
+  // with every word waiting, it is all characters
+  const none = { ...items };
+  delete none.五六;
+  assert.deepStrictEqual(L.plan(none, { lessonLimit: 4, lessonWords: 4 }, t0, env).lessons, ['一', '二', '三', '四']);
+});
+
+check('the daily limit: characters bring their new components, which count', () => {
   const char = (k, added, comps = []) => queued('char', added, { parts: comps });
   const items = {
     一: char('一', 1, ['c:甲', 'c:乙', 'i:y']), 'c:甲': queued('comp', 2), 'c:乙': queued('comp', 3), 'i:y': queued('sound', 4),
@@ -202,35 +222,79 @@ check('the daily limit: characters and their new components first, then words', 
     三: char('三', 7),
     大人: queued('word', 8), 小人: queued('word', 9), 好人: queued('word', 10),
   };
-  const env = world(items), go = (limit, extra = {}) => L.plan(items, { lessonLimit: limit, wordWait: false, ...extra }, t0, env).lessons;
+  const env = world(items), go = (limit, words) => L.plan(items, { lessonLimit: limit, lessonWords: words, wordWait: false }, t0, env).lessons;
   const words = l => l.filter(k => k.length === 2 && !k.includes(':'));
   const chars = l => l.filter(k => k.length === 1);
-  // 一 + 甲 乙 = 3, 二 + 丙 = 2, 三 = 1: six for the characters, the sound free, two left for words
-  let l = go(8);
+  // 一 + 甲 乙 = 3, 二 + 丙 = 2, 三 = 1: six for the characters, the sound free, two words
+  let l = go(8, 2);
   assert.deepStrictEqual(chars(l), ['一', '二', '三']);
   assert(l.includes('i:y'), 'its sound comes with it');
   assert.deepStrictEqual(words(l), ['大人', '小人']);
-  // the components use up the limit: no words
-  assert.deepStrictEqual(words(go(6)), []);
-  assert.deepStrictEqual(chars(go(6)), ['一', '二', '三']);
-  // 二 doesn't fit in 4 (3 + 2): the characters stop there, and what is left goes to words
-  l = go(4);
+  assert.deepStrictEqual(words(go(6, 0)), []);
+  assert.deepStrictEqual(chars(go(6, 0)), ['一', '二', '三']);
+  // 4 for characters: 一 (3), then 二 (2) doesn't fit, and the characters stop there
+  l = go(6, 2);
   assert.deepStrictEqual(chars(l), ['一']);
-  assert.deepStrictEqual(words(l), ['大人']);
+  assert.deepStrictEqual(words(l), ['大人', '小人']);
   // the first character always fits, however many components it brings, or nothing could ever start
-  l = go(2);
+  l = go(2, 0);
   assert.deepStrictEqual(chars(l), ['一']);
   assert.deepStrictEqual(words(l), []);
+  // ...but not when the day is all words
+  l = go(2, 2);
+  assert.deepStrictEqual(chars(l), []);
+  assert.deepStrictEqual(words(l), ['大人', '小人']);
   // with no characters at all, the limit is all words
-  assert.deepStrictEqual(L.plan({ 大人: items.大人, 小人: items.小人 }, { lessonLimit: 1, wordWait: false }, t0, env).lessons, ['大人']);
-  // the path's daily number holds back characters, and words get the room
-  const path = { 一: { ...items.一, parts: [], path: 'mix' }, 二: { ...items.二, parts: [], path: 'mix' }, 大人: items.大人, 小人: items.小人 };
-  assert.deepStrictEqual(L.plan(path, { lessonLimit: 3, path: 'mix', pathDaily: 1, wordWait: false }, t0, world(path)).lessons, ['大人', '小人', '一']);
+  assert.deepStrictEqual(L.plan({ 大人: items.大人, 小人: items.小人 }, { lessonLimit: 1, lessonWords: 1, wordWait: false }, t0, env).lessons, ['大人']);
   // what was done today counts: components, yes; sounds, no
   const done = { ...items, 'c:甲': L.finishLesson(queued('comp', 2), t0), 'i:y': L.finishLesson(queued('sound', 4), t0) };
-  const p = L.plan(done, { lessonLimit: 8, wordWait: false }, t0 + 1000, world(done));
+  const p = L.plan(done, { lessonLimit: 8, lessonWords: 2, wordWait: false }, t0 + 1000, world(done));
   assert.strictEqual(p.lessonsToday, 1);
-  assert.deepStrictEqual(words(p.lessons), ['大人', '小人'], '甲 was paid for, and costs nothing again');
+  assert.deepStrictEqual(chars(p.lessons), ['一', '二', '三'], '甲 was paid for, and costs nothing again');
+  assert.deepStrictEqual(words(p.lessons), ['大人', '小人']);
+});
+
+check('65% words: the default and the recommended share, following the total until you choose', () => {
+  assert.strictEqual(L.WORD_SHARE, 0.65);
+  // new users: 15 a day, 10 of them words (9.75, rounded)
+  assert.deepStrictEqual(L.dailySplit({}), { total: 15, words: 10, chars: 5, recommended: true });
+  // not set (or set back to the recommendation): it follows the total
+  for (const [total, words] of [[5, 3], [10, 7], [20, 13], [25, 16], [30, 20], [40, 26], [50, 33]]) {
+    assert.deepStrictEqual(L.dailySplit({ lessonLimit: total, lessonWords: null }), { total, words, chars: total - words, recommended: true }, `${total} a day`);
+    assert.strictEqual(L.recommendedWords(total), words);
+  }
+  // a number of your own stays, whatever the total (but never above it)
+  assert.deepStrictEqual(L.dailySplit({ lessonLimit: 40, lessonWords: 10 }), { total: 40, words: 10, chars: 30, recommended: false });
+  assert.deepStrictEqual(L.dailySplit({ lessonLimit: 5, lessonWords: 10 }).words, 5);
+  assert.strictEqual(L.dailySplit({ lessonLimit: 20, lessonWords: 0 }).words, 0, 'no words is a choice too');
+  // the default day: 10 words, then characters
+  const items = { 一: queued('char', 1), 二: queued('char', 2), 三: queued('char', 3), 四: queued('char', 4), 五: queued('char', 5), 六: queued('char', 6) };
+  for (let i = 0; i < 12; i++) items['一二三四五六'[i % 6] + '一二三四五六'[(i + 1) % 6] + i] = queued('word', 10 + i);
+  const p = L.plan(items, { wordWait: false }, t0, world(items));
+  assert.strictEqual(p.lessons.filter(k => k.length > 1).length, 10);
+  assert.strictEqual(p.lessons.filter(k => k.length === 1).length, 5);
+});
+
+check('old lesson settings become the two numbers', () => {
+  const m = s => { L.migrateLessonCfg(s); return s; };
+  // a path of 5 characters a day you chose, in a limit of 15: 10 words
+  assert.deepStrictEqual(m({ path: 'mix', lessonLimit: 15, pathDaily: 5, pathWords: true }), { path: 'mix', lessonLimit: 15, lessonWords: 10 });
+  // the path's words off: none
+  assert.deepStrictEqual(m({ path: 'hsk', lessonLimit: 20, pathDaily: 8, pathWords: false }), { path: 'hsk', lessonLimit: 20, lessonWords: 0 });
+  assert.deepStrictEqual(m({ path: 'hsk', pathWords: false }), { path: 'hsk', lessonWords: 0 });
+  // more characters than the limit: no words
+  assert.deepStrictEqual(m({ path: 'mix', lessonLimit: 5, pathDaily: 10 }), { path: 'mix', lessonLimit: 5, lessonWords: 0 });
+  // no limit becomes 50, at the recommended share
+  assert.deepStrictEqual(m({ lessonLimit: 0, pathDaily: 5 }), { lessonLimit: 50 });
+  assert.strictEqual(L.dailySplit({ lessonLimit: 50 }).words, 33);
+  // no clear preference (the path off, or its number never chosen): the recommended share, unset so it follows the total
+  assert.deepStrictEqual(m({ lessonLimit: 10 }), { lessonLimit: 10 });
+  assert.deepStrictEqual(m({ path: 'mix', lessonLimit: 20 }), { path: 'mix', lessonLimit: 20 });
+  assert.deepStrictEqual(m({ path: 'off', lessonLimit: 20, pathDaily: 8 }), { path: 'off', lessonLimit: 20 });
+  // already moved: nothing changes
+  const now = { lessonLimit: 20, lessonWords: 3 };
+  assert.strictEqual(L.migrateLessonCfg(now), false);
+  assert.deepStrictEqual(now, { lessonLimit: 20, lessonWords: 3 });
 });
 
 check('the lessons come: prioritised, then words, then characters, parts with their own', () => {
@@ -243,8 +307,8 @@ check('the lessons come: prioritised, then words, then characters, parts with th
   const env = world(items);
   const p = L.plan(items, { lessonLimit: 20, wordWait: false }, t0, env);
   assert.deepStrictEqual(p.lessons, ['c:乙', '三', '好人', '大人', '小人', 'c:甲', 'i:y', '一', '二']);
-  // the room is still shared out characters first: 三 + 乙, 好人, 一 + 甲, 二 fill six, so no other word
-  const q = L.plan(items, { lessonLimit: 6, wordWait: false }, t0, env);
+  // what you prioritised is paid for first (三 + 乙, 好人), then characters (一 + 甲, 二) fill six, so no other word
+  const q = L.plan(items, { lessonLimit: 6, lessonWords: 1, wordWait: false }, t0, env);
   assert.deepStrictEqual(q.lessons.filter(k => /^[大小好]人$/.test(k)), ['好人']);
   assert.strictEqual(q.lessons[q.lessons.length - 1], '二');
   // a word can't go ahead of its own characters
@@ -292,7 +356,7 @@ check('plan: components come just before their character', () => {
   const p = L.plan(items, { lessonLimit: 0, wordWait: false, lessonOrder: 'words' }, t0, env);
   assert.deepStrictEqual(p.lessons, ['c:亻', '你', 'c:女', 'c:子', 'i:h', 'f:ao', '好', '你好']);
   // a limit of 1: the first character still comes, with its parts; 你's 亻 waits with 你 for another day
-  assert.deepStrictEqual(L.plan(items, { lessonLimit: 1, wordWait: false, lessonOrder: 'chars' }, t0, env).lessons,
+  assert.deepStrictEqual(L.plan(items, { lessonLimit: 1, lessonWords: 0, wordWait: false, lessonOrder: 'chars' }, t0, env).lessons,
     ['c:女', 'c:子', 'i:h', 'f:ao', '好']);
 });
 
@@ -351,9 +415,11 @@ check('plan: the priority queue, with and without the limits', () => {
   const items = { 一: queued('char', 1), 二: queued('char', 2), 三: queued('char', 3, { prio: true }),
     四四: queued('word', 4) };
   const env = world(items);
-  const cfg = { lessonLimit: 2, wordLimit: 2, wordWait: false };
+  const cfg = { lessonLimit: 2, lessonWords: 0, wordWait: false };
   assert.deepStrictEqual(L.plan(items, cfg, t0, env).lessons, ['三', '一']);            // 三 first, then the characters
   assert.deepStrictEqual(L.plan(items, { ...cfg, prioRespect: false }, t0, env).lessons, ['三', '一', '二']);
+  // a word a day: 三 and the word fill the two
+  assert.deepStrictEqual(L.plan(items, { ...cfg, lessonWords: 1 }, t0, env).lessons, ['三', '四四']);
 });
 
 check('plan: reviews in order, under a soft daily limit; vacation stops everything', () => {
@@ -530,39 +596,39 @@ check('the queue follows the path settings, and leaves alone what is yours', () 
     a: q({ path: 'common', added: 1 }), b: q({ path: 'common', added: 2 }), c: q({ path: 'common', added: 3 }),
   };
   // another path: the old path's go, and the new one fills up (star and push count towards it)
-  let r = L.pathSync(items, { path: 'mix', pathDaily: 5 });
+  let r = L.pathSync(items, { path: 'mix', lessonLimit: 5 });
   assert.deepStrictEqual(r.drop.sort(), ['a', 'b', 'c']);
   assert.strictEqual(r.want, 3);
   // path off: only the path's go
-  r = L.pathSync(items, { path: 'off', pathDaily: 5 });
+  r = L.pathSync(items, { path: 'off', lessonLimit: 5 });
   assert.deepStrictEqual(r.drop.sort(), ['a', 'b', 'c']);
   assert.strictEqual(r.want, 0);
   // the same path: a bigger number adds, a smaller one takes off the last added
-  assert.deepStrictEqual(L.pathSync(items, { path: 'common', pathDaily: 8 }), { drop: [], want: 3 });
-  assert.deepStrictEqual(L.pathSync(items, { path: 'common', pathDaily: 3 }).drop.sort(), ['b', 'c']);
-  assert.deepStrictEqual(L.pathSync(items, { path: 'common', pathDaily: 5 }), { drop: [], want: 0 });
+  assert.deepStrictEqual(L.pathSync(items, { path: 'common', lessonLimit: 8 }), { drop: [], want: 3 });
+  assert.deepStrictEqual(L.pathSync(items, { path: 'common', lessonLimit: 3 }).drop.sort(), ['b', 'c']);
+  assert.deepStrictEqual(L.pathSync(items, { path: 'common', lessonLimit: 5 }), { drop: [], want: 0 });
   // however small the number, what is yours stays
-  r = L.pathSync(items, { path: 'common', pathDaily: 1 });
+  r = L.pathSync(items, { path: 'common', lessonLimit: 1 });
   assert.deepStrictEqual(r.drop.sort(), ['a', 'b', 'c']);
   assert.strictEqual(r.want, 0);
-  assert.deepStrictEqual(L.pathSync({}, { path: 'mix', pathDaily: 5 }), { drop: [], want: 5 });
+  assert.deepStrictEqual(L.pathSync({}, { path: 'mix', lessonLimit: 5 }), { drop: [], want: 5 });
 });
 
 check('the path keeps the queue full, but only the day\'s number is ready', () => {
   const now = Date.UTC(2026, 5, 1, 12), today = L.dayStart(now);
   const env = { level: () => null, comps: () => [], compOk: () => true };
   const q = o => ({ stage: 0, added: 1, kind: 'char', ...o });
-  const cfg = { path: 'mix', pathDaily: 2, lessonLimit: 20, wordLimit: 20, charUnlock: 'now' };
-  const items = { a: q({ path: 'mix', added: 1 }), b: q({ path: 'mix', added: 2 }), c: q({ path: 'mix', added: 3 }) };
-  assert.deepStrictEqual(L.plan(items, cfg, now, env).lessons, ['a', 'b']);
-  // two done today: the rest wait for tomorrow, and stay in the queue
+  const cfg = { path: 'mix', lessonLimit: 3, lessonWords: 1, charUnlock: 'now' };
+  const items = { a: q({ path: 'mix', added: 1 }), b: q({ path: 'mix', added: 2 }), c: q({ path: 'mix', added: 3 }), d: q({ path: 'mix', added: 4 }) };
+  // no word ready: the characters take the word's share too
+  assert.deepStrictEqual(L.plan(items, cfg, now, env).lessons, ['a', 'b', 'c']);
+  // the queue holds a whole day's characters
+  assert.deepStrictEqual(L.pathSync(items, cfg), { drop: ['d'], want: 0 });
+  // two done today: one left
   const done = { x: { stage: 1, kind: 'char', path: 'mix', learnt: today + 1, added: 0 }, y: { stage: 1, kind: 'char', path: 'mix', learnt: today + 2, added: 0 } };
   const after = L.plan({ ...items, ...done }, cfg, now, env);
-  assert.deepStrictEqual(after.lessons, []);
-  assert.deepStrictEqual(after.waiting, ['a', 'b', 'c']);
-  // your own, and a star, aren't held back
-  const yours = L.plan({ ...items, ...done, mine: q({ added: 4 }), a: q({ path: 'mix', prio: true }) }, cfg, now, env);
-  assert.deepStrictEqual(yours.lessons.sort(), ['a', 'mine']);
+  assert.deepStrictEqual(after.lessons, ['a']);
+  assert.deepStrictEqual(after.waiting, ['a', 'b', 'c', 'd']);
 });
 
 check('prioritised items come before the rest, whichever the lesson order puts first', () => {
@@ -570,21 +636,22 @@ check('prioritised items come before the rest, whichever the lesson order puts f
   const env = { level: () => null, comps: () => [], compOk: () => true };
   const q = o => ({ stage: 0, added: 1, ...o });
   const items = { 一二: q({ kind: 'word', added: 1 }), 三: q({ kind: 'char', added: 2 }), 四: q({ kind: 'char', added: 3, prio: true }) };
-  assert.deepStrictEqual(L.plan(items, { lessonOrder: 'words', lessonLimit: 20, wordLimit: 20, charUnlock: 'now' }, now, env).waiting, ['四', '一二', '三']);
+  assert.deepStrictEqual(L.plan(items, { lessonOrder: 'words', lessonLimit: 20, lessonWords: 20, charUnlock: 'now' }, now, env).waiting, ['四', '一二', '三']);
 });
 
-check('the path\'s daily number is for characters; words have what the limit leaves', () => {
+check('the words have their share of the day, the characters the rest', () => {
   const now = Date.UTC(2026, 5, 1, 12), today = L.dayStart(now);
   const env = { level: () => null, comps: () => [], compOk: () => true };
   const q = o => ({ stage: 0, added: 1, ...o });
   const items = { 一: q({ kind: 'char', path: 'mix' }), 二三: q({ kind: 'word', path: 'mix' }), 四五: q({ kind: 'word', path: 'mix', added: 2 }),
     六: { stage: 1, kind: 'char', path: 'mix', learnt: today + 1 } };
-  const lessons = L.plan(items, { path: 'mix', pathDaily: 1, lessonLimit: 20, wordLimit: 20, charUnlock: 'now', wordWait: false }, now, env).lessons;
-  assert.deepStrictEqual(lessons, ['二三', '四五'], 'the day\'s character is done; words fill the limit');
-  // the queue's words follow the settings apart from its characters
-  assert.deepStrictEqual(L.pathSync(items, { path: 'mix', pathDaily: 1 }, 'word').drop, ['四五']);
-  assert.deepStrictEqual(L.pathSync(items, { path: 'mix', pathDaily: 1, pathWords: false }, 'word').drop.sort(), ['二三', '四五']);
-  assert.deepStrictEqual(L.pathSync(items, { path: 'mix', pathDaily: 1, pathWords: false }, 'char').drop, []);
+  const cfg = { path: 'mix', lessonLimit: 3, lessonWords: 2, charUnlock: 'now', wordWait: false };
+  assert.deepStrictEqual(L.plan(items, cfg, now, env).lessons, ['二三', '四五'], 'a character done today: the two words fill the rest');
+  assert.deepStrictEqual(L.plan(items, { ...cfg, lessonWords: 1 }, now, env).lessons, ['二三', '一']);
+  // the queue's words follow the words a day, apart from its characters
+  assert.deepStrictEqual(L.pathSync(items, { ...cfg, lessonWords: 1 }, 'word').drop, ['四五']);
+  assert.deepStrictEqual(L.pathSync(items, { ...cfg, lessonWords: 0 }, 'word').drop.sort(), ['二三', '四五']);
+  assert.deepStrictEqual(L.pathSync(items, { ...cfg, lessonWords: 0 }, 'char').drop, []);
 });
 
 check('the word order: each word just after the last of its characters', () => {

@@ -24,7 +24,7 @@ which is what lets it work from a plain `file://` URL.
 
 **On a phone, or offline:** opened from the live address, the site keeps every file it has
 used ([`site/sw.js`](site/sw.js), a service worker), so pages you have opened open again without
-a connection, and **Settings → Use offline → Keep everything** fetches the rest (about 70 MB).
+a connection; the rest load the first time you need them.
 Add it to the home screen from the browser's menu and it opens like an app
 ([`site/manifest.webmanifest`](site/manifest.webmanifest)). A new version shows as soon as the
 page is loaded with a connection.
@@ -100,7 +100,7 @@ lessons ready; "Decide later", or skipping the tutorial, leaves the same choice 
 on Today, and on the Lessons page while it is empty (`pathPick` in `site/study.js`). The very
 first lesson opens on three more slides, **how the mnemonic pictures work**: a component's
 picture name, and a sound's figure, place and spot at that place (`picturesFirst`), since the
-first page of that lesson is a list of them. Settings → Tutorials shows either again.
+first page of that lesson is a list of them.
 
 **Motion** (`site/motion.js`, and the Motion section of `style.css`) — a new page's cards rise in
 one after another and its numbers count up; bars, rings, the coverage donut and the items-learned
@@ -133,7 +133,7 @@ in five learned) among those you haven't opened, or else the one you know most o
 says which (`storyForYou` in `site/app.js`); the review summary and the end of the day's lessons
 offer the same. Then the week streak, Practice (the daily grammar round and Weak spots; the rest is
 on the Practice page), the chart of items learned, upcoming reviews, the lesson queue, the progress
-cards two by two, the stages, and Anki. The progress cards:
+cards two by two, and the stages. The progress cards:
 
 * **Character progress** — searched, components known, waiting for lessons, known.
 * **Reading coverage** — a donut showing what share of ordinary running text your known
@@ -168,12 +168,14 @@ its meanings and pronunciation, and examples, then asks you to type its pinyin (
 `ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
 
 **A learning path** (the tutorial's last slide, Today when nothing is queued, or Settings) keeps the lesson queue
-full with the next characters of the most common or of HSK 1 to 9, or **balanced**, as many as you
-choose, each with its new components and sounds; that many become ready each day. Change the path or
-the number and what the path queued changes at once, while what you added yourself or starred stays
-(`Learn.pathSync`). **The daily lesson limit** is filled first with new characters and the new components
-they bring (sounds are free), then with words, which can be learned the day after all their characters have had
-their lessons. The lessons themselves come in this order: what you prioritised, then words, then
+full with the next characters of the most common or of HSK 1 to 9, or **balanced**, each with its new
+components and sounds, and their words. Change the path or the numbers and what the path queued changes at
+once, while what you added yourself or starred stays (`Learn.pathSync`). **A day's lessons are two numbers**
+(`Learn.dailySplit`): how many new items a day, and how many of those are words (65% by default and
+recommended, following the total until you choose a number yourself); characters and the new
+components they bring fill the rest (sounds are free), and take the words' share when fewer words are ready.
+A word can be learned the day after all its characters have had their lessons. (The old path "new characters
+a day" and words switch became these: `Learn.migrateLessonCfg`.) The lessons themselves come in this order: what you prioritised, then words, then
 characters. Settings has a side panel of its sections (a menu on a phone), built from the page's own headings. Today's queue shows the next ten characters and words; **Upcoming** (`#/queue`,
 `site/order.js`) shows the character order and the word order on two tabs (each word comes just after the
 last of its characters: `Learn.wordOrder`, from `site/data/wordorder.js`, written by
@@ -186,8 +188,8 @@ when each finishes each HSK level, how much text each lets you read, and what ea
 (`Learn.PATH_FACTS`, which `test/learn.js` checks against the real orders). **An HSK level nearly done**
 (75% learned and at most 50 left) gets a button, on Today and its own page, that puts the rest at the
 front of the lessons; the path waits until they're done, and it can be taken back. **When today's lessons are done comes a quiz** over all of
-them, mixed, in the reviews' page (batch after batch first: a batch holds that many characters and
-words, with the components and sounds they need); its first answers (with each lesson's own check)
+them, mixed, in the reviews' page (in batches of five characters and words first, with the components and sounds
+they need); its first answers (with each lesson's own check)
 rate the first review. "Stop here and take the quiz" ends early and leaves the rest queued. **A missed review opens the mnemonic**, unless it would give away a question still to come,
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four
 lapses, or four misses in the last eight reviews) are listed on Today, side by side with
@@ -305,11 +307,9 @@ to add one), your mnemonic and notes to edit, usage; a section that would give a
 other question starts closed), play the pronunciation (P), quiz settings (Q), reveal the answer
 (Ctrl+Enter, counted as missed), open the item in a new tab (O; a second window in the desktop
 app), wrap up (W: finish the items already started, leave the rest for next time) and undo
-(Ctrl+Z: the answer doesn't count and the question comes again later). Two more questions can be
+(Ctrl+Z: the answer doesn't count and the question comes again later). One more question can be
 turned on in Settings: **Listening** asks an item's meaning from its sound alone, before you see
-it, and counts like the others; **Writing** asks you to draw a character, stroke by stroke, from
-its pinyin and meaning (after three misses on a stroke its outline shows, and needing it makes
-the review hard, never forgotten). Tabs and windows open on
+it, and counts like the others. Tabs and windows open on
 the site follow each other's changes. The summary after a session shows the share right first
 time, what was reviewed, right and missed and how long it took, a tile per item with the stage
 it moved to (and from), the rating the app gave it, its stability and difficulty, and what you
@@ -329,28 +329,18 @@ shows what you can start now (and why not, when nothing), the week ahead, the le
 (☆ to prioritize, 🔒 for what waits to unlock) and how many items are at each stage.
 
 HanziHero's settings are in **Settings → Lessons and reviews**, saved as you change them and
-synced: the desired retention for FSRS (80–97%; changing it moves every review); lesson batch size; daily lesson limit (Casual 5 to Jump start 40, or none) and how many
-of those may be words; a soft daily review limit; when a character unlocks (right away, or once
+synced: the desired retention for FSRS (80–97%; changing it moves every review); new items a day (Casual 5 to Jump start 50) and how many
+of those are words (65% recommended); a soft daily review limit; when a character unlocks (right away, or once
 its components are learned or familiar) and when a word does (once its characters are learned
-or familiar; adding a word can put its unknown characters at the front of the queue);
-question order, lesson order, the priority queue and review order (random, by type, oldest,
-newest, easiest, lowest stage); the progress counters; pinyin answer validation (an answer
-that isn't pinyin shakes instead of counting as wrong); targeted sentence reviews (a word shown
-in the sentence you found it in, or one from the stories); the voice, its speed and muting it
+or familiar; adding a word always puts its unknown characters at the front of the queue);
+question order and review order (random, by type, oldest,
+newest, easiest, lowest stage); the progress counters; the voice and muting it
 and the sound effects (reading aloud uses the device's Chinese voice); and vacation mode, which
 pauses everything and moves reviews on by the time away. HanziHero's daily dictionary limit and
 word skipping have no counterpart here: every item is one you added, and nothing is skipped.
 
 The rules are in [`site/learn.js`](site/learn.js), checked by `node test/learn.js`; characters
 that were being learned with the old flashcards start at Novice I.
-
-**Anki** — Today's Anki card exports your lessons and reviews as a file Anki imports
-as it is (hanzi, pinyin, meaning, the sentence you found it in, your mnemonic, tags for kind and
-stage), and imports an Anki deck: a `.apkg` (old or new format, read in the page with sql.js and
-fzstd from `site/vendor/`) or Anki's plain-text export. It guesses which field is the hanzi,
-the pinyin and the meaning (you can change them), shows what it found, and adds the new ones to
-your lessons, or to your reviews at Novice if you already know them. Traditional decks are
-kept under their simplified form, and the dictionary's readings are used where it has the word.
 
 **Reader** — 35 original graded stories, five per HSK level (HSK 1 to 6, and 7–9), each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and
@@ -435,7 +425,6 @@ Appearance too, or follows the device.
 | [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) | HSK 3.0 levels | MIT |
 | [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) (Make Me a Hanzi's graphics) | stroke order, writing practice | Arphic Public License |
 | [Hanzi Writer](https://github.com/chanind/hanzi-writer) (`site/vendor/`) | drawing strokes and checking written ones | MIT |
-| [sql.js](https://github.com/sql-js/sql.js), [fzstd](https://github.com/101arrowz/fzstd) (`site/vendor/`) | reading Anki decks | MIT |
 
 ```
 build/build.py          data/raw/*  ->  data/hanzicraft.db   (SQLite, ~28 MB)
