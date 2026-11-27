@@ -188,7 +188,7 @@ when each finishes each HSK level, how much text each lets you read, and what ea
 (`Learn.PATH_FACTS`, which `test/learn.js` checks against the real orders). **An HSK level nearly done**
 (75% learned and at most 50 left) gets a button, on Today and its own page, that puts the rest at the
 front of the lessons; the path waits until they're done, and it can be taken back. **When today's lessons are done comes a quiz** over all of
-them, mixed, in the reviews' page (in batches of five characters and words first, with the components and sounds
+them, mixed, in the reviews' page (the day's characters and words, as many as new items a day, with the components and sounds
 they need); its first answers (with each lesson's own check)
 rate the first review. "Stop here and take the quiz" ends early and leaves the rest queued. **A missed review opens the mnemonic**, unless it would give away a question still to come,
 and an answer that is another item's meaning is pointed out and remembered. **Leeches** (four

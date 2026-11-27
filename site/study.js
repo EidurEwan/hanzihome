@@ -1829,17 +1829,16 @@ async function pageLessons() {
   paintRail();
 }
 
-/* The next batch of lessons, leaving out those done in this session: up to the batch
-   size in characters and words, each with the components and sounds that come just
-   before it (they don't count). The lessons go on batch after batch; the quiz comes
-   once none are left today (lessonQuiz). */
-const LESSON_BATCH = 5;   // characters and words a batch holds (fixed: the daily lesson limit is the one setting)
+/* The next batch of lessons, leaving out those done in this session: the day's lessons,
+   as many characters and words as new items a day (with no limit, twenty at a time), each
+   with the components and sounds that come just before it (they don't count). The quiz
+   comes once none are left today (lessonQuiz). */
 function nextBatch(done) {
-  const d = Store.load(), out = [];
+  const d = Store.load(), out = [], limit = Store.cfg().lessonLimit, size = limit > 0 ? limit : 20;
   let n = 0;
   for (const k of Store.plan().lessons) {
     if (done.includes(k) || !d.items[k]) continue;
-    if (n >= LESSON_BATCH) break;                     // (the next character's parts start a new batch)
+    if (n >= size) break;                             // (the next character's parts start a new batch)
     out.push(k);
     if (d.items[k].kind !== 'comp' && d.items[k].kind !== 'sound') n++;
   }
