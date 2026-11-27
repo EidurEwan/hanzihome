@@ -2810,7 +2810,7 @@ a.mn-chip:hover { text-decoration: none; outline: 1px solid var(--lx-sound); }
 .ord-item .ord-n { position: absolute; top: 3px; left: 6px; font-size: 10px; color: var(--ink-3); }
 .ord-item .ord-mark { position: absolute; top: 2px; right: 5px; font-style: normal; font-size: 13px; color: var(--accent); }
 .ord-item.prio { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
-.ord-item.skip { opacity: .55; }
+
 .ord-more { text-align: center; margin: 16px 0; }
 .ord-dlg { width: min(340px, calc(100vw - 32px)); padding: 20px; border: 1px solid var(--line-2); border-radius: 14px;
   background: var(--panel); color: inherit; text-align: center; }
@@ -3129,6 +3129,9 @@ html { scrollbar-gutter: stable; }
 ::view-transition-new(root) { animation: m-page-in .2s var(--m-ease) both; mix-blend-mode: normal; }
 /* a colour change only fades, the page stays where it is (app.js recolour) */
 html.vt-recolour::view-transition-new(root) { animation: m-fade .25s ease both; }
+/* (between pages of one place, say HSK 1 and HSK 2, the title and tabs don't move: the
+   page only fades, as one that slid in would shake what stays the same) */
+:root.m-quiet::view-transition-new(root) { animation: m-fade .14s var(--m-ease) both; }
 @media (min-width: 901px) {
   .topbar { view-transition-name: hz-top; }
   ::view-transition-group(hz-top) { animation: none; }
@@ -4857,6 +4860,10 @@ a.lx-q.prio:hover { box-shadow: 0 0 0 3px var(--yellow); }
 .ord-item[class*=" hsk"]::after { right: 8px; bottom: 8px; box-shadow: 0 0 0 2px rgb(255 255 255 / .85); }
 .ord-act { background: rgb(0 0 0 / .28); color: #fff; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .ord-item { transition: none; } }
+/* a skipped one: a plain grey tile, its text faint but readable, in light and dark */
+.ord-item.skip, .ord-item.skip.word { --face: var(--panel-2); --edge: var(--line-2); color: var(--ink-3); }
+.ord-item.skip .han, .ord-item.skip small, .ord-item.skip .ord-n { color: var(--ink-3); }
+.ord-item.skip[class*=" hsk"]::after { opacity: .45; }
 /* the tiles as small review cards: the face in its own colour with a light rim */
 .ord-item { border-radius: 14px; }
 .ord-main { min-height: 96px; padding: 10px 4px 8px; box-sizing: border-box; border: 5px solid color-mix(in srgb, var(--face) 52%, #fff);
@@ -5331,13 +5338,14 @@ a.pt-tile.pt-item:focus-visible { outline: 3px solid var(--accent); outline-offs
 
 /* ---- Today: the tiles and what's coming on the left, your reading on the right ---- */
 .td-date { margin: -8px auto 18px; }
-/* (the two columns end level: Coming up takes up the difference, its days spread to fill it) */
 .td-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 320px); gap: 20px; align-items: stretch; margin-bottom: 20px; }
 .td-grid.first { grid-template-columns: minmax(0, 1fr); }
-.td-main, .td-side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; align-content: start; }
+/* each column fills the row, and its last card grows to the bottom: the two columns
+   always end level (Coming up on the left, Next up on the right) */
+.td-main, .td-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.td-main > :last-child, .td-side > :last-child { flex-grow: 1; }
 .td-main .lx-hub { margin-bottom: 6px; }
 .td-main > .td-coming:last-child { display: flex; flex-direction: column; align-self: stretch; }
-.td-main:has(> .lx-hub:first-child + .td-coming:last-child) { grid-template-rows: auto minmax(0, 1fr); }
 .td-side .card, .td-main .card, .td-more .card { margin: 0; padding: 16px 18px; }
 .td-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .td-coming .lx-today { margin: 0 0 14px; }

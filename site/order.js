@@ -17,13 +17,16 @@ const ORDER_WORD_HORIZON = 800;
 const skipList = () => Store.load().study.skip || [];
 
 /* the characters the path would choose next, after what is queued */
-function pathChars(n) {
+function pathChars(n, withSkipped) {
   const cfg = Store.cfg(), d = Store.load();
   if (!cfg.path || cfg.path === 'off' || n <= 0) return [];
-  const skipped = new Set(skipList());
-  const skip = c => !!(d.items[c] || d.status[c] || skipped.has(c));
+  const skipped = new Set(withSkipped ? [] : skipList());
+  // (as if nothing were skipped, what the path put in the queue counts as still to choose:
+  // a skipped one was taken out of the queue, so only the path's order says where it was)
+  const taken = c => !!d.items[c] && !(withSkipped && pathQueued(d.items[c]));
+  const skip = c => !!(taken(c) || d.status[c] || skipped.has(c));
   if (cfg.path === 'mix' && HZ.charorder) {
-    return Learn.pickChars(HZ.charorder, n, p => !!(d.items['c:' + p] || d.items[p] || Store.compKnown(p)), skip);
+    return Learn.pickChars(HZ.charorder, n, p => !!(d.items['c:' + p] || (d.items[p] && taken(p)) || Store.compKnown(p)), skip);
   }
   const all = cfg.path === 'hsk'
     ? Object.keys(HZ.hskChars || {}).sort((a, b) => a - b).flatMap(lv => HZ.hskChars[lv])
@@ -36,10 +39,13 @@ function pathChars(n) {
   return out;
 }
 
-/* what is queued, in order, of one kind */
-const queuedOf = kind => {
+/* put in the queue by the path, and not started or asked for */
+const pathQueued = it => !!(it.path && it.stage === 0 && !it.learnt && !it.prio);
+
+/* what is queued, in order, of one kind (but for what the path put there, withSkipped) */
+const queuedOf = (kind, withSkipped) => {
   const d = Store.load();
-  return Store.plan().waiting.filter(k => d.items[k] && d.items[k].kind === kind);
+  return Store.plan().waiting.filter(k => d.items[k] && d.items[k].kind === kind && !(withSkipped && pathQueued(d.items[k])));
 };
 
 /* Today's queue: the next ten characters and words, nothing else */
@@ -51,21 +57,21 @@ function nextUp(n = 10) {
   return queued.slice(0, n).concat(pathChars(Math.max(0, n - queued.length)));
 }
 
-function upcomingChars(n) {
-  const queued = queuedOf('char');
-  return queued.concat(pathChars(Math.max(0, n - queued.length))).slice(0, n);
+function upcomingChars(n, withSkipped) {
+  const queued = queuedOf('char', withSkipped);
+  return queued.concat(pathChars(Math.max(0, n - queued.length), withSkipped)).slice(0, n);
 }
 
 /* the words to come: queued, then each just after the last of its characters */
-function upcomingWords(n) {
-  const d = Store.load(), queued = queuedOf('word'), cfg = Store.cfg();
+function upcomingWords(n, withSkipped) {
+  const d = Store.load(), queued = queuedOf('word', withSkipped), cfg = Store.cfg();
   if (!HZ.wordorder || !cfg.path || cfg.path === 'off') return queued.slice(0, n);
-  const pos = new Map(upcomingChars(ORDER_WORD_HORIZON).map((c, i) => [c, i + 1]));
+  const pos = new Map(upcomingChars(ORDER_WORD_HORIZON, withSkipped).map((c, i) => [c, i + 1]));
   const env = learnEnv();
   const charPos = c => ((env.level(c) || 0) >= 1 ? 0 : pos.get(c));
-  const skipped = new Set(skipList());
+  const skipped = new Set(withSkipped ? [] : skipList());
   // (nor a word with a character you have chosen to skip: charPos has none for it)
-  const rest = Learn.wordOrder(HZ.wordorder, charPos, w => !!d.items[w] || skipped.has(w) || d.wstatus[w] === 'learned');
+  const rest = Learn.wordOrder(HZ.wordorder, charPos, w => (!!d.items[w] && !(withSkipped && pathQueued(d.items[w]))) || skipped.has(w) || d.wstatus[w] === 'learned');
   return queued.concat(rest).slice(0, n);
 }
 
@@ -77,6 +83,22 @@ function orderInfo(k, kind) {
   }
   const cm = HZ.cmnem && HZ.cmnem[k], e = HZ.index[k] || [];
   return { pin: (it && it.pin) || (cm && cm[2]) || e[2] || '', mean: (cm && cm[0]) || (it && it.mean) || String(e[3] || '').split(/;|…/)[0] };
+}
+
+/* The order with what you skipped left in, where it would have come (greyed out on the
+   page): the order as if nothing were skipped says where each skipped one goes, just after
+   the last one before it that is still coming. */
+function withSkips(list, ghost) {
+  const skips = new Set(skipList()), out = list.map(k => ({ k })), at = new Map(list.map((k, i) => [k, i]));
+  const after = new Map();      // index in list (-1: before all) → skipped ones that follow it
+  let prev = -1;
+  for (const k of ghost) {
+    if (skips.has(k)) after.set(prev, [...(after.get(prev) || []), k]);
+    else if (at.has(k)) prev = at.get(k);
+  }
+  const res = (after.get(-1) || []).map(k => ({ k, skip: true }));
+  out.forEach((o, i) => { res.push(o); for (const k of after.get(i) || []) res.push({ k, skip: true }); });
+  return res;
 }
 
 /* a new item for what you prioritised */
@@ -274,9 +296,12 @@ async function pageQueue(tab, count) {
   const cfg = Store.cfg(), kind = tab === 'words' ? 'word' : 'char', n = count * ORDER_STEP;
   // (asks for one more than it shows, to know if there is more)
   const list = tab === 'words' ? upcomingWords(n + 1) : upcomingChars(n + 1);
-  const shown = list.slice(0, n);
+  // (with what you skipped greyed out where it would have come, out of the count)
+  const ghost = tab === 'words' ? upcomingWords(n + 1, true) : upcomingChars(n + 1, true);
+  const shown = list.slice(0, n), rows = withSkips(shown, ghost);
   const pathName = { mix: 'Balanced', common: 'Most common first', hsk: 'HSK 1 to 9' }[cfg.path];
-  const skipped = skipList().filter(k => (kind === 'word') === ([...k].length > 1));
+  const inline = new Set(rows.filter(r => r.skip).map(r => r.k));
+  const skipped = skipList().filter(k => (kind === 'word') === ([...k].length > 1) && !inline.has(k));
   const off = !cfg.path || cfg.path === 'off';
 
   // the characters by when they come: today's still to do, then the day's new characters a day
@@ -297,8 +322,10 @@ async function pageQueue(tab, count) {
       doneAfter.set(i, [...(doneAfter.get(i) || []), [l, HZ.hskChars[l].filter(c => charHsk(c) === +l).length]]);
     });
   }
-  let html = '', last = null;
-  shown.forEach((k, i) => {
+  let html = '', last = null, i = -1;
+  for (const { k, skip } of rows) {
+    if (skip) { html += orderItem(k, kind); continue; }
+    i++;
     if (dated) {
       const when = ordWhen(dayOf(i));
       if (when !== last) {
@@ -312,7 +339,7 @@ async function pageQueue(tab, count) {
     for (const [l, all] of doneAfter.get(i) || []) {
       html += `<p class="ord-mile"><b>${hskName(l)} complete</b><span>All ${all} of its characters${dated ? `, ${ordWhen(dayOf(i)).toLowerCase()}` : ''}</span></p>`;
     }
-  });
+  }
   app.innerHTML = `<h1 class="page-title">Upcoming</h1>
     <p class="lede">What you'll learn, in order. <span class="ord-hint-hover">Use <span class="ord-key">${ORD_ICO.up}</span> to learn one next, or
       <span class="ord-key">${ORD_ICO.skip}</span> to skip it, so you never learn it. Click one for more.</span><span class="ord-hint-touch">Tap one to learn it
@@ -326,8 +353,8 @@ async function pageQueue(tab, count) {
     ${shown.length ? `<div class="ord-items${dated ? ' dated' : ''}">${html}</div>`
       : `<p class="empty">${off ? 'Nothing here yet. Turn on a learning path in Settings, or add some yourself.' : 'Nothing to come.'}</p>`}
     ${list.length > n ? `<p class="ord-more"><a class="btn quiet" href="#/queue/${tab}/${count + 1}">Show more</a></p>` : ''}
-    ${skipped.length ? `<h2 class="sec-h">Skipped (${skipped.length})</h2>
-      <p class="small muted">You won't learn these. Use ${ORD_ICO.back.replace('<svg', '<svg class="ord-inline"')} to bring one back.</p>
+    ${skipped.length ? `<h2 class="sec-h">${inline.size ? 'Also skipped' : 'Skipped'} (${skipped.length})</h2>
+      <p class="small muted">You won't learn these${inline.size ? ' (the ones above stay greyed out where they would have come)' : ''}. Use ${ORD_ICO.back.replace('<svg', '<svg class="ord-inline"')} to bring one back.</p>
       <div class="ord-items">${skipped.map(k => orderItem(k, kind)).join('')}</div>` : ''}`;
   app.querySelectorAll('.ord-item').forEach(el => {
     const k = el.dataset.k, kd = el.dataset.kind;
