@@ -510,8 +510,9 @@ check('the balanced path on the real data: basics early, nothing obscure', () =>
   for (const c of '一不人是') assert(seq.indexOf(c) >= 0 && seq.indexOf(c) < 20, c + ' early');
   assert(seq.every(c => HZ.charorder[c][1] && HZ.charorder[c][0] <= 3000), 'all HSK and common');
   assert.strictEqual(new Set(seq).size, 200, 'no repeats');
-  const first400 = new Set(L.pickChars(HZ.charorder, 400, () => false));
-  assert(Object.keys(HZ.charorder).filter(c => HZ.charorder[c][1] === 1).every(c => first400.has(c)), 'HSK 1 done within 400');
+  // (HSK 3.0's level 1 is 300 characters: done within twice that)
+  const first600 = new Set(L.pickChars(HZ.charorder, 600, () => false));
+  assert(Object.keys(HZ.charorder).filter(c => HZ.charorder[c][1] === 1).every(c => first600.has(c)), 'HSK 1 done within 600');
   require('../site/data/hskchars.js');
   for (const lv of Object.keys(HZ.hskChars)) {
     assert.deepStrictEqual(HZ.hskChars[lv].filter(c => !HZ.charorder[c]), [], 'every HSK ' + lv + ' character can be chosen');

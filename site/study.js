@@ -303,20 +303,25 @@ function hskStanding() {
   return Learn.hskProgress(HZ.hskChars, isDone);
 }
 const hskPushed = p => p.left.every(c => { const it = Store.load().items[c]; return it && it.prio; });
-/* the card for a level (p, from hskStanding), or nothing unless it is close to complete */
+/* the card for a level (p, from hskStanding), or nothing unless it is close to complete: a
+   badge with the level, how far through it you are, and the characters left as small tiles */
 function hskPushCard(p) {
   if (!p || !Learn.hskIsNear(p)) return '';
-  const n = p.left.length, list = p.left.slice(0, 24).map(c => zh(c)).join(' ') + (n > 24 ? ' …' : '');
-  return hskPushed(p)
-    ? `<section class="card hsk-push on"><h2>Finishing HSK ${p.level}</h2>
-        <p class="muted">The last ${n} character${n === 1 ? ' is' : 's are'} at the front of your lessons, within your daily
-          limit. The learning path waits until they are done.</p>
-        <p class="han hsk-push-list">${list}</p>
-        <p class="row"><button class="btn quiet" data-hsk-undo="${p.level}">Stop prioritising</button></p></section>`
-    : `<section class="card hsk-push"><h2>HSK ${p.level} is almost done</h2>
-        <p class="muted">You've learned ${p.done} of its ${p.total} characters. Learn the last ${n} next?</p>
-        <p class="han hsk-push-list">${list}</p>
-        <p class="row"><button class="btn" data-hsk-push="${p.level}">Finish HSK ${p.level}: prioritise ${n} character${n === 1 ? '' : 's'}</button></p></section>`;
+  const n = p.left.length, on = hskPushed(p);
+  const tiles = p.left.slice(0, 24).map(c => `<a class="tp-char han" href="#/character/${encodeURIComponent(c)}">${zh(c)}</a>`).join('')
+    + (n > 24 ? `<span class="tp-more">+${n - 24}</span>` : '');
+  const pct = Math.round(p.done / p.total * 100);
+  return `<section class="card td-prompt hsk-push${on ? ' on' : ''}">
+      <div class="tp-head"><span class="tp-badge hsk" aria-hidden="true"><small>HSK</small>${+p.level === 7 ? '7–9' : p.level}</span>
+        <div class="tp-title"><h2>${on ? `Finishing ${hskName(p.level)}` : `${hskName(p.level)} is almost done`}</h2>
+          <p class="tp-sub">${p.done} of ${p.total} characters learned</p></div></div>
+      <span class="tp-bar" role="img" aria-label="${pct}% of ${hskName(p.level)} learned"><i style="width:${pct}%"></i></span>
+      <p class="tp-text">${on ? `The last ${n} ${n === 1 ? 'is' : 'are'} at the front of your lessons, within your daily limit.
+        The learning path waits until they are done.` : `Learn the last ${n} next, and the level is complete.`}</p>
+      <div class="tp-chars">${tiles}</div>
+      <p class="tp-act">${on ? `<button class="btn quiet" data-hsk-undo="${p.level}">Stop prioritising</button>`
+        : `<button class="btn" data-hsk-push="${p.level}">Prioritise ${n} character${n === 1 ? '' : 's'}</button>`}</p>
+    </section>`;
 }
 function hskPush(level) {
   const p = hskStanding().find(x => x.level === level);
@@ -726,7 +731,9 @@ function flyFromPart(s, k) {
 /* a new card dealt onto the deck: its band and foot together, as one card */
 const dealCard = () => Motion.play(app.querySelector('.dk-front') || app.querySelector('.lx-band'), 'm-deal');
 /* The next cards, in the order they will come (n of them): the queue from here, with each
-   question put off as deferQuestion will put it off, the one being asked taken as answered. */
+   question put off as deferQuestion will put it off, the one being asked taken as answered.
+   One card an item: an item's other question is not another card, so one review left shows
+   one card, two show two. */
 function upNext(s, n = 2) {
   const { k, q } = s.queue[s.i];
   const t = Object.assign({}, s, { queue: [...s.queue],
@@ -736,7 +743,8 @@ function upNext(s, n = 2) {
   for (let i = s.i + 1; i < t.queue.length && out.length < n; i++) {
     t.i = i;
     for (let m = 0; m < t.queue.length && deferQuestion(t); m++);
-    if (Store.item(t.queue[i].k)) out.push(t.queue[i].k);
+    const nk = t.queue[i].k;
+    if (nk !== k && !out.includes(nk) && Store.item(nk)) out.push(nk);
   }
   return out;
 }
@@ -1374,7 +1382,7 @@ function drawPractice(final) {
 const PATH_CHOICES = [
   ['mix', 'Balanced', 'Common and simple characters first, in step with the HSK levels. The one to pick if you are not sure.'],
   ['common', 'Most common first', 'Straight down the frequency list: the quickest way to reading real text.'],
-  ['hsk', 'HSK 1 to 6', 'The exam\'s own order, level by level.'],
+  ['hsk', 'HSK 1 to 9', 'The exam\'s own order, level by level.'],
 ];
 function pathPick() {
   return `<div class="path-pick">${PATH_CHOICES.map(([id, name, note], i) =>
@@ -1542,7 +1550,7 @@ function drawStudy() {
       <p class="lx-key small" aria-hidden="true">${[['char', 'Characters'], ['word', 'Words']]
         .filter(([k]) => nextTen.some(x => (d.items[x] ? d.items[x].kind : 'char') === k))
         .map(([k, name]) => `<span><i class="${k}"></i>${name}</span>`).join('')}</p>
-      ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 6' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
+      ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 9' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
         ${cfg.pathDaily} new characters a day · <a href="#/settings">change</a></p>` : ''}
     </section>` : ''}
     </div>
@@ -1550,15 +1558,22 @@ function drawStudy() {
     ${fresh && !p.vacation ? firstSteps() : ''}
     ${fresh ? '' : streakCard()}
     ${!p.vacation && !fresh ? extraStudy(wkCount(), true, !!(p.lessons.length || p.reviewsLeft)) : ''}
-    ${unsorted ? `<section class="card cb-cta">
-      <h2>Sort your learned characters</h2>
-      <p class="muted">${unsorted} character${unsorted === 1 ? '' : 's'} you marked as learned joined your reviews at
-        Novice without being checked. A calibration test (type each one's pronunciation and meaning) puts each where it belongs.</p>
-      <p><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : ''}
-    <section class="card" id="lc-card" hidden></section>
-    ${HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : ''}
+    ${/* the things to do, together (side by side when there is room); then the chart of how far you've come */ ''}
+    ${(() => {
+      const cards = (unsorted ? `<section class="card td-prompt cb-cta">
+        <div class="tp-head"><span class="tp-badge cal" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h5"/><path d="m14 15 2.5 2.5L21 12"/></svg></span>
+          <div class="tp-title"><h2>Sort your learned characters</h2>
+            <p class="tp-sub">${unsorted.toLocaleString()} not checked yet</p></div></div>
+        <p class="tp-text">You marked these as learned, so they joined your reviews at Novice without a check. A calibration
+          test, typing each one's pronunciation and meaning, puts each at the stage it belongs.</p>
+        <p class="tp-act"><a class="btn" href="#/calibrate">Calibration test</a></p></section>` : '')
+        + (HZ.hskChars ? hskPushCard(Learn.hskNearlyDone(hskStanding())) : '');
+      return cards ? `<div class="td-prompts">${cards}</div>` : '';
+    })()}
     ${leechCard(d, now)}
     ${fresh ? '' : `<div class="td-more">${studyNextCard()}</div>`}
+    <section class="card" id="lc-card" hidden></section>
 `, true);
   const redraw = () => { drawStudy(); markNav(currentPath()); };
   wireLeeches(redraw);
@@ -1783,7 +1798,7 @@ async function pageLessons() {
 
   // what peeks out behind the card: a character's parts; for a part, the character it is for
   const owner = part ? s.batch.slice(s.i + 1).find(x => { const xi = Store.item(x); return xi && Learn.partsOf(x, xi).includes(k); }) : null;
-  app.innerHTML = deck(band(k, it, !quiz), part ? deckOwner(owner) : deckParts(lessonParts(it, f)),
+  app.innerHTML = lxTop(s) + deck(band(k, it, !quiz), part ? deckOwner(owner) : deckParts(lessonParts(it, f)),
     `<nav class="lx-tabs" role="tablist" aria-label="Lesson steps">${tabs.map((t, i) => i < first ? '' : `<button type="button" role="tab"
       data-t="${i}" class="${i === s.tab ? 'on' : ''}" aria-selected="${i === s.tab}" aria-controls="lx-panel" aria-label="${t}"
       >${SHORT_TAB[t] ? `<span class="lx-tab-long">${t}</span><span class="lx-tab-short">${SHORT_TAB[t]}</span>` : t}</button>`).join('')}</nav>`,
@@ -1798,9 +1813,7 @@ async function pageLessons() {
       ${quiz ? '' : `<button type="button" class="btn lx-fwd">${s.tab === 2 ? 'Quiz me' : 'Next'} ›</button>`}
     </div>
     <p class="lx-keys small muted"><span class="kb">${quiz ? (s.passed === k ? 'Enter for the next one' : 'Enter checks your answer') : 'Enter or → for the next step · ← back'}</span>
-      <span class="touch">${quiz ? '' : 'Swipe sideways to move between steps'}</span></p>
-    ${batchStrip(s)}
-    ${quizNow(s)}`;
+      <span class="touch">${quiz ? '' : 'Swipe sideways to move between steps'}</span></p>`;
 
   wireQuizNow(s);
   // a new item is dealt in; another tab slides in from the side it is on
@@ -1957,9 +1970,14 @@ function nextBatch(done) {
   return out;
 }
 
+/* the batch and the way out to its quiz, at the top of a lesson: where you are in it, seen
+   first, without scrolling past the lesson to find it */
+const lxTop = (s, goal) => `<div class="lx-batchbar">${batchStrip(s, goal)}${quizNow(s)}</div>`;
+
 /* stop early: the quiz over the lessons done so far (the rest wait for another time) */
-const quizNow = s => s.done.length ? `<p class="lx-quiznow"><button class="btn quiet small" id="lx-quiznow"
-  title="The lessons not done yet stay in the queue">Stop here and take the quiz (${s.done.length} done)</button></p>` : '';
+const quizNow = s => s.done.length ? `<button type="button" class="rv-link lx-quiznow" id="lx-quiznow"
+  title="Wrap up: stop here and take the quiz on the ${s.done.length} done. The lessons not done yet stay in the queue."
+  >Wrap up</button>` : '';
 function wireQuizNow(s) {
   const b = document.getElementById('lx-quiznow');
   if (b) b.addEventListener('click', () => lessonQuiz(s));
@@ -2015,7 +2033,7 @@ const SHORT_TAB = { Composition: 'Parts', Characters: 'Parts', Confirmation: 'Ch
 
 /* back up to the lesson's band, if the page is scrolled past it */
 function toLessonTop() {
-  const band = app.querySelector('.lx-band');
+  const band = app.querySelector('.lx-batchbar') || app.querySelector('.lx-band');
   if (band && band.getBoundingClientRect().top < 0) window.scrollTo(0, Math.max(0, window.scrollY + band.getBoundingClientRect().top - 70));
 }
 
@@ -2076,7 +2094,7 @@ async function lessonIntro(goal, k, s) {
   const comps = parts.filter(p => partKind(p) !== 'sound'), sounds = parts.filter(p => partKind(p) === 'sound');
   const behind = comps.concat(sounds).map(p => [partKind(p) === 'sound' ? itemText(p) : glyphOf(p), name(p),
     g.kind === 'word' ? 'char' : partKind(p) || 'comp', p]);
-  app.innerHTML = deck(band(goal, g, true), deckParts(behind),
+  app.innerHTML = lxTop(s, goal) + deck(band(goal, g, true), deckParts(behind),
     `<span>Learn this <b>${g.kind === 'word' ? 'word' : 'character'}</b>?</span>`, `<span class="dk-stage">New · ${esc(kindName(g))}</span>`) + `
     <div class="lx-body"><div class="lx-main lx-intro lt-tiles">
       ${lxTile(fresh.length ? `First, its ${fresh.length} new part${fresh.length === 1 ? '' : 's'}` : 'Its parts', `
@@ -2087,9 +2105,7 @@ async function lessonIntro(goal, k, s) {
           : `You know them all: straight on to ${zh(goal)}.`}</p>`, 'wide')}
       <p class="row intro-go"><button class="btn quiet" id="lx-intro-skip">⏭ Skip</button>
         <button class="btn" id="lx-intro-go">Learn</button></p>
-    </div></div>
-    ${batchStrip(s, goal)}
-    ${quizNow(s)}`;
+    </div></div>`;
   wireQuizNow(s);
   // the character comes in, once: Learn going straight on to its own lesson doesn't bring it in again
   if (!s.drawn || s.drawn.k !== goal) { dealCard(); Motion.play(app.querySelector('.dk-parts'), 'm-parts-in'); }
@@ -2361,11 +2377,12 @@ async function pageReviews() {
     // the first answer to each question is what the rating goes by: right or wrong,
     // a slip (the right syllables with a wrong tone), and how soon typing began
     const f = s.first[k] = s.first[k] || {};
-    if (!f[q]) {
+    const fresh = !f[q];                           // (this answer is the first: undo and typo may change it)
+    if (fresh) {
       const nearly = !ok && q === 'pinyin' && Learn.parsePinyin(answer).letters === Learn.parsePinyin(it.pin).letters;
       f[q] = { ok, near: nearly, ms: (s.keyAt || Date.now()) - s.askedAt };
     }
-    s.shown = { ok, answer };
+    s.shown = { ok, answer, fresh };
     s.judged = true;
     if (!ok) {
       s.misses[k] = (s.misses[k] || 0) + 1;
@@ -2388,9 +2405,10 @@ async function pageReviews() {
     // a slip of the keys: take back the miss and the repeat, and count it as right
     Sound.rip();
     takeBack(k, q);
+    // (only a first answer: a slip on the repeat doesn't undo the miss before it)
     const f = (s.first[k] || {})[q];
-    if (f) { f.ok = true; f.near = false; }
-    s.shown = { ok: true, answer: shown.answer };
+    if (f && shown.fresh) { f.ok = true; f.near = false; }
+    s.shown = { ok: true, answer: shown.answer, fresh: shown.fresh };
     pageReviews();
   });
   app.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => reviewTool(b.dataset.tool)));
@@ -2521,9 +2539,9 @@ function reviewTool(name) {
   if (name === 'reveal') {
     // don't know it: count it as missed, show the answer and the item
     if (s.shown) return;
-    s.shown = { ok: false, answer: '', revealed: true };
-    s.misses[k] = (s.misses[k] || 0) + 1;
     const f = s.first[k] = s.first[k] || {};
+    s.shown = { ok: false, answer: '', revealed: true, fresh: !f[q] };
+    s.misses[k] = (s.misses[k] || 0) + 1;
     // (writing it is a skill of its own: needing it shown makes a review hard, not forgotten)
     if (!f[q]) f[q] = q === 'write' ? { ok: true, near: true, ms: 0 } : { ok: false, near: false, ms: Infinity };
     (s.typed[k] = s.typed[k] || []).push({ q, answer: '' });
@@ -2541,7 +2559,7 @@ function reviewTool(name) {
     // don't count this answer: the question goes back into the queue, later on
     Sound.rip();
     if (!s.shown.ok) takeBack(k, q);
-    if (s.first[k]) delete s.first[k][q];
+    if (s.shown.fresh && s.first[k]) delete s.first[k][q];   // (a repeat's undo keeps the first answer)
     s.asked = -1;
     const [cur] = s.queue.splice(s.i, 1);
     const at = s.i + 1 + Math.floor(Math.random() * Math.max(0, s.queue.length - s.i));
@@ -3234,38 +3252,40 @@ function pathCompare(c) {
     <summary>Compare the learning paths</summary>
     <div class="pc-scroll"><table>
       <thead><tr><th>HSK level complete at</th>${cols.map(([id, l]) => `<th class="${c.path === id ? 'on' : ''}">${l}</th>`).join('')}</tr></thead>
-      <tbody>${[0, 1, 2, 3, 4, 5].map(i => `<tr><th>HSK ${i + 1}</th>${when(i)}</tr>`).join('')}
+      <tbody>${F.hsk.hsk.map((_, i) => `<tr><th>${hskName(i + 1)}</th>${when(i)}</tr>`).join('')}
         <tr class="pc-gap"><th>Share of everyday text you can recognise, after 500 characters</th>${cols.map(([id]) => cell(id, F[id].cover[500] + '%')).join('')}</tr>
         <tr><th>…after 1,000 characters</th>${cols.map(([id]) => cell(id, F[id].cover[1000] + '%')).join('')}</tr>
         <tr><th>New components per character (first 1,000)</th>${cols.map(([id]) => cell(id, F[id].newComps.toFixed(2))).join('')}</tr>
       </tbody></table></div>
-    <p class="st-note">Times are at ${daily} new characters a day, if you do them all every day. * 啰 has no frequency rank, so this path never
-      reaches it; it has the rest of HSK 6 by #4,771.</p>
-    ${mode('mix', 'Balanced', [
-      'Finishes the first HSK levels early: HSK 1 by #388 and HSK 2 by #664, instead of waiting until after #2,400.',
-      'Nearly as good for reading as most common: 85.9% of everyday text after 1,000 characters, against 89.1%.',
-      'Goes on past the HSK: the 5,911 characters it can teach include common ones the HSK leaves out.',
-    ], [
-      'Levels overlap: you\'ll be learning HSK 3 before HSK 1 is done, so there\'s no single level to focus on.',
-      'Finishes each level later than HSK order does, HSK 6 especially (#3,354 against #2,632).',
-      'Doesn\'t make characters easier: stroke counts and new components are about the same as most common, because those count for little in its score.',
-    ])}
-    ${mode('common', 'Most common first', [
-      'The fastest way to read real Chinese: 75.8% of everyday text after 500 characters and 89.1% after 1,000, the most of any path.',
-      'Every character you learn is one you\'ll see often, so reviews get help from everything you read.',
-    ], [
-      'Very late for HSK: HSK 1 isn\'t complete until #2,478, because everyday words like 苹 (apple), 喂 (hello) and 猫 (cat) are rare in writing.',
-      'Poor for an exam: only 57 of HSK 1\'s 178 characters come in the first 100.',
-      'Includes names and foreign-word sounds early (罗, 尼, 伊), which are common in text but not much use to a beginner.',
-    ])}
-    ${mode('hsk', 'HSK 1 to 6, level by level', [
-      'Finishes every level first: HSK 1 by #178, HSK 2 by #346, HSK 6 by #2,632. The best choice for an exam.',
-      'One level at a time, with clear milestones, and the everyday words textbooks teach (猫, 苹果) come early.',
-    ], [
-      'The slowest for reading: 66.5% of everyday text after 500 characters and 83.1% after 1,000.',
-      'The most new components per character, 0.35 against 0.30, so lessons are a little heavier.',
-      'Stops after HSK 6: common characters outside the lists (107 of the top 2,000, such as 刘, 剑) never come up. Add those yourself.',
-    ])}
+    <p class="st-note">Times are at ${daily} new characters a day, if you do them all every day. Levels are HSK 3.0's,
+      with 7–9 taken together as the exam does.</p>
+    ${(() => {
+      // (the numbers from Learn.PATH_FACTS, which test/learn.js checks against the data)
+      const n = x => '#' + x.toLocaleString(), top = F.hsk.hsk.length - 1;
+      return mode('mix', 'Balanced', [
+        `Finishes the first HSK levels early: HSK 1 by ${n(F.mix.hsk[0])} and HSK 2 by ${n(F.mix.hsk[1])}, instead of waiting until ${n(F.common.hsk[0])} or later.`,
+        `Nearly as good for reading as most common: ${F.mix.cover[1000]}% of everyday text after 1,000 characters, against ${F.common.cover[1000]}%.`,
+        'Goes on past the HSK: the nearly 6,000 characters it can teach include common ones the HSK leaves out.',
+      ], [
+        'Levels overlap: you\'ll be learning HSK 3 before HSK 1 is done, so there\'s no single level to focus on.',
+        `Finishes each level later than HSK order does, ${hskName(top + 1)} especially (${n(F.mix.hsk[top])} against ${n(F.hsk.hsk[top])}).`,
+        'Doesn\'t make characters easier: stroke counts and new components are about the same as most common, because those count for little in its score.',
+      ]) + mode('common', 'Most common first', [
+        `The fastest way to read real Chinese: ${F.common.cover[500]}% of everyday text after 500 characters and ${F.common.cover[1000]}% after 1,000, the most of any path.`,
+        'Every character you learn is one you\'ll see often, so reviews get help from everything you read.',
+      ], [
+        `Very late for HSK: HSK 1 isn't complete until ${n(F.common.hsk[0])}, because everyday words like 渴 (thirsty), 饿 (hungry) and 桌 (table) are rare in writing.`,
+        'Poor for an exam: only 72 of HSK 1\'s 300 characters come in the first 100.',
+        'Includes place names and foreign-word sounds (欧, 韩, 莱) that the HSK leaves out: common in text, but not much use to a beginner.',
+      ]) + mode('hsk', 'HSK 1 to 9, level by level', [
+        `Finishes every level first: HSK 1 by ${n(F.hsk.hsk[0])}, HSK 2 by ${n(F.hsk.hsk[1])}, ${hskName(top + 1)} by ${n(F.hsk.hsk[top])}. The best choice for an exam.`,
+        'One level at a time, with clear milestones, and the everyday words textbooks teach (渴, 饿, 桌子) come early.',
+      ], [
+        `The slowest start for reading: ${F.hsk.cover[500]}% of everyday text after 500 characters, against ${F.common.cover[500]}% for most common.`,
+        `The most new components per character, ${F.hsk.newComps.toFixed(2)} against ${F.mix.newComps.toFixed(2)}, so lessons are a little heavier.`,
+        `Stops after ${hskName(top + 1)}: common characters outside the lists (46 of the top 2,000, such as 州, 欧) never come up. Add those yourself.`,
+      ]);
+    })()}
     ${mode('off', 'Off', [
       'You choose everything: add characters from what you\'re reading, a textbook or a class.',
       'Nothing joins your lessons that you didn\'t ask for.',
@@ -3302,7 +3322,7 @@ function paintStudySettings() {
     <h2>Lessons and reviews <span class="st-saved" id="st-saved" hidden>Saved</span></h2>
     <p class="muted small">Changes are saved as you make them, and sync with the rest of your progress.</p>
     ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['mix', 'Balanced: simple, common, early HSK, parts you know'], ['common', 'The most common characters first'],
-      ['hsk', 'HSK 1 to 6, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
+      ['hsk', 'HSK 1 to 9, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
       'Keeps the next characters of the path in your lesson queue, skipping the ones you know, with their new components and sounds before them. The daily number is how many it keeps there, and how many become ready each day. Change either setting and the queue changes straight away; what you added yourself or prioritised stays. See and change the order on the <a href="#/queue">Upcoming page</a>.')}
     ${field('Words in the path', tog('pathWords', 'Also learn words with what is left of the daily limit'), 'A word can be learned once all its characters have had their lessons. Off: the path teaches characters only, and you add words yourself.')}
     ${pathCompare(c)}
@@ -3434,7 +3454,6 @@ function pageStats() {
   }).filter(x => x.n);
 
   // the last 30 days
-  const dayKey = t => new Date(t).toISOString().slice(0, 10);
   const days = Array.from({ length: 30 }, (_, i) => dayKey(now - (29 - i) * Learn.DAY));
   const log = days.map(k => Object.assign({ r: 0, ok: 0, l: 0, s: 0 }, d.log[k] || {}));
   const maxR = Math.max(1, ...log.map(x => x.r + x.l));
@@ -3763,7 +3782,7 @@ async function stReading(d) {
         <defs><linearGradient id="st-grow-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--green)" stop-opacity=".3"/><stop offset="1" stop-color="var(--green)" stop-opacity="0"/></linearGradient></defs>
         ${yTicks.map(v => `<line class="st-grid" x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}"/><text class="st-ax" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toLocaleString()}</text>`).join('')}
         ${sizes.filter(([, s]) => s <= top).map(([l, s]) => `<line class="st-hsk" x1="${L}" x2="${W - Rm}" y1="${y(s)}" y2="${y(s)}"/>
-          <text class="st-hsk-t" x="${L + 6}" y="${y(s) - 6}">HSK ${l > 1 ? `1–${l}` : '1'} · ${s.toLocaleString()}</text>`).join('')}
+          <text class="st-hsk-t" x="${L + 6}" y="${y(s) - 6}">HSK ${l > 1 ? `1–${+l === 7 ? 9 : l}` : '1'} · ${s.toLocaleString()}</text>`).join('')}
         ${ticks.map(i => `<text class="st-ax" x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? 'start' : i === n ? 'end' : 'middle'}">${i === past ? 'Today' : fmt(i)}</text>`).join('')}
         <path class="st-grow-a" d="${line} L${x(past)} ${y(0)} L${x(0)} ${y(0)} Z" fill="url(#st-grow-fill)"/>
         <path class="st-grow-l" d="${line}" pathLength="1"/>

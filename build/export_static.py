@@ -257,8 +257,9 @@ def main():
     total += dump("hsk.js", "HZ.hsk", hsk)
 
     # characters each HSK level introduces (new at that level), by frequency
+    # (HSK 3.0: levels 1 to 6, and 7 for the 7-9 band)
     hsk_chars, seen_ch = {}, set()
-    for lv in range(1, 7):
+    for lv in range(1, 8):
         fresh = []
         for w, _t, _d in hsk.get(str(lv), []):
             for c in w:

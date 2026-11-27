@@ -14,17 +14,17 @@ text:
 
 后来 ， 我 开始 每 天 早上 在 楼 下 的 面包店 买 早餐 。 面包店 的@poss 老板 是 一 位 五十 多 岁 的 大叔 ， 他 对@to 每 个 客人 都@all 很 热情 。 一@start 开始 我 只是 买 了 面包 就 走 ， 但 随着 时间 一 天 天 过去 ， 他 慢慢 记住 了 我 喜欢 吃 什么 。
 
-有 一 天 ， 他 多@extra 给 了 我 一 个 面包 。 我 以为 他 拿 错 了 ， 于是 准备 把 面包 还@huan 给 他 。 他 却 笑 着@while 说 ： “ 这 是 送 给 你 的@shi 。 你 最近 好像 瘦 了@change ， 既然 一@alone 个 人 在 外面 ， 就 更 要 好好 吃饭 。 ”
+有 一 天 ， 他 多@extra 给 了 我 一 个 面包 。 我 以为 他 拿 错 了 ， 于是 准备 把 面包 还@huan 给 他 。 他 却 笑 着@while 说 ： “ 这 是 送 给 你 的@shi 。 你 最近 看起来 很 累 ， 既然 一@alone 个 人 在 外面 ， 就 更 要 好好 吃饭 。 ”
 
-听 了 这 句 话 ， 我 竟然 差点 哭 了 出来 。 那 一 刻 我 忽然 觉得 ， 无论 这 座 城市 有 多@how 大 ， 只要 有 人 关心 你 ， 它 就 会 慢慢 变成 你 的@poss 家 。 从 那 以后 ， 我 不仅 每 天 去 面包店 ， 而且 还 认识 了 很 多@many 住 在 附近 的 邻居 。
+听 了 这 句 话 ， 我 竟然 差点 哭 了 出来 。 那 一 刻 我 忽然 觉得 ， 无论 这 座 城市 有 多@how 大 ， 只要 有 人 关心 你 ， 它 就 会 慢慢 变成 你 的@poss 家 。 从 那 以后 ， 我 不仅 每 天 去 面包店 ， 而且 还 认识 了 很 多@many 住 在 附近 的 人 。
 words:
+看起来 | kàn qǐ lai | to look; to seem
 一 | yī | one; a
 一@alone | yī | one; a (一个人 = on one's own)
 一@start | yī | (一开始 = at first)
 搬 | bān | to move (house)
 到 | dào | to
 了 | le | (the action is done)
-了@change | le | (a new situation: now)
 这 | zhè | this
 收入 | shōu rù | income
 高 | gāo | high
@@ -88,8 +88,6 @@ words:
 还@huan | huán | to give back
 送 | sòng | to give (as a present)
 最近 | zuì jìn | recently
-好像 | hǎo xiàng | to seem
-瘦 | shòu | thin
 外面 | wài mian | away (from home)
 要 | yào | should; must
 好好 | hǎo hǎo | properly
@@ -110,7 +108,6 @@ words:
 去 | qù | to go
 还 | hái | also
 住 | zhù | to live
-邻居 | lín jū | neighbour(s)
 
 === s14
 level: 4
@@ -122,14 +119,16 @@ text:
 
 为了 准备 这 次 面试 ， 我 上网 查 了 很 多 关于 这 家 公司 的 材料 ， 还 按照 朋友 的@poss 建议 ， 把 可能 会 被 问 到@res 的 问题 都 写 了 下来 ， 一 个 一 个 地 练习 回答 。 面试 前 一 天 晚上 ， 我 紧张 得 几乎 没 睡着 。
 
-第二 天 早上 ， 我 提前 半 个 小时 到 了 公司 。 没想到 ， 在 电梯 里 我 竟然 不 小心 把 咖啡 洒 在 了 一 位 先生 的@poss 衬衫 上 。 我 连忙 向 他 道歉 。 他 却 只是 摆 了 摆 手 说 ： “ 没关系 ， 别 紧张 。 ”
+第二 天 早上 ， 我 提前 半 个 小时 到 了 公司 。 没想到 ， 在 电梯 里 我 竟然 不 小心 把 咖啡 洒 在 了 一 位 先生 的@poss 衬衫 上 。 我 连忙 对 他 说 对不起 。 他 却 只是 摆 了 摆 手 说 ： “ 没关系 ， 别 紧张 。 ”
 
 面试 开始 了@change ， 我 走进 办公室 ， 发现 坐 在 中间 的 面试官 正是 电梯 里 的 那 位 先生 ！ 我 心里 想@think ： “ 这 下@now 完 了@change ， 恐怕 我 不 可能 被 录取 了@change 。 ” 既然 已经 这样 了@change ， 我 也 就 不 紧张 了@change ， 认真 地 回答 了 每 一 个 问题 。
 
-面试 结束 的 时候 ， 他 问 我 ： “ 刚才 在 电梯 里 ， 你 为什么 没有 解释 ， 而是 马上 道歉 ？ ” 我 说 ： “ 因为 确实 是 我 的@poss 错 。 ” 他 点 了 点 头 ， 没有 再 说 什么 。
+面试 结束 的 时候 ， 他 问 我 ： “ 刚才 在 电梯 里 ， 你 为什么 没有 解释 ， 而是 马上 说 对不起 ？ ” 我 说 ： “ 因为 确实 是 我 的@poss 错 。 ” 他 点 了 点 头 ， 没有 再 说 什么 。
 
 一 个 星期 以后 ， 我 收到 了 公司 的@poss 电话 ， 通知@verb 我 下 个 月 去 上班 。 后来 我 才 知道 ， 那 天 的 面试 中 ， 他 最 看重 的@nom 并 不 是 我 的@poss 回答 ， 而是 我 在 电梯 里 的 态度 。
 words:
+对 | duì | to; towards (someone)
+对不起 | duì bu qǐ | sorry
 上@last | shàng | last (上个月 = last month)
 上 | shang | on (衬衫上 = on the shirt)
 通过 | tōng guò | through; via
@@ -194,8 +193,6 @@ words:
 先生 | xiān sheng | gentleman; man
 衬衫 | chèn shān | shirt
 连忙 | lián máng | hurriedly; at once
-向 | xiàng | to; towards
-道歉 | dào qiàn | to apologize
 却 | què | but; yet
 摆 | bǎi | to wave (摆手 = wave one's hand)
 没关系 | méi guān xi | it's all right
@@ -241,7 +238,7 @@ text:
 
 后来 我 去 了 外地 上 大学 ， 又 在 别的 城市 工作 了 很 多@many 年 。 随着 网上 买 书 越来越 方便 ， 我 已经 很 久 没有@not 走进 过 书店 了@now 。 今年 春节 回家 ， 我 顺便 去 看 了 看 那 家@mw 书店 ， 发现 门口 贴 着 一 张 纸 ： “ 本@this 店 下 月 关门 。 ”
 
-我 走@walk 进去 ， 陈 爷爷 正 坐 在 老@usual 地方 看书 。 他 抬 起 头 看 了 我 很 久 ， 竟然 还 记得 我 ： “ 你 是 那 个 总是 坐 在 窗户 旁边 的 小 姑娘 吧 ？ ” 我 问 他 为什么 要 关门 。 他 叹 了 口 气 说 ： “ 来 买 书 的 人 越来越 少 ， 而且 我 年纪 也 大@old 了@change 。 ”
+我 走@walk 进去 ， 陈 爷爷 正 坐 在 老@usual 地方 看书 。 他 看 了 我 很 久 ， 竟然 还 记得 我 ： “ 你 是 那 个 总是 坐 在 窗户 旁边 的 小 姑娘 吧 ？ ” 我 问 他 为什么 要 关门 。 他 叹 了 口 气 说 ： “ 来 买 书 的 人 越来越 少 ， 而且 我 年纪 也 大@old 了@change 。 ”
 
 离开 之前 ， 我 买 了 十 本 书 。 陈 爷爷 坚持 只 收 我 一半 的 钱 ： “ 这些 书 放 在 这里 ， 早晚 会 被 卖 掉 。 既然 它们 能 找到 真正 喜欢 它们 的 人 ， 就 值得 了@change 。 ” 回家 的 路 上@on ， 书 很 重 ， 我 的@poss 心 却 比 书 更 重 。 我 突然 明白 ， 有些 地方 即使 不 在@exist 了@change ， 也 会 一直 留 在 我们 的@poss 记忆 里 。
 words:
@@ -320,9 +317,6 @@ words:
 下 | xià | next (下月 = next month)
 关门 | guān mén | to close down
 正 | zhèng | (right then) in the middle of …ing
-抬 | tái | to raise
-起 | qǐ | up
-头 | tóu | head
 还 | hái | still
 小 | xiǎo | little; young
 姑娘 | gū niang | girl
@@ -359,7 +353,7 @@ tag: Plans and family
 zh: 改变计划
 en: A Change of Plans
 text:
-今年 夏天 ， 我 本来 打算 和 朋友 一起 去 云南 旅游 。 我们 提前 两 个 月 就 订 好 了 机票 和 酒店 ， 还 按照 网上 的 建议 ， 做 了 一 份 详细 的 计划 ， 连 每 天 吃 什么 都 安排 好 了 。
+今年 夏天 ， 我 本来 打算 和 朋友 一起 去 云南 旅游 。 我们 提前 两 个 月 就 订 好 了 机票 和 酒店 ， 还 按照 网上 的 建议 ， 做 了 一 份 完整 的 计划 ， 连 每 天 吃 什么 都 安排 好 了 。
 
 可是 出发 前 一 个 星期 ， 妈妈 打 电话 告诉 我 ， 爸爸 在 工作 的 时候 不 小心 摔 伤 了 腿 ， 需要 在 医院 住 一 段 时间 。 妈妈 在 电话 里 一直 说 “ 没 什么 大 问题 ” ， 但 我 听 得@can 出来 ， 她 其实 很 累 。
 
@@ -367,9 +361,9 @@ text:
 
 我 给 朋友 打 电话 说明 了 情况 。 本来 以为 她 会 生气 ， 没想到 她 竟然 说 ： “ 家人 当然 比 旅行 重要 。 既然 你 不 去 了@change ， 那 我们 就@then 等 你 爸爸 好@well 了 以后 再 去 吧 ， 云南 又 不 会 跑 掉 。 ” 听 了 她 的@poss 话 ， 我 感动 得 说 不 出 话 来 。
 
-回到 家 以后 ， 我 每 天 去 医院 照顾 爸爸 ， 陪 他 聊天 、 下棋 。 爸爸 以前 工作 很 忙 ， 我们 很 少 有 机会 这样 坐 在 一起 。 通过 这 段 时间 ， 我 对 他 的 了解 甚至 比 过去 二十 年 还 多 。
+回到 家 以后 ， 我 每 天 去 医院 照顾 爸爸 ， 和 他 聊天 、 下棋 。 爸爸 以前 工作 很 忙 ， 我们 很 少 有 机会 这样 坐 在 一起 。 通过 这 段 时间 ， 我 对 他 的 了解 甚至 比 过去 二十 年 还 多 。
 
-一 个 月 以后 ， 爸爸 出院 了 。 虽然 这 个 夏天 我 没有 去 成 云南 ， 但 我 并 不 后悔 。 有时候 计划 被 打@mess 乱 ， 反而 能 让 我们 发现 更 重要 的 东西 。
+一 个 月 以后 ， 爸爸 出院 了 。 虽然 这 个 夏天 我 没有 去 成 云南 ， 但 我 并 不 难过 。 有时候 计划 被 打@mess 乱 ， 反而 能 让 我们 发现 更 重要 的 东西 。
 words:
 夏天 | xià tiān | summer
 本来 | běn lái | originally
@@ -396,7 +390,7 @@ words:
 做 | zuò | to make
 一 | yī | one; a
 份 | fèn | (measure word for plans, documents)
-详细 | xiáng xì | detailed
+完整 | wán zhěng | complete; thorough
 计划 | jì huà | plan
 连 | lián | (连…都: even)
 天 | tiān | day
@@ -450,7 +444,6 @@ words:
 来 | lái | (说不出…来: can't get … out)
 家 | jiā | home
 照顾 | zhào gù | to look after
-陪 | péi | to keep (someone) company
 聊天 | liáo tiān | to chat
 下棋 | xià qí | to play chess
 少 | shǎo | seldom (很少 = rarely)
@@ -466,7 +459,7 @@ words:
 出院 | chū yuàn | to leave hospital
 没有 | méi yǒu | did not
 成 | chéng | (after a verb) successfully (没去成 = didn't manage to go)
-后悔 | hòu huǐ | to regret
+难过 | nán guò | sad; upset
 有时候 | yǒu shí hou | sometimes
 被 | bèi | (passive: to be …ed)
 乱 | luàn | in a mess; in disorder
@@ -487,7 +480,7 @@ text:
 
 随着 叫声 越来越 大 ， 我 觉得 事情 恐怕 不 对@right 。 于是 我 跟 着 它 上@go 了 楼 ， 发现 张 爷爷 家 的 门 开 着 ， 他 倒 在 地上 ， 已经 说 不 出 话 了@change 。 我 马上 叫@call 了 救护车 。
 
-医生 后来 说 ， 即使 晚 半 个 小时 ， 老人 也 可能 有 危险 。 通过 这 件 事 ， 楼 里 的 人 不仅 不 再 怕 那 条 狗 ， 而且 都 很 喜欢 它 。 我 也 明白 了@change ， 一 只 动物 好 不 好 ， 并不是 看 它 长 得 怎么样 ， 而是 看 它 做 了 什么 。 按照 张 爷爷 的 说法 ， 这 条 狗 值得 我们 每 个 人 尊重 。
+医生 后来 说 ， 即使 晚 半 个 小时 ， 老人 也 可能 有 危险 。 通过 这 件 事 ， 楼 里 的 人 不仅 不 再 怕 那 条 狗 ， 而且 都 很 喜欢 它 。 我 也 明白 了@change ， 一 只 动物 好 不 好 ， 并不是 看 它 长 得 怎么样 ， 而是 看 它 做 了 什么 。 按照 张 爷爷 的 说法 ， 这 条 狗 值得 我们 每 个 人 学习 。
 words:
 楼 | lóu | building (of flats); upstairs
 里 | li | in
@@ -581,4 +574,3 @@ words:
 按照 | àn zhào | according to
 说法 | shuō fa | way of putting it
 值得 | zhí de | to deserve
-尊重 | zūn zhòng | respect

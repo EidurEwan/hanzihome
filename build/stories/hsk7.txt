@@ -1,0 +1,902 @@
+# HSK 7-9 - Mastery
+# Full written register: 素来, 未必, 索性, 理应, 加以, 得以, 确系, 不乏, 逾, 良久,
+# 譬如, 恰如其分, 末了; chengyu used freely (耳濡目染, 不厌其烦, 软磨硬泡, 了如指掌).
+
+=== s31
+level: 7
+tag: A language fading away
+zh: 外婆的方言
+en: Grandmother's Dialect
+text:
+外婆 是 在 温州 乡下 长大 的@shi ， 一辈子 说 的 都 是 地道 的 温州话 。 这 种 方言 素来 有 “ 天下 第一 难懂 ” 之 称 ， 连 邻县 的 人 都 未必 听 得 懂 。 小时候 ， 我 跟 着 她 生活 了 好 几 年 ， 耳濡目染 ， 也 能 说 上 几 句 。 后来 随 父母 迁居 北京 ， 在 学校 里 一 开口 便 遭 同学 取笑 ， 我 索性 再 也 不 说 了@change 。
+
+大学 读 的 是 语言学 。 有 一 回 ， 教授 在 课堂 上 提到 ， 据 统计 ， 世界 上 平均 每 两 周 就 有 一 种 语言 消亡 ， 而 不少 汉语 方言 也 正 面临 后继无人 的 窘境 。 那 一刻 ， 我 脑海 里 浮现 的 ， 竟 是 外婆 坐 在 门槛 上 剥 豆子 、 一边 哼 着 童谣 的 情景 。
+
+暑假 ， 我 带 着 录音笔 回到 乡下 。 外婆 已 年近 九旬 ， 耳朵 不大 灵光 ， 记性 却 出奇 地 好 。 我 请 她 把 小时候 的 童谣 、 谚语 和 祭祀 时 的 祷词 一一 说 给 我 听 。 起初 她 有些 拘谨 ， 对 着 话筒 总 说 不 利索 ； 后来 渐渐 放开 了@change ， 一 说 便 是 一 下午 。 许多 词 我 闻所未闻 ， 她 便 不厌其烦 地 解释 ， 末了 还 嗔怪 我 ： “ 连 这 都 不 晓得 ， 你 算 哪门子 温州人 ？ ”
+
+整理 录音 时 我 发现 ， 不少 说法 在 年轻 一代 口中 早已 销声匿迹 。 譬如 形容 天色 将 暗 未 暗 的 那 个 词 ， 普通话 里 竟 找 不到 恰如其分 的 对应 。 一 种 方言 消失 了 ， 失去 的 不仅 是 发音 ， 更是 一整套 看待 世界 的 方式 。
+
+如今 ， 这些 录音 已 被 一 所 大学 的 方言 数据库 收录 。 外婆 不 懂 什么 叫 数据库 ， 只是 听说 自己 的 声音 “ 会 一直 留 着 ” ， 便 笑 得 合不拢嘴 。
+words:
+外婆 | wài pó | grandmother (mother's mother)
+在 | zài | in; at
+温州 | Wēn zhōu | Wenzhou, a city in Zhejiang (name)
+乡下 | xiāng xia | the countryside
+长大 | zhǎng dà | to grow up
+的@shi | de | (是…的: stresses where it happened)
+的 | de | (links what comes before to the noun)
+都 | dōu | all
+地道 | dì dao | authentic; genuine
+温州话 | Wēn zhōu huà | the Wenzhou dialect (name)
+这 | zhè | this
+种 | zhǒng | kind; type
+方言 | fāng yán | dialect
+素来 | sù lái | always; all along
+天下 | tiān xià | the whole world
+难懂 | nán dǒng | hard to understand
+之 | zhī | (literary 的: 有…之称 = to be known as …)
+称 | chēng | name; reputation
+连 | lián | even
+邻县 | lín xiàn | the neighbouring county
+未必 | wèi bì | not necessarily
+听 | tīng | to listen; to hear
+得 | de | (can: 听得懂 = able to understand)
+懂 | dǒng | to understand
+跟 | gēn | to follow (跟着 = to live with; to go along with)
+着 | zhe | (-ing; keeps going)
+生活 | shēng huó | to live
+了 | le | (the action is done)
+好 | hǎo | quite (好几 = quite a few)
+几 | jǐ | several; a few
+耳濡目染 | ěr rú mù rǎn | to pick something up from hearing and seeing it all the time
+上 | shang | on; (说上几句 = manage a few words)
+随 | suí | along with; following
+父母 | fù mǔ | parents
+迁居 | qiān jū | to move (house, to another city)
+北京 | Běi jīng | Beijing
+里 | li | in; inside
+一 | yī | one; a (一…便 = as soon as)
+开口 | kāi kǒu | to open one's mouth; to speak
+便 | biàn | then; right away
+遭 | zāo | to meet with (something bad)
+取笑 | qǔ xiào | to make fun of
+索性 | suǒ xìng | simply; might as well
+再 | zài | again (再也不 = never again)
+了@change | le | (a new situation: now; no longer)
+读 | dú | to study (a subject)
+语言学 | yǔ yán xué | linguistics
+回 | huí | time; occasion
+教授 | jiào shòu | professor
+课堂 | kè táng | class; classroom
+提到 | tí dào | to mention
+据 | jù | according to
+统计 | tǒng jì | statistics
+世界 | shì jiè | world
+平均 | píng jūn | on average
+周 | zhōu | week
+就 | jiù | (then: as often as that)
+语言 | yǔ yán | language
+消亡 | xiāo wáng | to die out
+而 | ér | while; and
+不少 | bù shǎo | many; quite a few
+汉语 | Hàn yǔ | Chinese
+正 | zhèng | just now; at this moment
+面临 | miàn lín | to face
+后继无人 | hòu jì wú rén | to have no one to carry it on
+窘境 | jiǒng jìng | plight
+那 | nà | that
+一刻 | yī kè | moment
+脑海 | nǎo hǎi | mind
+浮现 | fú xiàn | to come to mind
+竟 | jìng | to one's surprise
+坐 | zuò | to sit
+门槛 | mén kǎn | threshold; doorstep
+剥 | bāo | to shell; to peel
+豆子 | dòu zi | beans
+一边 | yī biān | (doing something) at the same time
+哼 | hēng | to hum
+童谣 | tóng yáo | nursery rhyme
+情景 | qíng jǐng | scene
+暑假 | shǔ jià | summer holidays
+带 | dài | to take; to bring
+录音笔 | lù yīn bǐ | voice recorder
+已 | yǐ | already
+年近 | nián jìn | getting on for (an age)
+九旬 | jiǔ xún | ninety (years old)
+耳朵 | ěr duo | ears
+不大 | bù dà | not very
+灵光 | líng guang | working well (of ears, eyes)
+记性 | jì xing | memory
+却 | què | but; yet
+出奇 | chū qí | unusually
+地 | de | (-ly: how it is done)
+请 | qǐng | to ask
+把 | bǎ | (puts the object before the verb)
+谚语 | yàn yǔ | proverb
+和 | hé | and
+祭祀 | jì sì | offerings to the ancestors
+祷词 | dǎo cí | prayer
+一一 | yī yī | one by one
+给 | gěi | to; for
+起初 | qǐ chū | at first
+有些 | yǒu xiē | a little; somewhat
+拘谨 | jū jǐn | stiff; ill at ease
+对 | duì | facing; towards
+话筒 | huà tǒng | microphone
+总 | zǒng | always
+利索 | lì suo | smoothly; neatly
+渐渐 | jiàn jiàn | gradually
+放开 | fàng kāi | to relax; to let go
+词 | cí | word
+闻所未闻 | wén suǒ wèi wén | never heard of before
+不厌其烦 | bù yàn qí fán | patiently, never tiring of it
+解释 | jiě shì | to explain
+末了 | mò liǎo | in the end
+还 | hái | even; also
+嗔怪 | chēn guài | to scold (fondly)
+晓得 | xiǎo de | to know (in the south)
+算 | suàn | to count as
+哪门子 | nǎ mén zi | what kind of (scornful)
+温州人 | Wēn zhōu rén | a Wenzhou person (name)
+整理 | zhěng lǐ | to sort out
+录音 | lù yīn | recording
+说法 | shuō fa | expression; way of saying it
+一代 | yī dài | generation
+口中 | kǒu zhōng | in the mouths of
+销声匿迹 | xiāo shēng nì jì | to vanish without a trace
+譬如 | pì rú | for example
+形容 | xíng róng | to describe
+天色 | tiān sè | the light of the sky
+将 | jiāng | about to
+暗 | àn | dark
+未 | wèi | not yet
+普通话 | pǔ tōng huà | Mandarin
+找 | zhǎo | to find
+不到 | bù dào | (cannot: 找不到 = can't find)
+恰如其分 | qià rú qí fèn | just right; apt
+对应 | duì yìng | equivalent
+消失 | xiāo shī | to disappear
+失去 | shī qù | to lose
+发音 | fā yīn | pronunciation
+更是 | gèng shì | even more so
+一整套 | yī zhěng tào | a whole set
+看待 | kàn dài | to look at; to regard
+方式 | fāng shì | way
+这些 | zhè xiē | these
+被 | bèi | (by: marks the passive)
+所 | suǒ | (measure word for universities)
+数据库 | shù jù kù | database
+收录 | shōu lù | to include; to archive
+什么 | shén me | what
+叫 | jiào | to be called
+听说 | tīng shuō | to hear (it said)
+会 | huì | will
+一直 | yī zhí | always; on and on
+留 | liú | to stay; to be kept
+合不拢嘴 | hé bù lǒng zuǐ | can't close one's mouth (for smiling)
+chars:
+濡@耳濡目染 | rú | to soak in
+谣@童谣 | yáo | ballad; rhyme
+
+=== s32
+level: 7
+tag: A city rebuilt
+zh: 最后一栋老楼
+en: The Last Old Building
+text:
+我们 那 条 胡同 拆迁 的 消息 ， 是 在 一 个 闷热 的 傍晚 传开 的@shi 。 告示 贴 在 巷口 的 电线杆 上 ， 措辞 严谨 ， 补偿 标准 、 搬迁 期限 罗列 得 一清二楚 。 围观 的 邻里 议论纷纷 ： 有人 盘算 着 补偿款 够 不 够 在 新区 置办 一 套 房子 ， 有人 抱怨 住 了 大半辈子 ， 说 拆 就 拆 ， 未免 太 草率 。
+
+短短 三 个 月 ， 整 条 胡同 便 只 剩下 一 栋 两 层 的 灰砖 小楼 。 楼 里 住 着 退休 的 历史 老师 钱 先生 。 他 并非 为了 多 要 补偿 而 迟迟 不 搬 ， 而是 坚称 这 栋 楼 建 于 清末 ， 门楣 上 的 砖雕 出自 名家 之 手 ， 理应 作为 文物 加以 保护 。
+
+起初 ， 没 人 把 他 的 话 当真 。 开发商 派 人 上门 软磨硬泡 ， 街道 干部 也 来 苦口婆心 地 劝 。 钱 先生 不为所动 ， 每天 伏案 翻阅 地方志 和 旧 地图 ， 四处 寄 信 ， 恳请 专家 前来 鉴定 。 不少 老 邻居 背地里 说 他 固执 ， 甚至 有人 揣测 他 别有用心 。
+
+转机 出现 在 深秋 。 一 位 研究 古建筑 的 学者 偶然 看到 了 他 寄 去 的 照片 ， 专程 赶来 实地 考察 。 经 鉴定 ， 那 组 砖雕 确 系 晚清 一 位 匠人 的 作品 ， 在 本地 已 极为 罕见 。 不久 ， 规划 随之 调整 ： 老楼 得以 保留 ， 修缮 后 将 改建 为 社区 博物馆 。
+
+开馆 那 天 ， 搬到 新区 的 老 街坊 们 不约而同 地 回来 了 。 大家 在 一 张 张 老 照片 前 驻足 ， 指认 哪 扇 窗 曾 是 自家 的 。 钱 先生 站 在 门口 ， 头发 又 白 了 许多 ， 神情 却 格外 释然 。
+words:
+那 | nà | that
+条 | tiáo | (measure word for lanes)
+胡同 | hú tòng | alley; hutong
+拆迁 | chāi qiān | demolition and rehousing
+的 | de | (links what comes before to the noun)
+消息 | xiāo xi | news
+在 | zài | in; at
+一 | yī | one; a
+闷热 | mēn rè | hot and stuffy
+傍晚 | bàng wǎn | dusk
+传开 | chuán kāi | to spread
+的@shi | de | (是…的: stresses when it happened)
+告示 | gào shi | notice
+贴 | tiē | to stick up; to post
+巷口 | xiàng kǒu | the mouth of the lane
+电线杆 | diàn xiàn gān | telegraph pole
+上 | shang | on
+措辞 | cuò cí | wording
+严谨 | yán jǐn | careful; precise
+补偿 | bǔ cháng | compensation
+标准 | biāo zhǔn | standard; rate
+搬迁 | bān qiān | to move out
+期限 | qī xiàn | deadline
+罗列 | luó liè | to set out; to list
+得 | de | (links a verb to how it turned out)
+一清二楚 | yī qīng èr chǔ | perfectly clear
+围观 | wéi guān | to gather round and watch
+邻里 | lín lǐ | neighbours
+议论纷纷 | yì lùn fēn fēn | everyone talking about it at once
+有人 | yǒu rén | some people
+盘算 | pán suan | to reckon; to work out
+着 | zhe | (-ing)
+补偿款 | bǔ cháng kuǎn | compensation money
+够 | gòu | to be enough
+新区 | xīn qū | the new district
+置办 | zhì bàn | to buy; to acquire
+套 | tào | (measure word for flats)
+房子 | fáng zi | flat; house
+抱怨 | bào yuàn | to complain
+住 | zhù | to live
+了 | le | (the action is done)
+大半辈子 | dà bàn bèi zi | most of one's life
+拆 | chāi | to pull down
+就 | jiù | (说…就…: no sooner said than done)
+未免 | wèi miǎn | rather; a bit too
+草率 | cǎo shuài | hasty; careless
+短短 | duǎn duǎn | a mere; only
+整 | zhěng | whole
+便 | biàn | already; then
+只 | zhǐ | only
+剩下 | shèng xià | to be left
+栋 | dòng | (measure word for buildings)
+层 | céng | storey; floor
+灰砖 | huī zhuān | grey brick
+小楼 | xiǎo lóu | small building
+楼 | lóu | building
+里 | li | in
+退休 | tuì xiū | retired
+历史 | lì shǐ | history
+钱 | Qián | Qian (name)
+先生 | xiān sheng | Mr
+并非 | bìng fēi | is not; not at all
+多 | duō | more
+要 | yào | to ask for
+而 | ér | (为了…而: in order to)
+迟迟 | chí chí | slow (to act)
+搬 | bān | to move out
+坚称 | jiān chēng | to insist
+这 | zhè | this
+建 | jiàn | to build
+于 | yú | in (written style)
+清末 | Qīng mò | the end of the Qing dynasty
+门楣 | mén méi | lintel (above a door)
+砖雕 | zhuān diāo | brick carving
+出自 | chū zì | to come from
+名家 | míng jiā | master craftsman
+之 | zhī | (literary 的: 名家之手 = a master's hand)
+理应 | lǐ yīng | ought to
+作为 | zuò wéi | as
+文物 | wén wù | cultural relic
+加以 | jiā yǐ | (formal: to give it, to apply)
+保护 | bǎo hù | to protect
+起初 | qǐ chū | at first
+没 | méi | no (没人 = nobody)
+把 | bǎ | (puts the object before the verb)
+当真 | dàng zhēn | to take seriously
+开发商 | kāi fā shāng | property developer
+派 | pài | to send
+上门 | shàng mén | to call at the door
+软磨硬泡 | ruǎn mó yìng pào | to coax and pester
+街道 | jiē dào | neighbourhood (office)
+干部 | gàn bù | official
+来 | lái | to come
+苦口婆心 | kǔ kǒu pó xīn | earnestly and patiently
+地 | de | (-ly: how it is done)
+劝 | quàn | to urge; to persuade
+不为所动 | bù wéi suǒ dòng | to be unmoved
+每天 | měi tiān | every day
+伏案 | fú àn | to bend over one's desk
+翻阅 | fān yuè | to leaf through
+地方志 | dì fāng zhì | local history (records)
+和 | hé | and
+地图 | dì tú | map
+四处 | sì chù | everywhere
+寄 | jì | to send by post
+信 | xìn | letter
+恳请 | kěn qǐng | to earnestly request
+专家 | zhuān jiā | expert
+前来 | qián lái | to come
+鉴定 | jiàn dìng | to appraise
+不少 | bù shǎo | quite a few
+老 | lǎo | old
+邻居 | lín jū | neighbour
+背地里 | bèi dì li | behind (his) back
+固执 | gù zhi | stubborn
+揣测 | chuǎi cè | to speculate
+别有用心 | bié yǒu yòng xīn | to have ulterior motives
+转机 | zhuǎn jī | turn for the better
+出现 | chū xiàn | to appear
+深秋 | shēn qiū | late autumn
+研究 | yán jiū | to research
+古建筑 | gǔ jiàn zhù | old buildings
+学者 | xué zhě | scholar
+偶然 | ǒu rán | by chance
+去 | qù | (寄去 = sent off)
+照片 | zhào piàn | photo
+专程 | zhuān chéng | specially (making a trip for it)
+赶来 | gǎn lái | to hurry over
+实地 | shí dì | on site
+考察 | kǎo chá | to investigate
+经 | jīng | after; following
+组 | zǔ | set; group
+确 | què | indeed
+系 | xì | to be (formal)
+晚清 | wǎn Qīng | the late Qing dynasty
+匠人 | jiàng rén | craftsman
+作品 | zuò pǐn | work
+本地 | běn dì | local
+已 | yǐ | already
+极为 | jí wéi | extremely
+罕见 | hǎn jiàn | rare
+不久 | bù jiǔ | soon after
+规划 | guī huà | plan (for the area)
+随之 | suí zhī | accordingly
+调整 | tiáo zhěng | to adjust
+老楼 | lǎo lóu | old building
+得以 | dé yǐ | to be able to; so it could
+保留 | bǎo liú | to keep
+修缮 | xiū shàn | to restore
+后 | hòu | after
+将 | jiāng | will
+改建 | gǎi jiàn | to convert
+为 | wéi | into; as
+社区 | shè qū | community
+博物馆 | bó wù guǎn | museum
+开馆 | kāi guǎn | (a museum's) opening
+天 | tiān | day
+搬到 | bān dào | to move to
+街坊 | jiē fang | neighbours
+不约而同 | bù yuē ér tóng | all without arranging it
+大家 | dà jiā | everyone
+张 | zhāng | (measure word for photos; 一张张 = one after another)
+前 | qián | in front of
+驻足 | zhù zú | to stop and stand
+指认 | zhǐ rèn | to point out
+哪 | nǎ | which
+扇 | shàn | (measure word for windows)
+窗 | chuāng | window
+曾 | céng | once; formerly
+自家 | zì jiā | one's own home
+头发 | tóu fa | hair
+又 | yòu | again; even more
+白 | bái | white
+神情 | shén qíng | look; expression
+却 | què | yet
+格外 | gé wài | especially
+释然 | shì rán | at peace; relieved
+chars:
+同@胡同 | tòng | (in 胡同: alley)
+当@当真 | dàng | to take as
+并@并非 | bìng | (stresses the 不/非: not at all)
+
+=== s33
+level: 7
+tag: Work and machines
+zh: 译者
+en: The Translator
+text:
+林 老师 做 了 三十 年 文学 翻译 ， 译 过 的 小说 摞 起来 比 人 还 高 。 前些年 ， 机器 翻译 突飞猛进 ， 出版社 的 稿约 日渐 稀少 。 编辑 委婉 地 告诉 她 ， 如今 不少 书 先 由 软件 译 出 初稿 ， 再 请 人 润色 ， 成本 低 ， 周期 也 短 。
+
+她 起初 颇 不以为然 ， 心想 机器 再 聪明 ， 也 体会 不 了 字里行间 的 微妙 。 可 当 她 真 把 一 段 小说 交给 软件 时 ， 却 不得不 承认 ： 译文 通顺 流畅 ， 挑 不 出 什么 硬伤 。 那 天 夜里 ， 她 辗转反侧 ， 头 一 回 对 自己 的 职业 生 出 了 一丝 迷茫 。
+
+后来 ， 她 接 下 了 一 份 “ 润色 ” 的 活儿 。 逐 句 对照 原文 时 ， 她 渐渐 发现 了 端倪 ： 机器 的 句子 单独 看 无可挑剔 ， 连 在一起 却 千篇一律 ， 人物 说话 的 腔调 被 磨平 了 ， 作者 刻意 留下 的 含糊 被 擅自 补 全 ， 一 句 双关 的 俏皮话 更是 被 译 得 索然无味 。 文字 没 错 ， 气息 却 不 对 。
+
+她 索性 推翻 重来 ， 熬 了 两 个 月 ， 几乎 逐字 重 译 。 交稿 时 ， 编辑 有些 为难 ， 说 预算 有限 ， 只能 按 润色 付 酬 。 她 想 了 想 ， 还是 签 了 字 。
+
+书 出版 半 年 后 ， 她 收到 一 封 读者 来信 。 对方 说 ， 这 本 书 的 别的 译本 她 也 读 过 ， 唯独 这 一 版 让 她 读 到 深夜 ， 几 度 落泪 。 林 老师 把 信 夹 进 了 那 本 书 里 。 她 依然 会 用 翻译 软件 查 资料 ， 只是 不再 惶恐 —— 她 明白 ， 有些 东西 ， 终究 是 要 由 人 来 掂量 的@shi 。
+words:
+林 | Lín | Lin (name)
+做 | zuò | to do
+了 | le | (the action is done)
+文学 | wén xué | literature
+翻译 | fān yì | translation; to translate
+译 | yì | to translate
+过 | guo | (has done before)
+的 | de | (links what comes before to the noun)
+小说 | xiǎo shuō | novel
+摞 | luò | to stack
+起来 | qǐ lai | up (摞起来 = stacked up)
+还 | hái | even (比人还高 = taller than a person)
+高 | gāo | tall
+前些年 | qián xiē nián | a few years ago
+机器 | jī qì | machine
+突飞猛进 | tū fēi měng jìn | to advance by leaps and bounds
+出版社 | chū bǎn shè | publisher
+稿约 | gǎo yuē | commission (to write or translate)
+日渐 | rì jiàn | day by day
+稀少 | xī shǎo | scarce
+编辑 | biān jí | editor
+委婉 | wěi wǎn | tactful
+地 | de | (-ly: how it is done)
+不少 | bù shǎo | many
+先 | xiān | first
+由 | yóu | by
+软件 | ruǎn jiàn | software
+出 | chū | out (译出 = to turn out a translation)
+初稿 | chū gǎo | first draft
+再 | zài | then
+请 | qǐng | to ask; to hire
+润色 | rùn sè | to polish (writing)
+成本 | chéng běn | cost
+低 | dī | low
+周期 | zhōu qī | turnaround time
+短 | duǎn | short
+起初 | qǐ chū | at first
+颇 | pō | quite
+不以为然 | bù yǐ wéi rán | to be unconvinced
+心想 | xīn xiǎng | to think to oneself
+聪明 | cōng ming | clever
+体会 | tǐ huì | to sense; to grasp
+字里行间 | zì lǐ háng jiān | between the lines
+微妙 | wēi miào | subtle; subtlety
+可 | kě | but
+当 | dāng | when
+真 | zhēn | really
+把 | bǎ | (puts the object before the verb)
+一 | yī | one; a
+段 | duàn | passage
+交给 | jiāo gěi | to hand over to
+却 | què | but; yet
+不得不 | bù dé bù | to have to
+承认 | chéng rèn | to admit
+译文 | yì wén | the translation
+通顺 | tōng shùn | smooth; readable
+流畅 | liú chàng | fluent
+挑 | tiāo | to pick out
+什么 | shén me | any
+硬伤 | yìng shāng | obvious flaw
+那 | nà | that
+天 | tiān | day
+夜里 | yè li | at night
+辗转反侧 | zhǎn zhuǎn fǎn cè | to toss and turn
+头 | tóu | first (头一回 = the first time)
+回 | huí | time
+对 | duì | about; towards
+职业 | zhí yè | profession
+生 | shēng | to give rise to
+一丝 | yī sī | a trace of
+迷茫 | mí máng | feeling lost
+接 | jiē | to take on
+下 | xia | (接下 = to take on)
+份 | fèn | (measure word for jobs)
+活儿 | huór | job; piece of work
+逐 | zhú | one by one
+句 | jù | sentence
+对照 | duì zhào | to compare
+原文 | yuán wén | the original
+渐渐 | jiàn jiàn | gradually
+端倪 | duān ní | signs; clues
+句子 | jù zi | sentence
+单独 | dān dú | on its own
+看 | kàn | to look at
+无可挑剔 | wú kě tiāo ti | flawless
+连 | lián | to join (连在一起 = put together)
+在一起 | zài yī qǐ | together
+千篇一律 | qiān piān yī lǜ | all the same; monotonous
+人物 | rén wù | character (in a story)
+腔调 | qiāng diào | tone; voice
+被 | bèi | (by: marks the passive)
+磨平 | mó píng | to grind flat
+作者 | zuò zhě | author
+刻意 | kè yì | deliberately
+留下 | liú xià | to leave
+含糊 | hán hu | vagueness
+擅自 | shàn zì | without permission
+补 | bǔ | to fill in
+全 | quán | complete
+双关 | shuāng guān | pun; double meaning
+俏皮话 | qiào pí huà | witty remark
+更是 | gèng shì | even more so
+得 | de | (links a verb to how it turned out)
+索然无味 | suǒ rán wú wèi | dull; flat
+文字 | wén zì | the words
+没 | méi | not
+错 | cuò | wrong
+气息 | qì xī | feel; spirit
+索性 | suǒ xìng | simply; might as well
+推翻 | tuī fān | to scrap
+重来 | chóng lái | to start again
+熬 | áo | to slog away
+逐字 | zhú zì | word by word
+重 | chóng | again
+交稿 | jiāo gǎo | to hand in the manuscript
+有些 | yǒu xiē | a little
+为难 | wéi nán | awkward; embarrassed
+预算 | yù suàn | budget
+有限 | yǒu xiàn | limited
+只能 | zhǐ néng | can only
+按 | àn | according to
+付 | fù | to pay
+酬 | chóu | fee
+想 | xiǎng | to think
+还是 | hái shi | still; all the same
+签 | qiān | to sign
+字 | zì | name (签字 = to sign)
+出版 | chū bǎn | to be published
+后 | hòu | after
+收到 | shōu dào | to receive
+封 | fēng | (measure word for letters)
+读者 | dú zhě | reader
+来信 | lái xìn | letter
+对方 | duì fāng | the writer; the other person
+这 | zhè | this
+本 | běn | (measure word for books)
+别的 | bié de | other
+译本 | yì běn | translation (version)
+读 | dú | to read
+唯独 | wéi dú | only
+版 | bǎn | edition
+让 | ràng | to make
+到 | dào | until
+深夜 | shēn yè | late at night
+几 | jǐ | several
+度 | dù | time
+落泪 | luò lèi | to shed tears
+信 | xìn | letter
+夹 | jiā | to slip between
+进 | jìn | into
+里 | li | in
+依然 | yī rán | still
+会 | huì | (does, as a habit)
+用 | yòng | to use
+资料 | zī liào | material; references
+不再 | bù zài | no longer
+惶恐 | huáng kǒng | fearful
+终究 | zhōng jiū | in the end
+要 | yào | must
+来 | lái | (to do it)
+掂量 | diān liang | to weigh up
+的@shi | de | (是…的: states it firmly)
+chars:
+倪@端倪 | ní | edge; sign
+擅@擅自 | shàn | on one's own authority
+
+=== s34
+level: 7
+tag: Teaching in a village
+zh: 山里的一年
+en: A Year in the Mountains
+text:
+研究生 毕业 那 年 ， 我 没有 急 着 找 工作 ， 而是 报名 去 西南 山区 支教 一 年 。 家人 对此 颇有微词 ， 认为 我 是 在@ing 虚度 光阴 。 我 却 执意 要 去 ， 一来 想 看看 课本 以外 的 中国 ， 二来 也 想 弄 清楚 自己 究竟 适合 做 什么 。
+
+学校 坐落 在 半山腰 ， 全 校 不过 六十 来 个 学生 ， 大多 是 留守 儿童 ， 父母 常年 在 沿海 城市 打工 。 头 一 个 月 ， 我 雄心勃勃 地 准备 了 许多 新颖 的 课 ， 结果 却 屡屡 碰壁 ： 孩子们 拘谨 、 沉默 ， 提问 时 一个个 低 着 头 ， 生怕 被 点 到 名字 。
+
+转折 发生 在 一 堂 作文 课 上 。 题目 是 《 我 的 家 》 ， 一 个 叫 阿秀 的 女孩 只 写 了 一 行 字 ： “ 我 家 的 灯 ， 一 年 只 亮 一 次 ， 就 在 过年 那 几 天 。 ” 我 拿 着 本子 ， 半天 说 不 出 话 来 。 原来 我 那些 精心 设计 的 课 ， 从 一开始 就 搞 错 了 方向 —— 他们 缺 的 ， 未必 是 知识 ， 而是 有人 耐心 地 倾听 。
+
+此后 ， 我 每 周 抽出 一 个 晚上 ， 让 孩子们 轮流 讲 自己 的 事 ， 想 说 什么 都 行 。 起初 冷场 是 常有 的 事 ， 慢慢 地 ， 话匣子 一个个 打开 了 ： 有 想念 爸爸 的 ， 有 担心 奶奶 腰疼 的 ， 还有 偷偷 给 远方 的 妈妈 写 信 却 不 敢 寄 的 。
+
+一 年 转眼 就 过去 了 。 临 走 那 天 ， 阿秀 塞 给 我 一 张 纸条 ， 叮嘱 我 上 了 车 再 看 。 上面 歪歪扭扭 地 写 着 ： “ 老师 ， 你 走 了 ， 我们 的 灯 也 会 亮 着 。 ” 车 在 山路 上 颠簸 ， 我 把 纸条 攥 在 手心 ， 久久 没有 松开 。
+words:
+研究生 | yán jiū shēng | postgraduate
+那 | nà | that
+没有 | méi yǒu | did not
+急 | jí | in a hurry
+着 | zhe | (-ing; in that state)
+找 | zhǎo | to look for
+报名 | bào míng | to sign up
+去 | qù | to go
+西南 | xī nán | the southwest
+山区 | shān qū | mountain area
+支教 | zhī jiào | to volunteer as a teacher
+一 | yī | one; a
+家人 | jiā rén | family
+对此 | duì cǐ | about this
+颇有微词 | pō yǒu wēi cí | to have quite a few complaints
+认为 | rèn wéi | to think
+在 | zài | in; at
+在@ing | zài | (in the middle of) -ing
+虚度 | xū dù | to waste (time)
+光阴 | guāng yīn | time
+却 | què | but; yet
+执意 | zhí yì | to insist on
+要 | yào | to want to
+一来 | yī lái | firstly
+想 | xiǎng | to want to
+看看 | kàn kan | to have a look at
+课本 | kè běn | textbook
+以外 | yǐ wài | beyond
+的 | de | (links what comes before to the noun; 有…的 = some who …)
+中国 | Zhōng guó | China
+二来 | èr lái | secondly
+弄 | nòng | to make
+清楚 | qīng chu | clear
+究竟 | jiū jìng | exactly; really
+适合 | shì hé | to suit
+做 | zuò | to do
+什么 | shén me | what; anything
+坐落 | zuò luò | to be located
+半山腰 | bàn shān yāo | halfway up the mountain
+全 | quán | whole
+校 | xiào | school
+不过 | bù guò | only; no more than
+六十 | liù shí | sixty
+来 | lái | about (六十来个 = sixty or so)
+学生 | xué sheng | student
+大多 | dà duō | mostly
+留守 | liú shǒu | left behind (at home)
+儿童 | ér tóng | children
+父母 | fù mǔ | parents
+常年 | cháng nián | all year round
+沿海 | yán hǎi | coastal
+头 | tóu | first (头一个月 = the first month)
+雄心勃勃 | xióng xīn bó bó | full of ambition
+地 | de | (-ly: how it is done)
+准备 | zhǔn bèi | to prepare
+了 | le | (the action is done)
+新颖 | xīn yǐng | new; original
+课 | kè | lesson; class
+结果 | jié guǒ | in the end; as it turned out
+屡屡 | lǚ lǚ | again and again
+碰壁 | pèng bì | to hit a wall
+孩子们 | hái zi men | the children
+拘谨 | jū jǐn | stiff; ill at ease
+沉默 | chén mò | silent
+提问 | tí wèn | to ask questions
+一个个 | yī gè gè | one and all; one after another
+低 | dī | to lower (one's head)
+生怕 | shēng pà | for fear that
+被 | bèi | (marks the passive)
+点 | diǎn | to call on (by name)
+到 | dào | (点到 = to be picked)
+转折 | zhuǎn zhé | turning point
+发生 | fā shēng | to happen
+堂 | táng | (measure word for lessons)
+作文 | zuò wén | composition
+题目 | tí mù | title; topic
+上 | shang | in; at
+家 | jiā | home
+叫 | jiào | to be called
+阿秀 | Ā Xiù | A Xiu (name)
+女孩 | nǚ hái | girl
+只 | zhǐ | only
+行 | háng | line
+字 | zì | characters; words
+灯 | dēng | light; lamp
+亮 | liàng | to be lit
+就 | jiù | just; only (就在 = just at)
+过年 | guò nián | Chinese New Year
+几 | jǐ | a few
+天 | tiān | day
+本子 | běn zi | exercise book
+半天 | bàn tiān | a long while
+出 | chū | out (说不出话来 = unable to say a word)
+那些 | nà xiē | those
+精心 | jīng xīn | carefully
+设计 | shè jì | to design
+从 | cóng | from
+一开始 | yī kāi shǐ | the very start
+搞 | gǎo | to get; to do
+错 | cuò | wrong
+方向 | fāng xiàng | direction
+缺 | quē | to lack
+未必 | wèi bì | not necessarily
+知识 | zhī shi | knowledge
+有人 | yǒu rén | someone
+耐心 | nài xīn | patient
+倾听 | qīng tīng | to listen
+此后 | cǐ hòu | after that
+周 | zhōu | week
+抽出 | chōu chū | to set aside (time)
+让 | ràng | to let
+轮流 | lún liú | to take turns
+讲 | jiǎng | to talk about
+都 | dōu | (any … at all)
+起初 | qǐ chū | at first
+冷场 | lěng chǎng | awkward silence
+常有 | cháng yǒu | common
+慢慢 | màn màn | slowly
+话匣子 | huà xiá zi | chatterbox (打开话匣子 = to start talking)
+想念 | xiǎng niàn | to miss
+担心 | dān xīn | to worry about
+腰疼 | yāo téng | backache
+偷偷 | tōu tōu | secretly
+给 | gěi | to
+远方 | yuǎn fāng | far away
+信 | xìn | letter
+敢 | gǎn | to dare
+寄 | jì | to send by post
+转眼 | zhuǎn yǎn | in the blink of an eye
+过去 | guò qu | to pass
+临 | lín | just before
+走 | zǒu | to leave
+塞 | sāi | to slip; to push into
+张 | zhāng | (measure word for paper)
+纸条 | zhǐ tiáo | note
+叮嘱 | dīng zhǔ | to tell (someone) firmly
+车 | chē | bus
+再 | zài | only then
+看 | kàn | to read
+上面 | shàng mian | on it
+歪歪扭扭 | wāi wāi niǔ niǔ | crooked; wobbly
+会 | huì | will
+山路 | shān lù | mountain road
+颠簸 | diān bǒ | to jolt
+把 | bǎ | (puts the object before the verb)
+攥 | zuàn | to clutch
+手心 | shǒu xīn | palm
+久久 | jiǔ jiǔ | for a long time
+松开 | sōng kāi | to let go
+chars:
+念@想念 | niàn | to think of; to miss
+
+=== s35
+level: 7
+tag: A wetland saved
+zh: 候鸟归来
+en: The Birds Return
+text:
+老 赵 在 湖边 生活 了 一辈子 。 他 年轻 时 是 远近闻名 的 猎手 ， 每到 深秋 ， 成群 的 候鸟 从 北方 飞来 越冬 ， 他 便 在 芦苇 丛 里 布 下 网 ， 一 个 冬天 能 捕 上 几百 只 。 那时 谁 也 没 觉得 这 有 什么 不妥 ， 鸟 多 得 遮天蔽日 ， 仿佛 永远 也 捕 不 完 。
+
+可 好景不长 。 上游 建 起 了 工厂 ， 湖边 的 滩涂 被 围 成 鱼塘 ， 芦苇 一片片 消失 ， 湖水 也 日渐 浑浊 。 候鸟 一 年 比 一 年 少 ， 到 后来 ， 整 个 冬天 也 难得 见到 几 只 。 老 赵 的 网 挂 在 墙 上 ， 积 满 了 灰尘 。
+
+十几 年 前 ， 这里 被 划 为 自然保护区 ， 鱼塘 陆续 恢复 为 湿地 ， 工厂 也 迁 走 了 。 保护区 招募 巡护员 ， 老 赵 第一个 报 了 名 。 有人 打趣 他 ， 说 这 是 “ 猎人 改行 当 了 护鸟员 ” 。 他 也 不 辩解 ， 只是 每天 天 不 亮 便 沿 着 湖岸 巡查 ， 拆除 偷偷 架 起 的 鸟网 ， 救助 受伤 的 鸟 。 他 对 鸟 的 习性 了如指掌 ， 哪 种 鸟 何时 抵达 、 栖息 在 哪 片 水域 ， 他 都 说 得 头头是道 。
+
+去年 冬天 ， 监测 数据 显示 ， 来 此 越冬 的 候鸟 已 逾 两 万 只 ， 其中 不乏 濒危 物种 。 消息 传来 ， 老 赵 一个人 在 观鸟台 上 坐 了 很 久 。 夕阳 下 ， 鸟群 掠过 水面 ， 翅膀 拍打 的 声音 此起彼伏 。
+
+记者 来 采访 ， 问 他 心里 是否 有 愧疚 。 他 沉默 良久 ， 说 ： “ 年轻 时 欠下 的 ， 总 得@must 还 。 能 还 多少 ， 就 还 多少 吧 。 ”
+words:
+老 | lǎo | old (老赵 = old Zhao)
+赵 | Zhào | Zhao (name)
+在 | zài | by; at; in
+湖边 | hú biān | lakeside
+生活 | shēng huó | to live
+了 | le | (the action is done)
+远近闻名 | yuǎn jìn wén míng | famous far and wide
+的 | de | (links what comes before to the noun)
+猎手 | liè shǒu | hunter
+每到 | měi dào | every time … came
+深秋 | shēn qiū | late autumn
+成群 | chéng qún | in flocks
+候鸟 | hòu niǎo | migratory birds
+从 | cóng | from
+北方 | běi fāng | the north
+飞来 | fēi lái | to fly in
+越冬 | yuè dōng | to spend the winter
+便 | biàn | then; right away
+芦苇 | lú wěi | reeds
+丛 | cóng | thicket; clump
+里 | li | in
+布 | bù | to spread out; to set
+下 | xia | (down)
+网 | wǎng | net
+一 | yī | one; a
+捕 | bǔ | to catch
+上 | shang | (as many as)
+几百 | jǐ bǎi | several hundred
+只 | zhī | (measure word for birds)
+那时 | nà shí | back then
+谁 | shéi | anyone
+没 | méi | not
+这 | zhè | this
+什么 | shén me | anything
+不妥 | bù tuǒ | wrong; improper
+鸟 | niǎo | bird
+多 | duō | many
+得 | de | (so … that; 说得… = said in a way that …)
+遮天蔽日 | zhē tiān bì rì | to blot out the sky
+仿佛 | fǎng fú | as if
+永远 | yǒng yuǎn | forever
+完 | wán | to finish (捕不完 = never run out)
+可 | kě | but
+好景不长 | hǎo jǐng bù cháng | good times don't last
+上游 | shàng yóu | upstream
+建 | jiàn | to build
+起 | qǐ | up
+工厂 | gōng chǎng | factory
+滩涂 | tān tú | mudflats
+被 | bèi | (marks the passive)
+围 | wéi | to enclose
+成 | chéng | into
+鱼塘 | yú táng | fish pond
+一片片 | yī piàn piàn | patch after patch
+消失 | xiāo shī | to disappear
+湖水 | hú shuǐ | lake water
+日渐 | rì jiàn | day by day
+浑浊 | hún zhuó | murky
+少 | shǎo | fewer
+到 | dào | (到后来 = later on)
+整 | zhěng | whole
+难得 | nán dé | seldom
+见到 | jiàn dào | to see
+几 | jǐ | a few
+挂 | guà | to hang
+墙 | qiáng | wall
+积 | jī | to gather
+满 | mǎn | full of; all over
+灰尘 | huī chén | dust
+十几 | shí jǐ | ten-odd
+前 | qián | ago
+这里 | zhè lǐ | here
+划 | huà | to mark out; to designate
+为 | wéi | as
+自然保护区 | zì rán bǎo hù qū | nature reserve
+陆续 | lù xù | one after another
+恢复 | huī fù | to be restored
+湿地 | shī dì | wetland
+迁 | qiān | to move
+走 | zǒu | away
+保护区 | bǎo hù qū | the reserve
+招募 | zhāo mù | to recruit
+巡护员 | xún hù yuán | ranger
+第一个 | dì yī gè | the first
+报 | bào | to sign up (报名)
+名 | míng | name
+有人 | yǒu rén | someone
+打趣 | dǎ qù | to tease
+猎人 | liè rén | hunter
+改行 | gǎi háng | to change trade
+当 | dāng | to work as
+护鸟员 | hù niǎo yuán | bird warden
+辩解 | biàn jiě | to argue back
+每天 | měi tiān | every day
+天 | tiān | the sky (天不亮 = before dawn)
+亮 | liàng | to grow light
+沿 | yán | along
+着 | zhe | (沿着 = along)
+湖岸 | hú àn | lakeshore
+巡查 | xún chá | to patrol
+拆除 | chāi chú | to take down
+偷偷 | tōu tōu | secretly
+架 | jià | to put up
+鸟网 | niǎo wǎng | bird net
+救助 | jiù zhù | to rescue
+受伤 | shòu shāng | injured
+对 | duì | about; towards
+习性 | xí xìng | habits
+了如指掌 | liǎo rú zhǐ zhǎng | to know like the back of one's hand
+哪 | nǎ | which
+种 | zhǒng | kind
+何时 | hé shí | when
+抵达 | dǐ dá | to arrive
+栖息 | qī xī | to roost
+片 | piàn | (measure word for stretches of water)
+水域 | shuǐ yù | waters
+都 | dōu | all
+头头是道 | tóu tóu shì dào | clearly and in detail
+监测 | jiān cè | monitoring
+数据 | shù jù | data
+显示 | xiǎn shì | to show
+来 | lái | to come
+此 | cǐ | here
+已 | yǐ | already
+逾 | yú | to exceed
+万 | wàn | ten thousand
+其中 | qí zhōng | among them
+不乏 | bù fá | there is no lack of
+濒危 | bīn wēi | endangered
+物种 | wù zhǒng | species
+消息 | xiāo xi | news
+传来 | chuán lái | to come (of news)
+一个人 | yī gè rén | alone
+观鸟台 | guān niǎo tái | bird-watching platform
+坐 | zuò | to sit
+夕阳 | xī yáng | setting sun
+鸟群 | niǎo qún | flocks of birds
+掠过 | lüè guò | to skim over
+水面 | shuǐ miàn | the surface of the water
+翅膀 | chì bǎng | wings
+拍打 | pāi dǎ | to beat
+此起彼伏 | cǐ qǐ bǐ fú | to rise and fall one after another
+记者 | jì zhě | reporter
+采访 | cǎi fǎng | to interview
+是否 | shì fǒu | whether
+愧疚 | kuì jiù | guilt
+沉默 | chén mò | silent
+良久 | liáng jiǔ | for a long time
+欠下 | qiàn xià | to owe
+总 | zǒng | after all
+得@must | děi | must; have to
+还 | huán | to pay back
+多少 | duō shǎo | how much (能还多少就还多少 = pay back as much as one can)
+就 | jiù | (then)
+吧 | ba | (let it be so)
+chars:
+掠@掠过 | lüè | to sweep past
+否@是否 | fǒu | or not

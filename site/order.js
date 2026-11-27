@@ -254,7 +254,7 @@ function ordProgress(kind) {
       ? `<span>· ${(total - have).toLocaleString()} to go in HSK 1–${levels[levels.length - 1]}</span>` : ''}
       <a href="#/queue/learned">See them</a></p>
     ${total ? `<div class="ord-bars" role="list" aria-label="By HSK level">${per.map(([l, h, a]) => `<div class="ord-bar" role="listitem"
-        aria-label="HSK ${l}: ${h} of ${a}" title="HSK ${l}: ${h} of ${a} characters"><span>HSK ${l}</span>
+        aria-label="${hskName(l)}: ${h} of ${a}" title="${hskName(l)}: ${h} of ${a} characters"><span>${hskName(l)}</span>
         <i style="--w:${a ? Math.max(h ? 3 : 0, Math.round(100 * h / a)) : 0}%"></i><small>${h}/${a}</small></div>`).join('')}</div>` : ''}
   </div>`;
 }
@@ -299,7 +299,7 @@ async function pageQueue(tab, count) {
   // (with what you skipped greyed out where it would have come, out of the count)
   const ghost = tab === 'words' ? upcomingWords(n + 1, true) : upcomingChars(n + 1, true);
   const shown = list.slice(0, n), rows = withSkips(shown, ghost);
-  const pathName = { mix: 'Balanced', common: 'Most common first', hsk: 'HSK 1 to 6' }[cfg.path];
+  const pathName = { mix: 'Balanced', common: 'Most common first', hsk: 'HSK 1 to 9' }[cfg.path];
   const inline = new Set(rows.filter(r => r.skip).map(r => r.k));
   const skipped = skipList().filter(k => (kind === 'word') === ([...k].length > 1) && !inline.has(k));
   const off = !cfg.path || cfg.path === 'off';
@@ -337,7 +337,7 @@ async function pageQueue(tab, count) {
     const lv = kind === 'char' ? charHsk(k) : 0;
     html += orderItem(k, kind, i + 1, `${dated && dayOf(i) >= 28 ? ' far' : ''}${lv ? ` hsk${lv}` : ''}`);
     for (const [l, all] of doneAfter.get(i) || []) {
-      html += `<p class="ord-mile"><b>HSK ${l} complete</b><span>All ${all} of its characters${dated ? `, ${ordWhen(dayOf(i)).toLowerCase()}` : ''}</span></p>`;
+      html += `<p class="ord-mile"><b>${hskName(l)} complete</b><span>All ${all} of its characters${dated ? `, ${ordWhen(dayOf(i)).toLowerCase()}` : ''}</span></p>`;
     }
   }
   app.innerHTML = `<h1 class="page-title">Upcoming</h1>

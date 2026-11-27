@@ -736,13 +736,13 @@
 
   /* row [rank, HSK level or 0, strokes, 'components'] -> the scores of a character:
      common by rank on a log scale (the first hundred count far apart, the last thousand
-     hardly), HSK 1 most and none least, fewer strokes more, and known the share of its
+     hardly), HSK 1 most, HSK 7-9 less and none least, fewer strokes more, and known the share of its
      components already known (a character with none needs nothing first: all of it) */
   function pickScores(row, isKnown) {
     const [rank, hsk, strokes, comps] = row, list = [...(comps || '')];
     return {
       common: rank ? Math.max(0, 1 - Math.log(rank) / Math.log(PICK_MAX_RANK)) : 0,
-      hsk: hsk ? (7 - hsk) / 6 : 0,
+      hsk: hsk ? (8 - hsk) / 7 : 0,                      // (HSK 3.0: 1 to 6, then 7 for the 7-9 band)
       simple: strokes ? Math.max(0, 1 - (strokes - 1) / (PICK_MAX_STROKES - 1)) : 0,
       known: list.length ? list.filter(isKnown).length / list.length : 1,
     };
@@ -827,9 +827,10 @@
      running text the characters so far make up, by character. newComps: new components
      needed per character over the first 1,000. */
   const PATH_FACTS = {
-    mix: { hsk: [388, 664, 1063, 1497, 2038, 3354], cover: { 500: 69.9, 1000: 85.9 }, newComps: 0.30 },
-    common: { hsk: [2478, 2607, 3110, 3650, 3897, Infinity], cover: { 500: 75.8, 1000: 89.1 }, newComps: 0.30 },
-    hsk: { hsk: [178, 346, 618, 1071, 1710, 2632], cover: { 500: 66.5, 1000: 83.1 }, newComps: 0.35 },
+    // (HSK 3.0: levels 1 to 6, then the 7-9 band; test/learn.js checks these against the data)
+    mix: { hsk: [597, 918, 1163, 1304, 1717, 1880, 3296], cover: { 500: 73.6, 1000: 89.3 }, newComps: 0.30 },
+    common: { hsk: [1986, 3506, 2551, 2601, 3184, 3356, 5054], cover: { 500: 78.3, 1000: 91.6 }, newComps: 0.30 },
+    hsk: { hsk: [300, 598, 899, 1199, 1499, 1799, 2970], cover: { 500: 69.1, 1000: 89.3 }, newComps: 0.35 },
   };
 
   /* An HSK level counts as nearly done with at least this share learned and at most this
