@@ -283,7 +283,8 @@ Reviews are scheduled by [FSRS](https://github.com/open-spaced-repetition) (vers
 default weights), checked against the reference implementation in `test/learn.js`. Each item
 has a difficulty (1–10) and a stability (days until the chance of recalling it falls to 90%),
 and so a retrievability, the chance of recalling it now; it comes back when that falls to the
-retention you want (90% unless set otherwise in Settings). The rating each review gives FSRS
+retention you want (90% unless set otherwise in Settings), at the midnight that starts that
+day, so each day's reviews are all there from the morning. The rating each review gives FSRS
 isn't asked for: it comes from the answers, not from how fast you give them. A wrong answer (or
 the answer shown) is *again*, a slip of tone *hard*, right *good*. Only a calibration test times
 you: there a long think (over 15 seconds before typing starts) is *hard* too, and right and typing

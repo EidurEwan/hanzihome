@@ -2726,7 +2726,13 @@ function itemsCard(keys, o = {}) {
     return `<a class="fc-chip ss-t ${byKind(k)} l${len}${pick.has(k) ? ' pick' : ''}" href="${itemHref(k)}" data-k="${esc(k)}"
       data-move="${esc(move)}" aria-label="${esc(`${itemText(k)} ${it.pin || primary(it) || ''}`)}">${glyph(k)}</a>`;
   };
-  const tiles = (ks, cls = '') => `<div class="ss-tiles ${cls}">${ks.map(tile).join('')}</div>`;
+  // the more there are, the smaller the tiles (36px for up to 120, down to 10px); below 16px
+  // the glyphs go, and hovering a tile shows its card (fcPopover)
+  const fit = n => Math.round(Math.max(10, Math.min(36, 36 * Math.sqrt(120 / Math.max(1, n)))));
+  const tiles = (ks, cls = '') => {
+    const t = cls ? 0 : fit(ks.length);
+    return `<div class="ss-tiles ${cls}${t ? ` fit${t < 16 ? ' tiny' : ''}" style="--t:${t}px` : ''}">${ks.map(tile).join('')}</div>`;
+  };
   const group = (name, n, body) => `<div class="ss-grp"><p class="ss-gh">${name}<span>${n}</span></p>${body}</div>`;
   const seg = (name, opts, on) => `<div class="ss-seg" role="group" data-seg="${name}">${opts.map(([v, label]) =>
     `<button type="button" data-v="${v}" aria-pressed="${v === on}">${label}</button>`).join('')}</div>`;
@@ -2913,7 +2919,6 @@ function fcPopHtml(k, move) {
   const kind = it.kind || 'char', sound = kind === 'sound';
   const due = new Date(it.due), today = new Date().setHours(0, 0, 0, 0);
   const diff = Math.round((new Date(it.due).setHours(0, 0, 0, 0) - today) / 864e5);
-  const at = due.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   const day = diff <= 0 ? 'today' : diff === 1 ? 'tomorrow' : due.toLocaleDateString(undefined, { weekday: 'long' });
   const name = sound ? esc(partName(k)) : kind === 'comp' ? esc(partName(k)) : esc(it.pin || '');
   const mean = sound ? { i: 'how a syllable begins', f: 'how a syllable ends', t: 'a tone' }[k[0]] : kind === 'comp' ? '' : primary(it);
@@ -2922,7 +2927,7 @@ function fcPopHtml(k, move) {
       <span class="fc-pop-kind">${FC_KIND[kind]}${move ? '' : ` · ${esc(Learn.stageName(it.stage))}`}</span></span>
     ${move ? `<span class="fc-pop-move">${esc(move)}</span>` : ''}
     <span class="fc-pop-when"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-      Back ${day}${diff > 6 ? ` ${due.getDate()}` : ''} at ${at}</span>`;
+      Back ${day}${diff > 6 ? ` ${due.getDate()}` : ''}</span>`;
 }
 function fcPopover(fc) {
   const pop = document.createElement('div');
@@ -3097,7 +3102,7 @@ function reschedule(retention) {
     if (!(it.stage >= 1)) continue;
     Learn.adopt(it);
     const since = it.last || it.learnt;
-    if (since) it.due = since + Learn.intervalFor(it.S, retention) * Learn.DAY;
+    if (since) it.due = Learn.midnightIn(since, Learn.intervalFor(it.S, retention));
   }
   Store.save();
 }

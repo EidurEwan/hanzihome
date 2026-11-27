@@ -186,6 +186,8 @@ const Store = {
     for (const m of [d.status, d.wstatus]) for (const k of Object.keys(m)) if (m[k] !== 'learned') m[k] = 'learned';
     // items reviewed before FSRS: a stability from the stage they had reached
     for (const it of Object.values(d.items)) Learn.adopt(it);
+    // reviews come at midnight: one due later in a day is due from the start of it
+    for (const it of Object.values(d.items)) if (it.stage >= 1 && it.due) it.due = Learn.dayStart(it.due);
     // (the day's lessons are now characters first, words with what is left, and a word waits
     // until its characters have had their lessons: what these settings used to choose)
     for (const k of ['lessonOrder', 'wordWait', 'wordUnlock']) delete d.study[k];
