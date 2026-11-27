@@ -2757,8 +2757,11 @@ function itemsCard(keys, o = {}) {
   // a chart: a column of stacked tiles each, a count on top, a label or a coloured line under;
   // each column as wide as its pile needs (about square), an empty one only a sliver: the lines
   // under the stages span their columns, so they grow and shrink with them
-  const colWidth = n => !n ? 'minmax(10px, .25fr)' : `minmax(28px, ${Math.max(1, Math.ceil(Math.sqrt(n * 1.6)))}fr)`;
-  const cols = (columns, foot) => `<div class="ss-cols" style="grid-template-columns:${columns.map(c => colWidth(c.ks.length)).join(' ')}">${columns.map(c =>
+  // (its tiles, like All's, the smaller the more there are: 28px for up to 120, down to 10px)
+  const colWidth = (n, t) => !n ? 'minmax(10px, .25fr)' : `minmax(${t}px, ${Math.max(1, Math.ceil(Math.sqrt(n * 1.6)))}fr)`;
+  const colFit = n => Math.round(Math.max(10, Math.min(28, 28 * Math.sqrt(120 / Math.max(1, n)))));
+  const cols = (columns, foot, t = colFit(columns.reduce((n, c) => n + c.ks.length, 0))) => `<div class="ss-cols fit${t < 16 ? ' tiny' : ''}"
+    style="--t:${t}px;grid-template-columns:${columns.map(c => colWidth(c.ks.length, t)).join(' ')}">${columns.map(c =>
     `<div class="ss-col${c.ks.length ? '' : ' none'}" title="${esc(c.title || '')}"><span class="ss-n">${c.ks.length || ''}</span>
       <div class="ss-stack">${c.ks.map(tile).join('')}</div></div>`).join('')}${foot}</div>`;
 
@@ -2813,47 +2816,107 @@ function itemsCard(keys, o = {}) {
     </section>`;
 }
 /* the Items card's switches (the tab, All's order, the stage chart's filter and before/after),
-   each change glided; and each tile's card on hover */
+   each change glided; and each tile's card on hover. Where every tile stands in every view is
+   worked out once, ahead of time (and again when the card's width changes), so a switch only
+   has to animate between two known layouts. */
 function wireItemsCard(card) {
   if (!card) return;
   const state = { tab: 'all', all: card.dataset.view0, move: 'all', when: 'after' };
+  const apply = st => {
+    card.querySelectorAll('[data-pane]').forEach(x => { x.hidden = x.dataset.pane !== st.tab; });
+    card.querySelectorAll('[data-view]').forEach(x => { x.hidden = x.dataset.view !== st.all; });
+    card.querySelectorAll('[data-chart]').forEach(x => { x.hidden = x.dataset.chart !== `${st.move}-${st.when}`; });
+  };
+  const keyOf = st => st.tab === 'all' ? `all:${st.all}` : st.tab === 'stage' ? `stage:${st.move}-${st.when}` : st.tab;
+  // every view the switches can show, as the state that shows it
+  const views = () => [
+    ...[...card.querySelectorAll('[data-view]')].map(v => ({ ...state, tab: 'all', all: v.dataset.view })),
+    { ...state, tab: 'type' },
+    ...[...card.querySelectorAll('[data-chart]')].map(c => { const [move, when] = c.dataset.chart.split('-'); return { ...state, tab: 'stage', move, when }; }),
+    { ...state, tab: 'next' }];
+  let layouts = null, width = 0;
+  // each view in turn, laid out and read, all in one go (nothing is drawn in between), then back
+  const measure = () => {
+    if (!card.isConnected || !card.offsetParent) return;
+    card.getAnimations({ subtree: true }).forEach(a => a.finish());
+    const out = new Map();
+    for (const st of views()) { apply(st); out.set(keyOf(st), ssLayout(card)); }
+    apply(state);
+    layouts = out;
+    width = card.offsetWidth;
+  };
+  const later = window.requestIdleCallback ? f => requestIdleCallback(f, { timeout: 600 }) : f => setTimeout(f, 200);
+  later(measure);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => later(measure));
+  if (window.ResizeObserver) {
+    let t;
+    new ResizeObserver(() => {
+      if (!card.isConnected || card.offsetWidth === width) return;
+      layouts = null;
+      clearTimeout(t);
+      t = setTimeout(() => later(measure), 150);
+    }).observe(card);
+  }
   card.querySelectorAll('.ss-seg').forEach(g => g.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b || b.getAttribute('aria-pressed') === 'true') return;
+    const from = layouts && layouts.get(keyOf(state));
     state[g.dataset.seg] = b.dataset.v;
     g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
-    ssGlide(card, () => {
-      card.querySelectorAll('[data-pane]').forEach(x => { x.hidden = x.dataset.pane !== state.tab; });
-      card.querySelectorAll('[data-view]').forEach(x => { x.hidden = x.dataset.view !== state.all; });
-      card.querySelectorAll('[data-chart]').forEach(x => { x.hidden = x.dataset.chart !== `${state.move}-${state.when}`; });
-    });
+    ssGlide(card, () => apply(state), from, layouts && layouts.get(keyOf(state)));
   }));
   fcPopover(card);
   wireSounds(card);
 }
 
+/* where each tile and stage line stands in the card as it is shown now, in the card's own
+   pixels (offsets: no transform, mid-animation or on hover, moves them), and the card's height */
+function ssLayout(card) {
+  const at = new Map();
+  for (const t of card.querySelectorAll('.ss-t, .ss-line')) {
+    if (!t.offsetParent) continue;
+    let x = 0, y = 0, e = t;
+    while (e && e !== card) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
+    if (e === card) at.set(t.dataset.k, { left: x, top: y, width: t.offsetWidth, height: t.offsetHeight });
+  }
+  return { h: card.offsetHeight, at };
+}
+
 /* A switch in the summary's Items card: each tile glides from where it was to its place in
    the new view (and grows or shrinks to its new size), ones new to the view pop in, ones
    leaving it fade where they stood; everything else (counts, labels, headings, the view's own
-   switches) cross-fades; and the card eases to its new height. */
+   switches) cross-fades; and the card eases to its new height. `from` and `to` are the two
+   views' layouts worked out beforehand (ssLayout); without them, they are measured now. */
 const SS_FADE = '.ss-n, .ss-lab, .ss-gh, .ss-count, .ss-sub .ss-seg, [data-pane] > p';
-function ssGlide(card, change) {
-  const shown = () => [...card.querySelectorAll('.ss-t, .ss-line')].filter(t => t.offsetParent);
-  const texts = () => [...card.querySelectorAll(SS_FADE)].filter(t => t.offsetParent);
+function ssGlide(card, change, from, to) {
+  // what is shown: not inside a hidden pane, view or chart (asked of the page, not its layout,
+  // so nothing has to be laid out while a switch starts)
+  const open = t => !t.closest('[hidden]') && !t.classList.contains('ss-ghost');
+  const shown = () => [...card.querySelectorAll('.ss-t, .ss-line')].filter(open);
+  const texts = () => [...card.querySelectorAll(SS_FADE)].filter(open);
   if (Motion.reduced() || !card.animate) return change();
   card.getAnimations({ subtree: true }).forEach(a => a.finish());
   card.querySelectorAll('.ss-ghost').forEach(g => g.remove());
+  // (in the card's own pixels, like ssLayout)
+  const rel = (t, box) => { const r = localRect(t); return { left: r.left - box.left, top: r.top - box.top, width: r.width, height: r.height }; };
   const box0 = localRect(card);
-  const was = new Map(shown().map(t => [t.dataset.k, [t, localRect(t)]]));
-  const wasText = new Map(texts().map(t => [t, localRect(t)]));
+  from = from || ssLayout(card);
+  const was = new Map(shown().map(t => [t.dataset.k, [t, from.at.get(t.dataset.k) || rel(t, box0)]]));
+  const wasText = new Map(texts().map(t => [t, rel(t, box0)]));
+  // how each thing that may leave looks, read now, while the page's styles are worked out: read
+  // after the switch, it would make the browser work out the styles of every tile there and then
+  const look = t => { const cs = getComputedStyle(t); return { fontSize: cs.fontSize, fontWeight: cs.fontWeight, color: cs.color }; };
+  const looks = new Map();
+  for (const t of wasText.keys()) looks.set(t, look(t));
+  if (to) for (const [k, [t]] of was) if (!to.at.has(k)) looks.set(t, look(t));
   // a copy of something leaving, fading (and shrinking, for a tile) where it stood
   const ghost = (t, a, shrink) => {
-    const cs = getComputedStyle(t), g = t.cloneNode(true);
+    const cs = looks.get(t) || look(t), g = t.cloneNode(true);
     g.classList.add('ss-ghost');
     g.removeAttribute('href');
     g.removeAttribute('data-pane');
     g.setAttribute('aria-hidden', 'true');
-    Object.assign(g.style, { position: 'absolute', left: `${a.left - box0.left}px`, top: `${a.top - box0.top}px`,
+    Object.assign(g.style, { position: 'absolute', left: `${a.left}px`, top: `${a.top}px`,
       width: `${a.width}px`, height: `${a.height}px`, margin: 0, pointerEvents: 'none', boxSizing: 'border-box',
       fontSize: cs.fontSize, fontWeight: cs.fontWeight, color: cs.color, whiteSpace: 'nowrap' });
     card.appendChild(g);
@@ -2862,16 +2925,17 @@ function ssGlide(card, change) {
       .finished.then(() => g.remove(), () => g.remove());
   };
   change();
-  const box1 = localRect(card);
+  to = to || ssLayout(card);
   const EASE = 'cubic-bezier(.2, .8, .2, 1)', MS = 520;
-  if (Math.abs(box1.height - box0.height) > 1) {
+  if (Math.abs(to.h - from.h) > 1) {
     card.style.overflow = 'hidden';
-    card.animate([{ height: `${box0.height}px` }, { height: `${box1.height}px` }], { duration: MS, easing: EASE })
+    card.animate([{ height: `${from.h}px` }, { height: `${to.h}px` }], { duration: MS, easing: EASE })
       .finished.then(() => { card.style.overflow = ''; }, () => { card.style.overflow = ''; });
   }
   const now = shown(), stay = new Set();
+  let box1 = null;
   now.forEach((t, i) => {
-    const old = was.get(t.dataset.k), r = localRect(t);
+    const old = was.get(t.dataset.k), r = to.at.get(t.dataset.k) || rel(t, box1 = box1 || localRect(card));
     const delay = Math.min(i * 3, 180);
     if (old) {
       stay.add(t.dataset.k);
