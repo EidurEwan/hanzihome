@@ -92,6 +92,12 @@
   /* whole days between two times, by the calendar (as FSRS counts them) */
   const days = (from, to) => Math.max(0, Math.round((dayStart(to) - dayStart(from)) / DAY));
   const dayStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); return +d; };
+  /* the midnight `days` days on from the day of `now` (by the calendar, so a day of 23 or 25
+     hours is still one day) */
+  const midnightIn = (now, days) => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + days); return +d; };
+  /* Reviews come at midnight: a time from now, moved back to the midnight that starts its day,
+     but never before tonight's (no wait: due now) */
+  const atMidnight = (now, wait) => wait <= 0 ? now : Math.max(midnightIn(now, 1), dayStart(now + wait));
 
   /* days until R falls to the retention wanted, a little spread (FSRS's fuzz ranges)
      so a day's reviews don't all come back on one day */
@@ -120,7 +126,7 @@
   /* schedule the next review from the item's stability, and set its stage */
   function schedule(item, now, retention, rnd, elapsed = 0) {
     item.stage = stageFor(item.S);
-    item.due = now + intervalFor(item.S, retention, rnd, elapsed) * DAY;
+    item.due = midnightIn(now, intervalFor(item.S, retention, rnd, elapsed));   // (at midnight, so a day's reviews are all there in the morning)
     return item;
   }
 
@@ -297,7 +303,7 @@
     item.D = initD(GOOD);
     item.stage = stageFor(item.S);
     item.joined = now;
-    item.due = now + wait;
+    item.due = atMidnight(now, wait);
     logged(item, now, 0, 'known');
     return item;
   }
@@ -309,7 +315,7 @@
     item.S = Math.max(item.S || 0, KNOWN_S);
     item.D = item.D || initD(GOOD);
     item.stage = stageFor(item.S);
-    item.due = now + wait;
+    item.due = atMidnight(now, wait);
     if (!item.learnt) item.joined = now;
     logged(item, now, 0, 'known');
     return item;
@@ -331,7 +337,7 @@
   /* back from vacation: every review waits as long again as you were away */
   function resume(items, since, now) {
     const away = Math.max(0, now - since);
-    for (const it of Object.values(items)) if (it.stage >= 1) it.due += away;
+    for (const it of Object.values(items)) if (it.stage >= 1) it.due = dayStart(it.due + away + DAY / 2);   // (still at a midnight)
   }
 
   /* How well FSRS predicts you: every logged review, grouped by the chance of recall FSRS
@@ -1082,7 +1088,7 @@
   return {
     STAGES, MASTER, LEARNED_FROM, FAMILIAR, DAY, DEFAULTS, stageName, group, newItem, finishLesson, partsOf,
     pickChars, pickScores, pathSync, wordOrder, PATH_FACTS, hskProgress, hskIsNear, hskNearlyDone,
-    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, refreshNames, RENAMED_COMPS, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, dailySplit, migrateLessonCfg, WORD_SHARE, recommendedWords, dayStart, plan, reviewOrder,
+    review, known, KNOWN_S, KNOWN_WAIT, knownChars, recastSounds, OLD_CAST, refreshNames, RENAMED_COMPS, sayKnown, resume, predictionCheck, reviewLogCsv, learnedByDay, learnedOn, LEARNED_KINDS, isDue, isLeech, weakItems, WEAK_REST, waiting, forecast, statusFor, settings, midnightIn, atMidnight, dailySplit, migrateLessonCfg, WORD_SHARE, recommendedWords, dayStart, plan, reviewOrder,
     calibrate, uncalibrated, adopt, memory, retrievability, stageFor, gradeFrom, GRADE_NAMES, QUICK, SLOW,
     W, initD, initS, intervalFor,
     checkPinyin, checkMeaning, validPinyin, splitPinyin, meanings, american, parsePinyin, soundOf,

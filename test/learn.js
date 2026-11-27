@@ -34,7 +34,7 @@ check('a lesson sets the first memory by FSRS\'s first rating', () => {
   }
   const good = L.finishLesson(L.newItem('char', {}, t0), t0, 3);
   assert.strictEqual(L.stageName(good.stage), 'Novice I');
-  assert.strictEqual(good.due, t0 + 3 * DAY);                   // R is 90% after S days
+  assert.strictEqual(good.due, L.midnightIn(t0, 3));            // R is 90% after S days; reviews come at midnight
 });
 
 check('reviews move difficulty and stability as the reference FSRS does', () => {
@@ -445,7 +445,17 @@ check('plan: reviews in order, under a soft daily limit; vacation stops everythi
   const v = L.plan(items, { vacation: t0 }, t0, env);
   assert.deepStrictEqual([v.lessons.length, v.reviews.length, v.vacation], [0, 0, true]);
   L.resume(items, t0 - 5 * DAY, t0);
-  assert.strictEqual(items['三'].due, t0 - 2000 + 5 * DAY);
+  assert.strictEqual(items['三'].due, L.dayStart(t0 + 5 * DAY));   // moved on by the time away, still at a midnight
+});
+
+check('reviews come at midnight, never before tonight', () => {
+  const late = new Date(t0); late.setHours(23, 50, 0, 0);
+  const it = L.finishLesson(L.newItem('char', {}, +late), +late, 3);
+  assert.strictEqual(it.due, L.midnightIn(+late, 3));
+  assert.strictEqual(new Date(it.due).getHours() + new Date(it.due).getMinutes(), 0);
+  // marked Known: a wait of a few hours is tonight's midnight; no wait is due now
+  assert.strictEqual(L.known('char', {}, +late, 3 * 3600e3).due, L.midnightIn(+late, 1));
+  assert.strictEqual(L.known('char', {}, +late, 0).due, +late);
 });
 
 check('a leech learnt again is no longer a leech', () => {
@@ -461,7 +471,7 @@ check('a leech learnt again is no longer a leech', () => {
 
 check('a learned character joins at Novice I without using a lesson', () => {
   const it = L.known('char', { pin: 'hǎo', mean: 'good' }, t0, 3 * DAY);
-  assert.deepStrictEqual([it.stage, L.stageName(it.stage), it.due, L.statusFor(it)], [1, 'Novice I', t0 + 3 * DAY, 'learned']);
+  assert.deepStrictEqual([it.stage, L.stageName(it.stage), it.due, L.statusFor(it)], [1, 'Novice I', L.midnightIn(t0, 3), 'learned']);
   assert.strictEqual(L.plan({ 好: it }, {}, t0, world({ 好: it })).lessonsToday, 0);
 });
 

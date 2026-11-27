@@ -4774,6 +4774,16 @@ a.ord-item .ord-main { cursor: pointer; }
 
 .ss-tiles { display: flex; flex-wrap: wrap; gap: 3px; }
 .ss-tiles + .ss-tiles { margin-top: 8px; }
+/* sized to how many there are (study.js itemsCard: --t); too small for text, a tile is only
+   its colour, and hovering it shows its card */
+.ss-tiles.fit { gap: max(2px, calc(var(--t) / 12)); }
+.ss-tiles.fit .fc-chip.ss-t { width: var(--t); height: var(--t); border-radius: max(2px, calc(var(--t) / 6)); font-size: calc(var(--t) * .53); }
+.ss-tiles.fit .fc-chip.ss-t.word.l2 { font-size: calc(var(--t) * .35); }
+.ss-tiles.fit .fc-chip.ss-t.word.l3 { font-size: calc(var(--t) * .26); }
+.ss-tiles.fit .fc-chip.ss-t.word.l4 { font-size: calc(var(--t) * .22); }
+.ss-tiles.fit .fc-chip.ss-t.sound { font-size: calc(var(--t) * .28); }
+.ss-tiles.fit.tiny .fc-chip.ss-t > * { visibility: hidden; }
+.ss-tiles.fit.tiny .fc-chip.ss-t:hover { transform: scale(1.5); z-index: 1; }
 .fc-chip.ss-t { width: 36px; min-width: 0; height: 36px; padding: 0; border-radius: 6px; font-size: 19px; font-weight: 500;
   box-shadow: inset 0 -2px 0 rgb(0 0 0 / .22); transition: transform .12s var(--m-ease, ease), opacity .18s, filter .18s; }
 .fc-chip.ss-t.word.l2 { font-size: 12.5px; } .fc-chip.ss-t.word.l3 { font-size: 9.5px; } .fc-chip.ss-t.word.l4 { font-size: 8px; }
