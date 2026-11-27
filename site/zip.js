@@ -1,5 +1,4 @@
-/* zip.js — reading zip archives in the page: Anki decks (anki.js) and EPUB books
- * (books.js). The browser's own DecompressionStream does the inflating.
+/* zip.js — reading zip archives in the page: EPUB books (books.js). The browser's own DecompressionStream does the inflating.
  *
  *   Zip.files(bytes)        {name: {method, data}} from the central directory
  *   await Zip.read(file)    a file's bytes, inflated

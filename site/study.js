@@ -208,20 +208,20 @@ function addParts(parts) {
   }
 }
 
-/* The learning path (Settings) keeps the queue full: the next characters along it, as many as
-   "new characters a day", whatever you have done today (Learn.plan holds back those past the
-   day's number until tomorrow). The queue follows the settings: change the path or the number
+/* The learning path (Settings) keeps the queue full: the next characters along it, a whole
+   day's new items of them (characters fill what the words don't use), whatever you have done
+   today (Learn.plan holds back those past the day's numbers until tomorrow). The queue follows the settings: change the path or the number
    and what the path put there changes, while what you added, starred or pushed stays
    (Learn.pathSync). Characters you know, have queued or have taken out are skipped. Returns
    how many items changed. */
 async function fillPath() {
   const first = Store.cfg();
   // (everything that could wait comes before anything changes, so two calls can't both add)
-  const active = first.path && first.path !== 'off' && first.pathDaily;
+  const active = first.path && first.path !== 'off' && first.lessonLimit;
   if (active) await optional(Promise.all([need.cmnem(), need.cnames(), need.sounds()]));
   if (first.path === 'mix') await optional(need.charorder());
   if (first.path === 'hsk') await optional(need.hskChars());
-  if (active && first.pathWords !== false) await optional(need.wordorder());
+  if (active && Learn.dailySplit(first).words > 0) await optional(need.wordorder());
   const cfg = Store.cfg(), d = Store.load();
   const { drop, want } = Learn.pathSync(d.items, cfg);
   dropQueued(drop);
@@ -253,8 +253,8 @@ async function fillPath() {
 /* The path's words, in Learn.wordOrder's order, once all a word's characters have had their
    lessons. Returns how many changed. */
 function syncPathWords(cfg, skipped) {
-  // (enough queued for all the limit might leave for them)
-  const d = Store.load(), { drop, want } = Learn.pathSync(d.items, { ...cfg, pathDaily: cfg.lessonLimit || cfg.pathDaily }, 'word');
+  // (as many queued as the day's words)
+  const d = Store.load(), { drop, want } = Learn.pathSync(d.items, cfg, 'word');
   dropQueued(drop);
   if (want <= 0 || !HZ.wordorder) return drop.length;
   // a word can be learnt once all its characters have had their lessons
@@ -489,7 +489,7 @@ const Sound = {
     this.waiting = null;
     a.pause();
     if (window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel();
-    const rate = { slow: 0.75, normal: 1, fast: 1.25 }[cfg.speed] || 1;
+    const rate = cfg.slow ? 0.75 : 1;
     const play = (i, retry) => {
       if (run !== this.run || i >= files.length) return;
       a.onended = () => play(i + 1);
@@ -554,7 +554,7 @@ const Sound = {
     const v = this.voice();
     if (v) u.voice = v;
     u.lang = v ? v.lang.replace('_', '-') : 'zh-CN';   // (Android writes zh_CN)
-    u.rate = { slow: 0.7, normal: 1, fast: 1.3 }[cfg.speed] || 1;
+    u.rate = cfg.slow ? 0.7 : 1;
     // cancelling when nothing is speaking makes Android's voice drop what comes next
     if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
     speechSynthesis.speak(u);
@@ -988,130 +988,6 @@ function sentenceAround(el, w) {
   return hit.trim().slice(0, 160);
 }
 
-// --------------------------------------------------------------------- Anki
-
-const needAnki = () => Promise.all([
-  loadScript('zip.js'),
-  loadScript('anki.js'),
-  window.fzstd ? null : loadScript('vendor/fzstd.js'),
-  need.textStory(),                                // learnKey's traditional → simplified, the words' readings
-]);
-
-/* Anki: export your lessons and reviews, or bring a deck in (Settings → Your data) */
-function ankiCard() {
-  const items = Object.keys(Store.load().items);
-  return `    <section class="card" id="anki-card">
-      <h2>Anki</h2>
-      <p class="small muted">Take your lessons and reviews to Anki, or bring an Anki deck here.</p>
-      <div class="row">
-        <button class="btn quiet" id="anki-export"${items.length ? '' : ' disabled'}>Export for Anki</button>
-        <label class="btn quiet anki-pick">Import a deck…<input type="file" id="anki-file"
-          accept=".apkg,.colpkg,.txt,.tsv,.csv" hidden></label>
-      </div>
-      <div id="anki-import"></div>
-    </section>`;
-}
-
-function wireAnki(redraw) {
-  const exp = document.getElementById('anki-export'), file = document.getElementById('anki-file');
-  if (!exp || !file) return;
-  exp.addEventListener('click', async () => {
-    await needAnki();
-    const blob = new Blob([Anki.exportText(Store.load().items)], { type: 'text/plain;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `hanzihome-anki-${today()}.txt`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  });
-  file.addEventListener('change', async () => {
-    const box = document.getElementById('anki-import');
-    const f = file.files[0];
-    file.value = '';
-    if (!f) return;
-    box.innerHTML = '<p class="small muted">Reading the deck…</p>';
-    try {
-      await needAnki();
-      const deck = await Anki.read(f);
-      if (!deck.notes.length) throw new Error('That deck has no notes in it.');
-      ankiPreview(box, f.name, deck, Anki.guess(deck.names, deck.notes), redraw);
-    } catch (e) {
-      box.innerHTML = `<p class="small sync-err">${esc(e.message || String(e))}</p>`;
-    }
-  });
-}
-
-/* what an imported note becomes: the dictionary's pinyin and meanings where it has
-   the character or word (so answers are checked the usual way), the deck's meaning
-   first when it has one */
-function ankiInfo(x) {
-  let info;
-  if (x.kind === 'char') info = charInfo(x.k);
-  else {
-    const e = HZ.rwords && HZ.rwords[x.k], rs = (e && e[2]) || [];
-    info = { pin: rs[0] ? rs[0][0] : '', mean: rs[0] ? rs[0][1] : '', alts: rs.map(r => r[1]) };
-  }
-  if (!info.pin) info.pin = Anki.marks(x.pin);
-  if (x.mean) {
-    info.alts = [...new Set([info.mean].concat(info.alts || []).filter(Boolean))];
-    info.mean = x.mean.length > 80 ? x.mean.slice(0, 79) + '…' : x.mean;
-  }
-  return info;
-}
-
-function ankiPreview(box, name, deck, cols, redraw) {
-  const d = Store.load();
-  const list = cols.hanzi >= 0 ? Anki.items(deck.notes, cols) : [];
-  const fresh = list.filter(x => !d.items[x.k]);
-  const label = i => esc(deck.names[i] || `Field ${i + 1}`) + (deck.notes[0] && deck.notes[0].fields[i]
-    ? ` (${esc(deck.notes[0].fields[i].slice(0, 18))})` : '');
-  const pick = (id, at, none) => `<select class="st-select" data-col="${id}">${none ? `<option value="-1">${none}</option>` : ''}${
-    Array.from({ length: cols.fields }, (_, i) => `<option value="${i}"${i === at ? ' selected' : ''}>${label(i)}</option>`).join('')}</select>`;
-  box.innerHTML = `<div class="anki-prev">
-    <p class="small"><b>${esc(name)}</b>: ${deck.notes.length} notes, ${list.length} with Chinese in them,
-      <b>${fresh.length} new</b> to HanziHome${list.length - fresh.length ? `, ${list.length - fresh.length} already here` : ''}.</p>
-    <div class="anki-cols">
-      <label>Hanzi ${pick('hanzi', cols.hanzi)}</label>
-      <label>Pinyin ${pick('pinyin', cols.pinyin, 'none (from the dictionary)')}</label>
-      <label>Meaning ${pick('meaning', cols.meaning, 'none (from the dictionary)')}</label>
-    </div>
-    ${list.length ? `<table class="anki-table"><tbody>${list.slice(0, 6).map(x => `<tr>
-      <td class="han">${zhOne(x.k)}</td><td>${esc(x.pin)}</td><td class="muted">${esc(x.mean.slice(0, 60))}</td></tr>`).join('')}
-      </tbody></table>` : '<p class="small sync-err">No field holds just Chinese characters: choose the hanzi field above.</p>'}
-    ${fresh.length ? `<div class="row">
-      <button class="btn" id="anki-lessons">Add ${fresh.length} to lessons</button>
-      <button class="btn quiet" id="anki-known">I know these: add ${fresh.length} to reviews</button></div>
-      <p class="small muted">To lessons: each is taught before it's reviewed, within your daily limits. Known: they join the
-        reviews at Novice, the first ones a few days out (20 a day at most), and a calibration test can
-        sort them.</p>` : ''}
-  </div>`;
-  box.querySelectorAll('[data-col]').forEach(sel => sel.addEventListener('change', () => {
-    ankiPreview(box, name, deck, Object.assign({}, cols, { [sel.dataset.col]: +sel.value }), redraw);
-  }));
-  const before = Object.keys(d.items).length;
-  const done = n => {
-    Store.save(); redraw();
-    const more = Object.keys(Store.load().items).length - before - n;   // characters a word brought along
-    document.getElementById('anki-import').innerHTML = `<p class="small">Added ${n} from ${esc(name)}${more > 0
-      ? `, and ${more} character${more === 1 ? '' : 's'} in those words, ahead of them` : ''}.</p>`;
-  };
-  const lessons = document.getElementById('anki-lessons');
-  if (lessons) lessons.addEventListener('click', () => {
-    for (const x of fresh) Store.learnAdd(x.k, x.kind, ankiInfo(x));
-    done(fresh.length);
-  });
-  const known = document.getElementById('anki-known');
-  if (known) known.addEventListener('click', () => {
-    const now = Date.now(), span = Math.max(3, Math.ceil(fresh.length / 20)) * Learn.DAY;
-    fresh.forEach((x, i) => {
-      d.items[x.k] = Learn.known(x.kind, ankiInfo(x), now, Math.round(span * i / fresh.length));
-      if (x.kind === 'char') d.status[x.k] = 'learned';
-      else if (x.kind === 'word') d.wstatus[x.k] = 'learned';
-    });
-    done(fresh.length);
-  });
-}
-
 // ---------------------------------------------------------------------- hub
 
 /* Practice: extra study that doesn't change when anything comes back. Today shows the two
@@ -1520,12 +1396,12 @@ function drawStudy() {
       <p><button class="btn" id="lx-back">I'm back</button></p></section>` : ''}
     ${noPath && !p.vacation ? `<section class="card lx-path" id="lx-path">
       <h2 class="caps">${newcomer ? 'Choose how to start' : 'Nothing to learn next?'}</h2>
-      <p class="muted">HanziHome can fill your lessons each day: ${cfg.pathDaily} new characters, each with its
+      <p class="muted">HanziHome can fill your lessons each day: ${dailyLine(cfg)}, each character with its
         components and sounds before it. Pick an order; you can change it at any time in
         <a href="#/settings">Settings</a>.</p>
       ${pathPick()}
       <p class="small muted">${newcomer ? `Know some characters already? <a href="#/frequency">Mark them as learned</a> and the lessons
-        skip them, or bring an Anki deck (<a href="#/settings">Settings</a>). ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
+        skip them. ` : ''}Rather choose for yourself? <b>Add to lessons</b> on any
         character's or word's page does that, with or without a path.</p></section>` : ''}
     <div class="td-grid${fresh ? ' first' : ''}">
     <div class="td-main lx-top${fresh ? ' first' : ''}">
@@ -1551,7 +1427,7 @@ function drawStudy() {
         .filter(([k]) => nextTen.some(x => (d.items[x] ? d.items[x].kind : 'char') === k))
         .map(([k, name]) => `<span><i class="${k}"></i>${name}</span>`).join('')}</p>
       ${cfg.path && cfg.path !== 'off' ? `<p class="small muted lx-pathline">Learning path: ${cfg.path === 'hsk' ? 'HSK 1 to 9' : cfg.path === 'mix' ? 'balanced' : 'the most common characters'},
-        ${cfg.pathDaily} new characters a day · <a href="#/settings">change</a></p>` : ''}
+        ${dailyLine(cfg)} · <a href="#/settings">change</a></p>` : ''}
     </section>` : ''}
     </div>
     </div>
@@ -1679,8 +1555,8 @@ async function pageLessons() {
       const nLocked = Object.keys(p.locked).length;
       const why = p.vacation ? '<p class="empty">Lessons are paused while you\'re on vacation.</p>'
         : !p.waiting.length && (!cfg.path || cfg.path === 'off') ? `<p class="empty">No lessons waiting.</p>
-          <p class="muted">Choose a learning path and HanziHome fills your lessons each day, ${cfg.pathDaily} new
-            characters at a time:</p>
+          <p class="muted">Choose a learning path and HanziHome fills your lessons each day:
+            ${dailyLine(cfg)}.</p>
           ${pathPick()}
           <p class="small muted">Or add characters and words yourself, with <b>Add to lessons</b> on a character's page
             or in the reader's word popup.</p>`
@@ -1692,9 +1568,8 @@ async function pageLessons() {
         : nLocked === p.waiting.length ? `<p class="empty">Your ${p.waiting.length} lesson${p.waiting.length === 1 ? ' is' : 's are'}
             waiting to unlock.</p><p class="small muted">Words wait for their characters, as set in Settings;
             <a href="#/queue">Upcoming</a> shows the order they come in.</p>`
-        : `<p class="empty">That's today's lessons done.</p><p class="small muted">Your daily limit is
-            ${cfg.lessonLimit}; ${p.waiting.length - nLocked}
-            more are ready for tomorrow.</p>`;
+        : `<p class="empty">That's today's lessons done.</p><p class="small muted">You learn ${dailyLine(cfg)};
+            ${p.waiting.length - nLocked} more are ready for tomorrow.</p>`;
       app.innerHTML = '<h1 class="page-title">Lessons</h1>' + withRail(`<div class="card">
         ${why}
         <p class="row">${learnedCount(learnedToday()) ? `<a class="btn" href="#/learned">See what you learned today</a>` : ''}
@@ -1958,12 +1833,13 @@ async function pageLessons() {
    size in characters and words, each with the components and sounds that come just
    before it (they don't count). The lessons go on batch after batch; the quiz comes
    once none are left today (lessonQuiz). */
+const LESSON_BATCH = 5;   // characters and words a batch holds (fixed: the daily lesson limit is the one setting)
 function nextBatch(done) {
-  const cfg = Store.cfg(), d = Store.load(), out = [];
+  const d = Store.load(), out = [];
   let n = 0;
   for (const k of Store.plan().lessons) {
     if (done.includes(k) || !d.items[k]) continue;
-    if (n >= cfg.batch) break;                     // (the next character's parts start a new batch)
+    if (n >= LESSON_BATCH) break;                     // (the next character's parts start a new batch)
     out.push(k);
     if (d.items[k].kind !== 'comp' && d.items[k].kind !== 'sound') n++;
   }
@@ -3232,7 +3108,7 @@ function reschedule(retention) {
 /* Settings: what each learning path is good and bad at, with when each HSK level is complete
    (Learn.PATH_FACTS) and how long that is at the number a day chosen. */
 function pathCompare(c) {
-  const F = Learn.PATH_FACTS, daily = c.pathDaily || 5;
+  const F = Learn.PATH_FACTS, daily = Math.max(1, Learn.dailySplit(c).chars);
   const cols = [['mix', 'Balanced'], ['common', 'Most common'], ['hsk', 'HSK order']];
   const span = pos => {
     const days = Math.ceil(pos / daily);
@@ -3298,6 +3174,29 @@ function pathCompare(c) {
   </details>`;
 }
 
+/* the day's split in words: "10 words and 5 characters a day" */
+function dailyLine(cfg) {
+  const s = Learn.dailySplit(cfg);
+  if (!isFinite(s.total)) return 'as many new items a day as are ready';
+  const n = (x, one) => `${x} ${one}${x === 1 ? '' : 's'}`;
+  return !s.words ? `${n(s.total, 'new character')} a day` : !s.chars ? `${n(s.total, 'new word')} a day`
+    : `${s.total} new items a day: ${n(s.words, 'word')} and ${n(s.chars, 'character')}`;
+}
+/* under the words slider: what the rest is */
+const splitNote = s => !s.chars ? 'Every new item a word, as long as there are words ready (characters fill in when there aren\'t).'
+  : !s.words ? `No words: all ${s.chars} are characters and the components they need.`
+  : `${s.words} word${s.words === 1 ? '' : 's'}, and ${s.chars} character${s.chars === 1 ? '' : 's'} and the components they need.`;
+/* the day's split as a bar: words, then characters and their prerequisites */
+const splitBar = s => `<div class="st-split" aria-hidden="true"><i class="w" style="flex-grow:${s.words}"></i><i class="c" style="flex-grow:${s.chars}"></i></div>
+  <p class="st-split-key"><span><i class="w"></i>Words <b data-n="w">${s.words}</b></span><span><i class="c"></i>Characters &amp; prerequisites <b data-n="c">${s.chars}</b></span></p>`;
+/* the recommended share of words: a badge when that is what you have, else a button back to it */
+const splitRec = s => {
+  const pct = Math.round(Learn.WORD_SHARE * 100), n = Learn.recommendedWords(s.total);
+  return s.recommended || s.words === n
+    ? `<p class="st-rec on"><span class="st-rec-badge">Recommended</span> ${pct}% words${s.recommended ? ', following the total' : ''}</p>`
+    : `<p class="st-rec"><button type="button" class="btn quiet st-rec-btn" data-rec>Use recommended: ${n} (${pct}%)</button></p>`;
+};
+
 function paintStudySettings() {
   const box = document.getElementById('study-card');
   if (!box) return;
@@ -3313,7 +3212,9 @@ function paintStudySettings() {
 
   const limits = [[5, 'Casual — 5 items / day'], [10, 'Regular — 10 items / day'], [15, 'Serious — 15 items / day'],
     [20, 'Intense — 20 items / day'], [25, 'Jump start — 25 items / day'], [30, 'Jump start — 30 items / day'],
-    [35, 'Jump start — 35 items / day'], [40, 'Jump start — 40 items / day'], [0, 'No limit']];
+    [35, 'Jump start — 35 items / day'], [40, 'Jump start — 40 items / day'], [50, 'Jump start — 50 items / day']];
+  if (!limits.some(([n]) => n === c.lessonLimit)) limits.push([c.lessonLimit, `${c.lessonLimit} items / day`]);
+  const split = Learn.dailySplit(c), total = split.total;
   const reviewLimits = [[0, 'None']].concat([50, 100, 150, 200, 250, 300, 400, 500].map(n => [n, n + ' items / day']));
   const voice = Sound.voice();
   const tz = (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone;
@@ -3321,20 +3222,25 @@ function paintStudySettings() {
   box.innerHTML = `
     <h2>Lessons and reviews <span class="st-saved" id="st-saved" hidden>Saved</span></h2>
     <p class="muted small">Changes are saved as you make them, and sync with the rest of your progress.</p>
-    ${field('Learning path', `${sel('path', [['off', 'Off: I add what I learn myself'], ['mix', 'Balanced: simple, common, early HSK, parts you know'], ['common', 'The most common characters first'],
-      ['hsk', 'HSK 1 to 9, level by level']])} ${sel('pathDaily', [3, 5, 8, 10, 15, 20].map(n => [n, n + ' new characters a day']), 'int')}`,
-      'Keeps the next characters of the path in your lesson queue, skipping the ones you know, with their new components and sounds before them. The daily number is how many it keeps there, and how many become ready each day. Change either setting and the queue changes straight away; what you added yourself or prioritised stays. See and change the order on the <a href="#/queue">Upcoming page</a>.')}
-    ${field('Words in the path', tog('pathWords', 'Also learn words with what is left of the daily limit'), 'A word can be learned once all its characters have had their lessons. Off: the path teaches characters only, and you add words yourself.')}
+    ${field('Learning path', sel('path', [['off', 'Off: I add what I learn myself'], ['mix', 'Balanced: simple, common, early HSK, parts you know'], ['common', 'The most common characters first'],
+      ['hsk', 'HSK 1 to 9, level by level']]),
+      'Where the new characters and words come from. The path keeps its next characters and their words in your lesson queue, skipping the ones you know, with their new components and sounds before them; the Daily lessons numbers below decide how many of each you learn a day. Change it and the queue changes straight away; what you added yourself or prioritised stays. See and change the order on the <a href="#/queue">Upcoming page</a>.')}
     ${pathCompare(c)}
-    ${field('Daily lesson limit', sel('lessonLimit', limits, 'int'), c.lessonLimit
-      ? `How many things you learn a day: first your new characters and the new components they bring, then words with whatever is left. You'll have about <b>${c.lessonLimit * 10} reviews</b> a day once they settle in.`
-      : 'Every lesson in your queue is ready as soon as it unlocks.')}
+    <h3 class="st-h">Daily lessons</h3>
+    <p class="muted small">Two numbers decide each day's lessons: how many new things you learn, and how many of
+      those are words. Characters, with the components (prerequisites) they need first, fill the rest.</p>
+    ${field('New items a day', sel('lessonLimit', limits, 'int'),
+      `Everything new you learn in a day, counted together: words, characters and their new components. Sounds are short and don't count. You'll have about <b>${total * 10} reviews</b> a day once they settle in.`)}
+    ${field('How many are words', `<div class="st-range"><input type="range" data-k="lessonWords" data-t="int"
+      min="0" max="${total}" value="${split.words}" aria-label="Words a day, out of ${total}"><output>${split.words}</output></div>
+      ${splitBar(split)}<div class="st-rec-box">${splitRec(split)}</div>`,
+      `<span id="st-split">${splitNote(split)}</span> About ${Math.round(Learn.WORD_SHARE * 100)}% words is recommended, and is where it starts: until you choose a number yourself, it stays at that share when you change the total. A word is ready the day after all its characters have had their lessons; when fewer words than this are ready, characters take their place, so the day is still full.`)}
+    <h3 class="st-h">Reviews</h3>
     ${field('Daily review limit', sel('reviewLimit', reviewLimits, 'int'),
       'A soft limit: a session stops there, and once today\'s are done the Reviews tile greys out. You can still start another session.')}
 
     <details class="st-more">
       <summary>More lesson and review settings</summary>
-    ${field('Lesson batch size', range('batch', 1, 20), 'How many characters and words a batch holds; the components and sounds they need come with them. Batches follow one another until today\'s lessons are done, then all of them are quizzed together.')}
     ${field('Desired retention', `<div class="st-range"><input type="range" data-k="retention" data-t="pct" min="80" max="97"
       value="${Math.round(c.retention * 100)}"><output>${Math.round(c.retention * 100)}%</output></div>`,
       'Reviews are scheduled by FSRS: an item comes back when your chance of recalling it has fallen to this. Higher means '
@@ -3345,29 +3251,16 @@ function paintStudySettings() {
     ${field('Character unlocking', sel('charUnlock', [['now', 'Unlock right away'],
       ['learned', 'Unlock when its components are learned'], ['familiar', 'Unlock when its components are familiar']]),
       'A component counts once you mark it known on the Top components page or mark it learned, or once it has had its own lesson (learned) or reached Apprentice I (familiar).')}
-    ${field('Components and sounds first', tog('autoComps', 'Teach a character\'s new components and sounds first'),
-      'A character you add brings the parts of it you don\'t know yet: its components (by their picture names) and its sounds (the beginning as a person, the ending as a building, the tone as where at that building: in front, inside, basement, bathroom or roof). Each gets a short lesson just before the character, which opens on a Prerequisites page showing them, known and new. Parts don\'t count against the daily lesson limit.')}
-    ${field('Word unlocking', tog('autoChars', 'Automatically prioritize characters'),
-      'A word can be learned once all its characters have had their lessons. Automatically prioritizing puts the characters of a word you add, the ones you don\'t know yet, at the front of your lessons.')}
     ${field('Item question order', sel('questionOrder', [['pinyin', 'Pair pronunciation, then meaning'],
       ['random', 'Select questions randomly']]),
       'Either way, an item’s meaning is only asked once its pronunciation is right.')}
-    ${field('Priority queue', tog('prioRespect', 'Respect daily limits'),
-      'Prioritised lessons (from the Upcoming page, and characters a word brought along) always come before the rest of the queue. On: they count towards your daily limits. Off: they are ready whatever the limits.')}
     ${field('Review order', sel('reviewOrder', [['random', 'Random'], ['type', 'Characters, then words'],
       ['oldest', 'Oldest first'], ['newest', 'Newest first'], ['easiest', 'Easiest first'], ['lowest', 'Lowest SRS stage first']]))}
     <div class="st-field">
       ${tog('showPct', 'Show the percentage correct')}
       ${tog('showCount', 'Show the number correct and left over')}
-      ${tog('validate', 'Enable pinyin answer validation')}
-      <p class="st-note">An answer that isn't pinyin at all (jeu4, yi22) shakes for you to fix instead of counting as wrong.</p>
-      ${tog('sentences', 'Turn word reviews into targeted sentence reviews')}
-      <p class="st-note">A word is shown inside the sentence you found it in, or one from the graded stories.</p>
       ${tog('listen', 'Listening: ask what an item means from its sound alone')}
       <p class="st-note">Asked first, before you see it. Needs this device's Chinese voice (below); counts like the other questions.</p>
-      ${tog('write', 'Writing: ask me to write each character')}
-      <p class="st-note">Asked last, from its pinyin and meaning: draw the strokes in order. After three misses on a stroke its
-        outline shows; needing it makes the review count as hard, never as forgotten.</p>
     </div>
     </details>
 
@@ -3378,12 +3271,9 @@ function paintStudySettings() {
       `<span id="st-voice-note">${voice ? `Reading with ${esc(voice.name)}${Sound.gender(voice) && Sound.gender(voice) !== c.voice
         ? ` (this device has no ${c.voice} Chinese voice)` : ''}.`
         : 'This device has no Chinese voice, so nothing is read aloud. On Windows: Settings → Time &amp; language → Speech → Add voices → Chinese (Simplified).'}</span>`)}
-    ${field('Playback speed', sel('speed', [['slow', 'Slow'], ['normal', 'Normal'], ['fast', 'Fast']]))}
     <div class="st-field">
       ${tog('muteSfx', 'Mute sound effects')}
       ${tog('muteVoice', 'Mute the voiced pronunciation')}
-      <p class="st-note">A ding for each right answer; the item read aloud when its lesson opens and when you get its pronunciation right.
-        <button type="button" class="btn quiet st-try" id="st-try">▶ Try it</button></p>
     </div>
 
     <h3 class="st-h">Vacation mode</h3>
@@ -3393,7 +3283,7 @@ function paintStudySettings() {
     : `<p class="muted small">Take a break: lessons and reviews stop until you come back, and then every
         review waits as long again as you were away, so nothing piles up.</p>
       <p><button type="button" class="btn quiet" id="st-vac">Go on vacation</button></p>`}
-    <p class="small muted">Daily limits start again at midnight in this device's time zone${tz ? ` (${esc(tz)})` : ''}.</p>`;
+    <p class="small muted">The day's new items and the review limit start again at midnight in this device's time zone${tz ? ` (${esc(tz)})` : ''}.</p>`;
 
   let flash;
   const saved = () => {
@@ -3411,20 +3301,47 @@ function paintStudySettings() {
       // the track fills with yellow up to the knob (style.css .st-range)
       const fill = () => el.style.setProperty('--fill', 100 * (el.value - el.min) / ((el.max - el.min) || 1) + '%');
       fill();
-      el.addEventListener('input', () => { el.nextElementSibling.textContent = el.value + (t === 'pct' ? '%' : ''); fill(); });
+      el.addEventListener('input', () => {
+        el.nextElementSibling.textContent = el.value + (t === 'pct' ? '%' : '');
+        fill();
+        const note = k === 'lessonWords' && document.getElementById('st-split');
+        if (note) {
+          const s = Learn.dailySplit({ ...Store.cfg(), lessonWords: +el.value }), f = el.closest('.st-field');
+          note.textContent = splitNote(s);
+          f.querySelector('.st-split .w').style.flexGrow = s.words;
+          f.querySelector('.st-split .c').style.flexGrow = s.chars;
+          f.querySelector('[data-n="w"]').textContent = s.words;
+          f.querySelector('[data-n="c"]').textContent = s.chars;
+          f.querySelector('.st-rec-box').innerHTML = splitRec({ ...s, recommended: s.words === Learn.recommendedWords(s.total) });
+        }
+      });
     }
     el.addEventListener('change', () => {
       const patch = { [k]: value() };
+      // (never more words than the day's total; the recommended number is kept unset, so it
+      // follows the total)
+      if (k === 'lessonLimit' && Store.cfg().lessonWords > patch.lessonLimit) patch.lessonWords = patch.lessonLimit;
+      if (k === 'lessonWords' && patch.lessonWords === Learn.recommendedWords(Learn.dailySplit(Store.cfg()).total)) patch.lessonWords = null;
       Store.setCfg(patch);
       if (k === 'retention') reschedule(patch.retention);
       markNav(currentPath());
-      if (['lessonLimit', 'voice', 'path', 'pathDaily'].includes(k)) paintStudySettings();
+      if (['lessonLimit', 'lessonWords', 'voice', 'path'].includes(k)) paintStudySettings();
       // the queue follows these at once
-      if (['path', 'pathDaily', 'pathWords', 'autoComps', 'lessonLimit'].includes(k)) fillPath().then(fillParts).then(() => markNav(currentPath()));
+      if (['path', 'lessonLimit', 'lessonWords'].includes(k)) fillPath().then(fillParts).then(() => markNav(currentPath()));
       saved();
     });
   });
-  document.getElementById('st-try').addEventListener('click', () => { Sound.ding(); Sound.say('你好', true); });
+  // back to the recommended share (event delegation: the button is redrawn as the slider moves)
+  if (!box.dataset.recWired) box.addEventListener('click', e => {
+    if (!e.target.closest('[data-rec]')) return;
+    Store.setCfg({ lessonWords: null });
+    markNav(currentPath());
+    paintStudySettings();
+    fillPath().then(fillParts).then(() => markNav(currentPath()));
+    const el = document.getElementById('st-saved');
+    if (el) { el.hidden = false; setTimeout(() => { el.hidden = true; }, 1500); }
+  });
+  box.dataset.recWired = '1';
   document.getElementById('st-vac').addEventListener('click', () => {
     Store.vacation(!c.vacation);
     markNav(currentPath());

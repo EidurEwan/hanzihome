@@ -10,7 +10,7 @@
  * sync: setting up sync with a Google Sheet, step by step.
  * api: getting a free Google AI Studio key for the translator, and adding it.
  *
- * Settings → Tutorials opens any of them; the sync and translator cards have a
+ * The sync and translator cards have a
  * "show me how" for theirs (any element with data-guide="sync" or "api"). Needs
  * Store and Motion. */
 
