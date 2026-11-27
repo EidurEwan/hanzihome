@@ -248,7 +248,7 @@ async function pageWord(w) {
   const facts = [];
   const fact = (ic, html) => facts.push(`<li>${icon(ic)}<span>${html}</span></li>`);
   fact('rank', rank ? `<b>${ordinal(rank)}</b> most common word` : 'Not in the frequency list');
-  if (level) fact('hsk', `<b>HSK ${level}</b> vocabulary`);
+  if (level) fact('hsk', `<b>${hskName(level)}</b> vocabulary`);
   if (info && info[0]) fact('book', `<b>${esc(info[0][0].toUpperCase() + info[0].slice(1))}</b>`);
   if (trad && trad !== simp) fact('swap', scriptMode() === 'trad' ? `Simplified: <b class="han">${esc(simp)}</b>` : `Traditional: <b class="han">${esc(trad)}</b>`);
   if (mw.length) fact('piece', `Measure word: ${mw.map(([c, p]) => `${charLink(c, 'han')} <span class="muted">${esc(p)}</span>`).join(', ')}`);
@@ -377,7 +377,7 @@ async function pageWord(w) {
 // ------------------------------------------------------------------ the list
 
 const WORD_SOURCES = [['common', 'Most common'], ['hsk1', 'HSK 1'], ['hsk2', 'HSK 2'], ['hsk3', 'HSK 3'],
-  ['hsk4', 'HSK 4'], ['hsk5', 'HSK 5'], ['hsk6', 'HSK 6'], ['mine', 'Yours']];
+  ['hsk4', 'HSK 4'], ['hsk5', 'HSK 5'], ['hsk6', 'HSK 6'], ['hsk7', 'HSK 7–9'], ['mine', 'Yours']];
 const COMMON_WORDS = 10000, WORDS_PER_PAGE = 200;
 /* what is typed in the list's filter box: kept while you page, switch lists and come back */
 let wdQuery = '';

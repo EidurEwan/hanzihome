@@ -22,13 +22,16 @@ const num = n => (n == null ? '' : n.toLocaleString());
 const ordinal = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 const bucketOf = ch => ('0' + (ch.codePointAt(0) % (HZ.meta.buckets || 64)).toString(16)).slice(-2);
 const glossOf = c => HZ.radicalMap[c] || '';
-const today = () => new Date().toISOString().slice(0, 10);
+/* a day's key, YYYY-MM-DD, by this device's own calendar (as the day's limits go),
+   not UTC's: an evening's study is that day's, wherever you are */
+const dayKey = t => { const x = new Date(t); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+const today = () => dayKey(Date.now());
 /* no hover on this device: menus that open on hover must open on tap instead */
 const isTouch = () => matchMedia('(hover: none)').matches;
 
 /* Bump whenever the build rewrites site/data, so browsers stop serving the old copy.
    index.html carries the same number on the data scripts it loads itself. */
-const DATA_VERSION = 19;
+const DATA_VERSION = 24;
 
 const _loading = {};
 function loadScript(src) {
@@ -89,6 +92,9 @@ async function strokeData(ch) {
 /* a single Chinese character (what is a character, not a word, however it came) */
 const oneChar = w => [...String(w || '')].length === 1 && isHan(w);
 
+/* An HSK level's name. HSK 3.0 has levels 1 to 6 and an advanced band, 7-9, taken as
+   one exam: in the data it is level 7. */
+function hskName(level) { return +level === 7 ? 'HSK 7–9' : 'HSK ' + level; }
 const need = {
   writer: () => window.HanziWriter ? Promise.resolve() : loadScript('vendor/hanzi-writer.min.js'),
   comps: () => HZ.comps ? Promise.resolve() : loadScript('data/comps.js'),
@@ -153,6 +159,7 @@ const Store = {
     if (this.data) return this.data;
     let d = {};
     try { d = JSON.parse(localStorage.getItem(this.key) || '{}'); } catch (e) { d = {}; }
+    if (!d || typeof d !== 'object' || Array.isArray(d)) d = {};   // (never let a bad copy stop every page)
     d.status = d.status || {}; d.comps = d.comps || {}; d.lists = d.lists || [];
     d.notes = d.notes || {}; d.history = d.history || []; d.items = d.items || {};
     d.days = d.days || {}; d.goal = d.goal || GOAL_DEFAULT; d.study = d.study || {};
@@ -227,7 +234,7 @@ const Store = {
     const d = this.data, now = Date.now(), wait = Learn.KNOWN_WAIT;
     let n = 0;
     for (const [k, it] of Object.entries(d.items)) {
-      if (it.stage !== 0 || it.learnt) continue;
+      if (it.stage !== 0 || it.learnt || it.relearn) continue;   // (relearn: sent back with Learn again)
       const kind = it.kind || 'char';
       if ((kind === 'char' && d.status[k] === 'learned') || (kind === 'word' && d.wstatus[k] === 'learned')) {
         Learn.sayKnown(it, now, wait); delete it.prio; n++;
@@ -262,9 +269,19 @@ const Store = {
   /* a character's status: 'learned' (shown as Known: its lesson is done, or you said you
      know it) or null (Unknown) */
   status(ch) { return this.load().status[ch] || null; },
+  /* marked Unknown: out of the reviews (or its next review would mark it Known again).
+     Only marked Known and never reviewed: as if never marked. Otherwise its lesson
+     comes back, as Learn again does, and its history stays. */
+  unknow(d, k) {
+    const it = d.items[k];
+    if (!it || !(it.stage >= 1)) return;
+    if (!it.learnt && !(it.hist || []).length) { delete d.items[k]; return; }
+    Object.assign(it, { stage: 0, due: 0, relearn: (it.relearn || 0) + 1 });
+    delete it.rest;
+  },
   setStatus(ch, s) {
     const d = this.load();
-    if (s) d.status[ch] = s; else delete d.status[ch];
+    if (s) d.status[ch] = s; else { delete d.status[ch]; this.unknow(d, ch); }
     // marked learned: in the reviews at Novice I, first review in a few days
     if (s === 'learned' && HZ.index[ch]) {
       const it = d.items[ch], now = Date.now(), wait = Learn.KNOWN_WAIT;
@@ -280,7 +297,7 @@ const Store = {
   setWStatus(w, s, info) {
     if (oneChar(w)) return this.setStatus(w, s);      // a one-character word is the character
     const d = this.load();
-    if (s) d.wstatus[w] = s; else delete d.wstatus[w];
+    if (s) d.wstatus[w] = s; else { delete d.wstatus[w]; this.unknow(d, w); }
     // marked learned: in the reviews at Novice I, first review in a few days (as characters)
     if (s === 'learned') {
       const it = d.items[w], now = Date.now(), wait = Learn.KNOWN_WAIT;
@@ -565,8 +582,11 @@ const Sync = {
     return 'The script is reachable but the request failed. Try again in a moment.';
   },
 
-  run() {
+  /* manual: asked for (Sync now); the automatic runs wait while this device's
+     passphrase is wrong, since every wrong try counts towards the script's lockout */
+  run(manual) {
     if (!this.on()) return Promise.resolve();
+    if (!manual && this.errorCode === 'locked') return Promise.resolve();
     if (this.busy) { this.again = true; return this.busy; }
     clearTimeout(this.timer);
     this.lastRun = Date.now();
@@ -611,17 +631,20 @@ const Sync = {
         return;
       }
     }
+    // after "keep this device's data": merge with the sheet's copy even if it hasn't
+    // moved on, or the upload is this device's smaller copy and is refused again
+    else if (c.union) remote = this.whole(await this.post({ action: 'pull' }));
     for (let attempt = 0; attempt < 4; attempt++) {
       c = this.cfg();
       if (!c) return;                              // disconnected mid-flight
-      if (remote && remote.rev !== (c.rev || 0)) {
+      if (remote && (remote.rev !== (c.rev || 0) || c.union)) {
         // the sheet moved on: merge its copy with this device's changes first
         const local = Store.load();
         // after "keep this device's data": everything from both, this device's wins
         const merged = merge3(c.union ? null : this.base(), local, remote.data || {});
         if (!c.union) this.guard(local, merged, remote.data);
         if (!same(merged, local)) this.apply(merged);
-        if (remote.data && same(merged, remote.data)) { this.adopt(remote.data, remote.rev); return; }
+        if (remote.data && same(merged, remote.data)) { this.adopt(remote.data, remote.rev); this.update({ union: false }); return; }
       }
       const baseRev = remote ? remote.rev : (c.rev || 0);
       const pushed = JSON.parse(JSON.stringify(Store.load()));
@@ -743,7 +766,7 @@ const Sync = {
   unlock(key) {
     this.update({ key });
     this.error = ''; this.errorCode = '';
-    return this.run();
+    return this.run(true);
   },
 
   disconnect() {
@@ -872,7 +895,8 @@ function merge3(base, local, remote) {
   const set = (bs = [], ls = [], rs = []) => {
     const removed = new Set(bs.filter(x => !ls.includes(x)));
     const out = rs.filter(x => !removed.has(x));
-    ls.forEach(x => { if (!out.includes(x)) out.push(x); });
+    // only what this device added: an entry it merely still has was removed there
+    ls.forEach(x => { if (!bs.includes(x) && !out.includes(x)) out.push(x); });
     return out;
   };
 
@@ -951,7 +975,7 @@ function streak() {
   const days = Store.load().days;
   const now = new Date(), dow = (now.getDay() + 6) % 7;
   const monday = new Date(now); monday.setDate(now.getDate() - dow);
-  const key = x => x.toISOString().slice(0, 10);
+  const key = dayKey;
   const week = [];
   for (let i = 0; i < 7; i++) {
     const x = new Date(monday); x.setDate(monday.getDate() + i);
@@ -1110,12 +1134,12 @@ function paintProfile() {
   if (!levels.length) return;
   const cur = levels.find(l => l.done < l.total), lv = cur || levels[levels.length - 1];
   const pct = lv.total ? Math.floor(lv.done / lv.total * 100) : 0;
-  set('pf-title', cur ? `HSK ${lv.level} learner` : `HSK ${lv.level} complete`);
+  set('pf-title', cur ? `${hskName(lv.level)} learner` : `${hskName(lv.level)} complete`);
   set('pf-sub', `${num(lv.done)} / ${num(lv.total)}`);
   document.getElementById('pf-fill').style.transform = `translateX(${pct - 100}%)`;
   const bar = document.getElementById('pf-bar');
   bar.setAttribute('aria-valuenow', pct);
-  bar.setAttribute('aria-valuetext', `${lv.done} of ${lv.total} HSK ${lv.level} characters`);
+  bar.setAttribute('aria-valuetext', `${lv.done} of ${lv.total} ${hskName(lv.level)} characters`);
   document.getElementById('pf-level').setAttribute('href', '#/hsk-' + lv.level);
 }
 
@@ -1596,7 +1620,7 @@ function wireTileBoard(id, chars, opts) {
    pointed at says its day. Over it, the streak in days, the longest, and the year's totals.
    On a phone it shows the last twenty weeks. The menu's progress card has the week streak. */
 const HM_WEEKS = 53, HM_PHONE = 20;
-const hmKey = x => x.toISOString().slice(0, 10);
+const hmKey = dayKey;
 
 /* the streak in days: back from today (or from yesterday, while today can still keep it) */
 function dayStreak(days) {
@@ -1807,7 +1831,7 @@ async function pageCharacter(ch) {
   fact('piece', `Component in <b>${d.ai.length}</b> character${d.ai.length === 1 ? '' : 's'}`);
   if (d.st) fact('stroke', `<b>${d.st}</b> strokes`);
   if (d.kr) fact('radical', `Radical: ${charLink(d.kr, 'han')} <span class="muted">${esc(glossOf(d.kr))}</span>`);
-  if (d.h) fact('hsk', `<b>HSK ${d.h}</b> vocabulary`);
+  if (d.h) fact('hsk', `<b>${hskName(d.h)}</b> vocabulary`);
 
   // what the top of the page says it means: the reading lessons teach
   const mainRd = d.rd.find(r => r[1] === mainPin) || first;
@@ -2152,10 +2176,10 @@ async function pageReader() {
     <div class="rd-shelf-head">
       <h2 class="caps" id="rd-shelf-h">Stories</h2>
       <div class="filters rd-levels" role="group" aria-label="Level">${levels.map(l =>
-        `<button type="button" data-rl="${l}" aria-pressed="false">HSK ${l}</button>`).join('')}</div>
+        `<button type="button" data-rl="${l}" aria-pressed="false">${hskName(l)}</button>`).join('')}</div>
     </div>
-    ${levels.map(l => `<section class="rd-level" data-level="${l}" aria-label="${esc(HZ.levelNames[l])}, HSK ${l}">
-      <h3 class="rd-level-h">${esc(HZ.levelNames[l])} · HSK ${l} <span class="muted">${byLevel[l].length} stories</span></h3>
+    ${levels.map(l => `<section class="rd-level" data-level="${l}" aria-label="${esc(HZ.levelNames[l])}, ${hskName(l)}">
+      <h3 class="rd-level-h">${esc(HZ.levelNames[l])} · ${hskName(l)} <span class="muted">${byLevel[l].length} stories</span></h3>
       <div class="rd-shelf">${byLevel[l].map(card).join('')}</div></section>`).join('')}
 
     <h2 class="sec-h" id="rd-own">Your own text</h2>
@@ -2395,7 +2419,7 @@ async function fillReadNext(showLevel) {
     } else { lines.push(esc(tk.s || '')); shown += (tk.s || '').length; }
   }
   box.innerHTML = `<a class="rd-cover big sky" href="#/reader/${st.id}" tabindex="-1" aria-hidden="true">
-      <small>HSK ${st.l}</small><span class="han">${zhOne(cover)}</span><small>${esc(st.en)}</small></a>
+      <small>${hskName(st.l)}</small><span class="han">${zhOne(cover)}</span><small>${esc(st.en)}</small></a>
     <div class="rd-next-text">
       <h2 class="caps">${opened.has(st.id) ? 'Pick up where you were' : pick.ready ? 'Read next: at your level' : 'Read next'}</h2>
       <p class="rd-next-title"><a class="han" href="#/reader/${st.id}">${zhOne(st.zh)}</a>${rdRating(r)}</p>
@@ -2445,7 +2469,7 @@ async function fillStoryNext() {
         : `A first story to try. You'll know none of its ${r.total} characters yet: tap any word for its meaning, and it gets easier with every lesson.`}</p>
     </div>
     <a class="story" href="#/reader/${st.id}">
-      <span class="story-tag">HSK ${st.l} · ${esc(st.tag)}</span>
+      <span class="story-tag">${hskName(st.l)} · ${esc(st.tag)}</span>
       <span class="story-zh han">${zhOne(st.zh)}</span>
       <span class="story-en">${esc(st.en)}</span>
     </a>
@@ -2489,7 +2513,7 @@ function pageScreen() {
 
 /* What is being read (opts.kind: 'story' with its id, 'book' with the next page's href, or
    'text'), the words looked up in it, and the sentences translated so far. */
-let _readCtx = {}, _looked = new Map(), _sentTr = {};
+let _readCtx = {}, _looked = new Map(), _sentTr = {}, _sentEx = {}, _sentToks = [];
 
 /* the reading view's own settings, kept in this browser: text size and focus mode */
 const READ_SIZE_KEY = 'hanzihome.readSize', READ_FOCUS_KEY = 'hanzihome.readFocus';
@@ -2502,6 +2526,7 @@ function showStory(st, back, nav, opts) {
   _readCtx = opts || {};
   _looked = new Map();
   _sentTr = {};
+  _sentEx = {};
   const focus = !!readPref(READ_FOCUS_KEY, false);
   app.innerHTML = `
     <p class="crumb"><a href="#/reader">← ${esc(back)}</a></p>
@@ -2562,8 +2587,25 @@ function showStory(st, back, nav, opts) {
   document.getElementById('read-finish').addEventListener('click', paintReadDone);
   document.getElementById('pane').addEventListener('click', e => {
     const x = e.target.closest('[data-trclose]');
-    if (x) { delete _sentTr[x.dataset.trclose]; paintStory(); }
+    if (x) { delete _sentTr[x.dataset.trclose]; paintStory(); return; }
+    const xe = e.target.closest('[data-exclose]');
+    if (xe) { delete _sentEx[xe.dataset.exclose]; paintStory(); return; }
+    const tr = e.target.closest('[data-extr]');
+    if (tr) translateSentence(tr.dataset.extr);
   });
+  // a grammar point under a sentence lights up its words, in the card and in the text
+  const exLight = (e, on) => {
+    const li = e.target.closest('.sx-point');
+    if (!li) return;
+    const card = li.closest('.sent-ex'), n = li.dataset.p;
+    const cws = [...card.querySelectorAll('.sx-w')];
+    cws.forEach(w => w.classList.toggle('hl', on && w.dataset.ps.split(' ').includes(n)));
+    const sent = document.querySelector(`#pane .sent[data-si="${card.dataset.si}"]`);
+    if (sent) [...sent.querySelectorAll('.w')].forEach((w, i) => w.classList.toggle('sx-hl', !!(cws[i] && cws[i].classList.contains('hl'))));
+  };
+  const paneEl = document.getElementById('pane');
+  ['mouseover', 'focusin'].forEach(ev => paneEl.addEventListener(ev, e => exLight(e, true)));
+  ['mouseout', 'focusout'].forEach(ev => paneEl.addEventListener(ev, e => exLight(e, false)));
   paintStory();
 }
 
@@ -2585,25 +2627,36 @@ function paintStory() {
   // the word the popup is on is drawn afresh too: keep the popup on its new copy
   const at = _wpAnchor && pane.contains(_wpAnchor) ? [...pane.querySelectorAll('.w')].indexOf(_wpAnchor) : -1;
   let si = 0;
+  _sentToks = [];
   pane.innerHTML = st.seg.map(par => {
-    const first = si;
     let html = '', open = false, ended = false;
-    const start = () => { html += `<span class="sent${_sentTr[si] ? ' on' : ''}" data-si="${si}">`; open = true; };
-    const close = () => { if (open) { html += '</span>'; open = false; si++; } };
+    const start = () => { html += `<span class="sent${_sentTr[si] || _sentEx[si] ? ' on' : ''}" data-si="${si}">`; open = true; _sentToks[si] = []; };
+    // a sentence with its grammar or translation open: the paragraph breaks right after it,
+    // the cards go under it, and the paragraph carries on below them
+    const close = () => {
+      if (!open) return;
+      html += '</span>';
+      open = false;
+      if (_sentEx[si] || _sentTr[si]) {
+        html += '</p>' + (_sentEx[si] ? sentExCard(si) : '') + (_sentTr[si] ? sentTrCard(si) : '') + '<p class="sent-cont">';
+      }
+      si++;
+    };
     for (const tk of par) {
       if (tk.br) { html += '<br>'; continue; }            // a new speaker starts a new line
       const s = typeof tk === 'string' ? null : tk.s;
       // a closing quote after 。 still belongs to that sentence
       if (ended && !(s !== null && SENT_CLOSE.test(s))) { close(); ended = false; }
       if (!open) start();
+      _sentToks[si].push(tk);
       if (s !== null) { html += esc(s); if (SENT_END.test(s.trim())) ended = true; continue; }
       const w = st.g[tk][0];
       html += `<span class="w ${wordState(w)}" data-k="${esc(tk)}">${zhOne(w)}</span>`;
     }
     close();
-    const cards = [];
-    for (let k = first; k < si; k++) if (_sentTr[k]) cards.push(sentTrCard(k));
-    return '<p>' + html + '</p>' + cards.join('');
+    return ('<p>' + html + '</p>')
+      .replace(/<p class="sent-cont">(<br>)+/g, '<p class="sent-cont">')   // a speaker's line break, now at the top
+      .replace(/<p class="sent-cont"><\/p>$/, '');
   }).join('');
   pane.querySelectorAll('.w').forEach(el => {
     el.addEventListener('mouseenter', () => showWordPop(el));
@@ -2694,6 +2747,92 @@ function sentTrCard(si) {
     ${grammar ? `<ul class="sent-tr-g small">${grammar}</ul>` : ''}
     ${r.notes ? `<p class="small muted">${esc(r.notes)}</p>` : ''}
     <p class="small muted sent-tr-foot">${foot}</p></div>`;
+}
+
+/* ---- a sentence's grammar, explained under its paragraph ----
+   The patterns come from grammar.js (offline, by word); the grammar words the patterns
+   don't cover (之, 于, 加以, 了 of a new situation …) bring the note their story gives them,
+   so the literary grammar of the upper levels is explained too. */
+function explainSentence(si) {
+  hideWordPopNow();
+  _sentEx[si] = true;
+  paintStory();
+  const card = document.querySelector(`#pane .sent-ex[data-si="${si}"]`);
+  if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// grammar.js's patterns that the Grammar page teaches: there to practise them
+const GRAMMAR_PAGE = {
+  'le-end': 'le', 'le-verb': 'le', guo: 'guo', zhe: 'zhe', 'zai-prog': 'zhengzai', zai: 'zai', ba: 'ba3',
+  bei: 'bei', de: 'de', 'de-comp': 'de-how', di: 'di', bi: 'bi', ma: 'ma', ne: 'ne', 'ba-particle': 'ba-particle',
+  neg: 'bu-mei', shi: 'shi', you: 'you', gei: 'gei', haishi: 'haishi', hen: 'hen', measure: 'measure',
+  qword: 'qwords', time: 'time', 'pair:因为所以': 'yinwei', 'pair:虽然但是': 'suiran', 'pair:虽然可是': 'suiran',
+  'pair:如果就': 'ruguo', 'pair:要是就': 'ruguo', 'pair:一就': 'yi-jiu', 'pair:又又': 'you-you', 'pair:先再': 'xian',
+  'pair:先然后': 'xian', 'pair:从到': 'cong-dao', 'pair:除了以外': 'chule', 'pair:太了': 'tai',
+  'shi-de': 'shi-de', 'pair:越越': 'yue-yue', 'pair:不但而且': 'budan', 'pair:不是而是': 'bushi-ershi',
+  'pair:只要就': 'zhiyao', 'pair:一边一边': 'yibian', 'pair:连都': 'lian-dou', 'pair:连也': 'lian-dou',
+  'pair:不管都': 'buguan', 'pair:无论都': 'buguan', 'pair:即使也': 'jishi', 'pair:既然就': 'jiran',
+  'pair:只有才': 'zhiyou', 'pair:尽管还是': 'jinguan', 'pair:尽管也': 'jinguan', 'pair:与其不如': 'yuqi',
+  'pair:宁可也': 'ningke', 'pair:之所以是因为': 'zhisuoyi', 'pair:难道吗': 'nandao', 'pair:对来说': 'duilaishuo',
+};
+// a story's note on a grammar word: "(puts the object before the verb)", "in (written style)"
+const GRAMMAR_NOTE = /^\(|\((literary|formal|written)/;
+const unwrap = s => s.replace(/^\((.*)\)$/, '$1');
+
+function sentenceGrammar(si) {
+  const st = _story, toks = _sentToks[si] || [];
+  const words = toks.map(tk => {
+    if (typeof tk !== 'string') return { w: tk.s || '', punct: true };
+    const [w, pin, gloss] = st.g[tk];
+    return { w, pin: pin || '', gloss: gloss || '', tok: tk };
+  });
+  // the story knows what each word means here, which settles what the patterns can only guess:
+  // 要 "to ask for" is the main verb, not a modal; 迟迟 "slow (to act)" is no softened verb
+  const glossOf = w => (words.find(x => x.w === w) || {}).gloss || '';
+  const fits = g => {
+    const gl = glossOf(g.words[0]);
+    if (!gl) return true;
+    if (g.id === 'modal') return /want|will|can|could|should|must|may|going to|able|would|need|have to|dare|ought|likely|willing|how to/i.test(gl);
+    if (g.id === 'redup') return /^to /.test(gl);
+    return true;
+  };
+  const points = (window.Grammar ? Grammar.explain(words.map(x => ({ w: x.w, pin: x.pin }))) : [])
+    .filter(fits)
+    .map(g => ({ title: g.title, words: g.words.filter(Boolean), explanation: g.explanation, link: GRAMMAR_PAGE[g.id] }));
+  const covered = new Set(points.flatMap(p => p.words));
+  const noted = new Set();
+  for (const x of words) {
+    if (x.punct || !GRAMMAR_NOTE.test(x.gloss) || covered.has(x.w) || noted.has(x.tok)) continue;
+    noted.add(x.tok);
+    points.push({ title: x.w, pin: x.pin, words: [x.w], explanation: unwrap(x.gloss), note: true });
+  }
+  return { words, points };
+}
+
+function sentExCard(si) {
+  const { words, points } = sentenceGrammar(si);
+  const close = `<button type="button" class="sent-tr-x" data-exclose="${si}" aria-label="Close the grammar">×</button>`;
+  const ofWord = w => points.map((p, n) => (p.words.includes(w) ? n + 1 : 0)).filter(Boolean);
+  const row = words.map(x => {
+    if (x.punct) return '';
+    const ps = ofWord(x.w), short = unwrap(x.gloss.split('; ')[0]);
+    return `<span class="sx-w${ps.length ? ' g g' + ((ps[0] - 1) % 4) : ''}" data-ps="${ps.join(' ')}">
+      <small class="sx-pin">${esc(x.pin)}</small><span class="han">${zhOne(x.w)}</span>
+      <small class="sx-gl" title="${esc(x.gloss)}">${esc(short.length > 22 ? short.slice(0, 21) + '…' : short)}</small>
+      ${ps.length ? `<b class="sx-n">${ps.join(' ')}</b>` : ''}</span>`;
+  }).join('');
+  const list = points.map((p, n) => `<li class="sx-point g${n % 4}" data-p="${n + 1}" tabindex="0">
+      <span class="sx-num" aria-hidden="true">${n + 1}</span>
+      <div><b>${p.note ? `<span class="han">${zhOne(p.title)}</span> <span class="sx-pp">${esc(p.pin)}</span>` : esc(p.title)}</b>
+        <p>${esc(p.explanation)}</p>
+        ${p.link ? `<a class="small" href="#/grammar/${p.link}">Practise this pattern →</a>` : ''}</div></li>`).join('');
+  return `<div class="sent-tr sent-ex" data-si="${si}" aria-live="polite">${close}
+    <p class="sx-h">Grammar in this sentence</p>
+    <div class="sx-words">${row}</div>
+    ${points.length ? `<ol class="sx-points">${list}</ol>`
+      : '<p class="small muted">No grammar patterns stand out here: the words above carry it, each with its meaning in this sentence.</p>'}
+    <p class="small muted sent-tr-foot">Worked out from the sentence's words, offline.${_sentTr[si] ? ''
+      : ` <button type="button" class="sx-tr" data-extr="${si}">Translate the sentence</button>`}</p></div>`;
 }
 
 /* ---- finished: add what you looked up, mark the rest known, read the next one ---- */
@@ -2836,7 +2975,7 @@ function wordPop() {
     const sb = e.target.closest('button[data-sent]');
     if (sb && _wpAnchor) {
       const s = _wpAnchor.closest('.sent');
-      if (s) (sb.dataset.sent === 'say' ? saySentence : translateSentence)(s.dataset.si);
+      if (s) ({ say: saySentence, tr: translateSentence, explain: explainSentence })[sb.dataset.sent](s.dataset.si);
       return;
     }
     const l = e.target.closest('button[data-learn]');
@@ -2913,7 +3052,8 @@ function showWordPop(el) {
     ${multi ? han.map((c, i) => han.indexOf(c) === i ? row(c, i) : '').join('') : ''}
     ${el.closest('.sent') ? `<div class="wp-sent"><span class="small muted">Sentence:</span>
       ${canSpeak() ? '<button type="button" data-sent="say">🔊 Read aloud</button>' : ''}
-      <button type="button" data-sent="tr">Translate</button></div>` : ''}`;
+      <button type="button" data-sent="tr">Translate</button>
+      <button type="button" data-sent="explain">Explain grammar</button></div>` : ''}`;
   pop.hidden = false;
 
   const r = el.getBoundingClientRect();
@@ -2971,16 +3111,16 @@ async function pageHsk(level) {
     <nav class="hsk-pick" aria-label="HSK level">${standing.map(p => {
       const pct = p.total ? Math.round(p.done / p.total * 100) : 0;
       return `<a class="hsk-lv${p.level === level ? ' on' : ''}" href="#/hsk-${p.level}"${p.level === level ? ' aria-current="page"' : ''}>
-        <b>HSK ${p.level}</b><span>${num(p.done)} of ${num(p.total)}</span>
+        <b>${hskName(p.level)}</b><span>${num(p.done)} of ${num(p.total)}</span>
         <i class="hsk-lv-bar" aria-hidden="true"><i style="width:${pct}%"></i></i></a>`; }).join('')}</nav>
     ${hskPushCard(standing.find(p => p.level === level))}
     <section class="card hsk-chars">
-      <div class="hsk-chars-head"><h2>Characters introduced at HSK ${level}</h2>
+      <div class="hsk-chars-head"><h2>Characters introduced at ${hskName(level)}</h2>
         <p class="tile-key small muted" aria-hidden="true"><span><i class="learned"></i>Known</span><span><i class="learning"></i>Learning</span><span><i></i>New</span></p></div>
       ${chars.length ? tileBoard('hsk', chars) : '<p class="empty">No characters listed.</p>'}
     </section>
     <section class="card hsk-vocab">
-      <h2>HSK ${level} vocabulary <span class="muted">(${num(words.length)})</span></h2>
+      <h2>${hskName(level)} vocabulary <span class="muted">(${num(words.length)})</span></h2>
       <div class="bar accent"><i style="width:${words.length ? readable.length / words.length * 100 : 0}%"></i></div>
       <p class="small muted">${readable.length} of ${words.length} words use only characters
          you know; you know <b>${words.filter(w => Store.wstatus(w[0]) === 'learned').length}</b>
@@ -3230,8 +3370,8 @@ function pageSettings() {
         <li><b>${num(+HZ.meta.n_ranked)}</b> in the frequency list</li>
         <li><b>${num(+HZ.meta.n_words)}</b> words</li>
       </ul>
-      <p class="small muted">Built from CC-CEDICT, cjk-decomp, Jun Da's character frequency
-         list, jieba word counts, Make Me a Hanzi and the HSK vocabulary lists.</p>
+      <p class="small muted">Built from CC-CEDICT, cjk-decomp, wordfreq (character frequencies,
+         by Robyn Speer, CC BY-SA 4.0), jieba word counts, Make Me a Hanzi and the HSK vocabulary lists.</p>
     </section>`);
   document.getElementById('savegoal').addEventListener('click', () => {
     const v = parseInt(document.getElementById('goal').value, 10);
@@ -3243,10 +3383,16 @@ function pageSettings() {
   });
   document.getElementById('import').addEventListener('click', () => {
     if (io.style.display === 'none') { io.style.display = 'block'; io.value = ''; io.focus(); return; }
-    try {
-      localStorage.setItem(Store.key, JSON.stringify(JSON.parse(io.value)));
-      Store.data = null; Store.load(); Store.save(); render();
-    } catch (e) { alert('That is not valid JSON.'); }
+    let data;
+    try { data = JSON.parse(io.value); } catch (e) { alert('That is not valid JSON.'); return; }
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !data.status || typeof data.status !== 'object') {
+      alert('That is not a HanziHome export.'); return;
+    }
+    const count = Object.keys(data.status).length;
+    if (!confirm(`Replace this device's progress with the pasted copy (${count} characters marked)?`)) return;
+    localStorage.setItem(Store.key, JSON.stringify(data));
+    if (Sync.on()) Sync.update({ held: null });
+    Store.data = null; Store.load(); Store.save(); render();
   });
   // a file exported earlier, or a recovered copy: it replaces what is here
   document.getElementById('import-file').addEventListener('click', () => document.getElementById('import-pick').click());
@@ -3273,7 +3419,7 @@ function pageSettings() {
   document.getElementById('theme').addEventListener('change', e => {
     // light to dark (and back) as a cross-fade, where the browser can
     const go = () => { setTheme(e.target.value); paintBarColour(); render(true); };
-    if (document.startViewTransition && !Motion.reduced()) document.startViewTransition(go); else go();
+    recolour(go);
   });
   document.getElementById('show-tour').addEventListener('click', () => showTour(0));
   app.querySelectorAll('[data-pal]').forEach(b => b.addEventListener('click', () => {
@@ -3282,7 +3428,7 @@ function pageSettings() {
       app.querySelectorAll('[data-pal]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-checked', x === b); });
       render(true);
     };
-    if (document.startViewTransition && !Motion.reduced()) document.startViewTransition(go); else go();
+    recolour(go);
   }));
   document.getElementById('script').addEventListener('change', async e => {
     Store.setCfg({ script: e.target.value });
@@ -3293,8 +3439,10 @@ function pageSettings() {
   wireAnki(() => render(true));
   if (offlineCan()) paintOffline();
   paintStudySettings();
-  paintSettingsNav();
+  // (the Translator card is filled in first, or the menu is drawn without it and redrawn
+  // a moment later, jumping)
   paintTranslateSettings();
+  paintSettingsNav();
   paintRail();
   if (window.hanzihomeDesktop) window.hanzihomeDesktop.settings().then(paintDesktopCard);
 }
@@ -3585,7 +3733,7 @@ function wireSyncCard() {
       }
     });
   }
-  if ($('sync-now')) $('sync-now').addEventListener('click', () => Sync.run());
+  if ($('sync-now')) $('sync-now').addEventListener('click', () => Sync.run(true));
   if ($('sync-keep')) $('sync-keep').addEventListener('click', () => Sync.keepHere());
   if ($('sync-take')) $('sync-take').addEventListener('click', () => {
     if (confirm('Replace this device’s data with the synced copy? It has far less in it.')) Sync.takeThere();
@@ -3725,6 +3873,14 @@ function setPalette(p) {
   else document.documentElement.dataset.palette = p;
   paintBarColour();
   paintIcons().catch(() => {});
+}
+/* A colour change (theme or light/dark) fades the old colours into the new in place. It
+   doesn't use the page-change slide, which made the settings page jump on every pick. */
+function recolour(go) {
+  if (!document.startViewTransition || Motion.reduced()) { go(); return; }
+  const root = document.documentElement;
+  root.classList.add('vt-recolour');
+  document.startViewTransition(go).finished.finally(() => root.classList.remove('vt-recolour'));
 }
 /* the browser's bar (a phone's status bar, an installed app's title bar) in the page's colour */
 function paintBarColour() {

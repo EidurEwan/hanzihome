@@ -4,9 +4,10 @@
 Sources
   cjk-decomp.txt        character decomposition          (Gavin Grover, public domain)
   cedict.txt            CC-CEDICT dictionary             (CC BY-SA 4.0)
-  junda_char_freq.txt   Jun Da character frequency list  (GB18030 encoded)
   jieba_dict.txt        word frequency counts            (MIT)
-  hsk_complete.json     HSK 2.0 + 3.0 vocabulary lists
+  wordfreq (pip)        character frequencies, summed from its Chinese word
+                        frequencies                     (data CC BY-SA 4.0)
+  hsk_complete.json     HSK vocabulary lists (the HSK 3.0 levels are used)
   mmah_dictionary.txt   stroke counts, radicals, customary readings (Make Me a Hanzi)
 
 Run:  python build/build.py
@@ -309,21 +310,59 @@ def load_cedict():
     return entries
 
 
-def load_junda():
-    rows = []
-    path = os.path.join(RAW, "junda_char_freq.txt")
-    with io.open(path, encoding="gb18030", errors="replace") as fh:
-        for line in fh:
-            if line.startswith("/*") or not line.strip():
-                continue
-            p = line.rstrip("\n").split("\t")
-            if len(p) < 5:
-                continue
-            try:
-                rows.append((int(p[0]), p[1], int(p[2]), float(p[3]), p[4]))
-            except ValueError:
-                continue
-    log("  junda rows: %d" % len(rows))
+# characters written in Cantonese and not in Mandarin (char_freq leaves out their words)
+CANTONESE = set("嘅咁冇佢啲哋咗喺嚟嘢唔睇乜嗰揾搵冚噉咩嘞啱嗮攰嬲嘥噃㗎嚿啩冧氹孭")
+
+# a meaning that only points elsewhere: "variant of 稻", "(Japanese kokuji) ..."
+VARIANT_ONLY = re.compile(r"^(?:\(?(?:old |archaic |Japanese |erroneous )*variant of|\(Japanese|used in Japanese)")
+
+
+def no_meaning(meanings):
+    """True when a character has nothing of its own to mean: no readings, or every
+    meaning just names another character or is Japanese only (char_freq gives these
+    no rank, so 歩 稲 黒 don't climb the course on Japanese text)"""
+    return all(VARIANT_ONLY.match(m) for m in meanings)
+
+
+def char_freq(simp_of, meanings):
+    """Character frequency ranks summed from wordfreq's Chinese word list.
+
+    wordfreq (https://github.com/rspeer/wordfreq, data CC BY-SA 4.0) gives each
+    word's share of running text; each character gets that share once per time it
+    appears in the word. Its text mixes simplified and traditional, so a form that
+    is only ever traditional (simp_of maps it to another character, and no word
+    uses it as a simplified form) counts towards its simplified one. Words with
+    kana or Cantonese-only characters are left out, and so are characters with
+    no meaning of their own (meanings: {char: [definitions]}; see no_meaning).
+    -> [(rank, char, count per billion, cumulative %, "")], most frequent first.
+    Also used by build/refreq.py to update site/data/ in place.
+    """
+    from wordfreq import get_frequency_dict
+    simplified = set(simp_of.values())
+    share = defaultdict(float)
+    skip = {}
+    for word, f in get_frequency_dict("zh", "large").items():
+        # its web and social sources carry some Japanese and Cantonese: leave out
+        # words with kana, or with characters only Cantonese writes
+        if any(0x3040 <= ord(ch) <= 0x30FF or ch in CANTONESE for ch in word):
+            continue
+        for ch in word:
+            if 0x2E00 < ord(ch) and ch not in "々〇":
+                if ch not in skip:
+                    skip[ch] = no_meaning(meanings.get(ch, ()))
+                if skip[ch]:
+                    continue
+                s = simp_of.get(ch, ch)
+                share[s if s != ch and ch not in simplified else ch] += f
+    count = {ch: int(round(f * 1e9)) for ch, f in share.items()}
+    count = {ch: n for ch, n in count.items() if n > 0}
+    ordered = sorted(count.items(), key=lambda kv: (-kv[1], kv[0]))
+    total = float(sum(count.values())) or 1.0
+    rows, run = [], 0
+    for i, (ch, cnt) in enumerate(ordered, 1):
+        run += cnt
+        rows.append((i, ch, cnt, run / total * 100.0, ""))
+    log("  ranked characters: %d" % len(rows))
     return rows
 
 
@@ -367,7 +406,8 @@ def load_mmah():
 
 
 def load_hsk():
-    """-> {simplified word: [levels]} covering HSK 2.0 and 3.0."""
+    """-> {simplified word: [levels]}: HSK 3.0, levels 1 to 6 and 7 for the 7-9 band
+    (the list's "new-1" ... "new-7"; its "old-" HSK 2.0 levels are left out)."""
     path = os.path.join(RAW, "hsk_complete.json")
     out = defaultdict(set)
     with io.open(path, encoding="utf-8") as fh:
@@ -381,8 +421,8 @@ def load_hsk():
         for L in levels:
             if not L:
                 continue
-            m = re.search(r"(\d)", str(L))
-            if m and ("new" not in str(L).lower()):
+            m = re.match(r"new-(\d)$", str(L))
+            if m:
                 out[w].add(int(m.group(1)))
     log("  hsk words: %d" % len(out))
     return {k: sorted(v) for k, v in out.items()}
@@ -397,7 +437,6 @@ def main():
     dec = Decomposer(os.path.join(RAW, "cjk-decomp.txt"))
     log("  decomposition entries: %d (equiv %d)" % (len(dec.d), len(dec.equiv)))
     cedict = load_cedict()
-    junda = load_junda()
     jieba, jieba_pos = load_jieba()
     hsk = load_hsk()
     mmah = load_mmah()
@@ -433,8 +472,10 @@ def main():
         sum(len(v) for v in char_entries.values())))
 
     # ---- the working character set --------------------------------------
+    freq_rows = char_freq(simp_of, {
+        ch: [d for e in es for d in e[3].split("/") if d] for ch, es in char_entries.items()})
     rank, count, cumpct = {}, {}, {}
-    for r, ch, cnt, cum, _pin in junda:
+    for r, ch, cnt, cum, _pin in freq_rows:
         rank[ch] = r
         count[ch] = cnt
         cumpct[ch] = cum

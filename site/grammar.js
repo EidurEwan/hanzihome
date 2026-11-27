@@ -28,6 +28,10 @@
     + '间 套 层 片 场 遍 趟 篇 句 门 课 份 盒 包 把 顿 层 分 元 毛 角 天 年 周 回 架 根 颗 粒 匹 朵 棵 位 名 群 对').split(' '));
   const TIME = /^(今天|明天|昨天|前天|后天|现在|刚才|以前|以后|早上|上午|中午|下午|晚上|今年|明年|去年|每天|周末|最近|马上|已经|平时|有时候|那时候|.+点|.+号|.+月|.+年|星期.|周.)$/;
   const MODAL = /^(想|要|会|能|可以|应该|得|必须|可能|愿意|敢|需要)$/;
+  // doubled words that are not a softened verb: family, adverbs, "every"
+  const NOT_VERB_PAIR = new Set(('妈妈 爸爸 哥哥 姐姐 弟弟 妹妹 奶奶 爷爷 姥姥 叔叔 舅舅 太太 宝宝 星星 谢谢 '
+    + '常常 刚刚 慢慢 渐渐 偷偷 久久 迟迟 屡屡 短短 往往 默默 纷纷 悄悄 匆匆 轻轻 静静 好好 早早 仅仅 恰恰 '
+    + '白白 万万 明明 天天 年年 人人 个个 处处 家家 高高 大大 多多 远远 深深 紧紧 满满 稍稍 隐隐 微微').split(' '));
   const QWORD = /^(什么|谁|哪|哪里|哪儿|怎么|怎么样|为什么|几|多少|多久|多大)$/;
   // what can't be the noun after a measure word: the grammar words around it
   const NOT_NOUN = /^(比|是|很|都|也|不|没|在|了|的|和|跟|就|还|太|最|更|吗|呢|吧)$/;
@@ -51,6 +55,21 @@
     ['从', '到', 'from … to …', '从 A 到 B: a span of place or time; the whole phrase comes before the verb.'],
     ['跟', '一起', 'together with …', '跟 (or 和) + person + 一起 + verb: doing something together. The company comes before the verb.'],
     ['和', '一起', 'together with …', '和 + person + 一起 + verb: doing something together. The company comes before the verb.'],
+    ['一边', '一边', 'doing two things at once', '一边 A 一边 B: two actions at the same time, each after its own 一边; the subject comes once, at the front.'],
+    ['连', '都', 'even …', '连 picks out the most surprising case and 都 (or 也) follows it, before the verb: if even this, then surely everything else.'],
+    ['连', '也', 'even …', '连 picks out the most surprising case and 也 (or 都) follows it, before the verb: if even this, then surely everything else.'],
+    ['不管', '都', 'no matter …', '不管 leaves the first half open (a question word, or A or B); 都 in the second half says the result is the same whatever the answer.'],
+    ['无论', '都', 'no matter …', '无论 leaves the first half open (a question word, or A or B); 都 in the second half says the result is the same whatever the answer.'],
+    ['即使', '也', 'even if …', '即使 brings a condition that may not even be true; 也 before the second verb says the result holds anyway.'],
+    ['既然', '就', 'since …, then …', '既然 gives a fact both sides accept, and 就 draws the conclusion, often advice or a decision.'],
+    ['只有', '才', 'only if …', '只有 names the one condition that works, and 才 (not 就) brings the result.'],
+    ['尽管', '还是', 'although …, still …', '尽管 admits a fact, and 还是 (after the subject) says it changes nothing; a little more formal than 虽然…但是.'],
+    ['尽管', '也', 'although …, still …', '尽管 admits a fact, and 也 before the verb says it changes nothing.'],
+    ['与其', '不如', 'rather than …, better …', '与其 names the choice to turn down and 不如 the better one, often as advice.'],
+    ['宁可', '也', 'would rather …', '宁可 names the hard choice the speaker accepts; 也不 (or 也要) what they refuse (or insist on).'],
+    ['之所以', '是因为', 'the reason … is that …', 'Written style: the result first after 之所以, then the reason after 是因为, which puts the weight on the reason.'],
+    ['难道', '吗', 'surely not …?', '难道 … 吗 turns a question into a challenge: the speaker thinks the answer is obvious.'],
+    ['对', '来说', 'for someone …', '对 + person + 来说 frames a view: "as far as they are concerned". It comes first, before the opinion.'],
     ['太', '了', 'too … / so …!', '太 + adjective + 了: "too much", or in praise "so …!". The 了 here is part of the pattern, not past tense.'],
   ];
 
@@ -204,7 +223,8 @@
               add('measure', i, 'number + measure word + noun', [w, next, NOT_NOUN.test(noun) ? '' : noun],
                 'Between a number (or 这, 那, 几, 每) and a noun goes a measure word: 一本书 "one book", 三个人 "three people". 个 is the general one; others go with kinds of things (本 for books, 张 for flat things).');
             }
-          } else if (MODAL.test(w) && next && !isPunct(next) && w !== '得') {
+          } else if (MODAL.test(w) && next && !isPunct(next) && w !== '得'
+              && !/^(的|了|吗|呢|吧|啊|过|着)$/.test(next)) {   // 不要的东西: "unwanted", no verb follows
             add('modal', i, 'modal verb + verb', [w, next],
               `${w} goes straight before the main verb, like English "can, want to, will" (我${w}${next}). Negate it with 不 before the modal: 不${w}.`);
           } else if (QWORD.test(w)) {
@@ -213,7 +233,7 @@
           } else if (TIME.test(w) && i + 1 < W.length) {
             add('time', i, 'when comes before the verb', [w],
               `Time words like ${w} come before the verb, at the start of the sentence or right after the subject (我明天去 / 明天我去 "I go tomorrow"), never at the end as in English.`);
-          } else if (w.length === 2 && w[0] === w[1] && isHan(w[0])) {
+          } else if (w.length === 2 && w[0] === w[1] && isHan(w[0]) && !NOT_VERB_PAIR.has(w)) {
             add('redup', i, 'a doubled verb: "have a little …"', [w],
               `Doubling a verb (${w}) softens it: do it briefly or casually, "have a quick look".`);
           } else if (w.length === 3 && w[1] === '一' && w[0] === w[2]) {

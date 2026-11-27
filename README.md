@@ -95,7 +95,7 @@ an in-memory sheet on `http://localhost:8787/exec`.
 **The tutorial** — a newcomer's first visit opens a few slides on how Mandarin works
 (components, tones), how HanziHome teaches it (lessons, then FSRS reviews) and why 20–30
 minutes every day is the way to do it (`site/tour.js`). Its last slide asks which **learning
-path** to follow (balanced, most common first, or HSK 1 to 6), so it ends on Today with the first
+path** to follow (balanced, most common first, or HSK 1 to 9), so it ends on Today with the first
 lessons ready; "Decide later", or skipping the tutorial, leaves the same choice as the first card
 on Today, and on the Lessons page while it is empty (`pathPick` in `site/study.js`). The very
 first lesson opens on three more slides, **how the mnemonic pictures work**: a component's
@@ -168,7 +168,7 @@ its meanings and pronunciation, and examples, then asks you to type its pinyin (
 `ren4shi`), then its meaning. **Add** under Study next does the same for a suggested character.
 
 **A learning path** (the tutorial's last slide, Today when nothing is queued, or Settings) keeps the lesson queue
-full with the next characters of the most common or of HSK 1 to 6, or **balanced**, as many as you
+full with the next characters of the most common or of HSK 1 to 9, or **balanced**, as many as you
 choose, each with its new components and sounds; that many become ready each day. Change the path or
 the number and what the path queued changes at once, while what you added yourself or starred stays
 (`Learn.pathSync`). **The daily lesson limit** is filled first with new characters and the new components
@@ -180,7 +180,7 @@ last of its characters: `Learn.wordOrder`, from `site/data/wordorder.js`, writte
 `build/export_wordorder.js`). Tap one to prioritise it, so it is learnt before the rest of the queue, or
 skip it, so it is never taught. Balanced scores each character on how common
 it is (weight 55), how early in the HSK (40), how few its strokes (5) and how many of its components you
-know (5): that finishes HSK 1 by the 388th character and HSK 2 by the 664th, scoring again after each choice, so that learning 女 and 子 lifts 好 (`Learn.pickChars`,
+know (5): that finishes HSK 1 by the 597th character and HSK 2 by the 918th, scoring again after each choice, so that learning 女 and 子 lifts 好 (`Learn.pickChars`,
 from `site/data/charorder.js`, written by `build/export_charorder.js`). Settings compares the paths:
 when each finishes each HSK level, how much text each lets you read, and what each is good and bad at
 (`Learn.PATH_FACTS`, which `test/learn.js` checks against the real orders). **An HSK level nearly done**
@@ -239,7 +239,7 @@ count towards the daily limit and sounds don't; Settings → Lessons and reviews
 
 **Mnemonics** — 1,066 components have picture names (氵 water drops, 勺 ladle, 丷 horns), 897 of them
 a mnemonic from their own parts, and each of the 3,000 commonest characters a scene of 40 to 80
-words: the pop-culture figure at the tone's place in the building, doing something absurd with its components, so the
+words (commonest by the earlier ranking: 194 of today's top 3,000 have none yet): the pop-culture figure at the tone's place in the building, doing something absurd with its components, so the
 sound and the meaning come together ("{Batman} tumbles into the {Bathroom} of the {Mansion}
 and finds a *standing person* sawn in *half*…"), components and sounds shown as chips (-an Mansion, 4 Bathroom).
 A mnemonic with no sounds in its story (a word's, your own, or a rarer character with no scene) has its
@@ -254,7 +254,7 @@ agent's output, and `merge.js` makes `site/data/cnames.js`, `cmnem.js` and `winf
 example sentences their pinyin with the reader's own segmenter). `retone.js` moved the scenes to
 the present tone places, with `retone-fixes.json` for what its rules couldn't word, and `recast.js` moved them from jobs to the present cast of figures, each scene then rewritten around its figure (BRIEF.md section 7).
 
-**Grammar** (`#/grammar`, `site/grammarstudy.js`) — short explanations of the patterns a beginner needs, each with
+**Grammar** (`#/grammar`, `site/grammarstudy.js`) — 68 points from around HSK 1 to 5 (是 and 吗 up to 不管…都, 即使…也, 与其…不如, 之所以…是因为), each a short explanation with
 examples and the common mistake, and practice at filling gaps, ordering word tiles and spotting the correct sentence, using only characters you
 have learned (`Learn.knownChars`). It is extra study for whenever you like: nothing is scheduled, and it doesn't count towards lessons, reviews
 or limits. **Daily grammar practice** on Today is one button for a short mixed round: at most one new point a
@@ -352,14 +352,21 @@ the pinyin and the meaning (you can change them), shows what it found, and adds 
 your lessons, or to your reviews at Novice if you already know them. Traditional decks are
 kept under their simplified form, and the dictionary's readings are used where it has the word.
 
-**Reader** — 30 original graded stories, five per HSK level, each at least 250 characters
+**Reader** — 35 original graded stories, five per HSK level (HSK 1 to 6, and 7–9), each at least 250 characters
 long, written with grammar kept to what that level teaches (HSK 1 sticks to 是 / 有 / 在 and
-simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register). Hovering
+simple 了; 把, 被 and complements arrive at HSK 3; HSK 6 uses the written register, and HSK 7–9 adds
+full literary style and chengyu). Hovering
 a word shows the reading and meaning it has *in that sentence* — 还 is "to give back" in one
 line and "also" in the next — plus what each of its characters contributes, with buttons to
 mark them and to add the word to your lessons. The popup also says the word, and reads its
 sentence aloud or translates it under the paragraph (with Gemini when there is a key, else word
-by word with the grammar patterns). Above the text, A−/A+ set its size and **Focus** hides the
+by word with the grammar patterns), or explains its grammar: **Explain grammar** opens a card under the
+paragraph with the sentence word by word (pinyin, and each word's meaning in that sentence) and the
+grammar points it uses, numbered and coloured to match the words that carry them; pointing at a point
+lights up its words in the text too. The patterns come from `site/grammar.js`, checked against the
+meanings the story gives (要 "to ask for" is not a modal), and points the Grammar page teaches link
+to it to practise; the grammar words the patterns don't cover (之, 于, 加以, 而 …) bring the story's own
+note on them, so the literary grammar of HSK 5 to 7–9 is explained too. Above the text, A−/A+ set its size and **Focus** hides the
 side panel; below it, **I've finished reading** offers the words you looked up for your lessons
 and the ones you didn't for marking known, then the next story. Each story card says how much
 of it you can read: the share of its running words you know (Easy, Comfortable, A stretch, Hard). Text you paste in opens in the same reader, glossed automatically (see "Reading
@@ -403,7 +410,7 @@ another becomes a picker: choose 借 for 接 and the cards and grammar follow;
 English gets the likeliest Chinese words for each word from the dictionary, which is not a
 translation, and the page says so.
 
-**Lists** — HSK 1–6 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
+**Lists** — HSK 3.0, levels 1–6 and 7–9 (characters *and* vocabulary), the 214 Kangxi radicals, phonetic sets,
 productive components, productive characters, the full frequency list, plus your own
 custom lists, notes and search history.
 
@@ -422,10 +429,10 @@ Appearance too, or follows the device.
 | --- | --- | --- |
 | [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) | readings, meanings, words, simplified/traditional pairs | CC BY-SA 4.0 |
 | [cjk-decomp](https://github.com/amake/cjk-decomp) | character decomposition | public domain |
-| Jun Da, *Modern Chinese Character Frequency List* | frequency ranks and reading coverage | academic use |
 | [jieba](https://github.com/fxsjy/jieba) dictionary | word frequency, common/uncommon/rare tiers | MIT |
+| [wordfreq](https://github.com/rspeer/wordfreq) (`pip install wordfreq`) | character frequency ranks and reading coverage, summed from its Chinese word frequencies (`char_freq` in `build/build.py`, leaving out Japanese and Cantonese words and characters that are only a variant of another) | CC BY-SA 4.0 |
 | [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) | stroke counts, radicals | LGPL / Arphic |
-| [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) | HSK levels | MIT |
+| [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) | HSK 3.0 levels | MIT |
 | [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) (Make Me a Hanzi's graphics) | stroke order, writing practice | Arphic Public License |
 | [Hanzi Writer](https://github.com/chanind/hanzi-writer) (`site/vendor/`) | drawing strokes and checking written ones | MIT |
 | [sql.js](https://github.com/sql-js/sql.js), [fzstd](https://github.com/101arrowz/fzstd) (`site/vendor/`) | reading Anki decks | MIT |
@@ -439,6 +446,8 @@ build/build_stories.py  build/stories/*.txt -> site/data/stories.js (the graded 
 build/export_reader.py  site/data/c/*.js + build/stories/{lexicon,chars}.txt -> site/data/readings.js
                         data/raw/{cedict,jieba_dict}.txt -> site/data/readerwords.js
 build/word_readings.py  everyday readings (build/everyday_readings.txt) into words.js, hsk.js, c/*.js
+build/refreq.py         character frequencies (wordfreq) -> the ranks in site/data/, in place, leaving the rest
+build/export_hsk3.py    data/raw/hsk_complete.json -> site/data/hsk.js, hskchars.js and c/*.js's HSK levels (HSK 3.0), in place
 build/export_strokes.js hanzi-writer-data -> site/data/s/*.js (strokes, by the same 64 buckets)
 build/export_s2t.js     site/data/words.js + c/*.js -> site/data/s2t.js (simplified to traditional)
 site/                   index.html, app.js, style.css — the app itself
@@ -506,7 +515,7 @@ before cháng, and 为 lists wèi before wéi.
 
 ### Graded stories
 
-Stories live in `build/stories/hsk1.txt` … `hsk6.txt` as words separated by spaces, each
+Stories live in `build/stories/hsk1.txt` … `hsk7.txt` (level 7 is HSK 7–9) as words separated by spaces, each
 followed by a hand-written glossary: `word | pinyin | meaning in this story`. A word with two
 senses in one story is tagged in the text (`还@huan`) and glossed under both keys. Words that
 never change meaning (我, 学校) sit in `lexicon.txt`; context-dependent ones (了, 还, 要, 会 …)
@@ -516,7 +525,7 @@ are refused there. `chars.txt` says what a character means inside a word (面 in
 `python build/build_stories.py --report report.txt` (it works without `data/raw/` too, taking
 the dictionary and HSK lists from `site/data/`, when its level report is rougher) checks every story has at least 250
 characters and a meaning for every word, that pinyin has one syllable per character, lists
-vocabulary above the story's HSK level (HSK 2.0 and 3.0 lists), flags words missing from
+vocabulary above the story's HSK 3.0 level, flags words missing from
 CC-CEDICT as likely typos, and reports character meanings that fell back to the dictionary.
 
 ### Reading any text
@@ -670,8 +679,11 @@ Playwright installed).
 * **青 is not broken up.** They expand it to 龶 + 月; here it stops, because it is a Kangxi
   radical and, more usefully, the phonetic component of 请. It is the only character
   checked that still decomposes differently.
-* **HSK character lists are derived**, not official: each level lists the characters first
-  introduced by that level's vocabulary, so HSK 1 has 178 rather than the official 300.
+* **HSK is HSK 3.0** (the 2021 standard): levels 1 to 6, and the advanced levels 7–9 as one
+  band, as the exam takes them. Its character lists are derived, not the official ones: each
+  level lists the characters first introduced by that level's vocabulary, which comes to about
+  300 a level (298 to 301) and 1,171 for 7–9, close to the official 300 and 1,200. The graded
+  stories are checked against HSK 3.0; the grammar points keep their HSK 2.0 levels.
 * **More characters** — 15,450 indexed against their ~6,800, so "component in N characters"
   runs slightly higher.
 * **No limits and no account.** The original caps tracked characters and full history on
@@ -699,7 +711,8 @@ white text; yellow (`#FDE24D`) pill buttons that stand on a darker edge (`#D4B21
 onto it when pressed, as do the chips, tabs and the study tiles; Boxes' pink, green and blue
 for the lessons, reviews and stages; and the menu, after Boxes' drawer, with the current page as a
 yellow pill. Three of Boxes' buddies (`site/img/`: the flame by the streak, the gift and the
-hourglass on the study tiles) come from its artwork.
+hourglass on the study tiles) come from its artwork. Boxes, its look and its artwork are
+HanziHome's author's own work.
 
 The character cards keep HanziHome's own 3D: each stands on an edge in the colour of its
 state (green learned, blue learning) and presses flat under the pointer.

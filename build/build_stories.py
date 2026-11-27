@@ -5,7 +5,7 @@ Every word in a story carries the reading and meaning it has *in that story*,
 written by hand - never a dictionary's first entry, which is how 说 once came
 out as "to persuade" and 家 as "used in 傢伙".
 
-Source format (build/stories/hsk1.txt ... hsk6.txt)
+Source format (build/stories/hsk1.txt ... hsk7.txt; level 7 is HSK 7-9)
 ---------------------------------------------------
     === s01
     level: 1
@@ -52,7 +52,8 @@ OUT = os.path.join(ROOT, "site", "data", "stories.js")
 
 MIN_CHARS = 250
 LEVEL_NAMES = {1: "Beginner", 2: "Elementary", 3: "Intermediate",
-               4: "Upper Intermediate", 5: "Advanced", 6: "Proficient"}
+               4: "Upper Intermediate", 5: "Advanced", 6: "Proficient",
+               7: "Mastery"}
 
 # never glossed once for all stories: the meaning is decided by the sentence
 STORY_ONLY = set("了 着 过 得 地 的 还 要 会 就 才 都 又 对 给 让 把 被 为 跟 打 开 上 下 "
@@ -275,7 +276,8 @@ def dictionary_gloss(readings, ch, syl):
 
 
 # --------------------------------------------------------------------------
-# HSK vocabulary: a word counts at the lower of its HSK 2.0 and HSK 3.0 levels
+# HSK vocabulary: HSK 3.0's levels (7 for the 7-9 band); a character counts at the level
+# that first brings it in (hskchars.js), as a one-character word often isn't listed
 # --------------------------------------------------------------------------
 
 def load_hsk_levels():
@@ -291,9 +293,12 @@ def load_hsk_levels():
         return level
     for item in json.load(io.open(HSK_PATH, encoding="utf-8")):
         for tag in item.get("level") or []:
-            if tag.startswith("old-") or tag.startswith("new-"):
+            if tag.startswith("new-"):
                 w, L = item["simplified"], int(tag.split("-")[1])
                 level[w] = min(L, level.get(w, 9))
+    for lv, chars in site_data("hskchars.js").items():
+        for c in chars:
+            level[c] = min(int(lv), level.get(c, 9))
     return level
 
 

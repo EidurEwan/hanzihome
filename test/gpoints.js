@@ -30,7 +30,7 @@ check('every point has its parts', () => {
     assert.notStrictEqual(p.mistake[0], p.mistake[1], p.id);
     assert(p.gap.length + p.order.length >= 6, `${p.id}: enough for a round`);
     assert(p.spot.length >= 2, `${p.id}: spot`);
-    assert([1, 2, 3].includes(p.level), `${p.id}: level`);
+    assert([1, 2, 3, 4, 5, 6].includes(p.level), `${p.id}: level`);
   }
 });
 
